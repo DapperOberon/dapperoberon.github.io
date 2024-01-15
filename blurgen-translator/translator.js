@@ -1,40 +1,15 @@
 // Your combined dictionary with English and Blurgen equivalents
-const dictionary = {
-    // Nouns
-    'person':'shur',
-    'people':'shurmi',
-    'home':'hum',
-    'friend':'blu',
-    'hello':'gabba',
-    'goodbye':'gabba',
-    // Pronouns
-    'i':'mur',
-    'you':'[insert name here]',
-    'me':'mur',
-    'my':'mur',
-    'we':'murmi',
-    'this':'mo',
-    'that':'bo',
-    'that (far)':'fo',
-    // Verbs
-    'drink':'slu',
-    'eat':'abu',
-    'go':'shu',
-    'read':'flobl',
-    'teach':'blobl',
-    'learn':'tobl',
-    'see':'vi',
-    'to be':'du',
-    'is':'du',
-    'are':'du',
-    'am':'du',
-    'say':'sa',
-    // Adverbs
-    'here':'mu',
-    'there':'bu',
-    'there (far)':'fu',
-};
+let dictionary = {}; // Initialize an empty dictionary
 
+// Fetch and load the dictionary from the JSON file
+fetch('dictionary.json')
+    .then(response => response.json())
+    .then(data => {
+        dictionary = data;
+    })
+    .catch(error => console.error('Error loading dictionary:', error));
+
+// The rest of your translation functions remain unchanged
 function translate(input, isEnglishToBlurgen) {
     const words = input.match(/\b\w+\b/g);
     const nonWords = input.split(/\b\w+\b/g);
@@ -54,7 +29,19 @@ function translate(input, isEnglishToBlurgen) {
     return output || 'Translation not found';
 }
 
+// Translate when Enter key is pressed
+function handleEnterPress(event, isEnglishToBlurgen) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent the default Enter key behavior (e.g., newline in textarea)
+        if (isEnglishToBlurgen) {
+            translateToBlurgen();
+        } else {
+            translateToEnglish();
+        }
+    }
+}
 
+// Other functions remain the same
 function translateToBlurgen() {
     const englishInput = document.getElementById('englishInput').value;
     const blurgenOutput = translate(englishInput, true);

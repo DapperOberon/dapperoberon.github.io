@@ -10,8 +10,8 @@
     <div class="content">
         <div class="column">
             <div class="translator">
-                <h1>English to Blurgen</h1>
-                <textarea id="englishInput" placeholder="Type English text here"></textarea>
+                <h2>English to Blurgen</h1>
+                <textarea id="englishInput" placeholder="Type English text here" onkeypress="handleEnterPress(event, true)"></textarea>
                 <button onclick="translateToBlurgen()">Translate</button>
                 <div class="output">
                     <p id="blurgenToEnglishOutput"></p>
@@ -21,8 +21,8 @@
         
         <div class="column">
             <div class="translator">
-                <h1>Blurgen to English</h1>
-                <textarea id="blurgenInput" placeholder="Type Blurgen text here"></textarea>
+                <h2>Blurgen to English</h1>
+                <textarea id="blurgenInput" placeholder="Type Blurgen text here" onkeypress="handleEnterPress(event, false)"></textarea>
                 <button onclick="translateToEnglish()">Translate</button>
                 <div class="output">
                     <p id="englishToBlurgenOutput"></p>
