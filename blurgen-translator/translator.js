@@ -9,6 +9,7 @@ const dictionary = {
     'goodbye':'gabba',
     // Pronouns
     'i':'mur',
+    'you':'[insert name here]',
     'me':'mur',
     'my':'mur',
     'we':'murmi',
@@ -35,27 +36,24 @@ const dictionary = {
 };
 
 function translate(input, isEnglishToBlurgen) {
-    const charactersToKeep = ",./<>?;:'\"[{]}1234567890-=~!@#$%^&*()_+`";
-    const words = input.split(/(\b|\W+)/);
+    const words = input.match(/\b\w+\b/g);
+    const nonWords = input.split(/\b\w+\b/g);
 
-    if (isEnglishToBlurgen) {
-        const output = words.map(part => {
-            if (charactersToKeep.includes(part[0]) || /\s/.test(part)) {
-                return part;
+    let output = '';
+    for (let i = 0; i < nonWords.length; i++) {
+        output += nonWords[i];
+        if (words[i]) {
+            if (isEnglishToBlurgen) {
+                output += dictionary[words[i].toLowerCase()] || "[unknown]";
+            } else {
+                const translation = Object.keys(dictionary).find(key => dictionary[key] === words[i].toLowerCase());
+                output += translation || "[unknown]";
             }
-            return dictionary[part.toLowerCase()] || part;
-        }).join('');
-        return output || 'Translation not found';
-    } else {
-        const output = words.map(part => {
-            if (charactersToKeep.includes(part[0]) || /\s/.test(part)) {
-                return part;
-            }
-            return Object.keys(dictionary).find(key => dictionary[key].toLowerCase() === part) || part;
-        }).join('');
-        return output || 'Translation not found';
+        }
     }
+    return output || 'Translation not found';
 }
+
 
 function translateToBlurgen() {
     const englishInput = document.getElementById('englishInput').value;
