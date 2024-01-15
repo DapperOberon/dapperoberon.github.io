@@ -57,16 +57,14 @@ function translate(input, isEnglishToBlurgen) {
     }
 }
 
-
-
 function translateToBlurgen() {
     const englishInput = document.getElementById('englishInput').value;
     const blurgenOutput = translate(englishInput, true);
-    document.getElementById('blurgenOutput').innerText = blurgenOutput;
+    document.getElementById('blurgenToEnglishOutput').innerText = blurgenOutput;
 }
 
 function translateToEnglish() {
     const blurgenInput = document.getElementById('blurgenInput').value;
     const englishOutput = translate(blurgenInput, false);
-    document.getElementById('englishOutput').innerText = englishOutput;
+    document.getElementById('englishToBlurgenOutput').innerText = englishOutput;
 }
