@@ -11,23 +11,55 @@ fetch('dictionary.json')
 
 // The rest of your translation functions remain unchanged
 function translate(input, isEnglishToBlurgen) {
-    const words = input.match(/\b\w+\b/g);
-    const nonWords = input.split(/\b\w+\b/g);
-
     let output = '';
-    for (let i = 0; i < nonWords.length; i++) {
-        output += nonWords[i];
-        if (words[i]) {
-            if (isEnglishToBlurgen) {
-                output += dictionary[words[i].toLowerCase()] || "[unknown]";
-            } else {
-                const translation = Object.keys(dictionary).find(key => dictionary[key] === words[i].toLowerCase());
-                output += translation || "[unknown]";
+    let words = input.split(/(\W+)/); // Split on non-word characters
+
+    for (let i = 0; i < words.length; i++) {
+        let word = words[i].toLowerCase();
+        let translation = word; // Default to the original word
+
+        if (/\w+/.test(word)) { // Only translate words
+            translation = "[unknown]";
+
+            for (let category in dictionary) {
+                for (let item of dictionary[category]) {
+                    if (isEnglishToBlurgen && item.english === word) {
+                        translation = item.blurgen;
+                        break;
+                    } else if (!isEnglishToBlurgen && item.blurgen === word) {
+                        translation = item.english;
+                        break;
+                    }
+                }
+            }
+
+            // If the word is not found, try to match phrases
+            if (translation === "[unknown]" && i < words.length - 1 && /\w+/.test(words[i + 1])) {
+                let phrase = word + " " + words[i + 1];
+                for (let category in dictionary) {
+                    for (let item of dictionary[category]) {
+                        if (isEnglishToBlurgen && item.english === phrase) {
+                            translation = item.blurgen;
+                            i++; // Skip the next word
+                            break;
+                        } else if (!isEnglishToBlurgen && item.blurgen === phrase) {
+                            translation = item.english;
+                            i++; // Skip the next word
+                            break;
+                        }
+                    }
+                }
             }
         }
+
+        output += translation;
     }
-    return output || 'Translation not found';
+
+    return output.trim() || 'Translation not found';
 }
+
+
+
 
 // Translate when Enter key is pressed
 function handleEnterPress(event, isEnglishToBlurgen) {
