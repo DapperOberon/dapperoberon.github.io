@@ -21,30 +21,33 @@ function translate(input, isEnglishToBlurgen) {
         if (/\w+/.test(word)) { // Only translate words
             translation = "[unknown]";
 
-            for (let category in dictionary) {
-                for (let item of dictionary[category]) {
-                    if (isEnglishToBlurgen && item.english === word) {
-                        translation = item.blurgen;
-                        break;
-                    } else if (!isEnglishToBlurgen && item.blurgen === word) {
-                        translation = item.english;
-                        break;
-                    }
-                }
-            }
-
-            // If the word is not found, try to match phrases
-            if (translation === "[unknown]" && i < words.length - 1 && /\w+/.test(words[i + 1])) {
-                let phrase = word + " " + words[i + 1];
+            // Try to match phrases first
+            if (i < words.length - 2 && /\w+/.test(words[i + 2])) {
+                let phrase = word + " " + words[i + 2];
                 for (let category in dictionary) {
                     for (let item of dictionary[category]) {
                         if (isEnglishToBlurgen && item.english === phrase) {
                             translation = item.blurgen;
-                            i++; // Skip the next word
+                            i += 2; // Skip the next two elements (word and punctuation)
                             break;
                         } else if (!isEnglishToBlurgen && item.blurgen === phrase) {
                             translation = item.english;
-                            i++; // Skip the next word
+                            i += 2; // Skip the next two elements (word and punctuation)
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // If the phrase is not found, try to match individual words
+            if (translation === "[unknown]") {
+                for (let category in dictionary) {
+                    for (let item of dictionary[category]) {
+                        if (isEnglishToBlurgen && item.english === word) {
+                            translation = item.blurgen;
+                            break;
+                        } else if (!isEnglishToBlurgen && item.blurgen === word) {
+                            translation = item.english;
                             break;
                         }
                     }
