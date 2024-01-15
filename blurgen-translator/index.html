@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blurgen Translator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="translator">
+        <h1>English to Blurgen</h1>
+        <textarea id="englishInput" placeholder="Type English text here"></textarea>
+        <button onclick="translateToBlurgen()">Translate</button>
+        <p id="blurgenOutput"></p>
+    </div>
+
+    <div class="translator">
+        <h1>Blurgen to English</h1>
+        <textarea id="blurgenInput" placeholder="Type Blurgen text here"></textarea>
+        <button onclick="translateToEnglish()">Translate</button>
+        <p id="englishOutput"></p>
+    </div>
+
+    <script src="translator.js"></script>
+</body>
+</html>
