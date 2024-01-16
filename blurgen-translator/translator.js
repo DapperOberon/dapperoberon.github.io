@@ -79,6 +79,40 @@ function handleEnterPress(event, isEnglishToBlurgen) {
     }
 }
 
+// Copy Blurgen to clipboard
+function copyBlurgenToClipboard() {
+    // Get the text field
+    var copyText = document.getElementById("blurgenToEnglishOutput");
+  
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText.innerText)
+    .then(() => {
+        // Alert the copied text
+        var tooltip = document.getElementById("blurgenTooltip");
+        tooltip.innerHTML = "Copied: " + copyText.innerText;
+    })
+    .catch(err => {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+// Copy English to clipboard
+function copyEnglishToClipboard() {
+    // Get the text field
+    var copyText = document.getElementById("englishToBlurgenOutput");
+  
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText.innerText)
+    .then(() => {
+        // Alert the copied text
+        var tooltip = document.getElementById("englishTooltip");
+        tooltip.innerHTML = "Copied: " + copyText.innerText;
+    })
+    .catch(err => {
+        console.error('Could not copy text: ', err);
+    });
+}
+
 // Update the textboxes
 function translateToBlurgen() {
     const englishInput = document.getElementById('englishInput').value;
