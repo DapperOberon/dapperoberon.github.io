@@ -15,6 +15,7 @@ body {
     margin: 0;
     background-color: var(--bg);
     color: var(--text);
+    display: flex;
 }
 
 .content {
@@ -22,10 +23,10 @@ body {
     margin: auto;
     padding: 1em;
     text-align: center;
+    min-height: calc(100vh - 2em);
 }
 
 .column:first-of-type {
-    border-bottom: 5px solid var(--text);
     padding-bottom: 0.83em;
 }
 
@@ -111,7 +112,6 @@ opacity: 1;
     
     .column:first-of-type {
         float: left;
-        border: none;
     }
     
     .column:last-of-type {
@@ -134,30 +134,5 @@ opacity: 1;
     .translator button {
         background-color: var(--btn-dark);
         color: var(--text-dark)
-    }
-
-    .column:first-of-type {
-        border-bottom: 5px solid var(--text-dark);
-    }
-}
-
-@media (min-width: 600px) and (prefers-color-scheme: dark) {
-    body {
-        background-color: var(--bg-dark);
-        color: var(--text-dark);
-    }
-
-    .translator textarea {
-        background-color: var(--input-bg-dark);
-        color: var(--text-dark);
-    }
-    
-    .translator button {
-        background-color: var(--btn-dark);
-        color: var(--text-dark)
-    }
-
-    .column:first-of-type {
-        border: none;
     }
 }
