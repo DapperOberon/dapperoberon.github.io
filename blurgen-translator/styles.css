@@ -158,6 +158,6 @@ opacity: 1;
     }
 
     .column:first-of-type {
-        border-bottom: none;
+        border: none;
     }
 }
