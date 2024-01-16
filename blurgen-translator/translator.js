@@ -23,18 +23,19 @@ fetch('dictionary.json')
 // The rest of your translation functions remain unchanged
 function translate(input, isEnglishToBlurgen) {
     let output = '';
-    let words = input.split(/([^\w']+)/);
+    let words = input.split(/([^\w'.]|(?<=\w)\.(?=\s|$))/);
 
     for (let i = 0; i < words.length; i++) {
-        let word = words[i].toLowerCase();
+        let word = words[i];
+        let lowerCaseWord = word && word.toLowerCase(); // Convert the word to lowercase for dictionary lookup
         let translation = word; // Default to the original word
 
-        if (/\w+/.test(word)) { // Only translate words
+        if (word && /\w+/.test(word)) { // Only translate words
             translation = "[unknown]";
 
             // Try to match phrases first
             if (i < words.length - 2 && /\w+/.test(words[i + 2])) {
-                let phrase = word + " " + words[i + 2];
+                let phrase = lowerCaseWord + " " + words[i + 2].toLowerCase();
                 if (isEnglishToBlurgen && englishToBlurgen[phrase]) {
                     translation = englishToBlurgen[phrase];
                     i += 2; // Skip the next two elements (word and punctuation)
@@ -46,12 +47,17 @@ function translate(input, isEnglishToBlurgen) {
 
             // If the phrase is not found, try to match individual words
             if (translation === "[unknown]") {
-                if (isEnglishToBlurgen && englishToBlurgen[word]) {
-                    translation = englishToBlurgen[word];
-                } else if (!isEnglishToBlurgen && blurgenToEnglish[word]) {
-                    translation = blurgenToEnglish[word];
+                if (isEnglishToBlurgen && englishToBlurgen[lowerCaseWord]) {
+                    translation = englishToBlurgen[lowerCaseWord];
+                } else if (!isEnglishToBlurgen && blurgenToEnglish[lowerCaseWord]) {
+                    translation = blurgenToEnglish[lowerCaseWord];
                 }
             }
+        }
+
+        // Preserve the original case
+        if (word && word[0] === word[0].toUpperCase()) {
+            translation = translation.charAt(0).toUpperCase() + translation.slice(1);
         }
 
         output += translation;
@@ -59,6 +65,7 @@ function translate(input, isEnglishToBlurgen) {
 
     return output.trim() || 'Translation not found';
 }
+
 
 // Translate when Enter key is pressed
 function handleEnterPress(event, isEnglishToBlurgen) {
