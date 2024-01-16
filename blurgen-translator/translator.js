@@ -78,10 +78,23 @@ function translate(input, isEnglishToBlurgen) {
     return output.trim() || 'Translation not found';
 }
 
+let translationTimeout;
+// Translate when Enter key is pressed or after 1 second of inactivity
+function handleInputChange(isEnglishToBlurgen) {
+    clearTimeout(translationTimeout); // Clear previous timeout
 
+    translationTimeout = setTimeout(() => {
+        console.log("Translating...");
+        if (isEnglishToBlurgen) {
+            translateToBlurgen();
+        } else {
+            translateToEnglish();
+        }
+    }, 500);
+}
 
 // Translate when Enter key is pressed
-function handleEnterPress(event, isEnglishToBlurgen) {
+/*function handleEnterPress(event, isEnglishToBlurgen) {
     if (event.key === 'Enter') {
         event.preventDefault(); // Prevent the default Enter key behavior (e.g., newline in textarea)
         if (isEnglishToBlurgen) {
@@ -90,7 +103,24 @@ function handleEnterPress(event, isEnglishToBlurgen) {
             translateToEnglish();
         }
     }
+}*/
+
+// Update the textboxes
+function translateToBlurgen() {
+    const englishInput = document.getElementById('englishInput').value;
+    const blurgenOutput = translate(englishInput, true);
+    document.getElementById('blurgenToEnglishOutput').innerText = blurgenOutput;
 }
+
+function translateToEnglish() {
+    const blurgenInput = document.getElementById('blurgenInput').value;
+    const englishOutput = translate(blurgenInput, false);
+    document.getElementById('englishToBlurgenOutput').innerText = englishOutput;
+}
+
+// Event listeners for input changes
+document.getElementById('englishInput').addEventListener('input', () => handleInputChange(true));
+document.getElementById('blurgenInput').addEventListener('input', () => handleInputChange(false));
 
 // Copy Blurgen to clipboard
 function copyBlurgenToClipboard() {
@@ -102,7 +132,8 @@ function copyBlurgenToClipboard() {
     .then(() => {
         // Alert the copied text
         var tooltip = document.getElementById("blurgenTooltip");
-        tooltip.innerHTML = "Copied: " + copyText.innerText;
+        // Inside the copyBlurgenToClipboard and copyEnglishToClipboard functions
+        tooltip.innerHTML = "Copied to Clipboard";
     })
     .catch(err => {
         console.error('Could not copy text: ', err);
@@ -119,22 +150,10 @@ function copyEnglishToClipboard() {
     .then(() => {
         // Alert the copied text
         var tooltip = document.getElementById("englishTooltip");
-        tooltip.innerHTML = "Copied: " + copyText.innerText;
+        // Inside the copyBlurgenToClipboard and copyEnglishToClipboard functions
+        tooltip.innerHTML = "Copied to Clipboard";
     })
     .catch(err => {
         console.error('Could not copy text: ', err);
     });
-}
-
-// Update the textboxes
-function translateToBlurgen() {
-    const englishInput = document.getElementById('englishInput').value;
-    const blurgenOutput = translate(englishInput, true);
-    document.getElementById('blurgenToEnglishOutput').innerText = blurgenOutput;
-}
-
-function translateToEnglish() {
-    const blurgenInput = document.getElementById('blurgenInput').value;
-    const englishOutput = translate(blurgenInput, false);
-    document.getElementById('englishToBlurgenOutput').innerText = englishOutput;
 }
