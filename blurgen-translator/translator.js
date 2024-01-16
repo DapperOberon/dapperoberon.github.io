@@ -12,7 +12,7 @@ fetch('dictionary.json')
 // The rest of your translation functions remain unchanged
 function translate(input, isEnglishToBlurgen) {
     let output = '';
-    let words = input.split(/(\W+)/); // Split on non-word characters
+    let words = input.split(/([^\w']+)/); // Split on non-word characters
 
     for (let i = 0; i < words.length; i++) {
         let word = words[i].toLowerCase();
