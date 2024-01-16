@@ -1,7 +1,14 @@
 {
   "nouns": [
+    {"english": "blurgen", "blurgen": "blurgen"},
     {"english": "person", "blurgen": "shur"},
-    {"english": "people", "blurgen": "shurmi"},
+    {"english": "persons", "blurgen": "shurmi"},
+    {"english": "person's", "blurgen": "shurmen"},
+    {"english": "persons'", "blurgen": "shurmimen"},
+    {"english": "people", "blurgen": "shuroliba"},
+    {"english": "peoples", "blurgen": "shurolibami"},
+    {"english": "people's", "blurgen": "shurolibamen"},
+    {"english": "peoples'", "blurgen": "shurolibamimen"},
     {"english": "home", "blurgen": "hum"},
     {"english": "homes", "blurgen": "hummi"},
     {"english": "home's", "blurgen": "hummen"},
@@ -62,18 +69,18 @@
     {"english": "seas", "blurgen": "prilomi"},
     {"english": "sea's", "blurgen": "prilomen"},
     {"english": "seas'", "blurgen": "prilomimen"},
-    {"english": "river", "blurgen": "balaya"},
-    {"english": "rivers", "blurgen": "balayami"},
-    {"english": "river's", "blurgen": "balayamen"},
-    {"english": "rivers'", "blurgen": "balayamimen"},
+    {"english": "river", "blurgen": "balya"},
+    {"english": "rivers", "blurgen": "balyami"},
+    {"english": "river's", "blurgen": "balyamen"},
+    {"english": "rivers'", "blurgen": "balyamimen"},
     {"english": "sky", "blurgen": "krilo"},
     {"english": "skies", "blurgen": "krilomi"},
     {"english": "sky's", "blurgen": "krilomen"},
     {"english": "skies'", "blurgen": "krilomimen"},
-    {"english": "sun", "blurgen": "lumaya"},
-    {"english": "suns", "blurgen": "lumayami"},
-    {"english": "sun's", "blurgen": "lumayamen"},
-    {"english": "suns'", "blurgen": "lumayamimen"},
+    {"english": "sun", "blurgen": "lumya"},
+    {"english": "suns", "blurgen": "lumyami"},
+    {"english": "sun's", "blurgen": "lumyamen"},
+    {"english": "suns'", "blurgen": "lumyamimen"},
     {"english": "moon", "blurgen": "rilona"},
     {"english": "moons", "blurgen": "rilonami"},
     {"english": "moon's", "blurgen": "rilonamen"},
@@ -237,7 +244,15 @@
     {"english": "city", "blurgen": "olibabani"},
     {"english": "cities", "blurgen": "olibabanimi"},
     {"english": "city's", "blurgen": "olibabanimen"},
-    {"english": "cities'", "blurgen": "olibabanimimen"}    
+    {"english": "cities'", "blurgen": "olibabanimimen"},
+    {"english": "generic planet vehicle", "blurgen": "rilobi"},
+    {"english": "generic planet vehicles", "blurgen": "rilobimi"},
+    {"english": "generic planet vehicle's", "blurgen": "rilobimen"},
+    {"english": "generic planet vehicles'", "blurgen": "rilobimimen"},
+    {"english": "raincloud", "blurgen": "krichibala"},
+    {"english": "rainclouds", "blurgen": "krichibalamie"},
+    {"english": "raincloud's", "blurgen": "krichibalamen"},
+    {"english": "rainclouds'", "blurgen": "krichibalamimen"}
   ],
   "pronouns": [
     {"english": "i", "blurgen": "mur"},
@@ -395,7 +410,9 @@
   ],
   "conjunctions": [
     {"english": "and", "blurgen": "lo"},
-    {"english": "or", "blurgen": "do"},
+    {"english": "or", "blurgen": "do"}
+  ],
+  "prepositions": [
     {"english": "with", "blurgen": "to"}
   ],
   "interjections": [
@@ -403,6 +420,9 @@
     {"english": "no", "blurgen": "fal"},
     {"english": "hello", "blurgen": "gabba"},
     {"english": "goodbye", "blurgen": "gabba"}
+  ],
+  "markers": [
+    {"english": "not", "blurgen": "fal"}
   ]
 }
   

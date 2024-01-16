@@ -36,12 +36,24 @@ function translate(input, isEnglishToBlurgen) {
             // Try to match phrases first
             if (i < words.length - 2 && /\w+/.test(words[i + 2])) {
                 let phrase = lowerCaseWord + " " + words[i + 2].toLowerCase();
-                if (isEnglishToBlurgen && englishToBlurgen[phrase]) {
-                    translation = englishToBlurgen[phrase];
-                    i += 2; // Skip the next two elements (word and punctuation)
-                } else if (!isEnglishToBlurgen && blurgenToEnglish[phrase]) {
-                    translation = blurgenToEnglish[phrase];
-                    i += 2; // Skip the next two elements (word and punctuation)
+                if (i < words.length - 4 && /\w+/.test(words[i + 4])) {
+                    let threeWordPhrase = phrase + " " + words[i + 4].toLowerCase();
+                    if (isEnglishToBlurgen && englishToBlurgen[threeWordPhrase]) {
+                        translation = englishToBlurgen[threeWordPhrase];
+                        i += 4; // Skip the next four elements (two words and two punctuations)
+                    } else if (!isEnglishToBlurgen && blurgenToEnglish[threeWordPhrase]) {
+                        translation = blurgenToEnglish[threeWordPhrase];
+                        i += 4; // Skip the next four elements (two words and two punctuations)
+                    }
+                }
+                if (translation === "[unknown]") {
+                    if (isEnglishToBlurgen && englishToBlurgen[phrase]) {
+                        translation = englishToBlurgen[phrase];
+                        i += 2; // Skip the next two elements (word and punctuation)
+                    } else if (!isEnglishToBlurgen && blurgenToEnglish[phrase]) {
+                        translation = blurgenToEnglish[phrase];
+                        i += 2; // Skip the next two elements (word and punctuation)
+                    }
                 }
             }
 
@@ -65,6 +77,7 @@ function translate(input, isEnglishToBlurgen) {
 
     return output.trim() || 'Translation not found';
 }
+
 
 
 // Translate when Enter key is pressed
