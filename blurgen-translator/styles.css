@@ -15,7 +15,6 @@ body {
     margin: 0;
     background-color: var(--bg);
     color: var(--text);
-    display: flex;
 }
 
 .content {
@@ -24,6 +23,13 @@ body {
     padding: 1em;
     text-align: center;
     min-height: calc(100vh - 2em);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+}
+
+.column {
+    width: 100%;
 }
 
 .column:first-of-type {
