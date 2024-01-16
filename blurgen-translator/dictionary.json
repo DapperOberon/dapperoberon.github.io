@@ -378,7 +378,7 @@
     {"english": "yes", "blurgen": "da"},
     {"english": "no", "blurgen": "fal"},
     {"english": "hello", "blurgen": "gabba"},
-    {"english": "godbye", "blurgen": "gabba"}
+    {"english": "goodbye", "blurgen": "gabba"}
   ]
 }
   
