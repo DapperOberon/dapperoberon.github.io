@@ -37,15 +37,15 @@ body {
 }
 
 .translator textarea, .translator .output {
-    padding: 1em;
+    padding: 16px;
     min-height: 10em;
     border: 1px solid var(--black);
     border-radius: 1em;
 }
 
 .translator textarea {
-    width: calc(100% - 20px);
-    max-width: calc(100% - 20px);
+    width: calc(100% - 32px);
+    max-width: calc(100% - 32px);
     margin: 0;
     background-color: var(--input-bg);
     margin-bottom: 1em;
