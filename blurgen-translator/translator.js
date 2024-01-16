@@ -84,7 +84,7 @@ function handleInputChange(isEnglishToBlurgen) {
     clearTimeout(translationTimeout); // Clear previous timeout
 
     translationTimeout = setTimeout(() => {
-        console.log("Translating...");
+        /*console.log("Translating...");*/
         if (isEnglishToBlurgen) {
             translateToBlurgen();
         } else {
