@@ -75,7 +75,7 @@ function translate(input, isEnglishToBlurgen) {
         output += translation;
     }
 
-    return output.trim() || 'Translation not found';
+    return output.trim();
 }
 
 let translationTimeout;
