@@ -25,6 +25,18 @@
         }
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
+        /* Project card show/hide transitions */
+        .project-card {
+            transition: opacity 180ms ease, transform 180ms ease;
+            opacity: 1;
+            transform: translateY(0);
+            will-change: opacity, transform;
+        }
+        .project-card.is-hidden {
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+        }
     </style>
         <!-- GenAI importmap removed (chatbot removed from site) -->
 </head>
