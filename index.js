@@ -6,8 +6,19 @@ const PROJECTS = [
     title: 'Blurgen Translator',
     description: 'A sophisticated English to Blurgen language translator with real-time phonetic mapping and custom slang support.',
     link: './blurgen-translator',
+    linkText: 'Launch Translator',
     tags: ['Linguistics', 'Algorithm', 'Frontend'],
     image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=800',
+    category: 'Tool'
+  },
+  {
+    id: 'star-wars-timeline',
+    title: 'Star Wars Timeline',
+    description: 'An interactive chronological explorer spanning millennia of Star Wars lore. Navigate key events from the Old Republic through the Skywalker Saga with rich details and cross-era connections.',
+    link: './star-wars-timeline',
+    linkText: 'Explore Timeline',
+    tags: ['Timeline', 'Star Wars', 'Interactive'],
+    image: 'https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?auto=format&fit=crop&q=80&w=800',
     category: 'Tool'
   }
 ];
@@ -95,7 +106,7 @@ function render() {
         </div>
 
         <div class="flex justify-center">
-          <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-8 max-w-2xl w-full">
+          <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-5xl w-full">
             <!-- Projects will be injected here -->
           </div>
         </div>
@@ -156,7 +167,7 @@ function renderProjects() {
       card.dataset.id = p.id;
 
       card.innerHTML = `
-        <div class="relative h-80 overflow-hidden">
+        <div class="relative h-48 overflow-hidden">
           <img src="${p.image}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
           <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
           <div class="absolute bottom-6 left-8 flex gap-2">
@@ -172,7 +183,7 @@ function renderProjects() {
           <p class="text-slate-400 text-lg leading-relaxed mb-10">${p.description}</p>
           <div class="mt-auto">
             <a href="${p.link}" class="inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-sm hover:bg-orange-600 transition-all group/btn">
-              Launch Translator
+              ${p.linkText}
             </a>
           </div>
         </div>
