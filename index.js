@@ -87,7 +87,7 @@ function render() {
           </div>
           <div id="categories" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
             ${CATEGORIES.map(cat => `
-              <button data-cat="${cat}" class="cat-btn whitespace-nowrap px-6 py-2 rounded-full text-sm font-bold border transition-all ${state.selectedCategory === cat ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-600/20' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700'}">
+              <button data-cat="${cat}" aria-pressed="${state.selectedCategory === cat ? 'true' : 'false'}" class="cat-btn whitespace-nowrap px-6 py-2 rounded-full text-sm font-bold border transition-all ${state.selectedCategory === cat ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-600/20' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700'}">
                 ${cat}
               </button>
             `).join('')}
@@ -99,6 +99,8 @@ function render() {
             <!-- Projects will be injected here -->
           </div>
         </div>
+
+        <div id="results-count" class="sr-only" aria-live="polite"></div>
       </main>
 
       
@@ -190,6 +192,7 @@ function renderProjects() {
 
   // Toggle visibility without rebuilding DOM to avoid flashes
   let anyVisible = false;
+  let visibleCount = 0;
   _projectEls.forEach(({ el, data }) => {
     const matchesSearch = data.title.toLowerCase().includes(q) || data.tags.some(t => t.toLowerCase().includes(q));
     const matchesCategory = state.selectedCategory === 'All' || data.category === state.selectedCategory;
@@ -229,12 +232,18 @@ function renderProjects() {
     const msg = document.getElementById('no-results-msg');
     if (msg) msg.remove();
   }
+
+  // Update aria-live region with visible count
+  _projectEls.forEach(({ el, data }) => {
+    if (el.style.display !== 'none' && !el.classList.contains('is-hidden')) visibleCount++;
+  });
+  const live = document.getElementById('results-count');
+  if (live) live.textContent = `${visibleCount} project${visibleCount === 1 ? '' : 's'} shown`;
 }
 
 function attachListeners() {
   const searchInput = document.getElementById('search-input');
   if (searchInput) {
-    searchInput.focus();
     // Maintain cursor position
     const val = searchInput.value;
     searchInput.value = '';
@@ -253,12 +262,13 @@ function attachListeners() {
       if (!cat) return;
       state.selectedCategory = cat;
 
-      // Update active classes
+      // Update active classes and aria-pressed
       document.querySelectorAll('.cat-btn').forEach(b => {
         const isActive = b.getAttribute('data-cat') === state.selectedCategory;
         b.className = isActive
           ? 'cat-btn whitespace-nowrap px-6 py-2 rounded-full text-sm font-bold border transition-all bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-600/20'
           : 'cat-btn whitespace-nowrap px-6 py-2 rounded-full text-sm font-bold border transition-all bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700';
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
 
       renderProjects();
