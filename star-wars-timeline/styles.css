@@ -578,7 +578,7 @@ footer p {
 }
 
 /* iPhone / small narrow screens: ensure this block comes after base rules so it wins */
-@media (max-width: 428px) {
+@media (max-width: 540px) {
   .modal { padding: 0 !important; }
   .modal-content { width: 100vw !important; height: calc(var(--vh, 1vh) * 100) !important; border-radius: 0 !important; margin: 0 !important; }
   .modal-left img { width: 100% !important; max-height: calc(var(--vh, 1vh) * 46) !important; border-radius: 0 !important; }
