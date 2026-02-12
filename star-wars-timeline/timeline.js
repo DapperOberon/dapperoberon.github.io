@@ -11,7 +11,69 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/young-jedi-adventures-poster.jpg',
         episodes: 55,
-        watched: 0
+        watched: 0,
+        synopsis: 'The young Jedi take on new missions across the galaxy as they try to stop the rise of the pirates!',
+        episodeDetails: [
+          // S1 (25 episodes)
+          { title: 'S1.E1 - The Young Jedi / Yoda\'s Mission', time: '' },
+          { title: 'S1.E2 - Nash\'s Race Day / The Lost Jedi Ship', time: '' },
+          { title: 'S1.E3 - Get Well Nubs / The Junk Giant', time: '' },
+          { title: 'S1.E4 - Lys and the Snowy Mountain Rescue / Attack of the Training Droids', time: '' },
+          { title: 'S1.E5 - The Jellyfruit Pursuit / Creature Safari', time: '' },
+          { title: 'S1.E6 - Squadron / Forest Defenders', time: '' },
+          { title: 'S1.E7 - The Jedi and the Thief / The Missing Kibbin', time: '' },
+          { title: 'S1.E8 - The Girl and her Gargantua / The Show Must Go On', time: '' },
+          { title: 'S1.E9 - The Princess and the Jedi / Kai\'s Bad Day', time: '' },
+          { title: 'S1.E10 - Visitor\'s Day / The Growing Green Danger', time: '' },
+          { title: 'S1.E11 - The Ganguls / Bad Egg', time: '' },
+          { title: 'S1.E12 - Off the Rails / The Thieves of Tharnaka', time: '' },
+          { title: 'S1.E13 - Tree Troubles / Big Brother\'s Bounty', time: '' },
+          { title: 'S1.E14 - Charhound Chase / Creature Comforts', time: '' },
+          { title: 'S1.E15 - An Adventure with Yoda / The Talon Takeover', time: '' },
+          { title: 'S1.E16 - Mystery of the Opal Cave / Clash', time: '' },
+          { title: 'S1.E17 - Stuck in the Muck / Junkyard Sleepover', time: '' },
+          { title: 'S1.E18 - The Great Leaf Glide / The Harvest Feast', time: '' },
+          { title: 'S1.E19 - Life Day / Raxlo Strikes Back', time: '' },
+          { title: 'S1.E20 - Aftershock / Feather Frenzy', time: '' },
+          { title: 'S1.E21 - Best Friends / Happy Trails, Nubs', time: '' },
+          { title: 'S1.E22 - The Tale of Short Spire / The Team Up', time: '' },
+          { title: 'S1.E23 - The Caves of Batuu / Finders Keepers', time: '' },
+          { title: 'S1.E24 - The Starship Show / Nash\'s Super Busy Day', time: '' },
+          { title: 'S1.E25 - The Prince and the Pirate', time: '' },
+          // S2 (23 episodes)
+          { title: 'S2.E1 - Heroes and Hotshots / A Jedi or a Pirate', time: '' },
+          { title: 'S2.E2 - The Rustler Roundup / A New Discovery', time: '' },
+          { title: 'S2.E3 - A Pirate\'s Pet / The Secret Ship', time: '' },
+          { title: 'S2.E4 - Nub\'s Big Mistake / The Jedi Rescue', time: '' },
+          { title: 'S2.E5 - Terror of Tenoo / The Prince of Masks', time: '' },
+          { title: 'S2.E6 - Battle for the Band / Uprooted', time: '' },
+          { title: 'S2.E7 - Mine and Ours / The Andraven Circuit', time: '' },
+          { title: 'S2.E8 - The Great Gomgourd Quest / A Sticy Situation', time: '' },
+          { title: 'S2.E9 - The Missing Life Day Feast / The Lost Treasure of Tenoo', time: '' },
+          { title: 'S2.E10 - The Wild Aklyrr / Lys\' Lost Lightsaber', time: '' },
+          { title: 'S2.E11 - Tower Run / The Jumping Jetpack', time: '' },
+          { title: 'S2.E12 - Unmasked', time: '' },
+          { title: 'S2.E13 - Just Like Wes / Raxlo to the Rescue', time: '' },
+          { title: 'S2.E14 - The Helpful Harvester / Lost Little Droid', time: '' },
+          { title: 'S2.E15 - Tenoo\'s Fastest / Home Sweet Temple', time: '' },
+          { title: 'S2.E16 - The Firehawk Feud / The Chop Shop Calamity', time: '' },
+          { title: 'S2.E17 - Big Pooba Problems / Best Bounty Buddies', time: '' },
+          { title: 'S2.E18 - The Rainy Day Beast / Upgraded', time: '' },
+          { title: 'S2.E19 - Journey to the Bracca Badlands / The Search for the Missing Dunnels', time: '' },
+          { title: 'S2.E20 - The Spaceport Setback / The Mission Mixup', time: '' },
+          { title: 'S2.E21 - Yoda Rescue / Fossil Hunt', time: '' },
+          { title: 'S2.E22 - A Mission to Remember / The Bounty Hunter and the Thief', time: '' },
+          { title: 'S2.E23 - The Battle of Tenoo', time: '' },
+          // S3 (7 episodes)
+          { title: 'S3.E1 - The New Droid Friends / Batuu Bonanza', time: '' },
+          { title: 'S3.E2 - Music Mayhem / The Night Lights of Tenoo', time: '' },
+          { title: 'S3.E3 - Journey to the Bottom of Naboo / Speeder Surprise', time: '' },
+          { title: 'S3.E4 - Scrapping for a Song / Bell and the Band', time: '' },
+          { title: 'S3.E5 - To Do Good / Nubs and the Bumbling Bandits', time: '' },
+          { title: 'S3.E6 - Apexx Awakens / Harvester Madness', time: '' },
+          { title: 'S3.E7 - Making Friends', time: '' }
+        ],
+        _watchedArray: Array(55).fill(false)
       }
     ]
   },
@@ -26,7 +88,19 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/acolyte-poster.jpg',
         episodes: 8,
-        watched: 8
+        watched: 8,
+        synopsis: '',
+        episodeDetails: [
+          { title: 'Lost / Found', time: '' },
+          { title: 'Revenge / Justice', time: '' },
+          { title: 'Destiny', time: '' },
+          { title: 'Day', time: '' },
+          { title: 'Night', time: '' },
+          { title: 'Teach / Corrupt', time: '' },
+          { title: 'Choice', time: '' },
+          { title: 'The Acolyte', time: '' }
+        ],
+        _watchedArray: [true, true, true, true, true, true, true, true]
       },
       {
         title: 'Tales of the Jedi',
@@ -35,7 +109,16 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/tales-of-the-jedi.jpg',
         episodes: 6,
-        watched: 3
+        watched: 3,
+        episodeDetails: [
+          { title: 'Life and Death', time: '' },
+          { title: 'Justice', time: '' },
+          { title: 'Choices', time: '' },
+          { title: 'The Sith Lord', time: '' },
+          { title: 'Practice Makes Perfect', time: '' },
+          { title: 'Resolve', time: '' }
+        ],
+        _watchedArray: [true, true, true, false, false, false]
       },
       {
         title: 'The Phantom Menace',
@@ -44,7 +127,12 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/the-phantom-menace-poster.jpg',
         episodes: 1,
-        watched: 1
+        watched: 1,
+        synopsis: '',
+        episodeDetails: [
+          { title: 'Star Wars: Episode I - The Phantom Menace', time: '' }
+        ],
+        _watchedArray: [true]
       },
       {
         title: 'Attack of the Clones',
@@ -53,7 +141,11 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/attack-of-the-clones-poster.jpg',
         episodes: 1,
-        watched: 0
+        watched: 1,
+        episodeDetails: [
+          { title: 'Star Wars: Episode II - Attack of the Clones', time: '' }
+        ],
+        _watchedArray: [true]
       },
       {
         title: 'Clone Wars (2003)',
@@ -62,7 +154,9 @@ const TIMELINE_DATA = [
         canon: false,
         poster: './posters/clone-wars-poster.jpg',
         episodes: 50,
-        watched: 20
+        watched: 21,
+        episodeDetails: Array.from({length: 50}, (_, i) => ({ title: `Chapter ${i + 1}`, time: '' })),
+        _watchedArray: Array.from({length: 50}, (_, i) => i < 21)
       },
       {
         title: 'The Clone Wars',
@@ -71,7 +165,30 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/the-clone-wars-poster.jpg',
         episodes: 133,
-        watched: 0
+        watched: 98,
+        episodeDetails: [
+          // S1 (22 episodes, all watched)
+          ...Array.from({length: 22}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
+          // S2 (22 episodes, all watched)
+          ...Array.from({length: 22}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' })),
+          // S3 (22 episodes, all watched)
+          ...Array.from({length: 22}, (_, i) => ({ title: `S3.E${i + 1}`, time: '' })),
+          // S4 (22 episodes, all watched)
+          ...Array.from({length: 22}, (_, i) => ({ title: `S4.E${i + 1}`, time: '' })),
+          // S5 (20 episodes, first 10 watched)
+          ...Array.from({length: 20}, (_, i) => ({ title: `S5.E${i + 1}`, time: '' })),
+          // S6 (13 episodes, none watched)
+          ...Array.from({length: 13}, (_, i) => ({ title: `S6.E${i + 1}`, time: '' })),
+          // S7 (12 episodes, none watched)
+          ...Array.from({length: 12}, (_, i) => ({ title: `S7.E${i + 1}`, time: '' }))
+        ],
+        _watchedArray: [
+          ...Array(88).fill(true),  // S1-4 all watched
+          ...Array(10).fill(true),  // S5 first 10 watched
+          ...Array(10).fill(false), // S5 remaining 10 not watched
+          ...Array(13).fill(false), // S6 not watched
+          ...Array(12).fill(false)  // S7 not watched
+        ]
       }
     ]
   },
@@ -86,7 +203,11 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/revenge-of-the-sith-poster.jpg',
         episodes: 1,
-        watched: 0
+        watched: 0,
+        episodeDetails: [
+          { title: 'Star Wars: Episode III - Revenge of the Sith', time: '' }
+        ],
+        _watchedArray: [false]
       },
       {
         title: 'Tales of the Empire',
@@ -95,7 +216,16 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/tales-of-the-empire.jpg',
         episodes: 6,
-        watched: 1
+        watched: 0,
+        episodeDetails: [
+          { title: 'Ident', time: '' },
+          { title: 'The Path', time: '' },
+          { title: 'Resolve', time: '' },
+          { title: 'The Duel', time: '' },
+          { title: 'The Sisters', time: '' },
+          { title: 'The Jedi', time: '' }
+        ],
+        _watchedArray: [false, false, false, false, false, false]
       },
       {
         title: 'Tales of the Underworld',
@@ -104,7 +234,16 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/tales-of-the-underworld-poster.jpg',
         episodes: 6,
-        watched: 0
+        watched: 3,
+        episodeDetails: [
+          { title: 'A Way Forward', time: '' },
+          { title: 'Friends', time: '' },
+          { title: 'One Warrior to Another', time: '' },
+          { title: 'The Good Life', time: '' },
+          { title: 'A Good Turn', time: '' },
+          { title: 'One Good Deed', time: '' }
+        ],
+        _watchedArray: [false, false, false, true, true, true]
       },
       {
         title: 'The Bad Batch',
@@ -113,7 +252,13 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/the-bad-batch-poster.jpg',
         episodes: 47,
-        watched: 0
+        watched: 0,
+        episodeDetails: [
+          ...Array.from({length: 16}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
+          ...Array.from({length: 15}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' })),
+          ...Array.from({length: 16}, (_, i) => ({ title: `S3.E${i + 1}`, time: '' }))
+        ],
+        _watchedArray: Array(47).fill(false)
       },
       {
         title: 'Star Wars: Droids',
@@ -122,7 +267,9 @@ const TIMELINE_DATA = [
         canon: false,
         poster: './posters/droids-poster.jpg',
         episodes: 45,
-        watched: 0
+        watched: 0,
+        episodeDetails: Array.from({length: 45}, (_, i) => ({ title: `Episode ${i + 1}`, time: '' })),
+        _watchedArray: Array(45).fill(false)
       },
       {
         title: 'Solo: A Star Wars Story',
@@ -131,7 +278,11 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/solo-poster.jpg',
         episodes: 1,
-        watched: 0
+        watched: 0,
+        episodeDetails: [
+          { title: 'Solo: A Star Wars Story', time: '' }
+        ],
+        _watchedArray: [false]
       },
       {
         title: 'Obi-Wan Kenobi',
@@ -140,7 +291,16 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/obi-wan-kenobi-poster.jpg',
         episodes: 6,
-        watched: 0
+        watched: 0,
+        episodeDetails: [
+          { title: 'E1', time: '' },
+          { title: 'E2', time: '' },
+          { title: 'E3', time: '' },
+          { title: 'E4', time: '' },
+          { title: 'E5', time: '' },
+          { title: 'E6', time: '' }
+        ],
+        _watchedArray: [false, false, false, false, false, false]
       },
       {
         title: 'Andor',
@@ -149,7 +309,12 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/andor-poster.jpg',
         episodes: 24,
-        watched: 0
+        watched: 0,
+        episodeDetails: [
+          ...Array.from({length: 12}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
+          ...Array.from({length: 12}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' }))
+        ],
+        _watchedArray: Array(24).fill(false)
       },
       {
         title: 'Star Wars Rebels',
@@ -158,7 +323,14 @@ const TIMELINE_DATA = [
         canon: true,
         poster: './posters/rebels-poster.jpg',
         episodes: 75,
-        watched: 0
+        watched: 0,
+        episodeDetails: [
+          ...Array.from({length: 16}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
+          ...Array.from({length: 22}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' })),
+          ...Array.from({length: 22}, (_, i) => ({ title: `S3.E${i + 1}`, time: '' })),
+          ...Array.from({length: 15}, (_, i) => ({ title: `S4.E${i + 1}`, time: '' }))
+        ],
+        _watchedArray: Array(75).fill(false)
       }
     ]
   },
@@ -404,29 +576,32 @@ function render() {
           <div class="entries-grid">
             ${section.entries.map((entry, entryIdx) => {
               const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
+              const isMovie = /film/i.test(entry.type) && entry.episodes === 1;
               return `
                 <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}">
                   <div class="entry-poster">
                     <img src="${entry.poster}" alt="${entry.title}" />
+                    <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
+                      ${entry.canon ? 'Canon' : 'Legends'}
+                    </span>
                     <div class="entry-overlay">
                       <div class="progress-ring">
                         <svg viewBox="0 0 100 100">
                           <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
+                          <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
                                   stroke-dasharray="${progress * 2.827}" stroke-dashoffset="0" 
                                   style="transition: stroke-dasharray 0.3s ease;" />
                         </svg>
                         <span class="progress-text">${progress}%</span>
                       </div>
+                      <button class="lore-btn">LORE INTEL</button>
                     </div>
                   </div>
                   <div class="entry-content">
                     <h3>${entry.title}</h3>
                     <p class="entry-meta">${entry.year} • ${entry.type}</p>
                     <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
-                    <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
-                      ${entry.canon ? 'Canon' : 'Legends'}
-                    </span>
+                    ${isMovie ? `<label class="card-checkbox" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
                   </div>
                 </div>
               `;
@@ -493,6 +668,21 @@ function attachEntryHandlers() {
       const e = Number(card.dataset.entry);
       openModal(s, e);
     });
+
+    // movie checkbox on-card handling (don't open modal when clicked)
+    const cb = card.querySelector('.card-movie-checkbox');
+    if (cb) {
+      cb.addEventListener('click', (ev) => ev.stopPropagation());
+      cb.addEventListener('change', () => {
+        const s = Number(cb.dataset.section);
+        const e = Number(cb.dataset.entry);
+        const entry = TIMELINE_DATA[s].entries[e];
+        entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
+        entry._watchedArray[0] = cb.checked;
+        saveWatchedState(entry);
+        updateEntryUI(s, e);
+      });
+    }
   });
 }
 
@@ -512,6 +702,10 @@ function updateEntryUI(sectionIdx, entryIdx) {
   const progressText = card.querySelector('.progress-text'); if (progressText) progressText.textContent = progress + '%';
   const progressCircle = card.querySelector('.progress-circle'); if (progressCircle) progressCircle.setAttribute('stroke-dasharray', String(progress * 2.827));
   const episodesText = card.querySelector('.entry-episodes'); if (episodesText) episodesText.textContent = `${watchedCount}/${entry.episodes} watched`;
+  const movieCheckbox = card.querySelector('.card-movie-checkbox');
+  if (movieCheckbox) {
+    movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
+  }
 }
 
 function openModal(sectionIdx, entryIdx) {
@@ -528,81 +722,45 @@ function openModal(sectionIdx, entryIdx) {
       <div class="episode-item">
         <label>
           <input type="checkbox" data-ep="${i}" ${checked} />
-          <span class="episode-label">S1.E${i+1}</span>
           <span class="episode-title">${(entry.episodeDetails && entry.episodeDetails[i] && entry.episodeDetails[i].title) || ''}</span>
         </label>
       </div>
     `;
   }
-  // If only one episode, render it as the main item instead of a list
-  if (entry.episodes === 1) {
-    const checked = arr[0] ? 'checked' : '';
-    modal.innerHTML = `
-      <div class="modal-backdrop"></div>
-      <div class="modal-content">
-        <button class="modal-close" aria-label="Close">×</button>
-        <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
-        <div class="modal-right">
-          <h2>${entry.title}</h2>
-          <p class="entry-meta">${entry.year} • ${entry.type}</p>
-          <div class="modal-progress">
-            <div class="progress-ring">
-              <svg viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="6" />
-                <circle class="modal-progress-circle" cx="50" cy="50" r="45" fill="none" stroke="${TIMELINE_DATA[sectionIdx].color}" stroke-width="6" stroke-dasharray="${progress * 2.827}" stroke-dashoffset="0" />
-              </svg>
-              <span class="progress-text">${progress}%</span>
-            </div>
-            <p>${watchedCount}/${entry.episodes} watched</p>
-          </div>
-          <div class="single-episode">
-            <label>
-              <input type="checkbox" class="single-ep-checkbox" data-ep="0" ${checked} />
-              <span class="single-ep-title">${(entry.episodeDetails && entry.episodeDetails[0] && entry.episodeDetails[0].title) || entry.title}</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    modal.innerHTML = `
-      <div class="modal-backdrop"></div>
-      <div class="modal-content">
-        <button class="modal-close" aria-label="Close">×</button>
-        <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
-        <div class="modal-right">
-          <h2>${entry.title}</h2>
-          <p class="entry-meta">${entry.year} • ${entry.type}</p>
-          <div class="modal-progress">
-            <div class="progress-ring">
-              <svg viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="6" />
-                <circle class="modal-progress-circle" cx="50" cy="50" r="45" fill="none" stroke="${TIMELINE_DATA[sectionIdx].color}" stroke-width="6" stroke-dasharray="${progress * 2.827}" stroke-dashoffset="0" />
-              </svg>
-              <span class="progress-text">${progress}%</span>
-            </div>
-            <p>${watchedCount}/${entry.episodes} watched</p>
-          </div>
-          <div class="episode-list">${episodesHTML}</div>
-        </div>
-      </div>
-    `;
-  }
 
+  const synopsis = entry.synopsis || '';
+  const showEpisodes = entry.episodes > 1; // Only show episodes for series/shows
+
+  const modalHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close">×</button>
+      <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
+      <div class="modal-right">
+        <h2>${entry.title}</h2>
+        <p class="entry-meta">${entry.year} • ${entry.type}</p>
+        ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
+        ${showEpisodes ? `<div class="episode-list">${episodesHTML}</div>` : ''}
+        <button class="modal-close-btn">Close Archive</button>
+      </div>
+    </div>
+  `;
+  
+  modal.innerHTML = modalHTML;
   modal.classList.remove('hidden');
+
   modal.querySelector('.modal-close').addEventListener('click', () => closeModal());
+  modal.querySelector('.modal-close-btn').addEventListener('click', () => closeModal());
   modal.querySelector('.modal-backdrop').addEventListener('click', () => closeModal());
 
-  modal.querySelectorAll('.episode-item input[type="checkbox"]').forEach(cb => {
+  // Handle checkboxes for series/shows
+  const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => {
     cb.addEventListener('change', () => {
       const idx = Number(cb.dataset.ep);
       entry._watchedArray[idx] = cb.checked;
       saveWatchedState(entry);
       updateEntryUI(sectionIdx, entryIdx);
-      const newCount = entry._watchedArray.filter(Boolean).length;
-      const newProgress = entry.episodes > 0 ? Math.round((newCount / entry.episodes) * 100) : 0;
-      const pText = modal.querySelector('.progress-text'); if (pText) pText.textContent = newProgress + '%';
-      const pCircle = modal.querySelector('.modal-progress-circle'); if (pCircle) pCircle.setAttribute('stroke-dasharray', String(newProgress * 2.827));
     });
   });
 }
@@ -610,7 +768,9 @@ function openModal(sectionIdx, entryIdx) {
 function closeModal() {
   const modal = document.getElementById('modal');
   modal.classList.add('hidden');
-  modal.innerHTML = '';
+  setTimeout(() => {
+    modal.innerHTML = '';
+  }, 300);
 }
 
 // Initialize on page load
