@@ -557,17 +557,25 @@ function render() {
   const app = document.getElementById('app');
   
   app.innerHTML = `
-    <header>
+    <header class="site-hero">
       <div class="header-container">
-        <a href="/" class="header-back">← Back to Home</a>
-        <h1>Star Wars Timeline</h1>
+        <div class="hero-title">
+          <h1><span class="hero-strong">GALACTIC</span> <span class="hero-accent">ARCHIVE</span></h1>
+          <p class="hero-sub">A comprehensive chronological guide to the Star Wars universe. Track your progress across the stars.</p>
+        </div>
       </div>
     </header>
 
     <main class="timeline-container">
       <div class="timeline-legend">
-        <span class="legend-item"><span class="legend-badge canon">Canon</span> Official Continuity</span>
-        <span class="legend-item"><span class="legend-badge legends">Legends</span> Non-Canon</span>
+        <button class="legend-filter" data-filter="canon" aria-pressed="true">
+          <span class="legend-badge canon">Canon</span>
+          <span class="legend-label">Official Continuity</span>
+        </button>
+        <button class="legend-filter" data-filter="legends" aria-pressed="true">
+          <span class="legend-badge legends">Legends</span>
+          <span class="legend-label">Non-Canon</span>
+        </button>
       </div>
 
       ${TIMELINE_DATA.map((section, idx) => `
@@ -600,8 +608,10 @@ function render() {
                   <div class="entry-content">
                     <h3>${entry.title}</h3>
                     <p class="entry-meta">${entry.year} • ${entry.type}</p>
-                    <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
-                    ${isMovie ? `<label class="card-checkbox" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
+                    <div class="entry-row">
+                      <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
+                      ${isMovie ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
+                    </div>
                   </div>
                 </div>
               `;
@@ -627,7 +637,34 @@ function render() {
 
   // initialize watched arrays and attach click handlers
   initializeWatchedState();
+  attachLegendHandlers();
   attachEntryHandlers();
+}
+
+// Legend filter handlers
+function attachLegendHandlers() {
+  document.querySelectorAll('.legend-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pressed = btn.getAttribute('aria-pressed') === 'true';
+      btn.setAttribute('aria-pressed', String(!pressed));
+      updateFilters();
+    });
+  });
+  // initial filter pass
+  updateFilters();
+}
+
+function updateFilters() {
+  const canonOn = document.querySelector('.legend-filter[data-filter="canon"]').getAttribute('aria-pressed') === 'true';
+  const legendsOn = document.querySelector('.legend-filter[data-filter="legends"]').getAttribute('aria-pressed') === 'true';
+  document.querySelectorAll('.entry-card').forEach(card => {
+    const isCanon = String(card.dataset.canon) === 'true';
+    if ((isCanon && canonOn) || (!isCanon && legendsOn)) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
 }
 
 // Watched state and modal helpers
@@ -669,10 +706,12 @@ function attachEntryHandlers() {
       openModal(s, e);
     });
 
-    // movie checkbox on-card handling (don't open modal when clicked)
+    // movie checkbox handling: stop propagation on input and label, and update watched state
     const cb = card.querySelector('.card-movie-checkbox');
     if (cb) {
       cb.addEventListener('click', (ev) => ev.stopPropagation());
+      const label = card.querySelector('.card-checkbox-inline');
+      if (label) label.addEventListener('click', (ev) => ev.stopPropagation());
       cb.addEventListener('change', () => {
         const s = Number(cb.dataset.section);
         const e = Number(cb.dataset.entry);
