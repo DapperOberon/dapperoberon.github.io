@@ -552,6 +552,9 @@ const TIMELINE_DATA = [
   }
 ];
 
+// saved scroll position while modal is open
+let _savedScrollY = 0;
+
 // Render the timeline
 function render() {
   const app = document.getElementById('app');
@@ -788,6 +791,11 @@ function openModal(sectionIdx, entryIdx) {
   modal.innerHTML = modalHTML;
   modal.classList.remove('hidden');
 
+  // lock background scrolling: save scroll position and fix body
+  _savedScrollY = window.scrollY || window.pageYOffset || 0;
+  document.body.style.top = `-${_savedScrollY}px`;
+  document.body.classList.add('modal-open');
+
   modal.querySelector('.modal-close').addEventListener('click', () => closeModal());
   modal.querySelector('.modal-close-btn').addEventListener('click', () => closeModal());
   modal.querySelector('.modal-backdrop').addEventListener('click', () => closeModal());
@@ -807,10 +815,28 @@ function openModal(sectionIdx, entryIdx) {
 function closeModal() {
   const modal = document.getElementById('modal');
   modal.classList.add('hidden');
+  // remove scroll lock and restore scroll position after modal fade
+  document.body.classList.remove('modal-open');
+  document.body.style.top = '';
   setTimeout(() => {
     modal.innerHTML = '';
+    // restore previous scroll position
+    window.scrollTo(0, _savedScrollY || 0);
+    _savedScrollY = 0;
   }, 300);
 }
 
+// Set CSS viewport height variable for mobile (fixes 100vh issues on iOS)
+function setVh() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+window.addEventListener('resize', setVh);
+window.addEventListener('orientationchange', setVh);
+
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', render);
+document.addEventListener('DOMContentLoaded', () => {
+  setVh();
+  render();
+});
