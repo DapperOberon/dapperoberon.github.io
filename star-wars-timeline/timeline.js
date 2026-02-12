@@ -79,7 +79,7 @@ const TIMELINE_DATA = [
   },
   {
     era: 'Fall of the Jedi',
-    color: '#532814',
+    color: '#D4A574',
     entries: [
       {
         title: 'The Acolyte',
@@ -554,12 +554,15 @@ const TIMELINE_DATA = [
 
 // saved scroll position while modal is open
 let _savedScrollY = 0;
+let _currentModalSection = null;
+let _currentModalEntry = null;
 
 // Render the timeline
 function render() {
   const app = document.getElementById('app');
   
   app.innerHTML = `
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header class="site-hero">
       <div class="header-container">
         <div class="hero-title">
@@ -569,7 +572,7 @@ function render() {
       </div>
     </header>
 
-    <main class="timeline-container">
+    <main class="timeline-container" id="main-content" tabindex="-1">
       <div class="timeline-legend">
         <button class="legend-filter" data-filter="canon" aria-pressed="true">
           <span class="legend-badge canon">Canon</span>
@@ -579,6 +582,10 @@ function render() {
           <span class="legend-badge legends">Legends</span>
           <span class="legend-label">Non-Canon</span>
         </button>
+      </div>
+
+      <div id="no-results" style="display: none; text-align: center; padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1;">
+        <p>No entries match the selected filters.</p>
       </div>
 
       ${TIMELINE_DATA.map((section, idx) => `
@@ -600,12 +607,12 @@ function render() {
                         <svg viewBox="0 0 100 100">
                           <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
                           <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
-                                  stroke-dasharray="${progress * 2.827}" stroke-dashoffset="0" 
+                                stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0" 
                                   style="transition: stroke-dasharray 0.3s ease;" />
                         </svg>
                         <span class="progress-text">${progress}%</span>
                       </div>
-                      <button class="lore-btn">LORE INTEL</button>
+                      <p class="lore-label">Click to view details</p>
                     </div>
                   </div>
                   <div class="entry-content">
@@ -625,7 +632,10 @@ function render() {
     </main>
 
     <footer>
-      <p>© 2026 DapperOberon. Star Wars is a trademark of Lucasfilm Ltd.</p>
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <p>© 2026 DapperOberon. Star Wars is a trademark of Lucasfilm Ltd.</p>
+        <button id="reset-progress-btn" title="Reset all watched progress">Reset Progress</button>
+      </div>
     </footer>
   `;
 
@@ -642,6 +652,7 @@ function render() {
   initializeWatchedState();
   attachLegendHandlers();
   attachEntryHandlers();
+  attachResetButton();
 }
 
 // Legend filter handlers
@@ -660,14 +671,25 @@ function attachLegendHandlers() {
 function updateFilters() {
   const canonOn = document.querySelector('.legend-filter[data-filter="canon"]').getAttribute('aria-pressed') === 'true';
   const legendsOn = document.querySelector('.legend-filter[data-filter="legends"]').getAttribute('aria-pressed') === 'true';
+  let visibleCount = 0;
   document.querySelectorAll('.entry-card').forEach(card => {
     const isCanon = String(card.dataset.canon) === 'true';
     if ((isCanon && canonOn) || (!isCanon && legendsOn)) {
       card.style.display = '';
+      visibleCount++;
     } else {
       card.style.display = 'none';
     }
   });
+  // Hide sections with no visible entries
+  document.querySelectorAll('.timeline-section').forEach(section => {
+    const visibleCards = section.querySelectorAll('.entry-card:not([style*="display: none"])').length;
+    section.style.display = visibleCards === 0 ? 'none' : '';
+  });
+  const noResults = document.getElementById('no-results');
+  if (noResults) {
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
 }
 
 // Watched state and modal helpers
@@ -728,6 +750,27 @@ function attachEntryHandlers() {
   });
 }
 
+function attachResetButton() {
+  const resetBtn = document.getElementById('reset-progress-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Are you sure? This will reset all watched progress. This cannot be undone.')) {
+        TIMELINE_DATA.forEach(section => {
+          section.entries.forEach(entry => {
+            entry._watchedArray = new Array(entry.episodes).fill(false);
+            entry.watched = 0;
+            const key = 'watched_' + entry.title.replace(/\s+/g, '_');
+            try { localStorage.removeItem(key); } catch (e) {}
+            const sectionIdx = TIMELINE_DATA.indexOf(section);
+            const entryIdx = section.entries.indexOf(entry);
+            updateEntryUI(sectionIdx, entryIdx);
+          });
+        });
+      }
+    });
+  }
+}
+
 function saveWatchedState(entry) {
   const key = 'watched_' + entry.title.replace(/\s+/g, '_');
   try { localStorage.setItem(key, JSON.stringify(entry._watchedArray)); } catch (e) {}
@@ -742,7 +785,7 @@ function updateEntryUI(sectionIdx, entryIdx) {
   const watchedCount = entry._watchedArray ? entry._watchedArray.filter(Boolean).length : entry.watched;
   const progress = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
   const progressText = card.querySelector('.progress-text'); if (progressText) progressText.textContent = progress + '%';
-  const progressCircle = card.querySelector('.progress-circle'); if (progressCircle) progressCircle.setAttribute('stroke-dasharray', String(progress * 2.827));
+  const progressCircle = card.querySelector('.progress-circle'); if (progressCircle) progressCircle.setAttribute('stroke-dasharray', `${progress * 2.827}, 282.7`);
   const episodesText = card.querySelector('.entry-episodes'); if (episodesText) episodesText.textContent = `${watchedCount}/${entry.episodes} watched`;
   const movieCheckbox = card.querySelector('.card-movie-checkbox');
   if (movieCheckbox) {
@@ -751,6 +794,9 @@ function updateEntryUI(sectionIdx, entryIdx) {
 }
 
 function openModal(sectionIdx, entryIdx) {
+  // store indices for closeModal to use
+  _currentModalSection = sectionIdx;
+  _currentModalEntry = entryIdx;
   const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
   const modal = document.getElementById('modal');
   const arr = entry._watchedArray || new Array(entry.episodes).fill(false);
@@ -772,6 +818,7 @@ function openModal(sectionIdx, entryIdx) {
 
   const synopsis = entry.synopsis || '';
   const showEpisodes = entry.episodes > 1; // Only show episodes for series/shows
+  const episodeCountText = showEpisodes ? `<p id="modal-episode-count" style="font-size: 0.82rem; color: var(--primary); font-weight: 600; margin-bottom: 0.75rem;">${watchedCount}/${entry.episodes} episode${entry.episodes !== 1 ? 's' : ''} watched</p>` : '';
 
   const modalHTML = `
     <div class="modal-backdrop"></div>
@@ -782,7 +829,7 @@ function openModal(sectionIdx, entryIdx) {
         <h2>${entry.title}</h2>
         <p class="entry-meta">${entry.year} • ${entry.type}</p>
         ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
-        ${showEpisodes ? `<div class="episode-list">${episodesHTML}</div>` : ''}
+        ${showEpisodes ? `${episodeCountText}<div class="episode-list-wrapper"><div class="episode-list">${episodesHTML}</div></div>` : ''}
         <button class="modal-close-btn">Close Archive</button>
       </div>
     </div>
@@ -808,21 +855,30 @@ function openModal(sectionIdx, entryIdx) {
       entry._watchedArray[idx] = cb.checked;
       saveWatchedState(entry);
       updateEntryUI(sectionIdx, entryIdx);
+      // Update the modal episode count
+      const updatedCount = entry._watchedArray.filter(Boolean).length;
+      const countEl = modal.querySelector('#modal-episode-count');
+      if (countEl) {
+        countEl.textContent = `${updatedCount}/${entry.episodes} episode${entry.episodes !== 1 ? 's' : ''} watched`;
+      }
     });
   });
 }
 
 function closeModal() {
   const modal = document.getElementById('modal');
+  const scrollY = _savedScrollY || 0;
   modal.classList.add('hidden');
-  // remove scroll lock and restore scroll position after modal fade
-  document.body.classList.remove('modal-open');
-  document.body.style.top = '';
+  // Unlock scroll after animation completes, keep modal in DOM for animation
   setTimeout(() => {
-    modal.innerHTML = '';
-    // restore previous scroll position
-    window.scrollTo(0, _savedScrollY || 0);
+    document.body.classList.remove('modal-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
     _savedScrollY = 0;
+    // update card UI to reflect any watched changes
+    if (_currentModalSection !== null && _currentModalEntry !== null) {
+      updateEntryUI(_currentModalSection, _currentModalEntry);
+    }
   }, 300);
 }
 
