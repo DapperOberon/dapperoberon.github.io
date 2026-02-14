@@ -557,9 +557,48 @@ let _savedScrollY = 0;
 let _currentModalSection = null;
 let _currentModalEntry = null;
 
+// Filter state
+let filters = {
+  canon: true,
+  legends: true,
+  search: '',
+  type: 'all', // 'all', 'films', 'shows'
+  progress: 'all' // 'all', 'not-started', 'in-progress', 'completed'
+};
+
+// Calculate statistics
+function calculateStats() {
+  let totalEpisodes = 0;
+  let watchedEpisodes = 0;
+  let completedShows = 0;
+  let totalShows = 0;
+
+  TIMELINE_DATA.forEach(section => {
+    section.entries.forEach(entry => {
+      totalEpisodes += entry.episodes;
+      watchedEpisodes += entry.watched;
+      totalShows++;
+      if (entry.watched === entry.episodes && entry.episodes > 0) {
+        completedShows++;
+      }
+    });
+  });
+
+  const overallProgress = totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
+
+  return {
+    overallProgress,
+    watchedEpisodes,
+    completedShows,
+    totalShows,
+    totalEpisodes
+  };
+}
+
 // Render the timeline
 function render() {
   const app = document.getElementById('app');
+  const stats = calculateStats();
   
   app.innerHTML = `
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -570,27 +609,89 @@ function render() {
           <p class="hero-sub">A comprehensive chronological guide to the Star Wars universe. Track your progress across the stars.</p>
         </div>
       </div>
+      
+      <!-- Statistics Section -->
+      <div class="stats-container">
+        <div class="stat-box">
+          <div class="stat-value">${stats.overallProgress}%</div>
+          <div class="stat-label">OVERALL PROGRESS</div>
+          <div class="stat-progress">
+            <div class="stat-progress-bar" style="width: ${stats.overallProgress}%"></div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.watchedEpisodes}</div>
+          <div class="stat-label">EPISODES WATCHED</div>
+          <div class="stat-progress">
+            <div class="stat-progress-bar" style="width: ${(stats.watchedEpisodes / stats.totalEpisodes * 100)}%"></div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.completedShows}/${stats.totalShows}</div>
+          <div class="stat-label">COMPLETED SHOWS</div>
+          <div class="stat-progress">
+            <div class="stat-progress-bar" style="width: ${(stats.completedShows / stats.totalShows * 100)}%"></div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.totalEpisodes}</div>
+          <div class="stat-label">TOTAL EPISODES</div>
+        </div>
+      </div>
+      
+      <!-- Search and Filters -->
+      <div class="filters-container">
+        <div class="search-wrapper">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." />
+        </div>
+        
+        <div class="filter-group">
+          <button class="filter-btn active" data-canon-filter="all">All</button>
+          <button class="filter-btn" data-canon-filter="canon">Canon</button>
+          <button class="filter-btn" data-canon-filter="legends">Legends</button>
+        </div>
+        
+        <div class="filter-group">
+          <button class="filter-btn active" data-type-filter="all">All Types</button>
+          <button class="filter-btn" data-type-filter="films">Films</button>
+          <button class="filter-btn" data-type-filter="shows">Shows</button>
+        </div>
+      </div>
+      
+      <div class="progress-filters">
+        <button class="progress-filter-btn active" data-progress-filter="all">All Progress</button>
+        <button class="progress-filter-btn" data-progress-filter="not-started">Not Started</button>
+        <button class="progress-filter-btn" data-progress-filter="in-progress">In Progress</button>
+        <button class="progress-filter-btn" data-progress-filter="completed">Completed</button>
+      </div>
+      
+      <!-- Legend -->
+      <div class="timeline-legend">
+        <div class="legend-item">
+          <span class="legend-badge canon">CANON</span>
+          <span class="legend-text">Official Continuity</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge legends">LEGENDS</span>
+          <span class="legend-text">Non-Canon</span>
+        </div>
+      </div>
     </header>
 
     <main class="timeline-container" id="main-content" tabindex="-1">
-      <div class="timeline-legend">
-        <button class="legend-filter" data-filter="canon" aria-pressed="true">
-          <span class="legend-badge canon">Canon</span>
-          <span class="legend-label">Official Continuity</span>
-        </button>
-        <button class="legend-filter" data-filter="legends" aria-pressed="true">
-          <span class="legend-badge legends">Legends</span>
-          <span class="legend-label">Non-Canon</span>
-        </button>
-      </div>
-
       <div id="no-results" style="display: none; text-align: center; padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1;">
         <p>No entries match the selected filters.</p>
       </div>
 
-      ${TIMELINE_DATA.map((section, idx) => `
+      ${TIMELINE_DATA.map((section, idx) => {
+        const itemCount = section.entries.length;
+        const itemLabel = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+        return `
         <section class="timeline-section" style="--section-color: ${section.color}">
-          <h2>${section.era}</h2>
+          <h2>${section.era} <span class="era-count">${itemLabel}</span></h2>
           <div class="entries-grid">
             ${section.entries.map((entry, entryIdx) => {
               const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
@@ -628,7 +729,8 @@ function render() {
             }).join('')}
           </div>
         </section>
-      `).join('')}
+      `;
+      }).join('')}
     </main>
 
     <footer>
@@ -650,42 +752,124 @@ function render() {
 
   // initialize watched arrays and attach click handlers
   initializeWatchedState();
-  attachLegendHandlers();
+  attachFilterHandlers();
   attachEntryHandlers();
   attachResetButton();
 }
 
-// Legend filter handlers
-function attachLegendHandlers() {
-  document.querySelectorAll('.legend-filter').forEach(btn => {
+// Filter handlers
+function attachFilterHandlers() {
+  // Search input
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      filters.search = e.target.value.toLowerCase();
+      updateFilters();
+    });
+  }
+  
+  // Canon/Legends filters
+  document.querySelectorAll('[data-canon-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const pressed = btn.getAttribute('aria-pressed') === 'true';
-      btn.setAttribute('aria-pressed', String(!pressed));
+      document.querySelectorAll('[data-canon-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.canonFilter;
+      if (filter === 'all') {
+        filters.canon = true;
+        filters.legends = true;
+      } else if (filter === 'canon') {
+        filters.canon = true;
+        filters.legends = false;
+      } else if (filter === 'legends') {
+        filters.canon = false;
+        filters.legends = true;
+      }
       updateFilters();
     });
   });
+  
+  // Type filters
+  document.querySelectorAll('[data-type-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-type-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filters.type = btn.dataset.typeFilter;
+      updateFilters();
+    });
+  });
+  
+  // Progress filters
+  document.querySelectorAll('[data-progress-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-progress-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filters.progress = btn.dataset.progressFilter;
+      updateFilters();
+    });
+  });
+  
   // initial filter pass
   updateFilters();
 }
 
 function updateFilters() {
-  const canonOn = document.querySelector('.legend-filter[data-filter="canon"]').getAttribute('aria-pressed') === 'true';
-  const legendsOn = document.querySelector('.legend-filter[data-filter="legends"]').getAttribute('aria-pressed') === 'true';
   let visibleCount = 0;
+  
   document.querySelectorAll('.entry-card').forEach(card => {
-    const isCanon = String(card.dataset.canon) === 'true';
-    if ((isCanon && canonOn) || (!isCanon && legendsOn)) {
+    const sectionIdx = parseInt(card.dataset.section);
+    const entryIdx = parseInt(card.dataset.entry);
+    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
+    const isCanon = card.dataset.canon === 'true';
+    
+    // Canon/Legends filter
+    let canonMatch = false;
+    if (filters.canon && filters.legends) {
+      canonMatch = true;
+    } else if (filters.canon && isCanon) {
+      canonMatch = true;
+    } else if (filters.legends && !isCanon) {
+      canonMatch = true;
+    }
+    
+    // Search filter
+    const searchText = filters.search;
+    const searchMatch = !searchText || 
+      entry.title.toLowerCase().includes(searchText) ||
+      entry.year.toLowerCase().includes(searchText) ||
+      entry.type.toLowerCase().includes(searchText);
+    
+    // Type filter
+    let typeMatch = true;
+    if (filters.type === 'films') {
+      typeMatch = entry.type.toLowerCase().includes('film');
+    } else if (filters.type === 'shows') {
+      typeMatch = entry.type.toLowerCase().includes('show');
+    }
+    
+    // Progress filter
+    let progressMatch = true;
+    if (filters.progress === 'not-started') {
+      progressMatch = entry.watched === 0;
+    } else if (filters.progress === 'in-progress') {
+      progressMatch = entry.watched > 0 && entry.watched < entry.episodes;
+    } else if (filters.progress === 'completed') {
+      progressMatch = entry.watched === entry.episodes && entry.episodes > 0;
+    }
+    
+    if (canonMatch && searchMatch && typeMatch && progressMatch) {
       card.style.display = '';
       visibleCount++;
     } else {
       card.style.display = 'none';
     }
   });
+  
   // Hide sections with no visible entries
   document.querySelectorAll('.timeline-section').forEach(section => {
     const visibleCards = section.querySelectorAll('.entry-card:not([style*="display: none"])').length;
     section.style.display = visibleCards === 0 ? 'none' : '';
   });
+  
   const noResults = document.getElementById('no-results');
   if (noResults) {
     noResults.style.display = visibleCount === 0 ? 'block' : 'none';
@@ -791,6 +975,29 @@ function updateEntryUI(sectionIdx, entryIdx) {
   if (movieCheckbox) {
     movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
   }
+  
+  // Update stats in header
+  updateStats();
+}
+
+function updateStats() {
+  const stats = calculateStats();
+  const statBoxes = document.querySelectorAll('.stat-box');
+  if (statBoxes[0]) {
+    statBoxes[0].querySelector('.stat-value').textContent = `${stats.overallProgress}%`;
+    const progressBar = statBoxes[0].querySelector('.stat-progress-bar');
+    if (progressBar) progressBar.style.width = `${stats.overallProgress}%`;
+  }
+  if (statBoxes[1]) {
+    statBoxes[1].querySelector('.stat-value').textContent = stats.watchedEpisodes;
+    const progressBar = statBoxes[1].querySelector('.stat-progress-bar');
+    if (progressBar) progressBar.style.width = `${(stats.watchedEpisodes / stats.totalEpisodes * 100)}%`;
+  }
+  if (statBoxes[2]) {
+    statBoxes[2].querySelector('.stat-value').textContent = `${stats.completedShows}/${stats.totalShows}`;
+    const progressBar = statBoxes[2].querySelector('.stat-progress-bar');
+    if (progressBar) progressBar.style.width = `${(stats.completedShows / stats.totalShows * 100)}%`;
+  }
 }
 
 function openModal(sectionIdx, entryIdx) {
@@ -818,25 +1025,46 @@ function openModal(sectionIdx, entryIdx) {
 
   const synopsis = entry.synopsis || '';
   const showEpisodes = entry.episodes > 1; // Only show episodes for series/shows
-  const episodeCountText = showEpisodes ? `<p id="modal-episode-count" style="font-size: 0.82rem; color: var(--primary); font-weight: 600; margin-bottom: 0.75rem;">${watchedCount}/${entry.episodes} episode${entry.episodes !== 1 ? 's' : ''} watched</p>` : '';
+  const progressPercent = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
+  const episodeCountText = showEpisodes ? `${watchedCount}/${entry.episodes} watched (${progressPercent}%)` : '';
 
   const modalHTML = `
     <div class="modal-backdrop"></div>
     <div class="modal-content">
-      <button class="modal-close" aria-label="Close">×</button>
+      <button class="modal-close" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
       <div class="modal-right">
         <h2>${entry.title}</h2>
-        <p class="entry-meta">${entry.year} • ${entry.type}</p>
+        <div class="modal-meta">
+          <span class="modal-meta-text">${entry.year} • ${entry.type}</span>
+          <span class="modal-badge ${entry.canon ? 'canon' : 'legends'}">${entry.canon ? 'CANON' : 'LEGENDS'}</span>
+        </div>
         ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
-        ${showEpisodes ? `${episodeCountText}<div class="episode-list-wrapper"><div class="episode-list">${episodesHTML}</div></div>` : ''}
-        <button class="modal-close-btn">Close Archive</button>
+        ${showEpisodes ? `
+          <div class="modal-episodes">
+            <div class="modal-episodes-header">
+              <span class="modal-episodes-title">Episodes</span>
+              <span id="modal-episode-count" class="modal-episodes-count">${episodeCountText}</span>
+            </div>
+            <div class="episode-list-wrapper"><div class="episode-list">${episodesHTML}</div></div>
+          </div>
+        ` : ''}
+        <div class="modal-actions">
+          ${showEpisodes ? `<button class="modal-primary-btn" id="mark-all-watched">Mark All Watched</button>` : ''}
+          <button class="modal-close-btn">Close</button>
+        </div>
       </div>
     </div>
   `;
   
   modal.innerHTML = modalHTML;
   modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
 
   // lock background scrolling: save scroll position and fix body
   _savedScrollY = window.scrollY || window.pageYOffset || 0;
@@ -847,6 +1075,42 @@ function openModal(sectionIdx, entryIdx) {
   modal.querySelector('.modal-close-btn').addEventListener('click', () => closeModal());
   modal.querySelector('.modal-backdrop').addEventListener('click', () => closeModal());
 
+  const updateModalCount = () => {
+    const updatedCount = entry._watchedArray.filter(Boolean).length;
+    const percent = entry.episodes > 0 ? Math.round((updatedCount / entry.episodes) * 100) : 0;
+    const countEl = modal.querySelector('#modal-episode-count');
+    if (countEl) {
+      countEl.textContent = `${updatedCount}/${entry.episodes} watched (${percent}%)`;
+    }
+    
+    // Update button text based on state
+    const markAllBtn = modal.querySelector('#mark-all-watched');
+    if (markAllBtn) {
+      const allChecked = entry._watchedArray.every(Boolean);
+      markAllBtn.textContent = allChecked ? 'Unmark All' : 'Mark All Watched';
+    }
+  };
+
+  const markAllBtn = modal.querySelector('#mark-all-watched');
+  if (markAllBtn) {
+    markAllBtn.addEventListener('click', () => {
+      const allChecked = entry._watchedArray.every(Boolean);
+      const newState = !allChecked;
+      
+      entry._watchedArray = new Array(entry.episodes).fill(newState);
+      modal.querySelectorAll('.episode-item input[type="checkbox"]').forEach((cb, idx) => {
+        cb.checked = newState;
+        entry._watchedArray[idx] = newState;
+      });
+      saveWatchedState(entry);
+      updateEntryUI(sectionIdx, entryIdx);
+      updateModalCount();
+    });
+    
+    // Set initial button text
+    updateModalCount();
+  }
+
   // Handle checkboxes for series/shows
   const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
   checkboxes.forEach(cb => {
@@ -856,30 +1120,28 @@ function openModal(sectionIdx, entryIdx) {
       saveWatchedState(entry);
       updateEntryUI(sectionIdx, entryIdx);
       // Update the modal episode count
-      const updatedCount = entry._watchedArray.filter(Boolean).length;
-      const countEl = modal.querySelector('#modal-episode-count');
-      if (countEl) {
-        countEl.textContent = `${updatedCount}/${entry.episodes} episode${entry.episodes !== 1 ? 's' : ''} watched`;
-      }
+      updateModalCount();
     });
   });
 }
 
 function closeModal() {
   const modal = document.getElementById('modal');
+  if (!modal || modal.classList.contains('hidden')) return;
+  
   const scrollY = _savedScrollY || 0;
   modal.classList.add('hidden');
-  // Unlock scroll after animation completes, keep modal in DOM for animation
-  setTimeout(() => {
-    document.body.classList.remove('modal-open');
-    document.body.style.top = '';
-    window.scrollTo(0, scrollY);
-    _savedScrollY = 0;
-    // update card UI to reflect any watched changes
-    if (_currentModalSection !== null && _currentModalEntry !== null) {
-      updateEntryUI(_currentModalSection, _currentModalEntry);
-    }
-  }, 300);
+  modal.setAttribute('aria-hidden', 'true');
+  
+  document.body.classList.remove('modal-open');
+  document.body.style.top = '';
+  window.scrollTo(0, scrollY);
+  _savedScrollY = 0;
+  
+  // update card UI to reflect any watched changes
+  if (_currentModalSection !== null && _currentModalEntry !== null) {
+    updateEntryUI(_currentModalSection, _currentModalEntry);
+  }
 }
 
 // Set CSS viewport height variable for mobile (fixes 100vh issues on iOS)
