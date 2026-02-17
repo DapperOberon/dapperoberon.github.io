@@ -833,6 +833,7 @@ footer p {
   .filter-group {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .filter-group-label {
@@ -841,7 +842,8 @@ footer p {
   }
 
   .filter-btn {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: min-content;
     padding: 0.65rem 0.75rem;
     font-size: 0.75rem;
   }
