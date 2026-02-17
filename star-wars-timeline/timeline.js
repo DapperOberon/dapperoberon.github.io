@@ -1,658 +1,43 @@
-// Star Wars Timeline Data with Posters
-const TIMELINE_DATA = [
-  {
-    era: 'The High Republic',
-    color: '#F5C563',
-    entries: [
-      {
-        title: 'Young Jedi Adventures',
-        year: '232 BBY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/young-jedi-adventures-poster.jpg',
-        episodes: 55,
-        watched: 0,
-        releaseYear: '2023-2025',
-        seasons: 3,
-        synopsis: 'The young Jedi take on new missions across the galaxy as they try to stop the rise of the pirates!',
-        episodeDetails: [
-          // S1 (25 episodes)
-          { title: 'S1.E1 - The Young Jedi / Yoda\'s Mission', time: '232 BBY' },
-          { title: 'S1.E2 - Nash\'s Race Day / The Lost Jedi Ship', time: '232 BBY' },
-          { title: 'S1.E3 - Get Well Nubs / The Junk Giant', time: '232 BBY' },
-          { title: 'S1.E4 - Lys and the Snowy Mountain Rescue / Attack of the Training Droids', time: '232 BBY' },
-          { title: 'S1.E5 - The Jellyfruit Pursuit / Creature Safari', time: '232 BBY' },
-          { title: 'S1.E6 - Squadron / Forest Defenders', time: '232 BBY' },
-          { title: 'S1.E7 - The Jedi and the Thief / The Missing Kibbin', time: '232 BBY' },
-          { title: 'S1.E8 - The Girl and her Gargantua / The Show Must Go On', time: '232 BBY' },
-          { title: 'S1.E9 - The Princess and the Jedi / Kai\'s Bad Day', time: '232 BBY' },
-          { title: 'S1.E10 - Visitor\'s Day / The Growing Green Danger', time: '232 BBY' },
-          { title: 'S1.E11 - The Ganguls / Bad Egg', time: '232 BBY' },
-          { title: 'S1.E12 - Off the Rails / The Thieves of Tharnaka', time: '232 BBY' },
-          { title: 'S1.E13 - Tree Troubles / Big Brother\'s Bounty', time: '232 BBY' },
-          { title: 'S1.E14 - Charhound Chase / Creature Comforts', time: '232 BBY' },
-          { title: 'S1.E15 - An Adventure with Yoda / The Talon Takeover', time: '232 BBY' },
-          { title: 'S1.E16 - Mystery of the Opal Cave / Clash', time: '232 BBY' },
-          { title: 'S1.E17 - Stuck in the Muck / Junkyard Sleepover', time: '232 BBY' },
-          { title: 'S1.E18 - The Great Leaf Glide / The Harvest Feast', time: '232 BBY' },
-          { title: 'S1.E19 - Life Day / Raxlo Strikes Back', time: '232 BBY' },
-          { title: 'S1.E20 - Aftershock / Feather Frenzy', time: '232 BBY' },
-          { title: 'S1.E21 - Best Friends / Happy Trails, Nubs', time: '232 BBY' },
-          { title: 'S1.E22 - The Tale of Short Spire / The Team Up', time: '232 BBY' },
-          { title: 'S1.E23 - The Caves of Batuu / Finders Keepers', time: '232 BBY' },
-          { title: 'S1.E24 - The Starship Show / Nash\'s Super Busy Day', time: '232 BBY' },
-          { title: 'S1.E25 - The Prince and the Pirate', time: '232 BBY' },
-          // S2 (23 episodes)
-          { title: 'S2.E1 - Heroes and Hotshots / A Jedi or a Pirate', time: '232 BBY' },
-          { title: 'S2.E2 - The Rustler Roundup / A New Discovery', time: '232 BBY' },
-          { title: 'S2.E3 - A Pirate\'s Pet / The Secret Ship', time: '232 BBY' },
-          { title: 'S2.E4 - Nub\'s Big Mistake / The Jedi Rescue', time: '232 BBY' },
-          { title: 'S2.E5 - Terror of Tenoo / The Prince of Masks', time: '232 BBY' },
-          { title: 'S2.E6 - Battle for the Band / Uprooted', time: '232 BBY' },
-          { title: 'S2.E7 - Mine and Ours / The Andraven Circuit', time: '232 BBY' },
-          { title: 'S2.E8 - The Great Gomgourd Quest / A Sticy Situation', time: '232 BBY' },
-          { title: 'S2.E9 - The Missing Life Day Feast / The Lost Treasure of Tenoo', time: '232 BBY' },
-          { title: 'S2.E10 - The Wild Aklyrr / Lys\' Lost Lightsaber', time: '232 BBY' },
-          { title: 'S2.E11 - Tower Run / The Jumping Jetpack', time: '232 BBY' },
-          { title: 'S2.E12 - Unmasked', time: '232 BBY' },
-          { title: 'S2.E13 - Just Like Wes / Raxlo to the Rescue', time: '232 BBY' },
-          { title: 'S2.E14 - The Helpful Harvester / Lost Little Droid', time: '232 BBY' },
-          { title: 'S2.E15 - Tenoo\'s Fastest / Home Sweet Temple', time: '232 BBY' },
-          { title: 'S2.E16 - The Firehawk Feud / The Chop Shop Calamity', time: '232 BBY' },
-          { title: 'S2.E17 - Big Pooba Problems / Best Bounty Buddies', time: '232 BBY' },
-          { title: 'S2.E18 - The Rainy Day Beast / Upgraded', time: '232 BBY' },
-          { title: 'S2.E19 - Journey to the Bracca Badlands / The Search for the Missing Dunnels', time: '232 BBY' },
-          { title: 'S2.E20 - The Spaceport Setback / The Mission Mixup', time: '232 BBY' },
-          { title: 'S2.E21 - Yoda Rescue / Fossil Hunt', time: '232 BBY' },
-          { title: 'S2.E22 - A Mission to Remember / The Bounty Hunter and the Thief', time: '232 BBY' },
-          { title: 'S2.E23 - The Battle of Tenoo', time: '232 BBY' },
-          // S3 (7 episodes)
-          { title: 'S3.E1 - The New Droid Friends / Batuu Bonanza', time: '232 BBY' },
-          { title: 'S3.E2 - Music Mayhem / The Night Lights of Tenoo', time: '232 BBY' },
-          { title: 'S3.E3 - Journey to the Bottom of Naboo / Speeder Surprise', time: '232 BBY' },
-          { title: 'S3.E4 - Scrapping for a Song / Bell and the Band', time: '232 BBY' },
-          { title: 'S3.E5 - To Do Good / Nubs and the Bumbling Bandits', time: '232 BBY' },
-          { title: 'S3.E6 - Apexx Awakens / Harvester Madness', time: '232 BBY' },
-          { title: 'S3.E7 - Making Friends', time: '232 BBY' }
-        ],
-        _watchedArray: Array(55).fill(false)
-      }
-    ]
-  },
-  {
-    era: 'Fall of the Jedi',
-    color: '#E5B889',
-    entries: [
-      {
-        title: 'The Acolyte',
-        year: '132 BBY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/acolyte-poster.jpg',
-        episodes: 8,
-        watched: 8,
-        releaseYear: '2024-2024',
-        seasons: 1,
-        synopsis: 'An investigation into a crime spree pits a Jedi Master against a dangerous warrior from his past.',
-        episodeDetails: [
-          { title: 'S1.E1 - Lost / Found', time: '132 BBY' },
-          { title: 'S1.E2 - Revenge / Justice', time: '132 BBY' },
-          { title: 'S1.E3 - Destiny', time: '132 BBY' },
-          { title: 'S1.E4 - Day', time: '132 BBY' },
-          { title: 'S1.E5 - Night', time: '132 BBY' },
-          { title: 'S1.E6 - Teach / Corrupt', time: '132 BBY' },
-          { title: 'S1.E7 - Choice', time: '132 BBY' },
-          { title: 'S1.E8 - The Acolyte', time: '132 BBY' }
-        ],
-        _watchedArray: [true, true, true, true, true, true, true, true]
-      },
-      {
-        title: 'Tales of the Jedi',
-        year: '68-19 BBY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/tales-of-the-jedi.jpg',
-        episodes: 6,
-        watched: 3,
-        releaseYear: '2022-2022',
-        seasons: 1,
-        synopsis: 'Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.',
-        episodeDetails: [
-          { title: 'Life and Death', time: '36-35 BBY' },
-          { title: 'Justice', time: 'between 68 and 68 BBY' },
-          { title: 'Choices', time: 'between 50 and 42 BBY' },
-          { title: 'The Sith Lord', time: '32 BBY' },
-          { title: 'Practice Makes Perfect', time: 'between 21 and 19 BBY (the ending takes place parallel to The Clone Wars S7E12).' },
-          { title: 'Resolve', time: 'between 18 and 5 BBY (the beginning takes place parallel to Revenge of the Sith in 19 BBY)' }
-        ],
-        _watchedArray: [true, true, true, false, false, false]
-      },
-      {
-        title: 'The Phantom Menace',
-        year: '32 BBY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/the-phantom-menace-poster.jpg',
-        episodes: 1,
-        watched: 1,
-        releaseYear: '1999',
-        synopsis: 'Jedi discover Anakin Skywalker, a boy unusually strong in the force.',
-        episodeDetails: [
-          { title: 'Star Wars: Episode I - The Phantom Menace', time: '32 BBY' }
-        ],
-        _watchedArray: [true]
-      },
-      {
-        title: 'Attack of the Clones',
-        year: '22 BBY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/attack-of-the-clones-poster.jpg',
-        episodes: 1,
-        watched: 1,
-        releaseYear: '2002',
-        synopsis: 'Young Anakin and Padmé fall in love as galactic war looms.',
-        episodeDetails: [
-          { title: 'Star Wars: Episode II - Attack of the Clones', time: '22 BBY' }
-        ],
-        _watchedArray: [true]
-      },
-      {
-        title: 'Clone Wars',
-        year: '22-19 BBY',
-        type: 'Animated Show',
-        canon: false,
-        poster: './posters/clone-wars-poster.jpg',
-        episodes: 25,
-        watched: 21,
-        releaseYear: '2003-2005',
-        seasons: 2,
-        synopsis: 'Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.',
-        episodeDetails: [
-          { title: 'Volume 1 Chapter 6', time: '22 BBY (Disney+ S1.E1 at 16:24-19:43)' },
-          { title: 'Volume 1 Chapter 7', time: '22 BBY (Disney+ S1.E1 at 19:44-22:58)' },
-          { title: 'Volume 1 Chapter 1', time: '22 BBY (Disney+ S1.E1 at 00:00-03:30)' },
-          { title: 'Volume 1 Chapter 2', time: '22 BBY (Disney+ S1.E1 at 03:31-06:40)' },
-          { title: 'Volume 1 Chapter 3', time: '22 BBY (Disney+ S1.E1 at 06:41-09:58)' },
-          { title: 'Volume 1 Chapter 4', time: '22 BBY (Disney+ S1.E1 at 13:07-16:23)' },
-          { title: 'Volume 1 Chapter 12', time: '22 BBY (Disney+ S1.E1 at 35:45-38:57)' },
-          { title: 'Volume 1 Chapter 13', time: '22 BBY (Disney+ S1.E1 at 38:58-42:07)' },
-          { title: 'Volume 1 Chapter 14', time: '22 BBY (Disney+ S1.E1 at 42:08-46:27)' },
-          { title: 'Volume 1 Chapter 15', time: '22 BBY (Disney+ S1.E1 at 46:28-48:50)' },
-          { title: 'Volume 1 Chapter 16', time: '22 BBY (Disney+ S1.E1 at 48:51-52:07)' },
-          { title: 'Volume 1 Chapter 5', time: '22 BBY (Disney+ S1.E1 at 09:59-13:06)' },
-          { title: 'Volume 1 Chapter 8', time: '22 BBY (Disney+ S1.E1 at 22:59-25:59)' },
-          { title: 'Volume 1 Chapter 9', time: '22 BBY (Disney+ S1.E1 at 26:00-29:06)' },
-          { title: 'Volume 1 Chapter 10', time: '22 BBY (Disney+ S1.E1 at 29:07-32:22)' },
-          { title: 'Volume 1 Chapter 11', time: '22 BBY (Disney+ S1.E1 at 32:23-38:56)' },
-          { title: 'Volume 1 Chapter 17', time: '22 BBY (Disney+ S1.E1 at 52:08-55:20)' },
-          { title: 'Volume 1 Chapter 18', time: '22 BBY (Disney+ S1.E1 at 55:21-58:29)' },
-          { title: 'Volume 1 Chapter 19', time: '22 BBY (Disney+ S1.E1 at 58:30-1:01:30)' },
-          { title: 'Volume 1 Chapter 20', time: '22 BBY (Disney+ S1.E1 at 1:01:31-end)' },
-          { title: 'Volume 2 Chapter 21', time: '22 BBY (Disney+ S1.E2 at 00:00-12:47)' },
-          { title: 'Volume 2 Chapter 22', time: '19 BBY (Disney+ S1.E2 at 12:48-15:25)' },
-          { title: 'Volume 2 Chapter 23', time: '19 BBY (Disney+ S1.E2 at 15:26-33:20)' },
-          { title: 'Volume 2 Chapter 24', time: '19 BBY (Disney+ S1.E2 at 33:21-50:00)' },
-          { title: 'Volume 2 Chapter 25', time: '19 BBY (Disney+ S1.E2 at 50:00-end, Legends version of the events leading into Star Wars Ep. 3)' }
-        ],
-        _watchedArray: [...Array(21).fill(true), ...Array(4).fill(false)]
-      },
-      {
-        title: 'The Clone Wars',
-        year: '22-19 BBY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/the-clone-wars-poster.jpg',
-        episodes: 133,
-        watched: 98,
-        releaseYear: '2008-2020',
-        seasons: 7,
-        episodeDetails: [
-          // S1 (22 episodes, all watched)
-          ...Array.from({length: 22}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
-          // S2 (22 episodes, all watched)
-          ...Array.from({length: 22}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' })),
-          // S3 (22 episodes, all watched)
-          ...Array.from({length: 22}, (_, i) => ({ title: `S3.E${i + 1}`, time: '' })),
-          // S4 (22 episodes, all watched)
-          ...Array.from({length: 22}, (_, i) => ({ title: `S4.E${i + 1}`, time: '' })),
-          // S5 (20 episodes, first 10 watched)
-          ...Array.from({length: 20}, (_, i) => ({ title: `S5.E${i + 1}`, time: '' })),
-          // S6 (13 episodes, none watched)
-          ...Array.from({length: 13}, (_, i) => ({ title: `S6.E${i + 1}`, time: '' })),
-          // S7 (12 episodes, none watched)
-          ...Array.from({length: 12}, (_, i) => ({ title: `S7.E${i + 1}`, time: '' }))
-        ],
-        _watchedArray: [
-          ...Array(88).fill(true),  // S1-4 all watched
-          ...Array(10).fill(true),  // S5 first 10 watched
-          ...Array(10).fill(false), // S5 remaining 10 not watched
-          ...Array(13).fill(false), // S6 not watched
-          ...Array(12).fill(false)  // S7 not watched
-        ]
-      },
-      {
-        title: 'The Clone Wars',
-        year: '22 BBY',
-        type: 'Animated Film',
-        canon: true,
-        poster: './posters/the-clone-wars-film-poster.jpg',
-        episodes: 1,
-        watched: 1,
-        releaseYear: '2008',
-        episodeDetails: [
-          { title: 'The Clone Wars', time: '22 BBY' }
-        ],
-        _watchedArray: [true]
-      }
-    ]
-  },
-  {
-    era: 'Reign of the Empire',
-    color: '#fff',
-    entries: [
-      {
-        title: 'Revenge of the Sith',
-        year: '19 BBY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/revenge-of-the-sith-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '2005',
-        episodeDetails: [
-          { title: 'Star Wars: Episode III - Revenge of the Sith', time: '' }
-        ],
-        _watchedArray: [false]
-      },
-      {
-        title: 'Tales of the Empire',
-        year: '20 BBY - 9 ABY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/tales-of-the-empire.jpg',
-        episodes: 6,
-        watched: 0,
-        releaseYear: '2024-2024',
-        seasons: 1,
-        episodeDetails: [
-          { title: 'Ident', time: '' },
-          { title: 'The Path', time: '' },
-          { title: 'Resolve', time: '' },
-          { title: 'The Duel', time: '' },
-          { title: 'The Sisters', time: '' },
-          { title: 'The Jedi', time: '' }
-        ],
-        _watchedArray: [false, false, false, false, false, false]
-      },
-      {
-        title: 'Tales of the Underworld',
-        year: '62-18 BBY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/tales-of-the-underworld-poster.jpg',
-        episodes: 6,
-        watched: 3,
-        releaseYear: '2025-2025',
-        seasons: 1,
-        episodeDetails: [
-          { title: 'A Way Forward', time: '' },
-          { title: 'Friends', time: '' },
-          { title: 'One Warrior to Another', time: '' },
-          { title: 'The Good Life', time: '' },
-          { title: 'A Good Turn', time: '' },
-          { title: 'One Good Deed', time: '' }
-        ],
-        _watchedArray: [false, false, false, true, true, true]
-      },
-      {
-        title: 'The Bad Batch',
-        year: '19-18 BBY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/the-bad-batch-poster.jpg',
-        episodes: 47,
-        watched: 0,
-        releaseYear: '2021-2024',
-        seasons: 3,
-        episodeDetails: [
-          ...Array.from({length: 16}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
-          ...Array.from({length: 15}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' })),
-          ...Array.from({length: 16}, (_, i) => ({ title: `S3.E${i + 1}`, time: '' }))
-        ],
-        _watchedArray: Array(47).fill(false)
-      },
-      {
-        title: 'Star Wars: Droids',
-        year: '15 BBY',
-        type: 'Animated Show',
-        canon: false,
-        poster: './posters/droids-poster.jpg',
-        episodes: 45,
-        watched: 0,
-        releaseYear: '1985-1986',
-        seasons: 1,
-        episodeDetails: Array.from({length: 45}, (_, i) => ({ title: `Episode ${i + 1}`, time: '' })),
-        _watchedArray: Array(45).fill(false)
-      },
-      {
-        title: 'Solo: A Star Wars Story',
-        year: '10 BBY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/solo-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '2018',
-        episodeDetails: [
-          { title: 'Solo: A Star Wars Story', time: '' }
-        ],
-        _watchedArray: [false]
-      },
-      {
-        title: 'Obi-Wan Kenobi',
-        year: '9 BBY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/obi-wan-kenobi-poster.jpg',
-        episodes: 6,
-        watched: 0,
-        releaseYear: '2022-2022',
-        seasons: 1,
-        episodeDetails: [
-          { title: 'E1', time: '' },
-          { title: 'E2', time: '' },
-          { title: 'E3', time: '' },
-          { title: 'E4', time: '' },
-          { title: 'E5', time: '' },
-          { title: 'E6', time: '' }
-        ],
-        _watchedArray: [false, false, false, false, false, false]
-      },
-      {
-        title: 'Andor',
-        year: '5-1 BBY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/andor-poster.jpg',
-        episodes: 24,
-        watched: 0,
-        releaseYear: '2022-2025',
-        seasons: 2,
-        episodeDetails: [
-          ...Array.from({length: 12}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
-          ...Array.from({length: 12}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' }))
-        ],
-        _watchedArray: Array(24).fill(false)
-      },
-      {
-        title: 'Star Wars Rebels',
-        year: '5-1 BBY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/rebels-poster.jpg',
-        episodes: 75,
-        watched: 0,
-        releaseYear: '2014-2018',
-        seasons: 4,
-        episodeDetails: [
-          ...Array.from({length: 16}, (_, i) => ({ title: `S1.E${i + 1}`, time: '' })),
-          ...Array.from({length: 22}, (_, i) => ({ title: `S2.E${i + 1}`, time: '' })),
-          ...Array.from({length: 22}, (_, i) => ({ title: `S3.E${i + 1}`, time: '' })),
-          ...Array.from({length: 15}, (_, i) => ({ title: `S4.E${i + 1}`, time: '' }))
-        ],
-        _watchedArray: Array(75).fill(false)
-      }
-    ]
-  },
-  {
-    era: 'Age of the Rebellion',
-    color: '#ef4444',
-    entries: [
-      {
-        title: 'Rogue One',
-        year: '0 BBY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/rogue-one-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '2016'
-      },
-      {
-        title: 'A New Hope',
-        year: '0 ABY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/a-new-hope-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '1977'
-      },
-      {
-        title: 'The Star Wars Holiday Special',
-        year: '1 ABY',
-        type: 'Live Action TV Film',
-        canon: false,
-        poster: './posters/holiday-special-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '1978'
-      },
-      {
-        title: 'The Empire Strikes Back',
-        year: '3 ABY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/the-empire-strikes-back-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '1980'
-      },
-      {
-        title: 'Ewoks',
-        year: '3 ABY',
-        type: 'Animated Show',
-        canon: false,
-        poster: './posters/ewoks-poster.jpg',
-        episodes: 35,
-        watched: 0,
-        releaseYear: '1985-1986',
-        seasons: 2,
-        episodeDetails: [
-          { title: 'The Cries of the Trees', time: '' },
-          { title: 'The Haunted Village', time: '' },
-          { title: 'Rampage of the Phlogs', time: '' },
-          { title: 'To Save Deej', time: '' },
-          { title: 'The Travelling Jindas', time: '' },
-          { title: 'The Tree of Light', time: '' },
-          { title: 'The Curse of the Jindas', time: '' },
-          { title: 'The Land of the Gupins', time: '' },
-          { title: 'Sunstar vs. Shadowstone', time: '' },
-          { title: "Wicket's Wagon", time: '' },
-          { title: 'The Three Lessons', time: '' },
-          { title: 'Blue Harvest', time: '' },
-          { title: 'Asha', time: '' },
-          { title: 'The Crystal Cloak', time: '' },
-          { title: 'The Wish Plan', time: '' },
-          { title: 'Home is Where the Shrieks Are', time: '' },
-          { title: 'Princess Latara', time: '' },
-          { title: 'The Raich', time: '' },
-          { title: 'The Totem Master', time: '' },
-          { title: 'A Gift for Shodu', time: '' },
-          { title: 'Night of the Stranger', time: '' },
-          { title: 'Gone With the Mimphs', time: '' },
-          { title: 'The First Apprentice', time: '' },
-          { title: 'Hard Sell', time: '' },
-          { title: 'A Warrior and a Lurdo', time: '' },
-          { title: 'The Season Scepter', time: '' },
-          { title: 'Prow Beaten', time: '' },
-          { title: "Baga's Rival", time: '' },
-          { title: "Horville's Hut of Horrors", time: '' },
-          { title: 'The Tragic Flute', time: '' },
-          { title: 'Just My Luck', time: '' },
-          { title: 'Bringing Up Norky', time: '' },
-          { title: 'Battle for the Sunstar', time: '' },
-          { title: 'Party Ewok', time: '' },
-          { title: 'Malani the Warrior', time: '' }
-        ]
-      },
-      {
-        title: 'Caravan of Courage: An Ewok Adventure',
-        year: '3 ABY',
-        type: 'Live Action TV Film',
-        canon: false,
-        poster: './posters/caravan-of-courage-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '1984',
-        episodeDetails: [ { title: 'Caravan of Courage: An Ewok Adventure', time: '' } ]
-      },
-      {
-        title: 'Ewoks: The Battle for Endor',
-        year: '3 ABY',
-        type: 'Live Action TV Film',
-        canon: false,
-        poster: './posters/ewoks-battle-for-endor-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '1985',
-        episodeDetails: [ { title: 'Ewoks: The Battle for Endor', time: '' } ]
-      },
-      {
-        title: 'Return of the Jedi',
-        year: '4 ABY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/return-of-the-jedi-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '1983'
-      }
-    ]
-  },
-  {
-    era: 'The New Republic',
-    color: '#5B7FDB',
-    entries: [
-      {
-        title: 'The Mandalorian',
-        year: '9 ABY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/the-mandalorian-poster.jpg',
-        episodes: 24,
-        watched: 0,
-        releaseYear: '2019-2023',
-        seasons: 3
-      },
-      {
-        title: 'The Book of Boba Fett',
-        year: '9 ABY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/the-book-of-boba-fett-poster.jpg',
-        episodes: 7,
-        watched: 0,
-        releaseYear: '2021-2021',
-        seasons: 1
-      },
-      {
-        title: 'Ahsoka',
-        year: '9 ABY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/ahsoka-poster.jpg',
-        episodes: 8,
-        watched: 0,
-        releaseYear: '2023-2023',
-        seasons: 1
-      },
-      {
-        title: 'Skeleton Crew',
-        year: '9 ABY',
-        type: 'Live Action Show',
-        canon: true,
-        poster: './posters/skeleton-crew-poster.jpg',
-        episodes: 8,
-        watched: 0,
-        releaseYear: '2024-2025',
-        seasons: 1
-      }
-    ]
-  },
-  {
-    era: 'Rise of the First Order',
-    color: '#ff0000',
-    entries: [
-      {
-        title: 'Star Wars Resistance',
-        year: '34 ABY',
-        type: 'Animated Show',
-        canon: true,
-        poster: './posters/resistance-poster.jpg',
-        episodes: 39,
-        watched: 0,
-        releaseYear: '2018-2020',
-        seasons: 2
-      },
-      {
-        title: 'The Force Awakens',
-        year: '34 ABY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/the-force-awakens-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '2015'
-      },
-      {
-        title: 'The Last Jedi',
-        year: '34 ABY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/the-last-jedi-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '2017'
-      },
-      {
-        title: 'The Rise of Skywalker',
-        year: '35 ABY',
-        type: 'Live Action Film',
-        canon: true,
-        poster: './posters/rise-of-skywalker-poster.jpg',
-        episodes: 1,
-        watched: 0,
-        releaseYear: '2019'
-      }
-    ]
-  },
-  {
-    era: 'Non-Canon Stories',
-    color: '#64748b',
-    entries: [
-      {
-        title: 'Star Wars: Visions',
-        year: 'Various',
-        type: 'Animated Anthology',
-        canon: false,
-        poster: './posters/visions-poster.jpg',
-        episodes: 27,
-        watched: 0,
-        releaseYear: '2021-2025',
-        seasons: 3
-      }
-    ]
+// Star Wars Timeline Data - loaded from JSON
+let TIMELINE_DATA = [];
+
+// Load timeline data from JSON file
+async function loadTimelineData() {
+  try {
+    const response = await fetch('./timeline-data.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load timeline data: ${response.status}`);
+    }
+    TIMELINE_DATA = await response.json();
+    
+    // Initialize _watchedArray for entries based on their watched status from the JSON
+    TIMELINE_DATA.forEach(section => {
+      section.entries.forEach(entry => {
+        // Create initial _watchedArray based on watched count from JSON
+        if (!entry._watchedArray) {
+          const watchedCount = entry.watched || 0;
+          entry._watchedArray = new Array(entry.episodes).fill(false);
+          // Mark the first 'watchedCount' episodes as watched by default
+          for (let i = 0; i < Math.min(watchedCount, entry.episodes); i++) {
+            entry._watchedArray[i] = true;
+          }
+        }
+      });
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error loading timeline data:', error);
+    return false;
   }
-];
+}
 
 function isShowEntry(entry) {
   return /show|anthology/i.test(entry.type) && entry.episodes > 1;
 }
 
 function getEntryMetaText(entry) {
-  const parts = [`${entry.year}`, entry.type];
+  const parts = [`${entry.year}`];
 
   if (entry.releaseYear) {
     let releaseYearText = entry.releaseYear;
@@ -1371,10 +756,10 @@ function hexToRgb(hex) {
 function getMediaTypeInfo(type) {
   const typeMap = {
     'Live Action Film': { color: 'var(--type-film)', icon: '🎬', label: 'Film' },
-    'Live Action Show': { color: 'var(--type-show)', icon: '📺', label: 'Series' },
+    'Live Action Show': { color: 'var(--type-show)', icon: '📺', label: 'Live Action Show' },
     'Live Action TV Film': { color: 'var(--type-film)', icon: '🎬', label: 'TV Film' },
-    'Animated Film': { color: 'var(--type-animated)', icon: '🎨', label: 'Animated' },
-    'Animated Show': { color: 'var(--type-animated)', icon: '🎨', label: 'Animated' },
+    'Animated Film': { color: 'var(--type-animated)', icon: '🎨', label: 'Animated Film' },
+    'Animated Show': { color: 'var(--type-animated)', icon: '🎨', label: 'Animated Show' },
     'Animated Anthology': { color: 'var(--type-anthology)', icon: '✨', label: 'Anthology' }
   };
   
@@ -2118,6 +1503,7 @@ function openModal(sectionIdx, entryIdx) {
   const progressPercent = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
   const episodeCountText = showEpisodes ? `${watchedCount}/${entry.episodes} watched (${progressPercent}%)` : '';
   const entryMetaText = getEntryMetaText(entry);
+  const mediaTypeInfo = getMediaTypeInfo(entry.type);
 
   const modalHTML = `
     <div class="modal-backdrop">
@@ -2134,7 +1520,7 @@ function openModal(sectionIdx, entryIdx) {
       <div class="modal-right">
         <h2>${entry.title}</h2>
         <div class="modal-meta">
-          <span class="modal-meta-text">${entryMetaText}</span>
+          <span class="modal-meta-text">${mediaTypeInfo.label} • ${entryMetaText}</span>
           <span class="modal-badge ${entry.canon ? 'canon' : 'legends'}">${entry.canon ? 'CANON' : 'LEGENDS'}</span>
         </div>
         ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
@@ -2294,7 +1680,18 @@ window.addEventListener('orientationchange', () => {
 });
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   setVh();
-  render();
+  
+  // Load timeline data from JSON before rendering
+  const loaded = await loadTimelineData();
+  if (loaded) {
+    render();
+  } else {
+    // Show error message if data fails to load
+    const app = document.getElementById('app');
+    if (app) {
+      app.innerHTML = '<div style="color: white; text-align: center; padding: 2rem;">Failed to load timeline data. Please refresh the page.</div>';
+    }
+  }
 });
