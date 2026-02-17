@@ -2,7 +2,7 @@
 const TIMELINE_DATA = [
   {
     era: 'The High Republic',
-    color: '#DDB152',
+    color: '#F5C563',
     entries: [
       {
         title: 'Young Jedi Adventures',
@@ -81,7 +81,7 @@ const TIMELINE_DATA = [
   },
   {
     era: 'Fall of the Jedi',
-    color: '#D4A574',
+    color: '#E5B889',
     entries: [
       {
         title: 'The Acolyte',
@@ -533,7 +533,7 @@ const TIMELINE_DATA = [
   },
   {
     era: 'The New Republic',
-    color: '#3455A1',
+    color: '#5B7FDB',
     entries: [
       {
         title: 'The Mandalorian',
@@ -1210,36 +1210,29 @@ function render() {
           </svg>
           <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." />
         </div>
+      </div>
+      
+      <div class="filters-row">
+        <div class="filter-group filter-group-type">
+          <span class="filter-group-label">Type:</span>
+          <button class="filter-btn active" data-type-filter="all">All</button>
+          <button class="filter-btn" data-type-filter="films">Films</button>
+          <button class="filter-btn" data-type-filter="shows">Shows</button>
+        </div>
         
-        <div class="filter-group">
+        <div class="filter-group filter-group-canon">
+          <span class="filter-group-label">Canon:</span>
           <button class="filter-btn active" data-canon-filter="all">All</button>
           <button class="filter-btn" data-canon-filter="canon">Canon</button>
           <button class="filter-btn" data-canon-filter="legends">Legends</button>
         </div>
         
-        <div class="filter-group">
-          <button class="filter-btn active" data-type-filter="all">All Types</button>
-          <button class="filter-btn" data-type-filter="films">Films</button>
-          <button class="filter-btn" data-type-filter="shows">Shows</button>
-        </div>
-      </div>
-      
-      <div class="progress-filters">
-        <button class="progress-filter-btn active" data-progress-filter="all">All Progress</button>
-        <button class="progress-filter-btn" data-progress-filter="not-started">Not Started</button>
-        <button class="progress-filter-btn" data-progress-filter="in-progress">In Progress</button>
-        <button class="progress-filter-btn" data-progress-filter="completed">Completed</button>
-      </div>
-      
-      <!-- Legend -->
-      <div class="timeline-legend">
-        <div class="legend-item">
-          <span class="legend-badge canon">CANON</span>
-          <span class="legend-text">Official Continuity</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-badge legends">LEGENDS</span>
-          <span class="legend-text">Non-Canon</span>
+        <div class="filter-group filter-group-progress">
+          <span class="filter-group-label">Progress:</span>
+          <button class="filter-btn active" data-progress-filter="all">All</button>
+          <button class="filter-btn" data-progress-filter="not-started">Not Started</button>
+          <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
+          <button class="filter-btn" data-progress-filter="completed">Completed</button>
         </div>
       </div>
     </header>
