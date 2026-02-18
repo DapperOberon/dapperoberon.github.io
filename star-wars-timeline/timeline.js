@@ -57,6 +57,27 @@ function getEntryMetaText(entry) {
   return parts.join(' • ');
 }
 
+function getEntryMetaDetails(entry) {
+  const parts = [];
+
+  if (entry.releaseYear) {
+    let releaseYearText = entry.releaseYear;
+    if (isShowEntry(entry) && entry.seasons === 1) {
+      const yearRangeMatch = String(entry.releaseYear).match(/^(\d{4})\s*-\s*(\d{4})$/);
+      if (yearRangeMatch && yearRangeMatch[1] === yearRangeMatch[2]) {
+        releaseYearText = yearRangeMatch[1];
+      }
+    }
+    parts.push(releaseYearText);
+  }
+
+  if (isShowEntry(entry) && typeof entry.seasons === 'number') {
+    parts.push(`${entry.seasons} Season${entry.seasons === 1 ? '' : 's'}`);
+  }
+
+  return parts.join(' • ');
+}
+
 function getEntrySearchText(entry) {
   const episodeTitles = Array.isArray(entry.episodeDetails)
     ? entry.episodeDetails.map(ep => ep && ep.title ? ep.title : '').join(' ')
@@ -473,6 +494,11 @@ function render() {
           <span class="toggle-track"></span>
           <span class="toggle-label">Sound FX</span>
         </label>
+        <label class="toggle">
+          <input type="checkbox" id="watch-mode-toggle" aria-label="Toggle watch order mode" />
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Watch Mode</span>
+        </label>
       </div>
       
       <!-- Search and Filters -->
@@ -483,32 +509,49 @@ function render() {
           </svg>
           <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." />
         </div>
+        <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false" aria-controls="filters-panel">
+          <span>Filters</span>
+          <span id="filters-active-count" class="filters-toggle-count">All</span>
+        </button>
       </div>
       
-      <div class="filters-row">
-        <div class="filter-group filter-group-type">
-          <span class="filter-group-label">Type:</span>
-          <button class="filter-btn active" data-type-filter="all">All</button>
-          <button class="filter-btn" data-type-filter="films">Films</button>
-          <button class="filter-btn" data-type-filter="shows">Shows</button>
-        </div>
-        
-        <div class="filter-group filter-group-canon">
-          <span class="filter-group-label">Canon:</span>
-          <button class="filter-btn active" data-canon-filter="all">All</button>
-          <button class="filter-btn" data-canon-filter="canon">Canon</button>
-          <button class="filter-btn" data-canon-filter="legends">Legends</button>
-        </div>
-        
-        <div class="filter-group filter-group-progress">
-          <span class="filter-group-label">Progress:</span>
-          <button class="filter-btn active" data-progress-filter="all">All</button>
-          <button class="filter-btn" data-progress-filter="not-started">Not Started</button>
-          <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
-          <button class="filter-btn" data-progress-filter="completed">Completed</button>
+      <div class="filters-panel" id="filters-panel">
+        <div class="filters-row">
+          <div class="filter-group filter-group-type">
+            <span class="filter-group-label">Type:</span>
+            <button class="filter-btn active" data-type-filter="all">All</button>
+            <button class="filter-btn" data-type-filter="films">Films</button>
+            <button class="filter-btn" data-type-filter="shows">Shows</button>
+          </div>
+          
+          <div class="filter-group filter-group-canon">
+            <span class="filter-group-label">Canon:</span>
+            <button class="filter-btn active" data-canon-filter="all">All</button>
+            <button class="filter-btn" data-canon-filter="canon">Canon</button>
+            <button class="filter-btn" data-canon-filter="legends">Legends</button>
+          </div>
+          
+          <div class="filter-group filter-group-progress">
+            <span class="filter-group-label">Progress:</span>
+            <button class="filter-btn active" data-progress-filter="all">All</button>
+            <button class="filter-btn" data-progress-filter="not-started">Not Started</button>
+            <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
+            <button class="filter-btn" data-progress-filter="completed">Completed</button>
+          </div>
         </div>
       </div>
     </header>
+
+    <nav class="timeline-rail" aria-label="Era navigation">
+      <div class="timeline-rail-inner">
+        ${TIMELINE_DATA.map((section, idx) => `
+          <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}">
+            <span class="rail-dot"></span>
+            <span class="rail-label">${section.era}</span>
+          </button>
+        `).join('')}
+      </div>
+    </nav>
 
     <main class="timeline-container" id="main-content" tabindex="-1">
       <div id="no-results" style="display: none; text-align: center; padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1;">
@@ -520,19 +563,25 @@ function render() {
         const itemLabel = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
         const sectionColorRgb = hexToRgb(section.color);
         return `
-        <section class="timeline-section" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
-          <h2><span class="era-title">${section.era}</span> <span class="era-count">${itemLabel}</span></h2>
-          <div class="entries-grid">
+        <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
+          <h2>
+            <span class="era-title">${section.era}</span>
+            <span class="era-count">${itemLabel}</span>
+            <button class="era-toggle" data-era-toggle="${idx}" aria-expanded="true" aria-controls="era-content-${idx}">Collapse</button>
+          </h2>
+          <div class="entries-grid era-content" id="era-content-${idx}">
             <div class="timeline-center-line"></div>
             ${section.entries.map((entry, entryIdx) => {
               const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
               const isMovie = /film/i.test(entry.type) && entry.episodes === 1;
               const entryMetaText = getEntryMetaText(entry);
+              const entryMetaDetails = getEntryMetaDetails(entry);
               const mediaTypeInfo = getMediaTypeInfo(entry.type);
               const isLeftAligned = entryIdx % 2 === 0;
               const alignClass = isLeftAligned ? 'timeline-entry--left' : 'timeline-entry--right';
               return `
                 <div class="timeline-entry ${alignClass}">
+                  <div class="timeline-year">${entry.year}</div>
                   <div class="timeline-connector"></div>
                   <div class="timeline-dot"></div>
                   <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}">
@@ -561,7 +610,7 @@ function render() {
                     </div>
                     <div class="entry-content">
                       <h3>${entry.title}</h3>
-                      <p class="entry-meta">${entryMetaText}</p>
+                      ${entryMetaDetails ? `<p class="entry-meta">${entryMetaDetails}</p>` : ''}
                       <div class="entry-row">
                         <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
                         ${isMovie ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
@@ -613,13 +662,19 @@ function render() {
   // initialize watched arrays and attach click handlers
   initializeWatchedState();
   attachFilterHandlers();
+  initMobileFilterPanel();
   attachStatHandlers();
   initSoundToggle();
+  initWatchModeToggle();
+  initEraToggles();
+  initEraRail();
   attachEntryHandlers();
   attachImageLoaders(); // Add blur-up image loading effect
   attachResetButton();
   scheduleFlowLinesRedraw();
   initFlowScrollAnimation();
+  updateWatchModeHighlight();
+  updateEraRailVisibility();
 }
 
 // Filter handlers
@@ -683,6 +738,63 @@ function attachFilterHandlers() {
   updateFilters();
 }
 
+let _mobileFiltersResizeBound = false;
+
+function getActiveFilterCount() {
+  let activeCount = 0;
+  if (filters.type !== 'all') activeCount += 1;
+  if (!(filters.canon && filters.legends)) activeCount += 1;
+  if (filters.progress !== 'all') activeCount += 1;
+  if (filters.search && filters.search.trim().length > 0) activeCount += 1;
+  return activeCount;
+}
+
+function updateMobileFilterSummary() {
+  const countEl = document.getElementById('filters-active-count');
+  if (!countEl) return;
+  const activeCount = getActiveFilterCount();
+  countEl.textContent = activeCount === 0 ? 'All' : `${activeCount} active`;
+}
+
+function initMobileFilterPanel() {
+  const toggleBtn = document.getElementById('filters-toggle');
+  const panel = document.getElementById('filters-panel');
+  if (!toggleBtn || !panel) return;
+
+  const setPanelOpen = (isOpen) => {
+    panel.classList.toggle('open', isOpen);
+    toggleBtn.setAttribute('aria-expanded', String(isOpen));
+    panel.setAttribute('aria-hidden', String(!isOpen));
+  };
+
+  setPanelOpen(false);
+  updateMobileFilterSummary();
+
+  toggleBtn.addEventListener('click', () => {
+    const isOpen = panel.classList.contains('open');
+    setPanelOpen(!isOpen);
+    playSound('click');
+    triggerHaptic('light');
+  });
+
+  document.querySelectorAll('.filter-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        setPanelOpen(false);
+      }
+    });
+  });
+
+  if (!_mobileFiltersResizeBound) {
+    _mobileFiltersResizeBound = true;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        setPanelOpen(false);
+      }
+    });
+  }
+}
+
 function attachStatHandlers() {
   const activateFilter = (filter) => {
     const button = document.querySelector(`[data-progress-filter="${filter}"]`);
@@ -703,6 +815,24 @@ function attachStatHandlers() {
 
 let soundEnabled = false;
 let audioContext = null;
+let watchModeEnabled = false;
+let eraObserver = null;
+
+function loadCollapsedEras() {
+  try {
+    const raw = localStorage.getItem('sw_collapsed_eras');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function saveCollapsedEras(set) {
+  try {
+    localStorage.setItem('sw_collapsed_eras', JSON.stringify(Array.from(set)));
+  } catch (e) {}
+}
 
 function initSoundToggle() {
   const toggle = document.getElementById('sound-toggle');
@@ -715,6 +845,125 @@ function initSoundToggle() {
     localStorage.setItem('sw_sound_enabled', String(soundEnabled));
     playSound('toggle');
     triggerHaptic('light');
+  });
+}
+
+function initWatchModeToggle() {
+  const toggle = document.getElementById('watch-mode-toggle');
+  if (!toggle) return;
+  const stored = localStorage.getItem('sw_watch_mode_enabled');
+  watchModeEnabled = stored === 'true';
+  toggle.checked = watchModeEnabled;
+  toggle.addEventListener('change', () => {
+    watchModeEnabled = toggle.checked;
+    localStorage.setItem('sw_watch_mode_enabled', String(watchModeEnabled));
+    playSound('toggle');
+    triggerHaptic('light');
+    updateWatchModeHighlight();
+  });
+}
+
+function initEraToggles() {
+  const collapsed = loadCollapsedEras();
+  document.querySelectorAll('.era-toggle').forEach((button) => {
+    const eraId = button.dataset.eraToggle;
+    const section = document.querySelector(`.timeline-section[data-era="${eraId}"]`);
+    if (!section) return;
+    if (collapsed.has(eraId)) {
+      section.classList.add('collapsed');
+      button.setAttribute('aria-expanded', 'false');
+      button.textContent = 'Expand';
+    }
+
+    button.addEventListener('click', () => {
+      const isCollapsed = section.classList.toggle('collapsed');
+      button.setAttribute('aria-expanded', String(!isCollapsed));
+      button.textContent = isCollapsed ? 'Expand' : 'Collapse';
+      if (isCollapsed) {
+        collapsed.add(eraId);
+      } else {
+        collapsed.delete(eraId);
+      }
+      saveCollapsedEras(collapsed);
+    });
+  });
+}
+
+function initEraRail() {
+  document.querySelectorAll('.rail-marker').forEach((marker) => {
+    marker.addEventListener('click', () => {
+      if (marker.classList.contains('disabled')) return;
+      const targetId = marker.dataset.eraTarget;
+      const section = document.getElementById(targetId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  if (eraObserver) {
+    eraObserver.disconnect();
+  }
+
+  const markers = Array.from(document.querySelectorAll('.rail-marker'));
+  eraObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const eraId = entry.target.getAttribute('id');
+      markers.forEach((marker) => {
+        marker.classList.toggle('active', marker.dataset.eraTarget === eraId);
+      });
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0.1 });
+
+  document.querySelectorAll('.timeline-section').forEach((section) => {
+    eraObserver.observe(section);
+  });
+}
+
+function updateEraRailVisibility() {
+  document.querySelectorAll('.rail-marker').forEach((marker) => {
+    const targetId = marker.dataset.eraTarget;
+    const section = document.getElementById(targetId);
+    const isHidden = section ? section.classList.contains('hidden') : true;
+    marker.classList.toggle('disabled', isHidden);
+    marker.setAttribute('aria-disabled', String(isHidden));
+    marker.tabIndex = isHidden ? -1 : 0;
+  });
+}
+
+function updateWatchModeHighlight() {
+  const cards = Array.from(document.querySelectorAll('.entry-card'));
+  cards.forEach((card) => {
+    card.classList.remove('watch-next', 'watch-dim');
+  });
+
+  if (!watchModeEnabled) return;
+
+  const visibleCards = cards.filter((card) => !card.classList.contains('hidden'));
+  let nextCard = null;
+
+  for (let i = 0; i < visibleCards.length; i++) {
+    const card = visibleCards[i];
+    const sectionIdx = Number(card.dataset.section);
+    const entryIdx = Number(card.dataset.entry);
+    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
+    const watchedCount = Array.isArray(entry._watchedArray) ? entry._watchedArray.filter(Boolean).length : entry.watched;
+    const isComplete = entry.episodes > 0 ? watchedCount >= entry.episodes : watchedCount > 0;
+    if (!isComplete) {
+      nextCard = card;
+      break;
+    }
+  }
+
+  if (!nextCard) return;
+
+  visibleCards.forEach((card) => {
+    if (card === nextCard) {
+      card.classList.add('watch-next');
+    } else {
+      card.classList.add('watch-dim');
+    }
   });
 }
 
@@ -843,7 +1092,10 @@ function updateFilters() {
     noResults.classList.toggle('hidden', visibleCount > 0);
   }
 
+  updateEraRailVisibility();
+  updateWatchModeHighlight();
   scheduleFlowLinesRedraw();
+  updateMobileFilterSummary();
 }
 
 // Watched state and modal helpers
@@ -1082,6 +1334,8 @@ function updateEntryUI(sectionIdx, entryIdx) {
   if (movieCheckbox) {
     movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
   }
+
+  updateWatchModeHighlight();
   
   // Update stats in header
   updateStats();
