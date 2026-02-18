@@ -940,13 +940,15 @@ h1 {
 /* Left-aligned entries */
 .timeline-entry--left {
   margin-left: 0;
-  margin-right: 40px;
+  margin-right: auto;
+  transform: translateX(-40px);
 }
 
 /* Right-aligned entries */
 .timeline-entry--right {
-  margin-left: 40px;
+  margin-left: auto;
   margin-right: 0;
+  transform: translateX(40px);
 }
 
 /* Connecting line from card to center */
