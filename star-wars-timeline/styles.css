@@ -900,30 +900,123 @@ h1 {
   display: none;
 }
 
-/* Entries Grid */
+/* Vertical Timeline Layout */
 .entries-grid {
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 0;
 }
 
+/* Center backbone of the timeline */
+.timeline-center-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--section-color) 0%,
+    var(--section-color) 50%,
+    rgba(var(--section-color-rgb), 0.4) 100%
+  );
+  transform: translateX(-50%);
+  box-shadow: 0 0 20px rgba(var(--section-color-rgb), 0.4);
+  z-index: 1;
+}
+
+/* Individual timeline entry */
+.timeline-entry {
+  position: relative;
+  width: 45%;
+  z-index: 2;
+}
+
+/* Left-aligned entries */
+.timeline-entry--left {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Right-aligned entries */
+.timeline-entry--right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Connecting line from card to center */
+.timeline-connector {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--section-color-rgb), 0.6) 50%,
+    rgba(var(--section-color-rgb), 0.3)
+  );
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.timeline-entry--left .timeline-connector {
+  right: -20%;
+  width: 20%;
+}
+
+.timeline-entry--right .timeline-connector {
+  left: -20%;
+  width: 20%;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--section-color-rgb), 0.3),
+    rgba(var(--section-color-rgb), 0.6) 50%,
+    transparent
+  );
+}
+
+/* Timeline dot at connection point */
+.timeline-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--section-color);
+  border: 3px solid var(--bg);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.6);
+  z-index: 3;
+}
+
+.timeline-entry--left .timeline-dot {
+  right: -26%;
+}
+
+.timeline-entry--right .timeline-dot {
+  left: -26%;
+}
+
+/* Flow SVG for advanced path rendering */
 .timeline-flow-svg {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -20px;
-  width: calc(100% + 40px);
+  left: 0;
+  width: 100%;
   height: 100%;
   pointer-events: auto;
-  z-index: 1;
+  z-index: 0;
   overflow: visible;
   --flow-offset: 0px;
 }
 
 .timeline-flow-svg-global {
-  z-index: -1;
+  z-index: 0;
 }
 
 .timeline-flow-path {
@@ -1532,6 +1625,29 @@ footer p {
   .filter-btn {
     flex: 1;
   }
+
+  /* Timeline responsive adjustments */
+  .timeline-entry {
+    width: 50%;
+  }
+
+  .timeline-entry--left .timeline-connector {
+    right: -15%;
+    width: 15%;
+  }
+
+  .timeline-entry--right .timeline-connector {
+    left: -15%;
+    width: 15%;
+  }
+
+  .timeline-entry--left .timeline-dot {
+    right: -21%;
+  }
+
+  .timeline-entry--right .timeline-dot {
+    left: -21%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1636,8 +1752,33 @@ footer p {
   }
 
   .entries-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--space-4);
+    gap: var(--space-6);
+  }
+
+  .timeline-entry {
+    width: 55%;
+  }
+
+  .timeline-entry--left .timeline-connector {
+    right: -18%;
+    width: 18%;
+  }
+
+  .timeline-entry--right .timeline-connector {
+    left: -18%;
+    width: 18%;
+  }
+
+  .timeline-entry--left .timeline-dot {
+    right: -24%;
+  }
+
+  .timeline-entry--right .timeline-dot {
+    left: -24%;
+  }
+
+  .timeline-center-line {
+    width: 2px;
   }
 
   footer {
@@ -1647,6 +1788,28 @@ footer p {
 }
 
 @media (max-width: 640px) {
+  .timeline-entry {
+    width: 60%;
+  }
+  
+  .timeline-entry--left .timeline-connector {
+    right: -16%;
+    width: 16%;
+  }
+  
+  .timeline-entry--right .timeline-connector {
+    left: -16%;
+    width: 16%;
+  }
+  
+  .timeline-entry--left .timeline-dot {
+    right: -22%;
+  }
+  
+  .timeline-entry--right .timeline-dot {
+    left: -22%;
+  }
+
   /* Ensure 2x2 stats grid on small mobile */
   .stats-container {
     grid-template-columns: repeat(2, 1fr);
@@ -1684,9 +1847,39 @@ footer p {
     padding: var(--space-2) var(--space-3);
   }
 
-  .timeline-section h2 { letter-spacing: 0.06rem; font-size: 1.1rem; margin: var(--space-10) 0 var(--space-6); gap: var(--space-3); }
-  .timeline-section:first-of-type h2 { margin-top: var(--space-8); }
-  .entries-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-3); }
+  .timeline-section h2 { 
+    letter-spacing: 0.06rem; 
+    font-size: 1.1rem; 
+    margin: var(--space-10) 0 var(--space-6); 
+    gap: var(--space-3); 
+  }
+  
+  .timeline-section:first-of-type h2 { 
+    margin-top: var(--space-8); 
+  }
+  
+  .timeline-entry {
+    width: 100%;
+  }
+
+  .timeline-entry--left .timeline-connector,
+  .timeline-entry--right .timeline-connector {
+    display: none;
+  }
+
+  .timeline-entry--left .timeline-dot,
+  .timeline-entry--right .timeline-dot {
+    display: none;
+  }
+
+  .timeline-center-line {
+    left: 0;
+    width: 2px;
+  }
+
+  .entries-grid {
+    padding: 0 0 0 20px;
+  }
 
   .entry-content {
     padding: var(--space-3);

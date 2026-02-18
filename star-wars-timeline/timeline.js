@@ -209,376 +209,15 @@ function scheduleFlowLinesRedraw() {
 }
 
 function drawTimelineFlowLines() {
-  const svgNs = 'http://www.w3.org/2000/svg';
-  
+  // Flow lines disabled for vertical timeline layout - using center line and connectors instead
   const container = document.querySelector('.timeline-container');
   if (!container) return;
-  
-  // Store reference to existing SVG for efficient replacement
+
   const existingSvg = container.querySelector('.timeline-flow-svg-global');
-
-  const containerRect = container.getBoundingClientRect();
-  const rowTolerance = 8;
-  const allRows = [];
-
-  const parseCardEpisodes = (card) => {
-    const text = card.querySelector('.entry-episodes')?.textContent || '';
-    const match = text.match(/(\d+)\s*\/\s*(\d+)/);
-    if (!match) return { watched: 0, total: 0 };
-    return { watched: Number(match[1]), total: Number(match[2]) };
-  };
-
-  document.querySelectorAll('.entries-grid').forEach((grid) => {
-    const cards = Array.from(grid.querySelectorAll('.entry-card')).filter((card) => {
-      const style = window.getComputedStyle(card);
-      return style.display !== 'none' && card.offsetParent !== null;
-    });
-
-    if (cards.length === 0) return;
-
-    cards.sort((a, b) => {
-      if (a.offsetTop !== b.offsetTop) return a.offsetTop - b.offsetTop;
-      return a.offsetLeft - b.offsetLeft;
-    });
-
-    const rows = [];
-    let gridMinLeft = Infinity;
-    let gridMaxRight = -Infinity;
-    cards.forEach((card) => {
-      const top = card.offsetTop;
-      const bottom = top + card.offsetHeight;
-      const left = card.offsetLeft;
-      const right = left + card.offsetWidth;
-      gridMinLeft = Math.min(gridMinLeft, left);
-      gridMaxRight = Math.max(gridMaxRight, right);
-      let row = rows.find((candidate) => Math.abs(candidate.top - top) <= rowTolerance);
-      if (!row) {
-        row = { top, bottom, minLeft: left, maxRight: right, cards: [{ left, right, element: card }] };
-        rows.push(row);
-      } else {
-        row.top = Math.min(row.top, top);
-        row.bottom = Math.max(row.bottom, bottom);
-        row.minLeft = Math.min(row.minLeft, left);
-        row.maxRight = Math.max(row.maxRight, right);
-        row.cards.push({ left, right, element: card });
-      }
-    });
-
-    rows.forEach((row) => {
-      row.centerY = (row.top + row.bottom) / 2;
-      const sortedCards = (row.cards || []).slice().sort((a, b) => a.left - b.left);
-      row.gapCenters = [];
-      for (let i = 0; i < sortedCards.length - 1; i++) {
-        const currentCard = sortedCards[i];
-        const nextCard = sortedCards[i + 1];
-        if (nextCard.left > currentCard.right) {
-          row.gapCenters.push((currentCard.right + nextCard.left) / 2);
-        }
-      }
-
-      let totalEpisodes = 0;
-      let watchedEpisodes = 0;
-      let entryCount = 0;
-      (row.cards || []).forEach((cardInfo) => {
-        if (!cardInfo.element) return;
-        const stats = parseCardEpisodes(cardInfo.element);
-        totalEpisodes += stats.total;
-        watchedEpisodes += stats.watched;
-        entryCount += 1;
-      });
-      row.totalEpisodes = totalEpisodes;
-      row.watchedEpisodes = watchedEpisodes;
-      row.entryCount = entryCount;
-    });
-
-    const gridRect = grid.getBoundingClientRect();
-    const gridOffsetTop = gridRect.top - containerRect.top;
-    const gridOffsetLeft = gridRect.left - containerRect.left;
-
-    rows.forEach((row) => {
-      allRows.push({
-        top: gridOffsetTop + row.top,
-        bottom: gridOffsetTop + row.bottom,
-        centerY: gridOffsetTop + row.centerY,
-        minLeft: gridOffsetLeft + row.minLeft,
-        maxRight: gridOffsetLeft + row.maxRight,
-        gridMinLeft: gridOffsetLeft + gridMinLeft,
-        gridMaxRight: gridOffsetLeft + gridMaxRight,
-        gapCenters: (row.gapCenters || []).map((x) => gridOffsetLeft + x),
-        totalEpisodes: row.totalEpisodes || 0,
-        watchedEpisodes: row.watchedEpisodes || 0,
-        entryCount: row.entryCount || 0
-      });
-    });
-  });
-
-  if (allRows.length === 0) return;
-
-  // Find the widest bounds across all rows to use for all rows
-  let overallMinLeft = Infinity;
-  let overallMaxRight = -Infinity;
-  allRows.forEach(row => {
-    overallMinLeft = Math.min(overallMinLeft, row.gridMinLeft);
-    overallMaxRight = Math.max(overallMaxRight, row.gridMaxRight);
-  });
-
-  const headerCenters = Array.from(document.querySelectorAll('.timeline-section h2')).map((header) => {
-    const rect = header.getBoundingClientRect();
-    return Math.round(rect.top - containerRect.top + (rect.height / 2));
-  });
-
-  allRows.sort((a, b) => a.top - b.top);
-
-  const containerWidth = Math.max(1, container.clientWidth);
-  const containerHeight = Math.max(1, container.scrollHeight);
-  const overflowX = 28;
-  const edgeInset = 10;
-  const laneLeftX = Math.round((-overflowX) + edgeInset);
-  const laneRightX = Math.round(containerWidth + overflowX - edgeInset);
-  const rowEdgePadding = 24;
-  const flowColor = '#D4AF37';
-  const useSimplifiedSVG = allRows.length > 15; // Use simpler SVG for large lists
-
-  const svg = document.createElementNS(svgNs, 'svg');
-  svg.setAttribute('class', 'timeline-flow-svg timeline-flow-svg-global');
-  if (useSimplifiedSVG) {
-    svg.style.opacity = '0.5'; // Reduce opacity for simplified mode
-  }
-  svg.setAttribute('viewBox', `${-overflowX} 0 ${containerWidth + (overflowX * 2)} ${containerHeight}`);
-  svg.setAttribute('preserveAspectRatio', 'none');
-
-  const getRowBounds = (row) => {
-    const left = Math.round(Math.max(laneLeftX, overallMinLeft - rowEdgePadding));
-    const right = Math.round(Math.min(laneRightX, overallMaxRight + rowEdgePadding));
-    return { left, right };
-  };
-
-  const firstBounds = getRowBounds(allRows[0]);
-  const lastBounds = getRowBounds(allRows[allRows.length - 1]);
-  const startPointY = Math.round(allRows[0].centerY);
-  const endPointY = Math.round(allRows[allRows.length - 1].centerY);
-
-  let d = '';
-  let previousRow = null;
-
-  allRows.forEach((row, rowIndex) => {
-    const rowY = Math.round(row.centerY);
-    const rowBounds = getRowBounds(row);
-
-    if (rowIndex === 0) {
-      d = `M ${rowBounds.left} ${rowY} L ${rowBounds.right} ${rowY}`;
-    } else {
-      const gapTop = previousRow.bottom;
-      const gapBottom = row.top;
-      let gapMiddle = gapBottom > gapTop
-        ? Math.round((gapTop + gapBottom) / 2)
-        : Math.round(gapTop);
-
-      if (gapBottom > gapTop && headerCenters.length > 0) {
-        const headersInGap = headerCenters.filter((y) => y > gapTop && y < gapBottom);
-        if (headersInGap.length > 0) {
-          gapMiddle = headersInGap.reduce((closest, y) => (
-            Math.abs(y - gapMiddle) < Math.abs(closest - gapMiddle) ? y : closest
-          ), headersInGap[0]);
-        }
-      }
-      const previousBounds = getRowBounds(previousRow);
-
-      d += ` L ${previousBounds.right} ${gapMiddle}`;
-      d += ` L ${rowBounds.left} ${gapMiddle}`;
-      d += ` L ${rowBounds.left} ${rowY}`;
-      d += ` L ${rowBounds.right} ${rowY}`;
-    }
-
-    previousRow = row;
-  });
-
-  // Calculate aggregate stats for tooltip
-  const totalEps = allRows.reduce((sum, r) => sum + (r.totalEpisodes || 0), 0);
-  const watchedEps = allRows.reduce((sum, r) => sum + (r.watchedEpisodes || 0), 0);
-  const totalEntries = allRows.reduce((sum, r) => sum + (r.entryCount || 0), 0);
-  const overallProgress = totalEps > 0 ? Math.round((watchedEps / totalEps) * 100) : 0;
-  const tooltipText = `Episodes: ${totalEps} | Entries: ${totalEntries} | Progress: ${overallProgress}%`;
-
-  // Batch create SVG paths with innerHTML for efficiency
-  svg.innerHTML = `
-    <path d="${d}" class="timeline-flow-path timeline-flow-path-glow" stroke="${flowColor}"/>
-    <path d="${d}" class="timeline-flow-path" stroke="${flowColor}"/>
-    <path d="${d}" class="timeline-flow-path timeline-flow-path-direction" stroke="${flowColor}"/>
-    <path d="${d}" class="timeline-flow-path timeline-flow-path-pulse" stroke="${flowColor}"/>
-  `;
-  
-  // Add event listeners to main paths using event delegation
-  const paths = svg.querySelectorAll('.timeline-flow-path');
-  const handleMouseEnter = (event) => {
-    showFlowTooltip(tooltipText, event.clientX, event.clientY);
-  };
-  const handleMouseMove = (event) => {
-    showFlowTooltip(tooltipText, event.clientX, event.clientY);
-  };
-  const handleMouseLeave = hideFlowTooltip;
-  
-  paths.forEach(path => {
-    path.addEventListener('mouseenter', handleMouseEnter);
-    path.addEventListener('mousemove', handleMouseMove);
-    path.addEventListener('mouseleave', handleMouseLeave);
-  });
-
-  // Build list of path segments with their coordinates and direction
-  const pathSegments = [];
-  previousRow = null;
-
-  allRows.forEach((row, rowIndex) => {
-    const rowY = Math.round(row.centerY);
-    const rowBounds = getRowBounds(row);
-
-    if (rowIndex === 0) {
-      // First row horizontal segment (left to right)
-      const progress = row.totalEpisodes > 0 ? Math.round((row.watchedEpisodes / row.totalEpisodes) * 100) : 0;
-      pathSegments.push({
-        type: 'horizontal',
-        x1: rowBounds.left,
-        x2: rowBounds.right,
-        y: rowY,
-        direction: 'right',
-        arrowPositions: row.gapCenters,
-        isRowSegment: true,
-        totalEpisodes: row.totalEpisodes || 0,
-        watchedEpisodes: row.watchedEpisodes || 0,
-        entryCount: row.entryCount || 0,
-        progress
-      });
-    } else {
-      const gapTop = previousRow.bottom;
-      const gapBottom = row.top;
-      let gapMiddle = gapBottom > gapTop
-        ? Math.round((gapTop + gapBottom) / 2)
-        : Math.round(gapTop);
-
-      if (gapBottom > gapTop && headerCenters.length > 0) {
-        const headersInGap = headerCenters.filter((y) => y > gapTop && y < gapBottom);
-        if (headersInGap.length > 0) {
-          gapMiddle = headersInGap.reduce((closest, y) => (
-            Math.abs(y - gapMiddle) < Math.abs(closest - gapMiddle) ? y : closest
-          ), headersInGap[0]);
-        }
-      }
-      const previousBounds = getRowBounds(previousRow);
-      const gapEpisodes = Math.round(((previousRow.totalEpisodes || 0) + (row.totalEpisodes || 0)) / 2);
-      const gapWatched = Math.round(((previousRow.watchedEpisodes || 0) + (row.watchedEpisodes || 0)) / 2);
-      const gapEntries = Math.round(((previousRow.entryCount || 0) + (row.entryCount || 0)) / 2);
-      const gapProgress = gapEpisodes > 0 ? Math.round((gapWatched / gapEpisodes) * 100) : 0;
-
-      // Vertical segment from previous row to gap
-      pathSegments.push({
-        type: 'vertical',
-        x: previousBounds.right,
-        y1: previousRow.centerY,
-        y2: gapMiddle,
-        direction: 'down',
-        totalEpisodes: previousRow.totalEpisodes || 0,
-        watchedEpisodes: previousRow.watchedEpisodes || 0,
-        entryCount: previousRow.entryCount || 0,
-        progress: previousRow.totalEpisodes > 0
-          ? Math.round((previousRow.watchedEpisodes / previousRow.totalEpisodes) * 100)
-          : 0
-      });
-
-      // Horizontal segment in gap
-      const gapDirection = previousBounds.right > rowBounds.left ? 'left' : 'right';
-      const gapArrowPositions = (Array.isArray(previousRow.gapCenters) && previousRow.gapCenters.length > 0)
-        ? previousRow.gapCenters
-        : row.gapCenters;
-      pathSegments.push({
-        type: 'horizontal',
-        x1: previousBounds.right,
-        x2: rowBounds.left,
-        y: gapMiddle,
-        direction: gapDirection,
-        arrowPositions: gapArrowPositions,
-        isGapSegment: true,
-        totalEpisodes: gapEpisodes,
-        watchedEpisodes: gapWatched,
-        entryCount: gapEntries,
-        progress: gapProgress
-      });
-
-      // Vertical segment from gap to current row
-      pathSegments.push({
-        type: 'vertical',
-        x: rowBounds.left,
-        y1: gapMiddle,
-        y2: rowY,
-        direction: 'down',
-        totalEpisodes: row.totalEpisodes || 0,
-        watchedEpisodes: row.watchedEpisodes || 0,
-        entryCount: row.entryCount || 0,
-        progress: row.totalEpisodes > 0
-          ? Math.round((row.watchedEpisodes / row.totalEpisodes) * 100)
-          : 0
-      });
-
-      // Current row horizontal segment
-      pathSegments.push({
-        type: 'horizontal',
-        x1: rowBounds.left,
-        x2: rowBounds.right,
-        y: rowY,
-        direction: 'right',
-        arrowPositions: row.gapCenters,
-        isRowSegment: true,
-        totalEpisodes: row.totalEpisodes || 0,
-        watchedEpisodes: row.watchedEpisodes || 0,
-        entryCount: row.entryCount || 0,
-        progress: row.totalEpisodes > 0
-          ? Math.round((row.watchedEpisodes / row.totalEpisodes) * 100)
-          : 0
-      });
-    }
-
-    previousRow = row;
-  });
-
-  const startGlow = document.createElementNS(svgNs, 'circle');
-  startGlow.setAttribute('class', 'timeline-flow-endpoint timeline-flow-endpoint-glow');
-  startGlow.setAttribute('cx', String(firstBounds.left));
-  startGlow.setAttribute('cy', String(startPointY));
-  startGlow.setAttribute('r', '8');
-  startGlow.setAttribute('fill', flowColor);
-
-  const endGlow = document.createElementNS(svgNs, 'circle');
-  endGlow.setAttribute('class', 'timeline-flow-endpoint timeline-flow-endpoint-glow');
-  endGlow.setAttribute('cx', String(lastBounds.right));
-  endGlow.setAttribute('cy', String(endPointY));
-  endGlow.setAttribute('r', '8');
-  endGlow.setAttribute('fill', flowColor);
-
-  const startDot = document.createElementNS(svgNs, 'circle');
-  startDot.setAttribute('class', 'timeline-flow-endpoint');
-  startDot.setAttribute('cx', String(firstBounds.left));
-  startDot.setAttribute('cy', String(startPointY));
-  startDot.setAttribute('r', '5');
-  startDot.setAttribute('fill', flowColor);
-
-  const endDot = document.createElementNS(svgNs, 'circle');
-  endDot.setAttribute('class', 'timeline-flow-endpoint');
-  endDot.setAttribute('cx', String(lastBounds.right));
-  endDot.setAttribute('cy', String(endPointY));
-  endDot.setAttribute('r', '5');
-  endDot.setAttribute('fill', flowColor);
-
-  svg.appendChild(startGlow);
-  svg.appendChild(endGlow);
-  svg.appendChild(startDot);
-  svg.appendChild(endDot);
-  
-  // Use replaceChild for efficient DOM updates instead of remove + appendChild
   if (existingSvg) {
-    container.replaceChild(svg, existingSvg);
-  } else {
-    container.appendChild(svg);
+    existingSvg.remove();
   }
-
+  
   updateFlowOffset();
 }
 
@@ -884,42 +523,49 @@ function render() {
         <section class="timeline-section" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
           <h2><span class="era-title">${section.era}</span> <span class="era-count">${itemLabel}</span></h2>
           <div class="entries-grid">
+            <div class="timeline-center-line"></div>
             ${section.entries.map((entry, entryIdx) => {
               const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
               const isMovie = /film/i.test(entry.type) && entry.episodes === 1;
               const entryMetaText = getEntryMetaText(entry);
               const mediaTypeInfo = getMediaTypeInfo(entry.type);
+              const isLeftAligned = entryIdx % 2 === 0;
+              const alignClass = isLeftAligned ? 'timeline-entry--left' : 'timeline-entry--right';
               return `
-                <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}">
-                  <div class="entry-poster">
-                    <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
-                    <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
-                      ${entry.canon ? 'Canon' : 'Legends'}
-                    </span>
-                    <span class="media-type-badge" style="--media-color: ${mediaTypeInfo.color};" title="${entry.type}">
-                      <span class="media-type-icon">${mediaTypeInfo.icon}</span>
-                      <span class="media-type-label">${mediaTypeInfo.label}</span>
-                    </span>
-                    ${entry.synopsis ? `<div class="synopsis-preview"><p>${entry.synopsis}</p></div>` : ''}
-                    <div class="entry-overlay">
-                      <div class="progress-ring">
-                        <svg viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                          <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
-                                stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0" 
-                                  style="transition: stroke-dasharray 0.3s ease;" />
-                        </svg>
-                        <span class="progress-text">${progress}%</span>
+                <div class="timeline-entry ${alignClass}">
+                  <div class="timeline-connector"></div>
+                  <div class="timeline-dot"></div>
+                  <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}">
+                    <div class="entry-poster">
+                      <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
+                      <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
+                        ${entry.canon ? 'Canon' : 'Legends'}
+                      </span>
+                      <span class="media-type-badge" style="--media-color: ${mediaTypeInfo.color};" title="${entry.type}">
+                        <span class="media-type-icon">${mediaTypeInfo.icon}</span>
+                        <span class="media-type-label">${mediaTypeInfo.label}</span>
+                      </span>
+                      ${entry.synopsis ? `<div class="synopsis-preview"><p>${entry.synopsis}</p></div>` : ''}
+                      <div class="entry-overlay">
+                        <div class="progress-ring">
+                          <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                            <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
+                                  stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0" 
+                                    style="transition: stroke-dasharray 0.3s ease;" />
+                          </svg>
+                          <span class="progress-text">${progress}%</span>
+                        </div>
+                        <p class="lore-label">Click to view details</p>
                       </div>
-                      <p class="lore-label">Click to view details</p>
                     </div>
-                  </div>
-                  <div class="entry-content">
-                    <h3>${entry.title}</h3>
-                    <p class="entry-meta">${entryMetaText}</p>
-                    <div class="entry-row">
-                      <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
-                      ${isMovie ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
+                    <div class="entry-content">
+                      <h3>${entry.title}</h3>
+                      <p class="entry-meta">${entryMetaText}</p>
+                      <div class="entry-row">
+                        <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
+                        ${isMovie ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
+                      </div>
                     </div>
                   </div>
                 </div>
