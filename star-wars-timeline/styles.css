@@ -45,6 +45,41 @@ input:focus-visible {
   }
 }
 
+/* Filter optimization: Use hidden class for display toggling */
+.hidden {
+  display: none !important;
+}
+
+/* Intersection Observer: Only enable expensive effects for visible cards */
+.entry-card {
+  /* Animations/shadows initially disabled for performance */
+  --shadow-opacity: 0;
+  --animation-state: paused;
+}
+
+.entry-card.in-viewport {
+  --shadow-opacity: 1;
+  --animation-state: running;
+}
+
+.entry-card.in-viewport::after {
+  animation-play-state: var(--animation-state);
+}
+
+/* GPU Acceleration for smooth performance */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize heavy animated elements */
+.entry-card,
+.stat-box,
+.timeline-flow-path {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
 /* Make modal fullscreen and stacked on small screens for better usability */
 @media (max-width: 768px) {
   /* make modal nearly full-screen but preserve a small margin so rounded borders are visible */
@@ -186,9 +221,10 @@ header {
   position: static;
   border-bottom: 1px solid var(--border);
   background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(4px);
   padding: var(--space-6) var(--space-8);
   margin-bottom: 0; /* reduce extra space below header */
+  will-change: transform;
 }
 
 .header-container {
@@ -204,7 +240,7 @@ header {
 /* Hero title styles matching provided aesthetic, preserving existing colors */
 .site-hero {
   background: radial-gradient(ellipse at top, rgba(255,255,255,0.02), transparent 40%), rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(6px);
   padding: var(--space-12) var(--space-8) var(--space-8) var(--space-8);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -258,8 +294,8 @@ header {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: blur(12px);
-  opacity: 0.4;
+  filter: blur(6px);
+  opacity: 0.3;
   z-index: -1;
 }
 
@@ -287,9 +323,9 @@ header {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 
-    0 0 30px rgba(245, 158, 11, 0.4),
-    0 0 15px rgba(245, 158, 11, 0.3);
-  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+    0 0 20px rgba(245, 158, 11, 0.3),
+    0 0 10px rgba(245, 158, 11, 0.2);
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.3));
 }
 
 .hero-sub { 
@@ -318,7 +354,7 @@ header {
     rgba(15, 23, 42, 0.7) 0%,
     rgba(30, 41, 59, 0.5) 100%
   );
-  backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: var(--space-3) var(--space-4);
@@ -329,7 +365,8 @@ header {
   text-align: center;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+  will-change: auto;
 }
 
 .stat-box[data-filter] {
@@ -350,7 +387,7 @@ header {
     box-shadow: 0 0 0 rgba(245, 158, 11, 0.0);
   }
   50% {
-    box-shadow: 0 0 18px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
   }
   100% {
     box-shadow: 0 0 0 rgba(245, 158, 11, 0.0);
@@ -376,8 +413,7 @@ header {
 
 .stat-box:hover {
   border-color: rgba(245, 158, 11, 0.3);
-  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08);
 }
 
 .stat-box:hover::before {
@@ -448,7 +484,7 @@ header {
   );
   border-radius: 2px;
   transition: width 0.5s ease;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.25);
   position: relative;
 }
 
@@ -984,12 +1020,12 @@ h1 {
   border: 2px solid var(--border);
   border-radius: 0.75rem;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transform-style: preserve-3d;
-  perspective: 1000px;
+  will-change: auto;
+  contain: paint;
 }
 
 /* Era color accent on card */
@@ -1027,7 +1063,6 @@ h1 {
 }
 
 .entry-card:hover {
-  transform: translateY(-8px) rotateX(4deg) rotateY(-2deg);
   border-color: var(--section-color);
   background: linear-gradient(
     135deg,
@@ -1035,9 +1070,9 @@ h1 {
     rgba(15, 23, 42, 0.9) 100%
   );
   box-shadow: 
-    0 20px 48px rgba(0, 0, 0, 0.6),
+    0 12px 32px rgba(0, 0, 0, 0.5),
     0 0 0 1px var(--section-color),
-    0 0 40px rgba(var(--section-color-rgb), 0.4),
+    0 0 24px rgba(var(--section-color-rgb), 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 10;
 }
@@ -1098,7 +1133,7 @@ h1 {
   );
   padding: var(--space-6) var(--space-4) var(--space-4) var(--space-4);
   transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.3s ease;
   z-index: 4;
 }
 
@@ -1133,7 +1168,7 @@ h1 {
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
 }
 

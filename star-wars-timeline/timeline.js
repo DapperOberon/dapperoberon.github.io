@@ -127,6 +127,8 @@ let _flowLineRaf = null;
 let _flowScrollRaf = null;
 let _flowScrollBound = false;
 let _flowTooltip = null;
+let _lastFlowDrawTime = 0;
+const FLOW_REDRAW_THROTTLE = 150; // Throttle flow line redraws to 150ms
 
 function ensureFlowTooltip() {
   if (_flowTooltip) return _flowTooltip;
@@ -183,9 +185,23 @@ function initFlowScrollAnimation() {
 }
 
 function scheduleFlowLinesRedraw() {
+  // Throttle redraws to avoid excessive CPU usage
+  const now = Date.now();
+  if (now - _lastFlowDrawTime < FLOW_REDRAW_THROTTLE) {
+    if (_flowLineRaf) return;
+    const remaining = FLOW_REDRAW_THROTTLE - (now - _lastFlowDrawTime);
+    _flowLineRaf = setTimeout(() => {
+      _flowLineRaf = null;
+      _lastFlowDrawTime = Date.now();
+      drawTimelineFlowLines();
+    }, remaining);
+    return;
+  }
+
   if (_flowLineRaf) {
     cancelAnimationFrame(_flowLineRaf);
   }
+  _lastFlowDrawTime = now;
   _flowLineRaf = requestAnimationFrame(() => {
     _flowLineRaf = null;
     drawTimelineFlowLines();
@@ -194,10 +210,12 @@ function scheduleFlowLinesRedraw() {
 
 function drawTimelineFlowLines() {
   const svgNs = 'http://www.w3.org/2000/svg';
-  document.querySelectorAll('.timeline-flow-svg').forEach((existingSvg) => existingSvg.remove());
-
+  
   const container = document.querySelector('.timeline-container');
   if (!container) return;
+  
+  // Store reference to existing SVG for efficient replacement
+  const existingSvg = container.querySelector('.timeline-flow-svg-global');
 
   const containerRect = container.getBoundingClientRect();
   const rowTolerance = 8;
@@ -319,9 +337,13 @@ function drawTimelineFlowLines() {
   const laneRightX = Math.round(containerWidth + overflowX - edgeInset);
   const rowEdgePadding = 24;
   const flowColor = '#D4AF37';
+  const useSimplifiedSVG = allRows.length > 15; // Use simpler SVG for large lists
 
   const svg = document.createElementNS(svgNs, 'svg');
   svg.setAttribute('class', 'timeline-flow-svg timeline-flow-svg-global');
+  if (useSimplifiedSVG) {
+    svg.style.opacity = '0.5'; // Reduce opacity for simplified mode
+  }
   svg.setAttribute('viewBox', `${-overflowX} 0 ${containerWidth + (overflowX * 2)} ${containerHeight}`);
   svg.setAttribute('preserveAspectRatio', 'none');
 
@@ -378,44 +400,29 @@ function drawTimelineFlowLines() {
   const overallProgress = totalEps > 0 ? Math.round((watchedEps / totalEps) * 100) : 0;
   const tooltipText = `Episodes: ${totalEps} | Entries: ${totalEntries} | Progress: ${overallProgress}%`;
 
-  const glowPath = document.createElementNS(svgNs, 'path');
-  glowPath.setAttribute('d', d);
-  glowPath.setAttribute('class', 'timeline-flow-path timeline-flow-path-glow');
-  glowPath.setAttribute('stroke', flowColor);
-  glowPath.addEventListener('mouseenter', (event) => {
+  // Batch create SVG paths with innerHTML for efficiency
+  svg.innerHTML = `
+    <path d="${d}" class="timeline-flow-path timeline-flow-path-glow" stroke="${flowColor}"/>
+    <path d="${d}" class="timeline-flow-path" stroke="${flowColor}"/>
+    <path d="${d}" class="timeline-flow-path timeline-flow-path-direction" stroke="${flowColor}"/>
+    <path d="${d}" class="timeline-flow-path timeline-flow-path-pulse" stroke="${flowColor}"/>
+  `;
+  
+  // Add event listeners to main paths using event delegation
+  const paths = svg.querySelectorAll('.timeline-flow-path');
+  const handleMouseEnter = (event) => {
     showFlowTooltip(tooltipText, event.clientX, event.clientY);
-  });
-  glowPath.addEventListener('mousemove', (event) => {
+  };
+  const handleMouseMove = (event) => {
     showFlowTooltip(tooltipText, event.clientX, event.clientY);
+  };
+  const handleMouseLeave = hideFlowTooltip;
+  
+  paths.forEach(path => {
+    path.addEventListener('mouseenter', handleMouseEnter);
+    path.addEventListener('mousemove', handleMouseMove);
+    path.addEventListener('mouseleave', handleMouseLeave);
   });
-  glowPath.addEventListener('mouseleave', hideFlowTooltip);
-
-  const mainPath = document.createElementNS(svgNs, 'path');
-  mainPath.setAttribute('d', d);
-  mainPath.setAttribute('class', 'timeline-flow-path');
-  mainPath.setAttribute('stroke', flowColor);
-  mainPath.addEventListener('mouseenter', (event) => {
-    showFlowTooltip(tooltipText, event.clientX, event.clientY);
-  });
-  mainPath.addEventListener('mousemove', (event) => {
-    showFlowTooltip(tooltipText, event.clientX, event.clientY);
-  });
-  mainPath.addEventListener('mouseleave', hideFlowTooltip);
-
-  const directionPath = document.createElementNS(svgNs, 'path');
-  directionPath.setAttribute('d', d);
-  directionPath.setAttribute('class', 'timeline-flow-path timeline-flow-path-direction');
-  directionPath.setAttribute('stroke', flowColor);
-
-  const pulsePath = document.createElementNS(svgNs, 'path');
-  pulsePath.setAttribute('d', d);
-  pulsePath.setAttribute('class', 'timeline-flow-path timeline-flow-path-pulse');
-  pulsePath.setAttribute('stroke', flowColor);
-
-  svg.appendChild(glowPath);
-  svg.appendChild(mainPath);
-  svg.appendChild(directionPath);
-  svg.appendChild(pulsePath);
 
   // Build list of path segments with their coordinates and direction
   const pathSegments = [];
@@ -564,7 +571,13 @@ function drawTimelineFlowLines() {
   svg.appendChild(endGlow);
   svg.appendChild(startDot);
   svg.appendChild(endDot);
-  container.appendChild(svg);
+  
+  // Use replaceChild for efficient DOM updates instead of remove + appendChild
+  if (existingSvg) {
+    container.replaceChild(svg, existingSvg);
+  } else {
+    container.appendChild(svg);
+  }
 
   updateFlowOffset();
 }
@@ -1108,9 +1121,13 @@ function triggerHaptic(level) {
 }
 
 function updateFilters() {
+  // BATCH 1: Collect all filter decisions in memory (no DOM writes)
+  const cards = document.querySelectorAll('.entry-card');
+  const cardUpdates = [];
   let visibleCount = 0;
   
-  document.querySelectorAll('.entry-card').forEach(card => {
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
     const sectionIdx = parseInt(card.dataset.section);
     const entryIdx = parseInt(card.dataset.entry);
     const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
@@ -1148,23 +1165,36 @@ function updateFilters() {
       progressMatch = entry.watched === entry.episodes && entry.episodes > 0;
     }
     
-    if (canonMatch && searchMatch && typeMatch && progressMatch) {
-      card.style.display = '';
-      visibleCount++;
+    const shouldShow = canonMatch && searchMatch && typeMatch && progressMatch;
+    cardUpdates.push({ card, shouldShow });
+    if (shouldShow) visibleCount++;
+  }
+  
+  // BATCH 2: Apply all DOM changes at once (single batch of writes)
+  cardUpdates.forEach(({ card, shouldShow }) => {
+    if (shouldShow) {
+      card.classList.remove('hidden');
     } else {
-      card.style.display = 'none';
+      card.classList.add('hidden');
     }
   });
   
-  // Hide sections with no visible entries and center short rows
-  document.querySelectorAll('.timeline-section').forEach(section => {
-    const visibleCards = section.querySelectorAll('.entry-card:not([style*="display: none"])').length;
-    section.style.display = visibleCards === 0 ? 'none' : '';
+  // BATCH 3: Update sections (read all, then write all)
+  const sections = document.querySelectorAll('.timeline-section');
+  const sectionUpdates = [];
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const visibleCards = section.querySelectorAll('.entry-card:not(.hidden)').length;
+    sectionUpdates.push({ section, visible: visibleCards > 0 });
+  }
+  sectionUpdates.forEach(({ section, visible }) => {
+    section.classList.toggle('hidden', !visible);
   });
   
+  // Update no-results message
   const noResults = document.getElementById('no-results');
   if (noResults) {
-    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    noResults.classList.toggle('hidden', visibleCount > 0);
   }
 
   scheduleFlowLinesRedraw();
@@ -1679,6 +1709,38 @@ window.addEventListener('orientationchange', () => {
   scheduleFlowLinesRedraw();
 });
 
+// Setup Intersection Observer for optimal rendering of off-screen cards
+function setupIntersectionObserver() {
+  // Check if Intersection Observer is supported
+  if (!('IntersectionObserver' in window)) {
+    // Fallback: add all cards to viewport for older browsers
+    document.querySelectorAll('.entry-card').forEach(card => {
+      card.classList.add('in-viewport');
+    });
+    return;
+  }
+
+  // Create observer with root margin to load cards slightly before they're visible
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-viewport');
+      } else {
+        entry.target.classList.remove('in-viewport');
+      }
+    });
+  }, {
+    root: null,
+    rootMargin: '50px', // Start loading 50px before card enters viewport
+    threshold: 0 // Fire as soon as any part is visible
+  });
+
+  // Observe all entry cards
+  document.querySelectorAll('.entry-card').forEach(card => {
+    observer.observe(card);
+  });
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
   setVh();
@@ -1687,6 +1749,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loaded = await loadTimelineData();
   if (loaded) {
     render();
+    setupIntersectionObserver();
   } else {
     // Show error message if data fails to load
     const app = document.getElementById('app');
