@@ -966,13 +966,13 @@ h1 {
 }
 
 .timeline-entry--left .timeline-connector {
-  right: -100%;
-  width: 100%;
+  left: 100%;
+  width: 50vw;
 }
 
 .timeline-entry--right .timeline-connector {
-  left: -100%;
-  width: 100%;
+  right: 100%;
+  width: 50vw;
   background: linear-gradient(
     90deg,
     rgba(var(--section-color-rgb), 0.3),
@@ -981,7 +981,7 @@ h1 {
   );
 }
 
-/* Timeline dot at connection point - positioned to card's vertical center */
+/* Timeline dot at connection point - positioned to card's vertical center and horizontally to center line */
 .timeline-dot {
   position: absolute;
   top: 0;
@@ -994,14 +994,18 @@ h1 {
   z-index: 3;
   /* Calculate vertical position: poster midpoint at 210px, minus 6px (dot radius) for centering */
   margin-top: 204px;
+  /* Position dot at center line */
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .timeline-entry--left .timeline-dot {
-  right: -50%;
+  right: auto;
 }
 
 .timeline-entry--right .timeline-dot {
-  left: -50%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Flow SVG for advanced path rendering */
