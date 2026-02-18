@@ -573,7 +573,18 @@ function render() {
             <div class="timeline-center-line"></div>
             ${section.entries.map((entry, entryIdx) => {
               const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
-              const isMovie = /film/i.test(entry.type) && entry.episodes === 1;
+              const isSingleItemEntry = entry.episodes === 1;
+              const singleEpisodeTitle = Array.isArray(entry.episodeDetails)
+                && entry.episodeDetails[0]
+                && entry.episodeDetails[0].title
+                ? entry.episodeDetails[0].title
+                : '';
+              const singleEpisodeTime = Array.isArray(entry.episodeDetails)
+                && entry.episodeDetails[0]
+                && entry.episodeDetails[0].time
+                ? String(entry.episodeDetails[0].time).trim()
+                : '';
+              const showSingleEpisodeChecklist = isSingleItemEntry && !/film/i.test(entry.type) && Boolean(singleEpisodeTitle);
               const entryMetaText = getEntryMetaText(entry);
               const entryMetaDetails = getEntryMetaDetails(entry);
               const mediaTypeInfo = getMediaTypeInfo(entry.type);
@@ -611,9 +622,22 @@ function render() {
                     <div class="entry-content">
                       <h3>${entry.title}</h3>
                       ${entryMetaDetails ? `<p class="entry-meta">${entryMetaDetails}</p>` : ''}
+                      ${showSingleEpisodeChecklist ? `
+                        <div class="entry-single-episode-checklist">
+                          <div class="episode-list">
+                            <div class="episode-item">
+                              <label>
+                                <input type="checkbox" class="card-single-episode-checkbox" data-section="${idx}" data-entry="${entryIdx}" ${entry.watched > 0 ? 'checked' : ''} />
+                                <span class="episode-title">${singleEpisodeTitle}</span>
+                                ${singleEpisodeTime ? `<span class="episode-time">${singleEpisodeTime}</span>` : ''}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      ` : ''}
                       <div class="entry-row">
                         <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
-                        ${isMovie ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
+                        ${isSingleItemEntry && !showSingleEpisodeChecklist ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
                       </div>
                     </div>
                   </div>
@@ -1149,24 +1173,34 @@ function attachEntryHandlers() {
       openModal(s, e);
     });
 
+    const handleSingleCheckboxChange = (checkboxEl) => {
+      playSound(checkboxEl.checked ? 'success' : 'click');
+      triggerHaptic(checkboxEl.checked ? 'success' : 'light');
+      const s = Number(checkboxEl.dataset.section);
+      const e = Number(checkboxEl.dataset.entry);
+      const entry = TIMELINE_DATA[s].entries[e];
+      entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
+      entry._watchedArray[0] = checkboxEl.checked;
+      saveWatchedState(entry);
+      updateEntryUI(s, e);
+      showToast(`${entry.title}: ${checkboxEl.checked ? 'Marked as watched' : 'Marked as unwatched'}`, 'info');
+    };
+
     // movie checkbox handling: stop propagation on input and label, and update watched state
     const cb = card.querySelector('.card-movie-checkbox');
     if (cb) {
       cb.addEventListener('click', (ev) => ev.stopPropagation());
       const label = card.querySelector('.card-checkbox-inline');
       if (label) label.addEventListener('click', (ev) => ev.stopPropagation());
-      cb.addEventListener('change', () => {
-        playSound(cb.checked ? 'success' : 'click');
-        triggerHaptic(cb.checked ? 'success' : 'light');
-        const s = Number(cb.dataset.section);
-        const e = Number(cb.dataset.entry);
-        const entry = TIMELINE_DATA[s].entries[e];
-        entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
-        entry._watchedArray[0] = cb.checked;
-        saveWatchedState(entry);
-        updateEntryUI(s, e);
-        showToast(`${entry.title}: ${cb.checked ? 'Marked as watched' : 'Marked as unwatched'}`, 'info');
-      });
+      cb.addEventListener('change', () => handleSingleCheckboxChange(cb));
+    }
+
+    const singleEpisodeCb = card.querySelector('.card-single-episode-checkbox');
+    if (singleEpisodeCb) {
+      singleEpisodeCb.addEventListener('click', (ev) => ev.stopPropagation());
+      const singleEpisodeLabel = card.querySelector('.entry-single-episode-checklist .episode-item label');
+      if (singleEpisodeLabel) singleEpisodeLabel.addEventListener('click', (ev) => ev.stopPropagation());
+      singleEpisodeCb.addEventListener('change', () => handleSingleCheckboxChange(singleEpisodeCb));
     }
   });
 }
@@ -1333,6 +1367,10 @@ function updateEntryUI(sectionIdx, entryIdx) {
   const movieCheckbox = card.querySelector('.card-movie-checkbox');
   if (movieCheckbox) {
     movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
+  }
+  const singleEpisodeCheckbox = card.querySelector('.card-single-episode-checkbox');
+  if (singleEpisodeCheckbox) {
+    singleEpisodeCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
   }
 
   updateWatchModeHighlight();

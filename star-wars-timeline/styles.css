@@ -1646,6 +1646,23 @@ body.modal-open {
   margin-bottom: var(--space-2);
 }
 
+.entry-single-episode-checklist {
+  margin-bottom: var(--space-2);
+}
+
+.entry-single-episode-checklist .episode-list {
+  gap: 0;
+  overflow: visible;
+}
+
+.entry-single-episode-checklist .episode-item {
+  margin: 0;
+}
+
+.entry-single-episode-checklist .episode-item:hover {
+  transform: none;
+}
+
 .entry-episodes {
   font-size: var(--text-sm);
   color: var(--primary);
