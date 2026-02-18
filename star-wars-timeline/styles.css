@@ -954,7 +954,7 @@ h1 {
 /* Connecting line from card to center */
 .timeline-connector {
   position: absolute;
-  top: calc(50% - 1px);
+  top: 50%;
   height: 2px;
   background: linear-gradient(
     90deg,
@@ -963,16 +963,15 @@ h1 {
     rgba(var(--section-color-rgb), 0.3)
   );
   z-index: 0;
+  width: calc(26vw - 50px);
 }
 
 .timeline-entry--left .timeline-connector {
   left: 100%;
-  width: 26vw;
 }
 
 .timeline-entry--right .timeline-connector {
   right: 100%;
-  width: 26vw;
   background: linear-gradient(
     90deg,
     rgba(var(--section-color-rgb), 0.3),
@@ -984,7 +983,7 @@ h1 {
 /* Timeline dot at connection point - positioned to card's vertical center and horizontally to center line */
 .timeline-dot {
   position: absolute;
-  top: calc(50% - 4.5px);
+  top: calc(50% - 5px);
   width: 12px;
   height: 12px;
   background: var(--section-color);
@@ -996,11 +995,11 @@ h1 {
 }
 
 .timeline-entry--left .timeline-dot {
-  right: -26vw;
+  right: calc(-26vw + 50px);
 }
 
 .timeline-entry--right .timeline-dot {
-  left: -26vw;
+  left: calc(-26vw + 50px);
   transform: translateX(-50%);
 }
 
