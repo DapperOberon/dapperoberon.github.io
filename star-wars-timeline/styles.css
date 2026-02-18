@@ -999,6 +999,7 @@ h1 {
 
 .timeline-entry--right .timeline-dot {
   left: -26vw;
+  transform: translateX(-50%);
 }
 
 /* Flow SVG for advanced path rendering */
