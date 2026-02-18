@@ -941,14 +941,14 @@ h1 {
 .timeline-entry--left {
   margin-left: 0;
   margin-right: auto;
-  transform: translateX(40px);
+  transform: translateX(50px);
 }
 
 /* Right-aligned entries */
 .timeline-entry--right {
   margin-left: auto;
   margin-right: 0;
-  transform: translateX(-40px);
+  transform: translateX(-50px);
 }
 
 /* Connecting line from card to center */
