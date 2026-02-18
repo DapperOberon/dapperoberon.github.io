@@ -952,7 +952,7 @@ h1 {
 /* Connecting line from card to center */
 .timeline-connector {
   position: absolute;
-  top: 0;
+  top: 50%;
   height: 2px;
   background: linear-gradient(
     90deg,
@@ -961,18 +961,16 @@ h1 {
     rgba(var(--section-color-rgb), 0.3)
   );
   z-index: 0;
-  /* Align to card poster midpoint: 280px width with 2/3 aspect = 420px tall, midpoint = 210px */
-  margin-top: 210px;
 }
 
 .timeline-entry--left .timeline-connector {
   left: 100%;
-  width: 50vw;
+  width: 26vw;
 }
 
 .timeline-entry--right .timeline-connector {
   right: 100%;
-  width: 50vw;
+  width: 26vw;
   background: linear-gradient(
     90deg,
     rgba(var(--section-color-rgb), 0.3),
@@ -984,7 +982,7 @@ h1 {
 /* Timeline dot at connection point - positioned to card's vertical center and horizontally to center line */
 .timeline-dot {
   position: absolute;
-  top: 0;
+  top: calc(50% - 4.5px);
   width: 12px;
   height: 12px;
   background: var(--section-color);
@@ -992,20 +990,15 @@ h1 {
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.6);
   z-index: 3;
-  /* Calculate vertical position: poster midpoint at 210px, minus 6px (dot radius) for centering */
-  margin-top: 204px;
-  /* Position dot at center line */
-  left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(50%);
 }
 
 .timeline-entry--left .timeline-dot {
-  right: auto;
+  right: -26vw;
 }
 
 .timeline-entry--right .timeline-dot {
-  left: 50%;
-  transform: translateX(-50%);
+  left: -26vw;
 }
 
 /* Flow SVG for advanced path rendering */
