@@ -961,8 +961,8 @@ h1 {
     rgba(var(--section-color-rgb), 0.3)
   );
   z-index: 0;
-  /* Align to card poster midpoint */
-  margin-top: 160px;
+  /* Align to card poster midpoint: max-width 420px with 2/3 aspect = 630px tall, midpoint = 315px */
+  margin-top: 315px;
 }
 
 .timeline-entry--left .timeline-connector {
@@ -992,8 +992,8 @@ h1 {
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.6);
   z-index: 3;
-  /* Calculate vertical position: poster (320px) / 2 for its midpoint + some content offset */
-  margin-top: calc(160px - 6px);
+  /* Calculate vertical position: poster midpoint at 315px, minus 6px (dot radius) for centering */
+  margin-top: 309px;
 }
 
 .timeline-entry--left .timeline-dot {
@@ -1190,7 +1190,6 @@ h1 {
   width: 100%;
   overflow: hidden;
   aspect-ratio: 2 / 3;
-  height: 320px;
   background: linear-gradient(135deg, var(--bg-light), var(--bg));
 }
 
