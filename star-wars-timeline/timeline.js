@@ -1,148 +1,54 @@
+import {
+  loadTimelineData as loadTimelineDataModule,
+  getEntryMetaText as getEntryMetaTextModule,
+  getEntryMetaDetails as getEntryMetaDetailsModule,
+  getEntrySearchText as getEntrySearchTextModule,
+  hexToRgb as hexToRgbModule,
+  getMediaTypeInfo as getMediaTypeInfoModule
+} from './modules/data.js';
+import {
+  loadCollapsedEras as loadCollapsedErasModule,
+  saveCollapsedEras as saveCollapsedErasModule,
+  saveWatchedState as saveWatchedStateModule,
+  initializeWatchedState as initializeWatchedStateModule,
+  resetAllProgress as resetAllProgressModule
+} from './modules/persistence.js';
+import {
+  calculateStats as calculateStatsModule,
+  buildStatSparklines as buildStatSparklinesModule,
+  updateStatSparklines as updateStatSparklinesModule,
+  updateStatBox as updateStatBoxModule
+} from './modules/stats.js';
+import { createFilterController } from './modules/filters.js';
+import { createModalController } from './modules/modal.js';
+
 // Star Wars Timeline Data - loaded from JSON
 let TIMELINE_DATA = [];
+let filterController = null;
+let modalController = null;
 
 // Load timeline data from JSON file
 async function loadTimelineData() {
-  try {
-    const response = await fetch('./timeline-data.json');
-    if (!response.ok) {
-      throw new Error(`Failed to load timeline data: ${response.status}`);
-    }
-    TIMELINE_DATA = await response.json();
-    
-    // Initialize _watchedArray for entries based on their watched status from the JSON
-    TIMELINE_DATA.forEach(section => {
-      section.entries.forEach(entry => {
-        // Create initial _watchedArray based on watched count from JSON
-        if (!entry._watchedArray) {
-          const watchedCount = entry.watched || 0;
-          entry._watchedArray = new Array(entry.episodes).fill(false);
-          // Mark the first 'watchedCount' episodes as watched by default
-          for (let i = 0; i < Math.min(watchedCount, entry.episodes); i++) {
-            entry._watchedArray[i] = true;
-          }
-        }
-      });
-    });
-    
-    return true;
-  } catch (error) {
-    console.error('Error loading timeline data:', error);
+  const loadedData = await loadTimelineDataModule();
+  if (!loadedData) {
     return false;
   }
-}
 
-function isShowEntry(entry) {
-  return /show|anthology/i.test(entry.type) && entry.episodes > 1;
+  TIMELINE_DATA = loadedData;
+  return true;
 }
 
 function getEntryMetaText(entry) {
-  const parts = [`${entry.year}`];
-
-  if (entry.releaseYear) {
-    let releaseYearText = entry.releaseYear;
-    if (isShowEntry(entry) && entry.seasons === 1) {
-      const yearRangeMatch = String(entry.releaseYear).match(/^(\d{4})\s*-\s*(\d{4})$/);
-      if (yearRangeMatch && yearRangeMatch[1] === yearRangeMatch[2]) {
-        releaseYearText = yearRangeMatch[1];
-      }
-    }
-    parts.push(releaseYearText);
-  }
-
-  if (isShowEntry(entry) && typeof entry.seasons === 'number') {
-    parts.push(`${entry.seasons} Season${entry.seasons === 1 ? '' : 's'}`);
-  }
-
-  return parts.join(' • ');
+  return getEntryMetaTextModule(entry);
 }
 
 function getEntryMetaDetails(entry) {
-  const parts = [];
-
-  if (entry.releaseYear) {
-    let releaseYearText = entry.releaseYear;
-    if (isShowEntry(entry) && entry.seasons === 1) {
-      const yearRangeMatch = String(entry.releaseYear).match(/^(\d{4})\s*-\s*(\d{4})$/);
-      if (yearRangeMatch && yearRangeMatch[1] === yearRangeMatch[2]) {
-        releaseYearText = yearRangeMatch[1];
-      }
-    }
-    parts.push(releaseYearText);
-  }
-
-  if (isShowEntry(entry) && typeof entry.seasons === 'number') {
-    parts.push(`${entry.seasons} Season${entry.seasons === 1 ? '' : 's'}`);
-  }
-
-  return parts.join(' • ');
+  return getEntryMetaDetailsModule(entry);
 }
 
 function getEntrySearchText(entry) {
-  const episodeTitles = Array.isArray(entry.episodeDetails)
-    ? entry.episodeDetails.map(ep => ep && ep.title ? ep.title : '').join(' ')
-    : '';
-
-  const searchParts = [
-    entry.title,
-    entry.year,
-    entry.type,
-    entry.synopsis || '',
-    String(entry.episodes),
-    String(entry.watched),
-    entry.canon ? 'canon official continuity' : 'legends non canon',
-    entry.releaseYear || '',
-    typeof entry.seasons === 'number' ? `${entry.seasons} season ${entry.seasons} seasons` : '',
-    getEntryMetaText(entry),
-    episodeTitles
-  ];
-
-  return searchParts.join(' ').toLowerCase();
+  return getEntrySearchTextModule(entry);
 }
-
-function getLegacyWatchedStorageKey(entry) {
-  return 'watched_' + entry.title.replace(/\s+/g, '_');
-}
-
-function getEntryStorageId(entry) {
-  if (entry && entry.id) {
-    return String(entry.id);
-  }
-
-  const firstEpisodeTitle = Array.isArray(entry.episodeDetails) && entry.episodeDetails.length > 0 && entry.episodeDetails[0].title
-    ? entry.episodeDetails[0].title
-    : '';
-
-  const fingerprint = [
-    entry.title || '',
-    entry.year || '',
-    entry.type || '',
-    String(entry.episodes || ''),
-    entry.releaseYear || '',
-    typeof entry.seasons === 'number' ? String(entry.seasons) : '',
-    firstEpisodeTitle
-  ].join('|').toLowerCase();
-
-  return fingerprint.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-}
-
-function getWatchedStorageKey(entry) {
-  return 'watched_' + getEntryStorageId(entry);
-}
-
-// saved scroll position while modal is open
-let _savedScrollY = 0;
-let _currentModalSection = null;
-let _currentModalEntry = null;
-
-// Filter state
-let filters = {
-  canon: true,
-  legends: true,
-  search: '',
-  type: 'all', // 'all', 'films', 'shows'
-  progress: 'all' // 'all', 'not-started', 'in-progress', 'completed'
-};
 
 let _flowLineRaf = null;
 let _flowScrollRaf = null;
@@ -242,201 +148,56 @@ function drawTimelineFlowLines() {
   updateFlowOffset();
 }
 
-// Calculate statistics
 function calculateStats() {
-  let totalEpisodes = 0;
-  let watchedEpisodes = 0;
-  let completedShows = 0;
-  let totalShows = 0;
-
-  TIMELINE_DATA.forEach(section => {
-    section.entries.forEach(entry => {
-      totalEpisodes += entry.episodes;
-      watchedEpisodes += entry.watched;
-      totalShows++;
-      if (entry.watched === entry.episodes && entry.episodes > 0) {
-        completedShows++;
-      }
-    });
-  });
-
-  const overallProgress = totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
-
-  return {
-    overallProgress,
-    watchedEpisodes,
-    completedShows,
-    totalShows,
-    totalEpisodes
-  };
-}
-
-function buildStatSeries() {
-  const totals = calculateStats();
-  const series = {
-    overallProgress: [],
-    watchedEpisodes: [],
-    completedShows: [],
-    totalEpisodes: []
-  };
-
-  let cumulativeWatched = 0;
-  let cumulativeEpisodes = 0;
-  let cumulativeCompleted = 0;
-
-  const entries = [];
-  TIMELINE_DATA.forEach(section => {
-    section.entries.forEach(entry => entries.push(entry));
-  });
-
-  if (entries.length === 0) {
-    series.overallProgress = [0];
-    series.watchedEpisodes = [0];
-    series.completedShows = [0];
-    series.totalEpisodes = [0];
-    return { series, totals };
-  }
-
-  entries.forEach(entry => {
-    cumulativeEpisodes += entry.episodes;
-    cumulativeWatched += entry.watched;
-    if (entry.episodes > 0 && entry.watched === entry.episodes) {
-      cumulativeCompleted += 1;
-    }
-    const overall = cumulativeEpisodes > 0 ? (cumulativeWatched / cumulativeEpisodes) * 100 : 0;
-    series.overallProgress.push(overall);
-    series.watchedEpisodes.push(cumulativeWatched);
-    series.completedShows.push(cumulativeCompleted);
-    series.totalEpisodes.push(cumulativeEpisodes);
-  });
-
-  return { series, totals };
-}
-
-function downsampleSeries(values, maxPoints = 12) {
-  if (values.length <= maxPoints) return values;
-  const sampled = [];
-  const step = (values.length - 1) / (maxPoints - 1);
-  for (let i = 0; i < maxPoints; i++) {
-    const idx = Math.round(i * step);
-    sampled.push(values[idx]);
-  }
-  return sampled;
-}
-
-function buildSparklinePath(values, maxValue) {
-  const width = 100;
-  const height = 24;
-  const padding = 2;
-  const series = downsampleSeries(values);
-  const max = maxValue || Math.max(...series, 1);
-  const min = 0;
-  const range = Math.max(max - min, 1);
-
-  return series.map((value, index) => {
-    const x = (index / (series.length - 1 || 1)) * (width - padding * 2) + padding;
-    const normalized = (value - min) / range;
-    const y = height - padding - normalized * (height - padding * 2);
-    return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-  }).join(' ');
-}
-
-function buildSparklineSvg(values, maxValue) {
-  const path = buildSparklinePath(values, maxValue);
-  return `
-    <svg class="stat-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
-      <path class="stat-sparkline-path" d="${path}"></path>
-    </svg>
-  `;
+  return calculateStatsModule(TIMELINE_DATA);
 }
 
 function buildStatSparklines() {
-  const { series, totals } = buildStatSeries();
-  return {
-    overall: buildSparklineSvg(series.overallProgress, 100),
-    watched: buildSparklineSvg(series.watchedEpisodes, Math.max(totals.totalEpisodes, 1)),
-    completed: buildSparklineSvg(series.completedShows, Math.max(totals.totalShows, 1)),
-    total: buildSparklineSvg(series.totalEpisodes, Math.max(totals.totalEpisodes, 1))
-  };
+  return buildStatSparklinesModule(TIMELINE_DATA);
 }
 
 function updateStatSparklines() {
-  const { series, totals } = buildStatSeries();
-  const sparklines = {
-    overall: buildSparklinePath(series.overallProgress, 100),
-    episodes: buildSparklinePath(series.watchedEpisodes, Math.max(totals.totalEpisodes, 1)),
-    completed: buildSparklinePath(series.completedShows, Math.max(totals.totalShows, 1)),
-    total: buildSparklinePath(series.totalEpisodes, Math.max(totals.totalEpisodes, 1))
-  };
-
-  document.querySelectorAll('.stat-box').forEach(box => {
-    const stat = box.dataset.stat;
-    const path = box.querySelector('.stat-sparkline-path');
-    if (stat && path && sparklines[stat]) {
-      path.setAttribute('d', sparklines[stat]);
-    }
-  });
+  return updateStatSparklinesModule(TIMELINE_DATA);
 }
 
-function animateStatValue(el, target, format, total) {
-  const start = Number(el.dataset.current || 0);
-  const end = Number(target || 0);
-  const duration = 700;
-  const startTime = performance.now();
-
-  const formatValue = (value) => {
-    const rounded = Math.round(value);
-    if (format === 'percent') return `${rounded}%`;
-    if (format === 'fraction') return `${rounded}/${total || 0}`;
-    return `${rounded}`;
-  };
-
-  const step = (now) => {
-    const elapsed = Math.min(now - startTime, duration);
-    const progress = elapsed / duration;
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const current = start + (end - start) * eased;
-    el.textContent = formatValue(current);
-    if (elapsed < duration) {
-      requestAnimationFrame(step);
-    } else {
-      el.textContent = formatValue(end);
-      el.dataset.current = String(end);
-    }
-  };
-
-  requestAnimationFrame(step);
-}
-
-// Convert hex color to RGB values for CSS rgba()
 function hexToRgb(hex) {
-  // Remove # if present
-  hex = hex.replace('#', '');
-  
-  // Handle shorthand hex  
-  if (hex.length === 3) {
-    hex = hex.split('').map(c => c + c).join('');
-  }
-  
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  
-  return `${r}, ${g}, ${b}`;
+  return hexToRgbModule(hex);
 }
 
-// Get media type color and icon
 function getMediaTypeInfo(type) {
-  const typeMap = {
-    'Live Action Film': { color: 'var(--type-film)', icon: '🎬', label: 'Film' },
-    'Live Action Show': { color: 'var(--type-show)', icon: '📺', label: 'Live Action Show' },
-    'Live Action TV Film': { color: 'var(--type-film)', icon: '🎬', label: 'TV Film' },
-    'Animated Film': { color: 'var(--type-animated)', icon: '🎨', label: 'Animated Film' },
-    'Animated Show': { color: 'var(--type-animated)', icon: '🎨', label: 'Animated Show' },
-    'Animated Anthology': { color: 'var(--type-anthology)', icon: '✨', label: 'Anthology' }
-  };
-  
-  return typeMap[type] || { color: 'var(--text-secondary)', icon: '📀', label: 'Media' };
+  return getMediaTypeInfoModule(type);
+}
+
+function getFilterController() {
+  if (!filterController) {
+    filterController = createFilterController({
+      getTimelineData: () => TIMELINE_DATA,
+      getEntrySearchText,
+      playSound,
+      triggerHaptic,
+      updateEraRailVisibility,
+      updateWatchModeHighlight,
+      scheduleFlowLinesRedraw
+    });
+  }
+  return filterController;
+}
+
+function getModalController() {
+  if (!modalController) {
+    modalController = createModalController({
+      getTimelineData: () => TIMELINE_DATA,
+      hexToRgb,
+      getEntryMetaText,
+      getMediaTypeInfo,
+      playSound,
+      triggerHaptic,
+      saveWatchedState,
+      updateEntryUI,
+      resetAllProgress: () => resetAllProgressModule(TIMELINE_DATA, updateEntryUI)
+    });
+  }
+  return modalController;
 }
 
 // Render the timeline
@@ -715,138 +476,15 @@ function render() {
 
 // Filter handlers
 function attachFilterHandlers() {
-  // Search input
-  const searchInput = document.getElementById('search-input');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      filters.search = e.target.value.toLowerCase();
-      updateFilters();
-    });
-  }
-  
-  // Canon/Legends filters
-  document.querySelectorAll('[data-canon-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSound('click');
-      triggerHaptic('light');
-      document.querySelectorAll('[data-canon-filter]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter = btn.dataset.canonFilter;
-      if (filter === 'all') {
-        filters.canon = true;
-        filters.legends = true;
-      } else if (filter === 'canon') {
-        filters.canon = true;
-        filters.legends = false;
-      } else if (filter === 'legends') {
-        filters.canon = false;
-        filters.legends = true;
-      }
-      updateFilters();
-    });
-  });
-  
-  // Type filters
-  document.querySelectorAll('[data-type-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSound('click');
-      triggerHaptic('light');
-      document.querySelectorAll('[data-type-filter]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filters.type = btn.dataset.typeFilter;
-      updateFilters();
-    });
-  });
-  
-  // Progress filters
-  document.querySelectorAll('[data-progress-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSound('click');
-      triggerHaptic('light');
-      document.querySelectorAll('[data-progress-filter]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filters.progress = btn.dataset.progressFilter;
-      updateFilters();
-    });
-  });
-  
-  // initial filter pass
-  updateFilters();
-}
-
-let _mobileFiltersResizeBound = false;
-
-function getActiveFilterCount() {
-  let activeCount = 0;
-  if (filters.type !== 'all') activeCount += 1;
-  if (!(filters.canon && filters.legends)) activeCount += 1;
-  if (filters.progress !== 'all') activeCount += 1;
-  if (filters.search && filters.search.trim().length > 0) activeCount += 1;
-  return activeCount;
-}
-
-function updateMobileFilterSummary() {
-  const countEl = document.getElementById('filters-active-count');
-  if (!countEl) return;
-  const activeCount = getActiveFilterCount();
-  countEl.textContent = activeCount === 0 ? 'All' : `${activeCount} active`;
+  getFilterController().attachFilterHandlers();
 }
 
 function initMobileFilterPanel() {
-  const toggleBtn = document.getElementById('filters-toggle');
-  const panel = document.getElementById('filters-panel');
-  if (!toggleBtn || !panel) return;
-
-  const setPanelOpen = (isOpen) => {
-    panel.classList.toggle('open', isOpen);
-    toggleBtn.setAttribute('aria-expanded', String(isOpen));
-    panel.setAttribute('aria-hidden', String(!isOpen));
-  };
-
-  setPanelOpen(false);
-  updateMobileFilterSummary();
-
-  toggleBtn.addEventListener('click', () => {
-    const isOpen = panel.classList.contains('open');
-    setPanelOpen(!isOpen);
-    playSound('click');
-    triggerHaptic('light');
-  });
-
-  document.querySelectorAll('.filter-btn').forEach((button) => {
-    button.addEventListener('click', () => {
-      if (window.matchMedia('(max-width: 768px)').matches) {
-        setPanelOpen(false);
-      }
-    });
-  });
-
-  if (!_mobileFiltersResizeBound) {
-    _mobileFiltersResizeBound = true;
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) {
-        setPanelOpen(false);
-      }
-    });
-  }
+  getFilterController().initMobileFilterPanel();
 }
 
 function attachStatHandlers() {
-  const activateFilter = (filter) => {
-    const button = document.querySelector(`[data-progress-filter="${filter}"]`);
-    if (button) button.click();
-  };
-
-  document.querySelectorAll('.stat-box[data-filter]').forEach(box => {
-    const filter = box.dataset.filter;
-    box.addEventListener('click', () => activateFilter(filter));
-    box.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        activateFilter(filter);
-      }
-    });
-  });
+  getFilterController().attachStatHandlers();
 }
 
 let soundEnabled = false;
@@ -855,19 +493,11 @@ let watchModeEnabled = false;
 let eraObserver = null;
 
 function loadCollapsedEras() {
-  try {
-    const raw = localStorage.getItem('sw_collapsed_eras');
-    const parsed = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(parsed) ? parsed : []);
-  } catch (e) {
-    return new Set();
-  }
+  return loadCollapsedErasModule();
 }
 
 function saveCollapsedEras(set) {
-  try {
-    localStorage.setItem('sw_collapsed_eras', JSON.stringify(Array.from(set)));
-  } catch (e) {}
+  saveCollapsedErasModule(set);
 }
 
 function initSoundToggle() {
@@ -1052,132 +682,12 @@ function triggerHaptic(level) {
 }
 
 function updateFilters() {
-  // BATCH 1: Collect all filter decisions in memory (no DOM writes)
-  const cards = document.querySelectorAll('.entry-card');
-  const entryUpdates = [];
-  let visibleCount = 0;
-  
-  for (let i = 0; i < cards.length; i++) {
-    const card = cards[i];
-    const sectionIdx = parseInt(card.dataset.section);
-    const entryIdx = parseInt(card.dataset.entry);
-    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
-    const isCanon = card.dataset.canon === 'true';
-    
-    // Canon/Legends filter
-    let canonMatch = false;
-    if (filters.canon && filters.legends) {
-      canonMatch = true;
-    } else if (filters.canon && isCanon) {
-      canonMatch = true;
-    } else if (filters.legends && !isCanon) {
-      canonMatch = true;
-    }
-    
-    // Search filter
-    const searchText = filters.search;
-    const searchMatch = !searchText || getEntrySearchText(entry).includes(searchText);
-    
-    // Type filter
-    let typeMatch = true;
-    if (filters.type === 'films') {
-      typeMatch = entry.type.toLowerCase().includes('film');
-    } else if (filters.type === 'shows') {
-      typeMatch = entry.episodes > 1 || /show|anthology/i.test(entry.type);
-    }
-    
-    // Progress filter
-    let progressMatch = true;
-    if (filters.progress === 'not-started') {
-      progressMatch = entry.watched === 0;
-    } else if (filters.progress === 'in-progress') {
-      progressMatch = entry.watched > 0 && entry.watched < entry.episodes;
-    } else if (filters.progress === 'completed') {
-      progressMatch = entry.watched === entry.episodes && entry.episodes > 0;
-    }
-    
-    const shouldShow = canonMatch && searchMatch && typeMatch && progressMatch;
-    const entryNode = card.closest('.timeline-entry');
-    entryUpdates.push({ card, entryNode, shouldShow });
-    if (shouldShow) visibleCount++;
-  }
-  
-  // BATCH 2: Apply all DOM changes at once (single batch of writes)
-  entryUpdates.forEach(({ card, entryNode, shouldShow }) => {
-    if (shouldShow) {
-      card.classList.remove('hidden');
-      if (entryNode) entryNode.classList.remove('hidden');
-    } else {
-      card.classList.add('hidden');
-      if (entryNode) entryNode.classList.add('hidden');
-    }
-  });
-  
-  // BATCH 3: Update sections (read all, then write all)
-  const sections = document.querySelectorAll('.timeline-section');
-  const sectionUpdates = [];
-  for (let i = 0; i < sections.length; i++) {
-    const section = sections[i];
-    const visibleEntries = section.querySelectorAll('.timeline-entry:not(.hidden)').length;
-    sectionUpdates.push({ section, visible: visibleEntries > 0 });
-  }
-  sectionUpdates.forEach(({ section, visible }) => {
-    section.classList.toggle('hidden', !visible);
-  });
-  
-  // Update no-results message
-  const noResults = document.getElementById('no-results');
-  if (noResults) {
-    noResults.classList.toggle('hidden', visibleCount > 0);
-  }
-
-  updateEraRailVisibility();
-  updateWatchModeHighlight();
-  scheduleFlowLinesRedraw();
-  updateMobileFilterSummary();
+  getFilterController().updateFilters();
 }
 
 // Watched state and modal helpers
 function initializeWatchedState() {
-  TIMELINE_DATA.forEach(section => {
-    section.entries.forEach(entry => {
-      const key = getWatchedStorageKey(entry);
-      const legacyKey = getLegacyWatchedStorageKey(entry);
-      try {
-        let raw = localStorage.getItem(key);
-        let loadedFromLegacy = false;
-        if (!raw) {
-          raw = localStorage.getItem(legacyKey);
-          loadedFromLegacy = Boolean(raw);
-        }
-        if (raw) {
-          const arr = JSON.parse(raw);
-          if (Array.isArray(arr) && arr.length === entry.episodes) {
-            entry._watchedArray = arr;
-            entry.watched = arr.filter(Boolean).length;
-            if (loadedFromLegacy) {
-              try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) {}
-              if (legacyKey !== key) {
-                try { localStorage.removeItem(legacyKey); } catch (e) {}
-              }
-            }
-            return;
-          }
-        }
-      } catch (e) {}
-      // If the author supplied a prefilled _watchedArray in the data, use it
-      if (Array.isArray(entry._watchedArray) && entry._watchedArray.length === entry.episodes) {
-        entry.watched = entry._watchedArray.filter(Boolean).length;
-        return;
-      }
-      entry._watchedArray = new Array(entry.episodes).fill(false);
-      entry.watched = entry.watched || 0;
-    });
-  });
-  // update UI counts
-  TIMELINE_DATA.forEach((section, sidx) => {
-    section.entries.forEach((entry, eidx) => updateEntryUI(sidx, eidx));
-  });
+  initializeWatchedStateModule(TIMELINE_DATA, updateEntryUI);
 }
 
 function attachEntryHandlers() {
@@ -1241,132 +751,27 @@ function attachImageLoaders() {
 }
 
 function attachResetButton() {
-  const resetBtn = document.getElementById('reset-progress-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      playSound('click');
-      triggerHaptic('light');
-      openResetDialog();
-    });
-  }
+  getModalController().attachResetButton();
 }
 
 function resetAllProgress() {
-  TIMELINE_DATA.forEach((section, sectionIdx) => {
-    section.entries.forEach((entry, entryIdx) => {
-      entry._watchedArray = new Array(entry.episodes).fill(false);
-      entry.watched = 0;
-      const key = getWatchedStorageKey(entry);
-      const legacyKey = getLegacyWatchedStorageKey(entry);
-      try { localStorage.removeItem(key); } catch (e) {}
-      if (legacyKey !== key) {
-        try { localStorage.removeItem(legacyKey); } catch (e) {}
-      }
-      updateEntryUI(sectionIdx, entryIdx);
-    });
-  });
+  resetAllProgressModule(TIMELINE_DATA, updateEntryUI);
 }
 
 function openResetDialog() {
-  const resetDialog = document.getElementById('reset-dialog');
-  if (!resetDialog) return;
-
-  resetDialog.innerHTML = `
-    <div class="reset-dialog-backdrop"></div>
-    <div class="reset-dialog-content" role="dialog" aria-modal="true" aria-labelledby="reset-dialog-title" aria-describedby="reset-dialog-description">
-      <h2 id="reset-dialog-title">Reset progress?</h2>
-      <p id="reset-dialog-description">This will clear all watched progress across the timeline. This action cannot be undone.</p>
-      <div class="reset-dialog-actions">
-        <button type="button" class="modal-btn modal-btn--ghost modal-close-btn" id="reset-dialog-cancel">Cancel</button>
-        <button type="button" class="modal-btn modal-btn--primary modal-primary-btn" id="reset-dialog-confirm">Reset Progress</button>
-      </div>
-    </div>
-  `;
-
-  resetDialog.classList.remove('hidden');
-  resetDialog.setAttribute('aria-hidden', 'false');
-
-  const cancelBtn = resetDialog.querySelector('#reset-dialog-cancel');
-  const confirmBtn = resetDialog.querySelector('#reset-dialog-confirm');
-  const backdrop = resetDialog.querySelector('.reset-dialog-backdrop');
-
-  const closeOnEscape = (event) => {
-    if (event.key === 'Escape') {
-      closeResetDialog();
-    }
-  };
-
-  const handleClose = () => {
-    document.removeEventListener('keydown', closeOnEscape);
-    closeResetDialog();
-  };
-
-  if (cancelBtn) cancelBtn.addEventListener('click', handleClose);
-  if (backdrop) backdrop.addEventListener('click', handleClose);
-  if (confirmBtn) {
-    confirmBtn.addEventListener('click', () => {
-      playSound('success');
-      triggerHaptic('success');
-      resetAllProgress();
-      handleClose();
-      showToast('All watched progress has been reset.', 'success');
-    });
-    confirmBtn.focus();
-  }
-
-  document.addEventListener('keydown', closeOnEscape);
+  getModalController().openResetDialog();
 }
 
 function closeResetDialog() {
-  const resetDialog = document.getElementById('reset-dialog');
-  if (!resetDialog) return;
-  resetDialog.classList.add('hidden');
-  resetDialog.setAttribute('aria-hidden', 'true');
+  getModalController().closeResetDialog();
 }
 
 function showToast(message, type = 'info') {
-  const toastContainer = document.getElementById('toast-container');
-  if (!toastContainer) return;
-
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.setAttribute('role', 'status');
-  toast.textContent = message;
-
-  toastContainer.appendChild(toast);
-
-  const existingToasts = toastContainer.querySelectorAll('.toast');
-  if (existingToasts.length > 4) {
-    existingToasts[0].remove();
-  }
-
-  requestAnimationFrame(() => {
-    toast.classList.add('show');
-  });
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => {
-      if (toast.parentElement) {
-        toast.remove();
-      }
-    }, 220);
-  }, 2600);
-}
-
-function isShowCompleted(entry) {
-  if (!entry || entry.episodes <= 1 || !Array.isArray(entry._watchedArray)) return false;
-  return entry._watchedArray.every(Boolean);
+  getModalController().showToast(message, type);
 }
 
 function saveWatchedState(entry) {
-  const key = getWatchedStorageKey(entry);
-  const legacyKey = getLegacyWatchedStorageKey(entry);
-  try { localStorage.setItem(key, JSON.stringify(entry._watchedArray)); } catch (e) {}
-  if (legacyKey !== key) {
-    try { localStorage.removeItem(legacyKey); } catch (e) {}
-  }
-  entry.watched = entry._watchedArray.filter(Boolean).length;
+  saveWatchedStateModule(entry);
 }
 
 function updateCardQuickCheckState(card, isWatched) {
@@ -1441,293 +846,15 @@ function updateStats() {
 }
 
 function updateStatBox(box, value, options = {}) {
-  if (!box) return;
-  const valueEl = box.querySelector('.stat-value');
-  const progressBar = box.querySelector('.stat-progress-bar');
-  const previous = valueEl ? Number(valueEl.dataset.current || 0) : 0;
-  const changed = Number.isFinite(previous) ? previous !== value : true;
-
-  if (valueEl) {
-    valueEl.dataset.target = String(value);
-    animateStatValue(valueEl, value, options.format, options.total);
-  }
-
-  if (progressBar && typeof options.progress === 'number') {
-    progressBar.style.width = `${options.progress}%`;
-  }
-
-  if (changed) {
-    box.classList.remove('pulse');
-    void box.offsetWidth;
-    box.classList.add('pulse');
-  }
+  return updateStatBoxModule(box, value, options);
 }
 
 function openModal(sectionIdx, entryIdx) {
-  // store indices for closeModal to use
-  _currentModalSection = sectionIdx;
-  _currentModalEntry = entryIdx;
-  const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
-  const section = TIMELINE_DATA[sectionIdx];
-  const sectionColor = section.color;
-  const sectionColorRgb = hexToRgb(sectionColor);
-  const modal = document.getElementById('modal');
-  const arr = entry._watchedArray || new Array(entry.episodes).fill(false);
-  entry._watchedArray = arr;
-  const watchedCount = arr.filter(Boolean).length;
-
-  let episodesHTML = '';
-  for (let i = 0; i < entry.episodes; i++) {
-    const isChecked = Boolean(arr[i]);
-    const checked = isChecked ? 'checked' : '';
-    const episodeTitle = (entry.episodeDetails && entry.episodeDetails[i] && entry.episodeDetails[i].title) || '';
-    const episodeTime = (entry.episodeDetails && entry.episodeDetails[i] && entry.episodeDetails[i].time) || '';
-    const episodeTimeText = String(episodeTime).trim() || '—';
-    episodesHTML += `
-      <div class="episode-item ${isChecked ? 'is-watched' : ''}" data-episode-item="${i}">
-        <label>
-          <input type="checkbox" data-ep="${i}" ${checked} />
-          <span class="episode-title">${episodeTitle}</span>
-          <span class="episode-meta">
-            <span class="episode-time">${episodeTimeText}</span>
-            <span class="episode-status">${isChecked ? 'Watched' : 'Up next'}</span>
-          </span>
-        </label>
-      </div>
-    `;
-  }
-
-  const synopsis = entry.synopsis || '';
-  const showEpisodes = entry.episodes > 1; // Only show episodes for series/shows
-  const progressPercent = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
-  const episodeCountText = showEpisodes ? `${watchedCount}/${entry.episodes} watched (${progressPercent}%)` : '';
-  const remainingCount = showEpisodes ? Math.max(entry.episodes - watchedCount, 0) : 0;
-  const remainingText = remainingCount === 0 ? 'All caught up' : `${remainingCount} left`;
-  const entryMetaText = getEntryMetaText(entry);
-  const mediaTypeInfo = getMediaTypeInfo(entry.type);
-
-  const modalHTML = `
-    <div class="modal-backdrop">
-      <div class="modal-backdrop-image" style="background-image: url('${entry.poster}');"></div>
-    </div>
-    <div class="modal-content" style="--section-color: ${sectionColor}; --section-color-rgb: ${sectionColorRgb};">
-      <button class="modal-close" aria-label="Close">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
-      <div class="modal-right">
-        <h2>${entry.title}</h2>
-        <div class="modal-meta">
-          <span class="modal-meta-text">${mediaTypeInfo.label} • ${entryMetaText}</span>
-          <span class="modal-badge ${entry.canon ? 'canon' : 'legends'}">${entry.canon ? 'CANON' : 'LEGENDS'}</span>
-        </div>
-        ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
-        ${showEpisodes ? `
-          <div class="modal-episodes">
-            <div class="modal-episodes-header">
-              <div class="modal-episodes-heading">
-                <span class="modal-episodes-title">Episodes</span>
-                <span id="modal-episode-remaining" class="modal-episodes-remaining">${remainingText}</span>
-              </div>
-              <span id="modal-episode-count" class="modal-episodes-count">${episodeCountText}</span>
-            </div>
-            <div class="modal-episodes-progress" aria-hidden="true">
-              <span id="modal-episodes-progress-bar" class="modal-episodes-progress-bar" style="width: ${progressPercent}%;"></span>
-            </div>
-            <div class="episode-list-wrapper"><div class="episode-list">${episodesHTML}</div></div>
-          </div>
-        ` : ''}
-        <div class="modal-actions">
-          ${showEpisodes ? `
-            <button class="modal-btn modal-btn--secondary modal-secondary-btn" id="mark-next-episode">Mark Next Episode</button>
-            <button class="modal-btn modal-btn--primary modal-primary-btn" id="mark-all-watched">Mark All Watched</button>
-          ` : ''}
-          <button class="modal-btn modal-btn--ghost modal-close-btn">Close</button>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  modal.innerHTML = modalHTML;
-  modal.classList.remove('hidden');
-  modal.setAttribute('aria-hidden', 'false');
-
-  // Apply blur-up loading effect to modal image
-  const modalImg = modal.querySelector('.modal-left img');
-  if (modalImg) {
-    if (modalImg.complete && modalImg.naturalWidth > 0) {
-      modalImg.classList.add('loaded');
-    } else {
-      modalImg.addEventListener('load', () => {
-        modalImg.classList.add('loaded');
-      }, { once: true });
-      modalImg.addEventListener('error', () => {
-        modalImg.classList.add('loaded');
-      }, { once: true });
-    }
-  }
-
-  // lock background scrolling: save scroll position and fix body
-  _savedScrollY = window.scrollY || window.pageYOffset || 0;
-  document.body.style.top = `-${_savedScrollY}px`;
-  document.body.classList.add('modal-open');
-
-  modal.querySelector('.modal-close').addEventListener('click', () => {
-    playSound('click');
-    triggerHaptic('light');
-    closeModal();
-  });
-  modal.querySelector('.modal-close-btn').addEventListener('click', () => {
-    playSound('click');
-    triggerHaptic('light');
-    closeModal();
-  });
-  modal.querySelector('.modal-backdrop').addEventListener('click', () => {
-    playSound('click');
-    triggerHaptic('light');
-    closeModal();
-  });
-
-  const updateEpisodeRowState = () => {
-    modal.querySelectorAll('[data-episode-item]').forEach((item) => {
-      const idx = Number(item.dataset.episodeItem);
-      const isWatched = Boolean(entry._watchedArray[idx]);
-      item.classList.toggle('is-watched', isWatched);
-      const statusEl = item.querySelector('.episode-status');
-      if (statusEl) {
-        statusEl.textContent = isWatched ? 'Watched' : 'Up next';
-      }
-    });
-  };
-
-  const updateModalCount = () => {
-    const updatedCount = entry._watchedArray.filter(Boolean).length;
-    const percent = entry.episodes > 0 ? Math.round((updatedCount / entry.episodes) * 100) : 0;
-    const remaining = Math.max(entry.episodes - updatedCount, 0);
-    const countEl = modal.querySelector('#modal-episode-count');
-    if (countEl) {
-      countEl.textContent = `${updatedCount}/${entry.episodes} watched (${percent}%)`;
-    }
-    const remainingEl = modal.querySelector('#modal-episode-remaining');
-    if (remainingEl) {
-      remainingEl.textContent = remaining === 0 ? 'All caught up' : `${remaining} left`;
-    }
-    const progressBarEl = modal.querySelector('#modal-episodes-progress-bar');
-    if (progressBarEl) {
-      progressBarEl.style.width = `${percent}%`;
-    }
-    
-    // Update button text based on state
-    const markAllBtn = modal.querySelector('#mark-all-watched');
-    if (markAllBtn) {
-      const allChecked = entry._watchedArray.every(Boolean);
-      markAllBtn.textContent = allChecked ? 'Unmark All' : 'Mark All Watched';
-    }
-
-    const markNextBtn = modal.querySelector('#mark-next-episode');
-    if (markNextBtn) {
-      const hasUnwatched = updatedCount < entry.episodes;
-      markNextBtn.textContent = hasUnwatched ? 'Mark Next Episode' : 'All Watched';
-      markNextBtn.disabled = !hasUnwatched;
-    }
-
-    updateEpisodeRowState();
-  };
-
-  const markAllBtn = modal.querySelector('#mark-all-watched');
-  if (markAllBtn) {
-    markAllBtn.addEventListener('click', () => {
-      playSound('success');
-      triggerHaptic('success');
-      const wasCompleted = isShowCompleted(entry);
-      const allChecked = entry._watchedArray.every(Boolean);
-      const newState = !allChecked;
-      
-      entry._watchedArray = new Array(entry.episodes).fill(newState);
-      modal.querySelectorAll('.episode-item input[type="checkbox"]').forEach((cb, idx) => {
-        cb.checked = newState;
-        entry._watchedArray[idx] = newState;
-      });
-      saveWatchedState(entry);
-      updateEntryUI(sectionIdx, entryIdx);
-      updateModalCount();
-      showToast(`${entry.title}: ${newState ? 'Marked all as watched' : 'Cleared watched status'}`, 'success');
-      if (!wasCompleted && isShowCompleted(entry)) {
-        showToast(`${entry.title} completed!`, 'success');
-      }
-    });
-    
-    // Set initial button text
-    updateModalCount();
-  }
-
-  const markNextBtn = modal.querySelector('#mark-next-episode');
-  if (markNextBtn) {
-    markNextBtn.addEventListener('click', () => {
-      const nextIdx = entry._watchedArray.findIndex((isWatched) => !isWatched);
-      if (nextIdx === -1) {
-        playSound('click');
-        triggerHaptic('light');
-        showToast(`${entry.title}: All episodes are already watched`, 'info');
-        return;
-      }
-      const wasCompleted = isShowCompleted(entry);
-      playSound('success');
-      triggerHaptic('success');
-      entry._watchedArray[nextIdx] = true;
-      const nextCheckbox = modal.querySelector(`input[data-ep="${nextIdx}"]`);
-      if (nextCheckbox) {
-        nextCheckbox.checked = true;
-      }
-      saveWatchedState(entry);
-      updateEntryUI(sectionIdx, entryIdx);
-      updateModalCount();
-      if (!wasCompleted && isShowCompleted(entry)) {
-        showToast(`${entry.title} completed!`, 'success');
-      }
-    });
-  }
-
-  // Handle checkboxes for series/shows
-  const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
-  checkboxes.forEach(cb => {
-    cb.addEventListener('change', () => {
-      playSound(cb.checked ? 'success' : 'click');
-      triggerHaptic(cb.checked ? 'success' : 'light');
-      const wasCompleted = isShowCompleted(entry);
-      const idx = Number(cb.dataset.ep);
-      entry._watchedArray[idx] = cb.checked;
-      saveWatchedState(entry);
-      updateEntryUI(sectionIdx, entryIdx);
-      // Update the modal episode count
-      updateModalCount();
-      if (!wasCompleted && isShowCompleted(entry)) {
-        showToast(`${entry.title} completed!`, 'success');
-      }
-    });
-  });
+  getModalController().openModal(sectionIdx, entryIdx);
 }
 
 function closeModal() {
-  const modal = document.getElementById('modal');
-  if (!modal || modal.classList.contains('hidden')) return;
-  
-  const scrollY = _savedScrollY || 0;
-  modal.classList.add('hidden');
-  modal.setAttribute('aria-hidden', 'true');
-  
-  document.body.classList.remove('modal-open');
-  document.body.style.top = '';
-  window.scrollTo(0, scrollY);
-  _savedScrollY = 0;
-  
-  // update card UI to reflect any watched changes
-  if (_currentModalSection !== null && _currentModalEntry !== null) {
-    updateEntryUI(_currentModalSection, _currentModalEntry);
-  }
+  getModalController().closeModal();
 }
 
 // Set CSS viewport height variable for mobile (fixes 100vh issues on iOS)
