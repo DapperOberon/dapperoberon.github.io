@@ -153,7 +153,7 @@ export function createModalController({
         triggerHaptic('success');
         resetAllProgress();
         handleClose();
-        showToast('All watched progress has been reset.', 'success');
+        showToast('All Watched Progress Has Been Reset.', 'success');
       });
       confirmBtn.focus();
     }
@@ -201,7 +201,7 @@ export function createModalController({
             <span class="episode-title">${episodeTitle}</span>
             <span class="episode-meta">
               <span class="episode-time">${episodeTimeText}</span>
-              <span class="episode-status">${isChecked ? 'Watched' : 'Up next'}</span>
+              <span class="episode-status">${isChecked ? 'Watched' : 'Up Next'}</span>
             </span>
           </label>
         </div>
@@ -211,9 +211,9 @@ export function createModalController({
     const synopsis = entry.synopsis || '';
     const showEpisodes = entry.episodes > 1;
     const progressPercent = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
-    const episodeCountText = showEpisodes ? `${watchedCount}/${entry.episodes} watched (${progressPercent}%)` : '';
+    const episodeCountText = showEpisodes ? `${watchedCount}/${entry.episodes} Watched (${progressPercent}%)` : '';
     const remainingCount = showEpisodes ? Math.max(entry.episodes - watchedCount, 0) : 0;
-    const remainingText = remainingCount === 0 ? 'All caught up' : `${remainingCount} left`;
+    const remainingText = remainingCount === 0 ? 'All Caught Up' : `${remainingCount} Left`;
     const entryMetaText = getEntryMetaText(entry);
     const mediaTypeInfo = getMediaTypeInfo(entry.type);
 
@@ -324,7 +324,7 @@ export function createModalController({
         item.classList.toggle('is-watched', isWatched);
         const statusEl = item.querySelector('.episode-status');
         if (statusEl) {
-          statusEl.textContent = isWatched ? 'Watched' : 'Up next';
+          statusEl.textContent = isWatched ? 'Watched' : 'Up Next';
         }
       });
     };
@@ -335,11 +335,11 @@ export function createModalController({
       const remaining = Math.max(entry.episodes - updatedCount, 0);
       const countEl = modal.querySelector('#modal-episode-count');
       if (countEl) {
-        countEl.textContent = `${updatedCount}/${entry.episodes} watched (${percent}%)`;
+        countEl.textContent = `${updatedCount}/${entry.episodes} Watched (${percent}%)`;
       }
       const remainingEl = modal.querySelector('#modal-episode-remaining');
       if (remainingEl) {
-        remainingEl.textContent = remaining === 0 ? 'All caught up' : `${remaining} left`;
+        remainingEl.textContent = remaining === 0 ? 'All Caught Up' : `${remaining} Left`;
       }
       const progressBarEl = modal.querySelector('#modal-episodes-progress-bar');
       if (progressBarEl) {
@@ -379,7 +379,7 @@ export function createModalController({
         saveWatchedState(entry);
         updateEntryUI(sectionIdx, entryIdx);
         updateModalCount();
-        showToast(`${entry.title}: ${newState ? 'Marked all as watched' : 'Cleared watched status'}`, 'success');
+        showToast(`${entry.title}: ${newState ? 'Marked All as Watched' : 'Cleared Watched Status'}`, 'success');
         if (!wasCompleted && isShowCompleted(entry)) {
           showToast(`${entry.title} completed!`, 'success');
         }
@@ -395,7 +395,7 @@ export function createModalController({
         if (nextIdx === -1) {
           playSound('click');
           triggerHaptic('light');
-          showToast(`${entry.title}: All episodes are already watched`, 'info');
+          showToast(`${entry.title}: All Episodes Are Already Watched`, 'info');
           return;
         }
         const wasCompleted = isShowCompleted(entry);

@@ -272,6 +272,16 @@ function getActiveFilterChipsMarkup(filters) {
     chips.push({ key: 'progress', label: progressLabelMap[filters.progress] || `Progress: ${filters.progress}` });
   }
 
+  if (filters.arc !== 'all') {
+    const arcLabelMap = {
+      'clone-wars': 'Arc: Clone Wars',
+      mandoverse: 'Arc: Mandoverse',
+      'sequel-era': 'Arc: Sequel Era',
+      'george-lucas': 'Arc: George Lucas'
+    };
+    chips.push({ key: 'arc', label: arcLabelMap[filters.arc] || `Arc: ${filters.arc}` });
+  }
+
   return chips;
 }
 
@@ -319,6 +329,8 @@ function initActiveFilterControls() {
       controller.setCanonFilter('all');
     } else if (chipType === 'progress') {
       controller.setProgressFilter('all');
+    } else if (chipType === 'arc') {
+      controller.setArcFilter('all');
     }
 
     playSound('click');
@@ -393,21 +405,12 @@ function initContinueWhereLeftOffButton() {
   });
 }
 
-// Render the timeline
-function render() {
-  const app = document.getElementById('app');
-  const stats = calculateStats();
-  const sparklines = buildStatSparklines();
-  const watchedProgressPercent = stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0;
-  const completedProgressPercent = stats.totalShows > 0 ? (stats.completedShows / stats.totalShows * 100) : 0;
-  const statsCardsMarkup = buildStatsCardsMarkup(stats, sparklines, watchedProgressPercent, completedProgressPercent);
-  
-  app.innerHTML = `
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+function renderHeader(stats) {
+  return `
     <header class="site-hero">
       <div class="header-container">
         <div class="hero-title">
-          <h1><span class="hero-strong">GALACTIC</span> <span class="hero-accent">ARCHIVE</span></h1>
+          <h1 data-text="GALACTIC ARCHIVE"><span class="hero-strong">GALACTIC</span> <span class="hero-accent">ARCHIVE</span></h1>
           <p class="hero-sub">A comprehensive chronological guide to the Star Wars universe. Track your progress across the stars.</p>
         </div>
       </div>
@@ -444,7 +447,6 @@ function render() {
         </div>
       </div>
       
-      <!-- Search and Filters -->
       <div class="filters-container">
         <div class="search-wrapper">
           <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -486,10 +488,23 @@ function render() {
             <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
             <button class="filter-btn" data-progress-filter="completed">Completed</button>
           </div>
+
+          <div class="filter-group filter-group-arc">
+            <span class="filter-group-label">Story Arc:</span>
+            <button class="filter-btn active" data-arc-filter="all">All</button>
+            <button class="filter-btn" data-arc-filter="clone-wars">Clone Wars Arc</button>
+            <button class="filter-btn" data-arc-filter="mandoverse">Mandoverse Arc</button>
+            <button class="filter-btn" data-arc-filter="sequel-era">Sequel-Era Arc</button>
+            <button class="filter-btn" data-arc-filter="george-lucas">George Lucas Arc</button>
+          </div>
         </div>
       </div>
     </header>
+  `;
+}
 
+function renderStatsDrawer(statsCardsMarkup) {
+  return `
     <div id="stats-drawer" class="stats-drawer hidden" aria-hidden="true">
       <button class="stats-drawer-backdrop" type="button" aria-label="Close stats panel"></button>
       <aside class="stats-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="stats-drawer-title">
@@ -502,7 +517,11 @@ function render() {
         </div>
       </aside>
     </div>
+  `;
+}
 
+function renderTimelineRail() {
+  return `
     <nav class="timeline-rail" aria-label="Era navigation">
       <div class="timeline-rail-inner">
         ${TIMELINE_DATA.map((section, idx) => `
@@ -513,120 +532,151 @@ function render() {
         `).join('')}
       </div>
     </nav>
+  `;
+}
 
+function renderEntryCard(entry, sectionIdx, entryIdx) {
+  const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
+  const isSingleItemEntry = entry.episodes === 1;
+  const singleEpisodeTitle = Array.isArray(entry.episodeDetails)
+    && entry.episodeDetails[0]
+    && entry.episodeDetails[0].title
+    ? entry.episodeDetails[0].title
+    : '';
+  const singleEpisodeTime = Array.isArray(entry.episodeDetails)
+    && entry.episodeDetails[0]
+    && entry.episodeDetails[0].time
+    ? String(entry.episodeDetails[0].time).trim()
+    : '';
+  const showSingleEpisodeChecklist = isSingleItemEntry && !/film/i.test(entry.type) && Boolean(singleEpisodeTitle);
+  const entryMetaDetails = getEntryMetaDetails(entry);
+  const mediaTypeInfo = getMediaTypeInfo(entry.type);
+  const alignClass = entryIdx % 2 === 0 ? 'timeline-entry--left' : 'timeline-entry--right';
+
+  return `
+    <div class="timeline-entry ${alignClass}">
+      <div class="timeline-year">${entry.year}</div>
+      <div class="timeline-connector"></div>
+      <div class="timeline-dot"></div>
+      <div class="entry-card" data-canon="${entry.canon}" data-section="${sectionIdx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
+        <div class="entry-poster">
+          <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
+          <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
+            ${entry.canon ? 'Canon' : 'Legends'}
+          </span>
+          <span class="media-type-badge" style="--media-color: ${mediaTypeInfo.color};" title="${entry.type}">
+            <span class="media-type-icon">${mediaTypeInfo.icon}</span>
+            <span class="media-type-label">${mediaTypeInfo.label}</span>
+          </span>
+          ${entry.synopsis ? `<div class="synopsis-preview"><p>${entry.synopsis}</p></div>` : ''}
+          <div class="entry-overlay">
+            <div class="progress-ring">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
+                      stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0" 
+                        style="transition: stroke-dasharray 0.3s ease;" />
+              </svg>
+              <span class="progress-text">${progress}%</span>
+            </div>
+            <p class="lore-label">Click to view details</p>
+          </div>
+        </div>
+        <div class="entry-content">
+          <h3>${entry.title}</h3>
+          ${entryMetaDetails ? `<p class="entry-meta">${entryMetaDetails}</p>` : ''}
+          ${showSingleEpisodeChecklist ? `
+            <div class="entry-single-episode-checklist">
+              <label class="entry-quick-check entry-quick-check--single" title="Mark episode as watched">
+                <input type="checkbox" class="card-single-episode-checkbox" data-section="${sectionIdx}" data-entry="${entryIdx}" aria-label="Mark ${singleEpisodeTitle} as watched" ${entry.watched > 0 ? 'checked' : ''} />
+                <span class="entry-quick-check-content">
+                  <span class="entry-quick-check-title">${singleEpisodeTitle}</span>
+                  ${singleEpisodeTime ? `<span class="entry-quick-check-time">${singleEpisodeTime}</span>` : ''}
+                </span>
+                <span class="entry-quick-check-state" data-watch-state>${entry.watched > 0 ? 'Watched' : 'Not Watched'}</span>
+              </label>
+            </div>
+          ` : ''}
+          ${isSingleItemEntry && !showSingleEpisodeChecklist ? `
+            <div class="entry-single-episode-checklist">
+              <label class="card-checkbox-inline entry-quick-check entry-quick-check--movie" title="Mark movie as watched">
+                <input type="checkbox" class="card-movie-checkbox" data-section="${sectionIdx}" data-entry="${entryIdx}" aria-label="Mark ${entry.title} as watched" ${entry.watched > 0 ? 'checked' : ''} />
+                <span class="entry-quick-check-content">
+                  <span class="entry-quick-check-title">Movie</span>
+                  <span class="entry-quick-check-subtitle">Mark as Watched</span>
+                </span>
+                <span class="entry-quick-check-state" data-watch-state>${entry.watched > 0 ? 'Watched' : 'Not Watched'}</span>
+              </label>
+            </div>
+          ` : ''}
+          <div class="entry-row">
+            <p class="entry-episodes">${entry.watched}/${entry.episodes} Watched</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderEraSection(section, idx) {
+  const itemCount = section.entries.length;
+  const itemLabel = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+  const sectionColorRgb = hexToRgb(section.color);
+
+  return `
+    <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
+      <h2>
+        <span class="era-title">${section.era}</span>
+        <span class="era-count">${itemLabel}</span>
+        <button class="era-toggle" data-era-toggle="${idx}" aria-expanded="true" aria-controls="era-content-${idx}">Collapse</button>
+      </h2>
+      <div class="entries-grid era-content" id="era-content-${idx}">
+        <div class="timeline-center-line"></div>
+        ${section.entries.map((entry, entryIdx) => renderEntryCard(entry, idx, entryIdx)).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderMainContent() {
+  return `
     <main class="timeline-container" id="main-content" tabindex="-1">
-      <div id="no-results" class="hidden" style="text-align: center; padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1;">
+      <div id="no-results" class="hidden">
         <p>No entries match the selected filters.</p>
       </div>
 
-      ${TIMELINE_DATA.map((section, idx) => {
-        const itemCount = section.entries.length;
-        const itemLabel = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
-        const sectionColorRgb = hexToRgb(section.color);
-        return `
-        <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
-          <h2>
-            <span class="era-title">${section.era}</span>
-            <span class="era-count">${itemLabel}</span>
-            <button class="era-toggle" data-era-toggle="${idx}" aria-expanded="true" aria-controls="era-content-${idx}">Collapse</button>
-          </h2>
-          <div class="entries-grid era-content" id="era-content-${idx}">
-            <div class="timeline-center-line"></div>
-            ${section.entries.map((entry, entryIdx) => {
-              const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
-              const isSingleItemEntry = entry.episodes === 1;
-              const singleEpisodeTitle = Array.isArray(entry.episodeDetails)
-                && entry.episodeDetails[0]
-                && entry.episodeDetails[0].title
-                ? entry.episodeDetails[0].title
-                : '';
-              const singleEpisodeTime = Array.isArray(entry.episodeDetails)
-                && entry.episodeDetails[0]
-                && entry.episodeDetails[0].time
-                ? String(entry.episodeDetails[0].time).trim()
-                : '';
-              const showSingleEpisodeChecklist = isSingleItemEntry && !/film/i.test(entry.type) && Boolean(singleEpisodeTitle);
-              const entryMetaText = getEntryMetaText(entry);
-              const entryMetaDetails = getEntryMetaDetails(entry);
-              const mediaTypeInfo = getMediaTypeInfo(entry.type);
-              const isLeftAligned = entryIdx % 2 === 0;
-              const alignClass = isLeftAligned ? 'timeline-entry--left' : 'timeline-entry--right';
-              return `
-                <div class="timeline-entry ${alignClass}">
-                  <div class="timeline-year">${entry.year}</div>
-                  <div class="timeline-connector"></div>
-                  <div class="timeline-dot"></div>
-                  <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
-                    <div class="entry-poster">
-                      <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
-                      <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
-                        ${entry.canon ? 'Canon' : 'Legends'}
-                      </span>
-                      <span class="media-type-badge" style="--media-color: ${mediaTypeInfo.color};" title="${entry.type}">
-                        <span class="media-type-icon">${mediaTypeInfo.icon}</span>
-                        <span class="media-type-label">${mediaTypeInfo.label}</span>
-                      </span>
-                      ${entry.synopsis ? `<div class="synopsis-preview"><p>${entry.synopsis}</p></div>` : ''}
-                      <div class="entry-overlay">
-                        <div class="progress-ring">
-                          <svg viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                            <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
-                                  stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0" 
-                                    style="transition: stroke-dasharray 0.3s ease;" />
-                          </svg>
-                          <span class="progress-text">${progress}%</span>
-                        </div>
-                        <p class="lore-label">Click to view details</p>
-                      </div>
-                    </div>
-                    <div class="entry-content">
-                      <h3>${entry.title}</h3>
-                      ${entryMetaDetails ? `<p class="entry-meta">${entryMetaDetails}</p>` : ''}
-                      ${showSingleEpisodeChecklist ? `
-                        <div class="entry-single-episode-checklist">
-                          <label class="entry-quick-check entry-quick-check--single" title="Mark episode as watched">
-                            <input type="checkbox" class="card-single-episode-checkbox" data-section="${idx}" data-entry="${entryIdx}" aria-label="Mark ${singleEpisodeTitle} as watched" ${entry.watched > 0 ? 'checked' : ''} />
-                            <span class="entry-quick-check-content">
-                              <span class="entry-quick-check-title">${singleEpisodeTitle}</span>
-                              ${singleEpisodeTime ? `<span class="entry-quick-check-time">${singleEpisodeTime}</span>` : ''}
-                            </span>
-                            <span class="entry-quick-check-state" data-watch-state>${entry.watched > 0 ? 'Watched' : 'Not watched'}</span>
-                          </label>
-                        </div>
-                      ` : ''}
-                      ${isSingleItemEntry && !showSingleEpisodeChecklist ? `
-                        <div class="entry-single-episode-checklist">
-                          <label class="card-checkbox-inline entry-quick-check entry-quick-check--movie" title="Mark movie as watched">
-                            <input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" aria-label="Mark ${entry.title} as watched" ${entry.watched > 0 ? 'checked' : ''} />
-                            <span class="entry-quick-check-content">
-                              <span class="entry-quick-check-title">Movie</span>
-                              <span class="entry-quick-check-subtitle">Mark as watched</span>
-                            </span>
-                            <span class="entry-quick-check-state" data-watch-state>${entry.watched > 0 ? 'Watched' : 'Not watched'}</span>
-                          </label>
-                        </div>
-                      ` : ''}
-                      <div class="entry-row">
-                        <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </section>
-      `;
-      }).join('')}
+      ${TIMELINE_DATA.map((section, idx) => renderEraSection(section, idx)).join('')}
     </main>
+  `;
+}
 
+function renderFooter() {
+  return `
     <footer>
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <p>© 2026 DapperOberon. Star Wars is a trademark of Lucasfilm Ltd.</p>
         <button id="reset-progress-btn" title="Reset all watched progress">Reset Progress</button>
       </div>
     </footer>
+  `;
+}
+
+// Render the timeline
+function render() {
+  const app = document.getElementById('app');
+  const stats = calculateStats();
+  const sparklines = buildStatSparklines();
+  const watchedProgressPercent = stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0;
+  const completedProgressPercent = stats.totalShows > 0 ? (stats.completedShows / stats.totalShows * 100) : 0;
+  const statsCardsMarkup = buildStatsCardsMarkup(stats, sparklines, watchedProgressPercent, completedProgressPercent);
+  
+  app.innerHTML = `
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    ${renderHeader(stats)}
+    ${renderStatsDrawer(statsCardsMarkup)}
+    ${renderTimelineRail()}
+    ${renderMainContent()}
+    ${renderFooter()}
   `;
 
   // ensure a modal container exists in the document body
@@ -993,54 +1043,53 @@ function initializeWatchedState() {
 }
 
 function attachEntryHandlers() {
-  document.querySelectorAll('.entry-card').forEach(card => {
-    const openCardModal = () => {
-      const s = Number(card.dataset.section);
-      const e = Number(card.dataset.entry);
-      openModal(s, e);
-    };
+  const timelineContainer = document.querySelector('.timeline-container');
+  if (!timelineContainer) return;
 
-    card.addEventListener('click', (event) => {
-      if (event.target.closest('input, button, a, select, textarea, label')) return;
-      openCardModal();
-    });
+  const openCardModal = (card) => {
+    const sectionIdx = Number(card.dataset.section);
+    const entryIdx = Number(card.dataset.entry);
+    openModal(sectionIdx, entryIdx);
+  };
 
-    card.addEventListener('keydown', (event) => {
-      if (event.target.closest('input, button, a, select, textarea')) return;
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      openCardModal();
-    });
+  const handleSingleCheckboxChange = (checkboxEl) => {
+    playSound(checkboxEl.checked ? 'success' : 'click');
+    triggerHaptic(checkboxEl.checked ? 'success' : 'light');
+    const sectionIdx = Number(checkboxEl.dataset.section);
+    const entryIdx = Number(checkboxEl.dataset.entry);
+    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
+    entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
+    entry._watchedArray[0] = checkboxEl.checked;
+    saveWatchedState(entry);
+    updateEntryUI(sectionIdx, entryIdx);
+    showToast(`${entry.title}: ${checkboxEl.checked ? 'Marked as Watched' : 'Marked as Unwatched'}`, 'info');
+  };
 
-    const handleSingleCheckboxChange = (checkboxEl) => {
-      playSound(checkboxEl.checked ? 'success' : 'click');
-      triggerHaptic(checkboxEl.checked ? 'success' : 'light');
-      const s = Number(checkboxEl.dataset.section);
-      const e = Number(checkboxEl.dataset.entry);
-      const entry = TIMELINE_DATA[s].entries[e];
-      entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
-      entry._watchedArray[0] = checkboxEl.checked;
-      saveWatchedState(entry);
-      updateEntryUI(s, e);
-      showToast(`${entry.title}: ${checkboxEl.checked ? 'Marked as watched' : 'Marked as unwatched'}`, 'info');
-    };
-
-    // movie checkbox handling: stop propagation on input and label, and update watched state
-    const cb = card.querySelector('.card-movie-checkbox');
-    if (cb) {
-      cb.addEventListener('click', (ev) => ev.stopPropagation());
-      const label = card.querySelector('.card-checkbox-inline');
-      if (label) label.addEventListener('click', (ev) => ev.stopPropagation());
-      cb.addEventListener('change', () => handleSingleCheckboxChange(cb));
+  timelineContainer.addEventListener('click', (event) => {
+    if (event.target.closest('.card-movie-checkbox, .card-single-episode-checkbox, label, button, a, select, textarea, input')) {
+      return;
     }
 
-    const singleEpisodeCb = card.querySelector('.card-single-episode-checkbox');
-    if (singleEpisodeCb) {
-      singleEpisodeCb.addEventListener('click', (ev) => ev.stopPropagation());
-      const singleEpisodeLabel = card.querySelector('.entry-single-episode-checklist .entry-quick-check');
-      if (singleEpisodeLabel) singleEpisodeLabel.addEventListener('click', (ev) => ev.stopPropagation());
-      singleEpisodeCb.addEventListener('change', () => handleSingleCheckboxChange(singleEpisodeCb));
-    }
+    const card = event.target.closest('.entry-card');
+    if (!card) return;
+    openCardModal(card);
+  });
+
+  timelineContainer.addEventListener('keydown', (event) => {
+    if (event.target.closest('input, button, a, select, textarea')) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    const card = event.target.closest('.entry-card');
+    if (!card) return;
+
+    event.preventDefault();
+    openCardModal(card);
+  });
+
+  timelineContainer.addEventListener('change', (event) => {
+    const checkbox = event.target.closest('.card-movie-checkbox, .card-single-episode-checkbox');
+    if (!checkbox) return;
+    handleSingleCheckboxChange(checkbox);
   });
 }
 
@@ -1093,7 +1142,7 @@ function updateCardQuickCheckState(card, isWatched) {
     control.classList.toggle('is-watched', isWatched);
   });
   card.querySelectorAll('[data-watch-state]').forEach(stateEl => {
-    stateEl.textContent = isWatched ? 'Watched' : 'Not watched';
+    stateEl.textContent = isWatched ? 'Watched' : 'Not Watched';
     stateEl.classList.toggle('is-watched', isWatched);
   });
 }
@@ -1107,7 +1156,7 @@ function updateEntryUI(sectionIdx, entryIdx) {
   const progress = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
   const progressText = card.querySelector('.progress-text'); if (progressText) progressText.textContent = progress + '%';
   const progressCircle = card.querySelector('.progress-circle'); if (progressCircle) progressCircle.setAttribute('stroke-dasharray', `${progress * 2.827}, 282.7`);
-  const episodesText = card.querySelector('.entry-episodes'); if (episodesText) episodesText.textContent = `${watchedCount}/${entry.episodes} watched`;
+  const episodesText = card.querySelector('.entry-episodes'); if (episodesText) episodesText.textContent = `${watchedCount}/${entry.episodes} Watched`;
   const movieCheckbox = card.querySelector('.card-movie-checkbox');
   if (movieCheckbox) {
     movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);

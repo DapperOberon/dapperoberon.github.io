@@ -8,12 +8,58 @@ export function createFilterController({
   scheduleFlowLinesRedraw,
   onFiltersChanged = () => {}
 }) {
+  const storyArcMatchers = {
+    'clone-wars': (entry, section) => {
+      const title = String(entry.title || '').toLowerCase();
+      const era = String((section && section.era) || '').toLowerCase();
+      return (
+        title.includes('clone wars')
+        || title.includes('attack of the clones')
+        || title.includes('revenge of the sith')
+        || title.includes('bad batch')
+        || title.includes('tales of the jedi')
+        || title.includes('tales of the underworld')
+        || era.includes('fall of the jedi')
+      );
+    },
+    mandoverse: (entry, section) => {
+      const title = String(entry.title || '').toLowerCase();
+      const era = String((section && section.era) || '').toLowerCase();
+      return (
+        title.includes('the mandalorian')
+        || title.includes('book of boba fett')
+        || title.includes('ahsoka')
+        || title.includes('skeleton crew')
+        || era.includes('new republic')
+      );
+    },
+    'sequel-era': (entry, section) => {
+      const title = String(entry.title || '').toLowerCase();
+      const era = String((section && section.era) || '').toLowerCase();
+      return (
+        title.includes('the force awakens')
+        || title.includes('the last jedi')
+        || title.includes('the rise of skywalker')
+        || title.includes('star wars resistance')
+        || era.includes('rise of the first order')
+      );
+    },
+    'george-lucas': (entry) => {
+      const title = String(entry.title || '');
+      const titleLower = title.toLowerCase();
+      const isEpisodeOneToSix = /\bepisode\s+(i|ii|iii|iv|v|vi)\b/i.test(title);
+      const isTheCloneWars = titleLower.includes('the clone wars') || titleLower.includes('star wars: the clone wars');
+      return isEpisodeOneToSix || isTheCloneWars;
+    }
+  };
+
   const filters = {
     canon: true,
     legends: true,
     search: '',
     type: 'all',
-    progress: 'all'
+    progress: 'all',
+    arc: 'all'
   };
 
   let filtersPanelListenersBound = false;
@@ -23,6 +69,7 @@ export function createFilterController({
     if (filters.type !== 'all') activeCount += 1;
     if (!(filters.canon && filters.legends)) activeCount += 1;
     if (filters.progress !== 'all') activeCount += 1;
+    if (filters.arc !== 'all') activeCount += 1;
     if (filters.search && filters.search.trim().length > 0) activeCount += 1;
     return activeCount;
   }
@@ -45,6 +92,7 @@ export function createFilterController({
       const sectionIdx = parseInt(card.dataset.section, 10);
       const entryIdx = parseInt(card.dataset.entry, 10);
       const entry = timelineData[sectionIdx].entries[entryIdx];
+      const section = timelineData[sectionIdx];
       const isCanon = card.dataset.canon === 'true';
 
       let canonMatch = false;
@@ -75,7 +123,13 @@ export function createFilterController({
         progressMatch = entry.watched === entry.episodes && entry.episodes > 0;
       }
 
-      const shouldShow = canonMatch && searchMatch && typeMatch && progressMatch;
+      let arcMatch = true;
+      if (filters.arc !== 'all') {
+        const arcMatcher = storyArcMatchers[filters.arc];
+        arcMatch = typeof arcMatcher === 'function' ? arcMatcher(entry, section) : true;
+      }
+
+      const shouldShow = canonMatch && searchMatch && typeMatch && progressMatch && arcMatch;
       const entryNode = card.closest('.timeline-entry');
       entryUpdates.push({ card, entryNode, shouldShow });
       if (shouldShow) visibleCount++;
@@ -134,6 +188,10 @@ export function createFilterController({
     document.querySelectorAll('[data-progress-filter]').forEach((button) => {
       button.classList.toggle('active', button.dataset.progressFilter === filters.progress);
     });
+
+    document.querySelectorAll('[data-arc-filter]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.arcFilter === filters.arc);
+    });
   }
 
   function setSearchFilter(value, { syncInput = true } = {}) {
@@ -175,6 +233,12 @@ export function createFilterController({
     updateFilters();
   }
 
+  function setArcFilter(filter) {
+    filters.arc = filter || 'all';
+    syncFilterButtonStates();
+    updateFilters();
+  }
+
   function resetFilters({ withFeedback = false } = {}) {
     if (withFeedback) {
       playSound('click');
@@ -185,6 +249,7 @@ export function createFilterController({
     filters.legends = true;
     filters.type = 'all';
     filters.progress = 'all';
+    filters.arc = 'all';
     filters.search = '';
 
     const searchInput = document.getElementById('search-input');
@@ -223,6 +288,14 @@ export function createFilterController({
         playSound('click');
         triggerHaptic('light');
         setProgressFilter(btn.dataset.progressFilter);
+      });
+    });
+
+    document.querySelectorAll('[data-arc-filter]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        playSound('click');
+        triggerHaptic('light');
+        setArcFilter(btn.dataset.arcFilter);
       });
     });
 
@@ -301,6 +374,7 @@ export function createFilterController({
     setCanonFilter,
     setTypeFilter,
     setProgressFilter,
+    setArcFilter,
     resetFilters
   };
 }

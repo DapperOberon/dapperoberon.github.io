@@ -2,11 +2,7 @@ export function getLegacyWatchedStorageKey(entry) {
   return 'watched_' + entry.title.replace(/\s+/g, '_');
 }
 
-export function getEntryStorageId(entry) {
-  if (entry && entry.id) {
-    return String(entry.id);
-  }
-
+function getLegacyFingerprintStorageId(entry) {
   const firstEpisodeTitle =
     Array.isArray(entry.episodeDetails) && entry.episodeDetails.length > 0 && entry.episodeDetails[0].title
       ? entry.episodeDetails[0].title
@@ -25,6 +21,33 @@ export function getEntryStorageId(entry) {
     .toLowerCase();
 
   return fingerprint.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function getLegacyFingerprintWatchedStorageKey(entry) {
+  return 'watched_' + getLegacyFingerprintStorageId(entry);
+}
+
+function normalizeEntryId(id) {
+  return String(id || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function getEntryStorageId(entry) {
+  const explicitId = entry && entry.id ? normalizeEntryId(entry.id) : '';
+  if (explicitId) {
+    return explicitId;
+  }
+
+  const titleFallback = normalizeEntryId(entry && entry.title ? entry.title.replace(/\s+/g, '-') : '');
+  if (titleFallback) {
+    return `legacy-${titleFallback}`;
+  }
+
+  return 'legacy-entry';
 }
 
 export function getWatchedStorageKey(entry) {
@@ -52,6 +75,7 @@ export function saveCollapsedEras(set) {
 export function saveWatchedState(entry) {
   const key = getWatchedStorageKey(entry);
   const legacyKey = getLegacyWatchedStorageKey(entry);
+  const legacyFingerprintKey = getLegacyFingerprintWatchedStorageKey(entry);
   try {
     localStorage.setItem(key, JSON.stringify(entry._watchedArray));
   } catch (e) {
@@ -64,6 +88,13 @@ export function saveWatchedState(entry) {
       // Ignore localStorage remove failures
     }
   }
+  if (legacyFingerprintKey !== key && legacyFingerprintKey !== legacyKey) {
+    try {
+      localStorage.removeItem(legacyFingerprintKey);
+    } catch (e) {
+      // Ignore localStorage remove failures
+    }
+  }
   entry.watched = entry._watchedArray.filter(Boolean).length;
 }
 
@@ -72,19 +103,25 @@ export function initializeWatchedState(timelineData, updateEntryUI) {
     section.entries.forEach((entry) => {
       const key = getWatchedStorageKey(entry);
       const legacyKey = getLegacyWatchedStorageKey(entry);
+      const legacyFingerprintKey = getLegacyFingerprintWatchedStorageKey(entry);
       try {
         let raw = localStorage.getItem(key);
         let loadedFromLegacy = false;
+        let loadedFromFingerprint = false;
         if (!raw) {
           raw = localStorage.getItem(legacyKey);
           loadedFromLegacy = Boolean(raw);
+        }
+        if (!raw) {
+          raw = localStorage.getItem(legacyFingerprintKey);
+          loadedFromFingerprint = Boolean(raw);
         }
         if (raw) {
           const arr = JSON.parse(raw);
           if (Array.isArray(arr) && arr.length === entry.episodes) {
             entry._watchedArray = arr;
             entry.watched = arr.filter(Boolean).length;
-            if (loadedFromLegacy) {
+            if (loadedFromLegacy || loadedFromFingerprint) {
               try {
                 localStorage.setItem(key, JSON.stringify(arr));
               } catch (e) {
@@ -93,6 +130,13 @@ export function initializeWatchedState(timelineData, updateEntryUI) {
               if (legacyKey !== key) {
                 try {
                   localStorage.removeItem(legacyKey);
+                } catch (e) {
+                  // Ignore localStorage remove failures
+                }
+              }
+              if (legacyFingerprintKey !== key && legacyFingerprintKey !== legacyKey) {
+                try {
+                  localStorage.removeItem(legacyFingerprintKey);
                 } catch (e) {
                   // Ignore localStorage remove failures
                 }
@@ -129,6 +173,7 @@ export function resetAllProgress(timelineData, updateEntryUI) {
       entry.watched = 0;
       const key = getWatchedStorageKey(entry);
       const legacyKey = getLegacyWatchedStorageKey(entry);
+      const legacyFingerprintKey = getLegacyFingerprintWatchedStorageKey(entry);
       try {
         localStorage.removeItem(key);
       } catch (e) {
@@ -137,6 +182,13 @@ export function resetAllProgress(timelineData, updateEntryUI) {
       if (legacyKey !== key) {
         try {
           localStorage.removeItem(legacyKey);
+        } catch (e) {
+          // Ignore localStorage remove failures
+        }
+      }
+      if (legacyFingerprintKey !== key && legacyFingerprintKey !== legacyKey) {
+        try {
+          localStorage.removeItem(legacyFingerprintKey);
         } catch (e) {
           // Ignore localStorage remove failures
         }
