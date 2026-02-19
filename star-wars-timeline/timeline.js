@@ -491,6 +491,8 @@ let soundEnabled = false;
 let audioContext = null;
 let watchModeEnabled = false;
 let eraObserver = null;
+let eraRailScrollBound = false;
+let eraRailScrollRaf = null;
 
 function loadCollapsedEras() {
   return loadCollapsedErasModule();
@@ -585,6 +587,45 @@ function initEraRail() {
   document.querySelectorAll('.timeline-section').forEach((section) => {
     eraObserver.observe(section);
   });
+
+  initEraRailVisibilityTracking();
+  syncEraRailViewportVisibility();
+}
+
+function initEraRailVisibilityTracking() {
+  if (eraRailScrollBound) return;
+  eraRailScrollBound = true;
+
+  const onViewportChange = () => {
+    if (eraRailScrollRaf) return;
+    eraRailScrollRaf = requestAnimationFrame(() => {
+      eraRailScrollRaf = null;
+      syncEraRailViewportVisibility();
+    });
+  };
+
+  window.addEventListener('scroll', onViewportChange, { passive: true });
+  window.addEventListener('resize', onViewportChange);
+  window.addEventListener('orientationchange', onViewportChange);
+}
+
+function syncEraRailViewportVisibility() {
+  const rail = document.querySelector('.timeline-rail');
+  const timelineContainer = document.querySelector('.timeline-container');
+  if (!rail || !timelineContainer) return;
+
+  const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+
+  if (!isDesktop) {
+    rail.classList.add('is-visible');
+    return;
+  }
+
+  const rect = timelineContainer.getBoundingClientRect();
+  const hasTimelineFullyEnteredView = rect.top <= 0;
+  const minimumVisibleHeight = Math.max(320, window.innerHeight * 0.35);
+  const shouldShow = hasTimelineFullyEnteredView && rect.bottom >= minimumVisibleHeight;
+  rail.classList.toggle('is-visible', shouldShow);
 }
 
 function updateEraRailVisibility() {
@@ -865,11 +906,13 @@ function setVh() {
 
 window.addEventListener('resize', () => {
   setVh();
+  syncEraRailViewportVisibility();
   scheduleFlowLinesRedraw();
 });
 
 window.addEventListener('orientationchange', () => {
   setVh();
+  syncEraRailViewportVisibility();
   scheduleFlowLinesRedraw();
 });
 
