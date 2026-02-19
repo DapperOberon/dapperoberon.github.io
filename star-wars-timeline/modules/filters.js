@@ -5,7 +5,8 @@ export function createFilterController({
   triggerHaptic,
   updateEraRailVisibility,
   updateWatchModeHighlight,
-  scheduleFlowLinesRedraw
+  scheduleFlowLinesRedraw,
+  onFiltersChanged = () => {}
 }) {
   const filters = {
     canon: true,
@@ -110,14 +111,94 @@ export function createFilterController({
     updateWatchModeHighlight();
     scheduleFlowLinesRedraw();
     updateMobileFilterSummary();
+    onFiltersChanged({ ...filters }, getActiveFilterCount());
+  }
+
+  function syncFilterButtonStates() {
+    document.querySelectorAll('[data-canon-filter]').forEach((button) => {
+      button.classList.remove('active');
+    });
+
+    const canonState = filters.canon && filters.legends
+      ? 'all'
+      : filters.canon
+        ? 'canon'
+        : 'legends';
+    const canonButton = document.querySelector(`[data-canon-filter="${canonState}"]`);
+    if (canonButton) canonButton.classList.add('active');
+
+    document.querySelectorAll('[data-type-filter]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.typeFilter === filters.type);
+    });
+
+    document.querySelectorAll('[data-progress-filter]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.progressFilter === filters.progress);
+    });
+  }
+
+  function setSearchFilter(value, { syncInput = true } = {}) {
+    const text = String(value || '');
+    filters.search = text.toLowerCase();
+    if (syncInput) {
+      const searchInput = document.getElementById('search-input');
+      if (searchInput && searchInput.value !== text) {
+        searchInput.value = text;
+      }
+    }
+    updateFilters();
+  }
+
+  function setCanonFilter(filter) {
+    if (filter === 'canon') {
+      filters.canon = true;
+      filters.legends = false;
+    } else if (filter === 'legends') {
+      filters.canon = false;
+      filters.legends = true;
+    } else {
+      filters.canon = true;
+      filters.legends = true;
+    }
+    syncFilterButtonStates();
+    updateFilters();
+  }
+
+  function setTypeFilter(filter) {
+    filters.type = filter || 'all';
+    syncFilterButtonStates();
+    updateFilters();
+  }
+
+  function setProgressFilter(filter) {
+    filters.progress = filter || 'all';
+    syncFilterButtonStates();
+    updateFilters();
+  }
+
+  function resetFilters({ withFeedback = false } = {}) {
+    if (withFeedback) {
+      playSound('click');
+      triggerHaptic('light');
+    }
+
+    filters.canon = true;
+    filters.legends = true;
+    filters.type = 'all';
+    filters.progress = 'all';
+    filters.search = '';
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
+
+    syncFilterButtonStates();
+    updateFilters();
   }
 
   function attachFilterHandlers() {
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        filters.search = e.target.value.toLowerCase();
-        updateFilters();
+        setSearchFilter(e.target.value, { syncInput: false });
       });
     }
 
@@ -125,20 +206,7 @@ export function createFilterController({
       btn.addEventListener('click', () => {
         playSound('click');
         triggerHaptic('light');
-        document.querySelectorAll('[data-canon-filter]').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        const filter = btn.dataset.canonFilter;
-        if (filter === 'all') {
-          filters.canon = true;
-          filters.legends = true;
-        } else if (filter === 'canon') {
-          filters.canon = true;
-          filters.legends = false;
-        } else if (filter === 'legends') {
-          filters.canon = false;
-          filters.legends = true;
-        }
-        updateFilters();
+        setCanonFilter(btn.dataset.canonFilter);
       });
     });
 
@@ -146,10 +214,7 @@ export function createFilterController({
       btn.addEventListener('click', () => {
         playSound('click');
         triggerHaptic('light');
-        document.querySelectorAll('[data-type-filter]').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        filters.type = btn.dataset.typeFilter;
-        updateFilters();
+        setTypeFilter(btn.dataset.typeFilter);
       });
     });
 
@@ -157,10 +222,7 @@ export function createFilterController({
       btn.addEventListener('click', () => {
         playSound('click');
         triggerHaptic('light');
-        document.querySelectorAll('[data-progress-filter]').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        filters.progress = btn.dataset.progressFilter;
-        updateFilters();
+        setProgressFilter(btn.dataset.progressFilter);
       });
     });
 
@@ -234,6 +296,11 @@ export function createFilterController({
     attachFilterHandlers,
     initMobileFilterPanel,
     attachStatHandlers,
-    updateFilters
+    updateFilters,
+    setSearchFilter,
+    setCanonFilter,
+    setTypeFilter,
+    setProgressFilter,
+    resetFilters
   };
 }

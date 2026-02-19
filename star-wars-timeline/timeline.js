@@ -177,7 +177,8 @@ function getFilterController() {
       triggerHaptic,
       updateEraRailVisibility,
       updateWatchModeHighlight,
-      scheduleFlowLinesRedraw
+      scheduleFlowLinesRedraw,
+      onFiltersChanged: updateActiveFilterChips
     });
   }
   return filterController;
@@ -241,6 +242,157 @@ function applyProgressFilter(filter) {
   }
 }
 
+function getActiveFilterChipsMarkup(filters) {
+  const chips = [];
+
+  if (filters.search && filters.search.trim()) {
+    chips.push({ key: 'search', label: `Search: “${filters.search.trim()}”` });
+  }
+
+  if (filters.type !== 'all') {
+    chips.push({
+      key: 'type',
+      label: filters.type === 'films' ? 'Type: Films' : 'Type: Shows'
+    });
+  }
+
+  if (!(filters.canon && filters.legends)) {
+    chips.push({
+      key: 'canon',
+      label: filters.canon ? 'Canon: Canon only' : 'Canon: Legends only'
+    });
+  }
+
+  if (filters.progress !== 'all') {
+    const progressLabelMap = {
+      'not-started': 'Progress: Not Started',
+      'in-progress': 'Progress: In Progress',
+      completed: 'Progress: Completed'
+    };
+    chips.push({ key: 'progress', label: progressLabelMap[filters.progress] || `Progress: ${filters.progress}` });
+  }
+
+  return chips;
+}
+
+function updateActiveFilterChips(filters) {
+  const activeFiltersBar = document.getElementById('active-filters-bar');
+  const chipsContainer = document.getElementById('active-filters-chips');
+  const clearButton = document.getElementById('clear-filters-btn');
+  if (!activeFiltersBar || !chipsContainer || !clearButton) return;
+
+  const chips = getActiveFilterChipsMarkup(filters);
+  activeFiltersBar.classList.toggle('hidden', chips.length === 0);
+  clearButton.disabled = chips.length === 0;
+
+  if (chips.length === 0) {
+    chipsContainer.innerHTML = '';
+    return;
+  }
+
+  chipsContainer.innerHTML = chips
+    .map((chip) => `
+      <button type="button" class="active-filter-chip" data-filter-chip="${chip.key}" aria-label="Clear ${chip.label} filter">
+        <span>${chip.label}</span>
+        <span aria-hidden="true">×</span>
+      </button>
+    `)
+    .join('');
+}
+
+function initActiveFilterControls() {
+  const chipsContainer = document.getElementById('active-filters-chips');
+  const clearButton = document.getElementById('clear-filters-btn');
+  if (!chipsContainer || !clearButton) return;
+
+  chipsContainer.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-filter-chip]');
+    if (!chip) return;
+
+    const chipType = chip.dataset.filterChip;
+    const controller = getFilterController();
+    if (chipType === 'search') {
+      controller.setSearchFilter('');
+    } else if (chipType === 'type') {
+      controller.setTypeFilter('all');
+    } else if (chipType === 'canon') {
+      controller.setCanonFilter('all');
+    } else if (chipType === 'progress') {
+      controller.setProgressFilter('all');
+    }
+
+    playSound('click');
+    triggerHaptic('light');
+  });
+
+  clearButton.addEventListener('click', () => {
+    getFilterController().resetFilters({ withFeedback: true });
+  });
+
+  updateActiveFilterChips(getFilterController().getFilters());
+}
+
+function getNextUnwatchedVisibleCard() {
+  const cards = Array.from(document.querySelectorAll('.entry-card'));
+  const visibleCards = cards.filter((card) => !card.classList.contains('hidden') && card.offsetParent !== null);
+
+  for (let i = 0; i < visibleCards.length; i++) {
+    const card = visibleCards[i];
+    const sectionIdx = Number(card.dataset.section);
+    const entryIdx = Number(card.dataset.entry);
+    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
+    const watchedCount = Array.isArray(entry._watchedArray) ? entry._watchedArray.filter(Boolean).length : entry.watched;
+    const isComplete = entry.episodes > 0 ? watchedCount >= entry.episodes : watchedCount > 0;
+    if (!isComplete) {
+      return card;
+    }
+  }
+
+  return null;
+}
+
+function scrollToNextUnwatchedEntry() {
+  const nextCard = getNextUnwatchedVisibleCard();
+  if (!nextCard) {
+    showToast('All visible entries are completed.', 'info');
+    playSound('click');
+    triggerHaptic('light');
+    return;
+  }
+
+  const section = nextCard.closest('.timeline-section');
+  if (section && section.classList.contains('collapsed')) {
+    section.classList.remove('collapsed');
+    const eraId = section.dataset.era;
+    const toggleButton = document.querySelector(`[data-era-toggle="${eraId}"]`);
+    if (toggleButton) {
+      toggleButton.setAttribute('aria-expanded', 'true');
+      toggleButton.textContent = 'Collapse';
+    }
+    const collapsedEras = loadCollapsedEras();
+    collapsedEras.delete(eraId);
+    saveCollapsedEras(collapsedEras);
+  }
+
+  const timelineEntry = nextCard.closest('.timeline-entry') || nextCard;
+  timelineEntry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  window.setTimeout(() => {
+    nextCard.focus({ preventScroll: true });
+  }, 220);
+
+  playSound('click');
+  triggerHaptic('light');
+}
+
+function initContinueWhereLeftOffButton() {
+  const continueButton = document.getElementById('continue-where-left-off');
+  if (!continueButton) return;
+
+  continueButton.addEventListener('click', () => {
+    scrollToNextUnwatchedEntry();
+  });
+}
+
 // Render the timeline
 function render() {
   const app = document.getElementById('app');
@@ -264,6 +416,9 @@ function render() {
         <div class="header-utility-row" aria-label="Quick progress and actions">
           <button id="stats-drawer-toggle" class="stats-drawer-toggle" type="button" aria-expanded="false" aria-controls="stats-drawer">
             Stats
+          </button>
+          <button id="continue-where-left-off" class="stats-mini-pill stats-mini-pill--cta" type="button" aria-label="Continue where you left off">
+            Continue Where I Left Off
           </button>
           <div class="stats-mini-summary" aria-live="polite" aria-label="Quick progress summary">
             <button id="stats-mini-overall" class="stats-mini-pill" type="button" aria-label="Open stats panel">
@@ -301,6 +456,11 @@ function render() {
           <span>Filters</span>
           <span id="filters-active-count" class="filters-toggle-count">All</span>
         </button>
+      </div>
+
+      <div id="active-filters-bar" class="active-filters hidden" aria-live="polite">
+        <div id="active-filters-chips" class="active-filters-chips"></div>
+        <button id="clear-filters-btn" class="active-filters-clear" type="button">Clear all filters</button>
       </div>
       
       <div class="filters-panel" id="filters-panel">
@@ -355,7 +515,7 @@ function render() {
     </nav>
 
     <main class="timeline-container" id="main-content" tabindex="-1">
-      <div id="no-results" style="display: none; text-align: center; padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1;">
+      <div id="no-results" class="hidden" style="text-align: center; padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1;">
         <p>No entries match the selected filters.</p>
       </div>
 
@@ -396,7 +556,7 @@ function render() {
                   <div class="timeline-year">${entry.year}</div>
                   <div class="timeline-connector"></div>
                   <div class="timeline-dot"></div>
-                  <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}">
+                  <div class="entry-card" data-canon="${entry.canon}" data-section="${idx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
                     <div class="entry-poster">
                       <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
                       <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
@@ -498,8 +658,10 @@ function render() {
   initializeWatchedState();
   attachFilterHandlers();
   initMobileFilterPanel();
+  initActiveFilterControls();
   attachStatHandlers();
   initStatsDrawer();
+  initContinueWhereLeftOffButton();
   initSoundToggle();
   initWatchModeToggle();
   initEraToggles();
@@ -759,21 +921,8 @@ function updateWatchModeHighlight() {
 
   if (!watchModeEnabled) return;
 
-  const visibleCards = cards.filter((card) => !card.classList.contains('hidden'));
-  let nextCard = null;
-
-  for (let i = 0; i < visibleCards.length; i++) {
-    const card = visibleCards[i];
-    const sectionIdx = Number(card.dataset.section);
-    const entryIdx = Number(card.dataset.entry);
-    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
-    const watchedCount = Array.isArray(entry._watchedArray) ? entry._watchedArray.filter(Boolean).length : entry.watched;
-    const isComplete = entry.episodes > 0 ? watchedCount >= entry.episodes : watchedCount > 0;
-    if (!isComplete) {
-      nextCard = card;
-      break;
-    }
-  }
+  const visibleCards = cards.filter((card) => !card.classList.contains('hidden') && card.offsetParent !== null);
+  const nextCard = getNextUnwatchedVisibleCard();
 
   if (!nextCard) return;
 
@@ -845,10 +994,22 @@ function initializeWatchedState() {
 
 function attachEntryHandlers() {
   document.querySelectorAll('.entry-card').forEach(card => {
-    card.addEventListener('click', () => {
+    const openCardModal = () => {
       const s = Number(card.dataset.section);
       const e = Number(card.dataset.entry);
       openModal(s, e);
+    };
+
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('input, button, a, select, textarea, label')) return;
+      openCardModal();
+    });
+
+    card.addEventListener('keydown', (event) => {
+      if (event.target.closest('input, button, a, select, textarea')) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      openCardModal();
     });
 
     const handleSingleCheckboxChange = (checkboxEl) => {

@@ -12,6 +12,62 @@ export function createModalController({
   let savedScrollY = 0;
   let currentModalSection = null;
   let currentModalEntry = null;
+  let modalKeydownHandler = null;
+  let modalPreviouslyFocusedElement = null;
+
+  function releaseModalKeyboardTrap() {
+    if (modalKeydownHandler) {
+      document.removeEventListener('keydown', modalKeydownHandler);
+      modalKeydownHandler = null;
+    }
+  }
+
+  function trapModalKeyboard(modal) {
+    releaseModalKeyboardTrap();
+
+    modalKeydownHandler = (event) => {
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        playSound('click');
+        triggerHaptic('light');
+        closeModal();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusable = Array.from(
+        modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+      ).filter((el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true');
+
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (!modal.contains(active)) {
+        event.preventDefault();
+        first.focus();
+        return;
+      }
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', modalKeydownHandler);
+  }
 
   function isShowCompleted(entry) {
     if (!entry || entry.episodes <= 1 || !Array.isArray(entry._watchedArray)) return false;
@@ -165,7 +221,7 @@ export function createModalController({
       <div class="modal-backdrop">
         <div class="modal-backdrop-image" style="background-image: url('${entry.poster}');"></div>
       </div>
-      <div class="modal-content" style="--section-color: ${sectionColor}; --section-color-rgb: ${sectionColorRgb};">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" style="--section-color: ${sectionColor}; --section-color-rgb: ${sectionColorRgb};">
         <button class="modal-close" aria-label="Close">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -174,7 +230,7 @@ export function createModalController({
         </button>
         <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
         <div class="modal-right">
-          <h2>${entry.title}</h2>
+          <h2 id="modal-title">${entry.title}</h2>
           <div class="modal-meta">
             <span class="modal-meta-text">${mediaTypeInfo.label} • ${entryMetaText}</span>
             <span class="modal-badge ${entry.canon ? 'canon' : 'legends'}">${entry.canon ? 'CANON' : 'LEGENDS'}</span>
@@ -209,6 +265,8 @@ export function createModalController({
     modal.innerHTML = modalHTML;
     modal.classList.remove('hidden');
     modal.setAttribute('aria-hidden', 'false');
+    modalPreviouslyFocusedElement = document.activeElement;
+    trapModalKeyboard(modal);
 
     const modalImg = modal.querySelector('.modal-left img');
     if (modalImg) {
@@ -251,6 +309,13 @@ export function createModalController({
       triggerHaptic('light');
       closeModal();
     });
+
+    const closeButton = modal.querySelector('.modal-close');
+    if (closeButton) {
+      requestAnimationFrame(() => {
+        closeButton.focus();
+      });
+    }
 
     const updateEpisodeRowState = () => {
       modal.querySelectorAll('[data-episode-item]').forEach((item) => {
@@ -375,6 +440,7 @@ export function createModalController({
     const scrollY = savedScrollY || 0;
     modal.classList.add('hidden');
     modal.setAttribute('aria-hidden', 'true');
+    releaseModalKeyboardTrap();
 
     document.body.classList.remove('modal-open');
     document.body.style.top = '';
@@ -384,6 +450,11 @@ export function createModalController({
     if (currentModalSection !== null && currentModalEntry !== null) {
       updateEntryUI(currentModalSection, currentModalEntry);
     }
+
+    if (modalPreviouslyFocusedElement && typeof modalPreviouslyFocusedElement.focus === 'function') {
+      modalPreviouslyFocusedElement.focus({ preventScroll: true });
+    }
+    modalPreviouslyFocusedElement = null;
   }
 
   return {

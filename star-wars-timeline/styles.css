@@ -590,6 +590,17 @@ header {
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
+.stats-mini-pill--cta {
+  border-color: rgba(245, 158, 11, 0.35);
+  color: var(--text-primary);
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.stats-mini-pill--cta:hover {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
 .stats-mini-pill:hover {
   border-color: rgba(245, 158, 11, 0.35);
   background: rgba(30, 41, 59, 0.65);
@@ -893,6 +904,65 @@ header {
   letter-spacing: 0.075em;
   padding: 0 var(--space-2);
   opacity: 0.8;
+}
+
+.active-filters {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.active-filters-chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.active-filter-chip,
+.active-filters-clear {
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(30, 41, 59, 0.5);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.active-filter-chip:hover,
+.active-filters-clear:hover {
+  background: rgba(30, 41, 59, 0.75);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: var(--text-primary);
+}
+
+.active-filters-clear {
+  background: transparent;
+}
+
+.active-filters-clear:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .active-filters {
+    justify-content: center;
+  }
 }
 
 .filter-btn,
