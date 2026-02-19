@@ -444,6 +444,8 @@ function render() {
   const app = document.getElementById('app');
   const stats = calculateStats();
   const sparklines = buildStatSparklines();
+  const watchedProgressPercent = stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0;
+  const completedProgressPercent = stats.totalShows > 0 ? (stats.completedShows / stats.totalShows * 100) : 0;
   
   app.innerHTML = `
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -470,7 +472,7 @@ function render() {
           <div class="stat-label">EPISODES WATCHED</div>
           ${sparklines.watched}
           <div class="stat-progress">
-            <div class="stat-progress-bar" style="width: ${(stats.watchedEpisodes / stats.totalEpisodes * 100)}%"></div>
+            <div class="stat-progress-bar" style="width: ${watchedProgressPercent}%"></div>
           </div>
         </div>
         <div class="stat-box" data-stat="completed" data-filter="completed" role="button" tabindex="0" aria-label="Filter to completed entries">
@@ -478,7 +480,7 @@ function render() {
           <div class="stat-label">COMPLETED SHOWS</div>
           ${sparklines.completed}
           <div class="stat-progress">
-            <div class="stat-progress-bar" style="width: ${(stats.completedShows / stats.totalShows * 100)}%"></div>
+            <div class="stat-progress-bar" style="width: ${completedProgressPercent}%"></div>
           </div>
         </div>
         <div class="stat-box" data-stat="total" data-filter="not-started" role="button" tabindex="0" aria-label="Filter to not started entries">
@@ -624,20 +626,30 @@ function render() {
                       ${entryMetaDetails ? `<p class="entry-meta">${entryMetaDetails}</p>` : ''}
                       ${showSingleEpisodeChecklist ? `
                         <div class="entry-single-episode-checklist">
-                          <div class="episode-list">
-                            <div class="episode-item">
-                              <label>
-                                <input type="checkbox" class="card-single-episode-checkbox" data-section="${idx}" data-entry="${entryIdx}" ${entry.watched > 0 ? 'checked' : ''} />
-                                <span class="episode-title">${singleEpisodeTitle}</span>
-                                ${singleEpisodeTime ? `<span class="episode-time">${singleEpisodeTime}</span>` : ''}
-                              </label>
-                            </div>
-                          </div>
+                          <label class="entry-quick-check entry-quick-check--single" title="Mark episode as watched">
+                            <input type="checkbox" class="card-single-episode-checkbox" data-section="${idx}" data-entry="${entryIdx}" aria-label="Mark ${singleEpisodeTitle} as watched" ${entry.watched > 0 ? 'checked' : ''} />
+                            <span class="entry-quick-check-content">
+                              <span class="entry-quick-check-title">${singleEpisodeTitle}</span>
+                              ${singleEpisodeTime ? `<span class="entry-quick-check-time">${singleEpisodeTime}</span>` : ''}
+                            </span>
+                            <span class="entry-quick-check-state" data-watch-state>${entry.watched > 0 ? 'Watched' : 'Not watched'}</span>
+                          </label>
+                        </div>
+                      ` : ''}
+                      ${isSingleItemEntry && !showSingleEpisodeChecklist ? `
+                        <div class="entry-single-episode-checklist">
+                          <label class="card-checkbox-inline entry-quick-check entry-quick-check--movie" title="Mark movie as watched">
+                            <input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" aria-label="Mark ${entry.title} as watched" ${entry.watched > 0 ? 'checked' : ''} />
+                            <span class="entry-quick-check-content">
+                              <span class="entry-quick-check-title">Movie</span>
+                              <span class="entry-quick-check-subtitle">Mark as watched</span>
+                            </span>
+                            <span class="entry-quick-check-state" data-watch-state>${entry.watched > 0 ? 'Watched' : 'Not watched'}</span>
+                          </label>
                         </div>
                       ` : ''}
                       <div class="entry-row">
                         <p class="entry-episodes">${entry.watched}/${entry.episodes} watched</p>
-                        ${isSingleItemEntry && !showSingleEpisodeChecklist ? `<label class="card-checkbox-inline" title="Mark as watched"><input type="checkbox" class="card-movie-checkbox" data-section="${idx}" data-entry="${entryIdx}" /><span class="card-checkbox-box"></span></label>` : ''}
                       </div>
                     </div>
                   </div>
@@ -1042,7 +1054,7 @@ function triggerHaptic(level) {
 function updateFilters() {
   // BATCH 1: Collect all filter decisions in memory (no DOM writes)
   const cards = document.querySelectorAll('.entry-card');
-  const cardUpdates = [];
+  const entryUpdates = [];
   let visibleCount = 0;
   
   for (let i = 0; i < cards.length; i++) {
@@ -1071,7 +1083,7 @@ function updateFilters() {
     if (filters.type === 'films') {
       typeMatch = entry.type.toLowerCase().includes('film');
     } else if (filters.type === 'shows') {
-      typeMatch = entry.type.toLowerCase().includes('show');
+      typeMatch = entry.episodes > 1 || /show|anthology/i.test(entry.type);
     }
     
     // Progress filter
@@ -1085,16 +1097,19 @@ function updateFilters() {
     }
     
     const shouldShow = canonMatch && searchMatch && typeMatch && progressMatch;
-    cardUpdates.push({ card, shouldShow });
+    const entryNode = card.closest('.timeline-entry');
+    entryUpdates.push({ card, entryNode, shouldShow });
     if (shouldShow) visibleCount++;
   }
   
   // BATCH 2: Apply all DOM changes at once (single batch of writes)
-  cardUpdates.forEach(({ card, shouldShow }) => {
+  entryUpdates.forEach(({ card, entryNode, shouldShow }) => {
     if (shouldShow) {
       card.classList.remove('hidden');
+      if (entryNode) entryNode.classList.remove('hidden');
     } else {
       card.classList.add('hidden');
+      if (entryNode) entryNode.classList.add('hidden');
     }
   });
   
@@ -1103,8 +1118,8 @@ function updateFilters() {
   const sectionUpdates = [];
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    const visibleCards = section.querySelectorAll('.entry-card:not(.hidden)').length;
-    sectionUpdates.push({ section, visible: visibleCards > 0 });
+    const visibleEntries = section.querySelectorAll('.timeline-entry:not(.hidden)').length;
+    sectionUpdates.push({ section, visible: visibleEntries > 0 });
   }
   sectionUpdates.forEach(({ section, visible }) => {
     section.classList.toggle('hidden', !visible);
@@ -1198,7 +1213,7 @@ function attachEntryHandlers() {
     const singleEpisodeCb = card.querySelector('.card-single-episode-checkbox');
     if (singleEpisodeCb) {
       singleEpisodeCb.addEventListener('click', (ev) => ev.stopPropagation());
-      const singleEpisodeLabel = card.querySelector('.entry-single-episode-checklist .episode-item label');
+      const singleEpisodeLabel = card.querySelector('.entry-single-episode-checklist .entry-quick-check');
       if (singleEpisodeLabel) singleEpisodeLabel.addEventListener('click', (ev) => ev.stopPropagation());
       singleEpisodeCb.addEventListener('change', () => handleSingleCheckboxChange(singleEpisodeCb));
     }
@@ -1262,8 +1277,8 @@ function openResetDialog() {
       <h2 id="reset-dialog-title">Reset progress?</h2>
       <p id="reset-dialog-description">This will clear all watched progress across the timeline. This action cannot be undone.</p>
       <div class="reset-dialog-actions">
-        <button type="button" class="modal-close-btn" id="reset-dialog-cancel">Cancel</button>
-        <button type="button" class="modal-primary-btn" id="reset-dialog-confirm">Reset Progress</button>
+        <button type="button" class="modal-btn modal-btn--ghost modal-close-btn" id="reset-dialog-cancel">Cancel</button>
+        <button type="button" class="modal-btn modal-btn--primary modal-primary-btn" id="reset-dialog-confirm">Reset Progress</button>
       </div>
     </div>
   `;
@@ -1354,6 +1369,16 @@ function saveWatchedState(entry) {
   entry.watched = entry._watchedArray.filter(Boolean).length;
 }
 
+function updateCardQuickCheckState(card, isWatched) {
+  card.querySelectorAll('.entry-quick-check').forEach(control => {
+    control.classList.toggle('is-watched', isWatched);
+  });
+  card.querySelectorAll('[data-watch-state]').forEach(stateEl => {
+    stateEl.textContent = isWatched ? 'Watched' : 'Not watched';
+    stateEl.classList.toggle('is-watched', isWatched);
+  });
+}
+
 function updateEntryUI(sectionIdx, entryIdx) {
   const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
   const selector = `.entry-card[data-section="${sectionIdx}"][data-entry="${entryIdx}"]`;
@@ -1372,6 +1397,8 @@ function updateEntryUI(sectionIdx, entryIdx) {
   if (singleEpisodeCheckbox) {
     singleEpisodeCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
   }
+  const singleItemWatched = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
+  updateCardQuickCheckState(card, singleItemWatched);
 
   updateWatchModeHighlight();
   
@@ -1446,21 +1473,25 @@ function openModal(sectionIdx, entryIdx) {
   const sectionColorRgb = hexToRgb(sectionColor);
   const modal = document.getElementById('modal');
   const arr = entry._watchedArray || new Array(entry.episodes).fill(false);
+  entry._watchedArray = arr;
   const watchedCount = arr.filter(Boolean).length;
-  const progress = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
 
   let episodesHTML = '';
   for (let i = 0; i < entry.episodes; i++) {
-    const checked = arr[i] ? 'checked' : '';
+    const isChecked = Boolean(arr[i]);
+    const checked = isChecked ? 'checked' : '';
     const episodeTitle = (entry.episodeDetails && entry.episodeDetails[i] && entry.episodeDetails[i].title) || '';
     const episodeTime = (entry.episodeDetails && entry.episodeDetails[i] && entry.episodeDetails[i].time) || '';
     const episodeTimeText = String(episodeTime).trim() || '—';
     episodesHTML += `
-      <div class="episode-item">
+      <div class="episode-item ${isChecked ? 'is-watched' : ''}" data-episode-item="${i}">
         <label>
           <input type="checkbox" data-ep="${i}" ${checked} />
           <span class="episode-title">${episodeTitle}</span>
-          <span class="episode-time">${episodeTimeText}</span>
+          <span class="episode-meta">
+            <span class="episode-time">${episodeTimeText}</span>
+            <span class="episode-status">${isChecked ? 'Watched' : 'Up next'}</span>
+          </span>
         </label>
       </div>
     `;
@@ -1470,6 +1501,8 @@ function openModal(sectionIdx, entryIdx) {
   const showEpisodes = entry.episodes > 1; // Only show episodes for series/shows
   const progressPercent = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
   const episodeCountText = showEpisodes ? `${watchedCount}/${entry.episodes} watched (${progressPercent}%)` : '';
+  const remainingCount = showEpisodes ? Math.max(entry.episodes - watchedCount, 0) : 0;
+  const remainingText = remainingCount === 0 ? 'All caught up' : `${remainingCount} left`;
   const entryMetaText = getEntryMetaText(entry);
   const mediaTypeInfo = getMediaTypeInfo(entry.type);
 
@@ -1495,15 +1528,24 @@ function openModal(sectionIdx, entryIdx) {
         ${showEpisodes ? `
           <div class="modal-episodes">
             <div class="modal-episodes-header">
-              <span class="modal-episodes-title">Episodes</span>
+              <div class="modal-episodes-heading">
+                <span class="modal-episodes-title">Episodes</span>
+                <span id="modal-episode-remaining" class="modal-episodes-remaining">${remainingText}</span>
+              </div>
               <span id="modal-episode-count" class="modal-episodes-count">${episodeCountText}</span>
+            </div>
+            <div class="modal-episodes-progress" aria-hidden="true">
+              <span id="modal-episodes-progress-bar" class="modal-episodes-progress-bar" style="width: ${progressPercent}%;"></span>
             </div>
             <div class="episode-list-wrapper"><div class="episode-list">${episodesHTML}</div></div>
           </div>
         ` : ''}
         <div class="modal-actions">
-          ${showEpisodes ? `<button class="modal-primary-btn" id="mark-all-watched">Mark All Watched</button>` : ''}
-          <button class="modal-close-btn">Close</button>
+          ${showEpisodes ? `
+            <button class="modal-btn modal-btn--secondary modal-secondary-btn" id="mark-next-episode">Mark Next Episode</button>
+            <button class="modal-btn modal-btn--primary modal-primary-btn" id="mark-all-watched">Mark All Watched</button>
+          ` : ''}
+          <button class="modal-btn modal-btn--ghost modal-close-btn">Close</button>
         </div>
       </div>
     </div>
@@ -1549,12 +1591,33 @@ function openModal(sectionIdx, entryIdx) {
     closeModal();
   });
 
+  const updateEpisodeRowState = () => {
+    modal.querySelectorAll('[data-episode-item]').forEach((item) => {
+      const idx = Number(item.dataset.episodeItem);
+      const isWatched = Boolean(entry._watchedArray[idx]);
+      item.classList.toggle('is-watched', isWatched);
+      const statusEl = item.querySelector('.episode-status');
+      if (statusEl) {
+        statusEl.textContent = isWatched ? 'Watched' : 'Up next';
+      }
+    });
+  };
+
   const updateModalCount = () => {
     const updatedCount = entry._watchedArray.filter(Boolean).length;
     const percent = entry.episodes > 0 ? Math.round((updatedCount / entry.episodes) * 100) : 0;
+    const remaining = Math.max(entry.episodes - updatedCount, 0);
     const countEl = modal.querySelector('#modal-episode-count');
     if (countEl) {
       countEl.textContent = `${updatedCount}/${entry.episodes} watched (${percent}%)`;
+    }
+    const remainingEl = modal.querySelector('#modal-episode-remaining');
+    if (remainingEl) {
+      remainingEl.textContent = remaining === 0 ? 'All caught up' : `${remaining} left`;
+    }
+    const progressBarEl = modal.querySelector('#modal-episodes-progress-bar');
+    if (progressBarEl) {
+      progressBarEl.style.width = `${percent}%`;
     }
     
     // Update button text based on state
@@ -1563,6 +1626,15 @@ function openModal(sectionIdx, entryIdx) {
       const allChecked = entry._watchedArray.every(Boolean);
       markAllBtn.textContent = allChecked ? 'Unmark All' : 'Mark All Watched';
     }
+
+    const markNextBtn = modal.querySelector('#mark-next-episode');
+    if (markNextBtn) {
+      const hasUnwatched = updatedCount < entry.episodes;
+      markNextBtn.textContent = hasUnwatched ? 'Mark Next Episode' : 'All Watched';
+      markNextBtn.disabled = !hasUnwatched;
+    }
+
+    updateEpisodeRowState();
   };
 
   const markAllBtn = modal.querySelector('#mark-all-watched');
@@ -1590,6 +1662,33 @@ function openModal(sectionIdx, entryIdx) {
     
     // Set initial button text
     updateModalCount();
+  }
+
+  const markNextBtn = modal.querySelector('#mark-next-episode');
+  if (markNextBtn) {
+    markNextBtn.addEventListener('click', () => {
+      const nextIdx = entry._watchedArray.findIndex((isWatched) => !isWatched);
+      if (nextIdx === -1) {
+        playSound('click');
+        triggerHaptic('light');
+        showToast(`${entry.title}: All episodes are already watched`, 'info');
+        return;
+      }
+      const wasCompleted = isShowCompleted(entry);
+      playSound('success');
+      triggerHaptic('success');
+      entry._watchedArray[nextIdx] = true;
+      const nextCheckbox = modal.querySelector(`input[data-ep="${nextIdx}"]`);
+      if (nextCheckbox) {
+        nextCheckbox.checked = true;
+      }
+      saveWatchedState(entry);
+      updateEntryUI(sectionIdx, entryIdx);
+      updateModalCount();
+      if (!wasCompleted && isShowCompleted(entry)) {
+        showToast(`${entry.title} completed!`, 'success');
+      }
+    });
   }
 
   // Handle checkboxes for series/shows

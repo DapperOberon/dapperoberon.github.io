@@ -168,7 +168,7 @@ function renderProjects() {
 
       card.innerHTML = `
         <div class="relative h-48 overflow-hidden">
-          <img src="${p.image}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <img src="${p.image}" alt="${p.title} project preview image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
           <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
           <div class="absolute bottom-6 left-8 flex gap-2">
             ${p.tags.map(t => `<span class="bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-orange-400/30">${t}</span>`).join('')}

@@ -711,8 +711,7 @@ header {
 
 .filter-btn,
 #reset-progress-btn,
-.modal-primary-btn,
-.modal-close-btn {
+.modal-btn {
   padding: var(--space-2) var(--space-4);
   border-radius: 6px;
   font-family: var(--font-body);
@@ -785,8 +784,7 @@ header {
 /* Button Press States - Micro-interaction */
 .filter-btn:active,
 #reset-progress-btn:active,
-.modal-primary-btn:active,
-.modal-close-btn:active {
+.modal-btn:active {
   transform: translateY(1px) scale(0.97);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
 }
@@ -1550,31 +1548,138 @@ body.modal-open {
 }
 
 .card-checkbox-inline {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: stretch;
   margin-left: auto;
-  gap: var(--space-2);
+  min-width: min(245px, 100%);
   cursor: pointer;
+}
+
+.entry-quick-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  transform: translateY(0);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.entry-quick-check:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.entry-quick-check:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.entry-quick-check.is-watched {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.entry-quick-check-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.entry-quick-check-title {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-snug);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-quick-check-subtitle,
+.entry-quick-check-time {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+
+.entry-quick-check-state {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  white-space: nowrap;
+}
+
+.entry-quick-check-state.is-watched {
+  color: #ffffff;
+  border-color: rgba(245, 158, 11, 0.7);
+  background: rgba(245, 158, 11, 0.45);
+}
+
+.entry-quick-check--single {
+  margin-top: var(--space-1);
+}
+
+.entry-quick-check--movie {
+  margin-top: var(--space-1);
+}
+
+.entry-single-episode-checklist .card-checkbox-inline {
+  margin-left: 0;
+  min-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .entry-row {
+    flex-wrap: wrap;
+  }
+
+  .entry-row .entry-episodes {
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .card-checkbox-inline {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 /* show and style the actual checkbox input so it's inline and orange when checked */
 .card-checkbox-inline input[type="checkbox"],
+.card-single-episode-checkbox,
 .episode-item input[type="checkbox"],
 .card-movie-checkbox {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
   height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  flex: 0 0 18px;
+  align-self: center;
   border: 2px solid var(--border);
   background: rgba(255,255,255,0.03);
   border-radius: 4px;
-  display: inline-block;
-  vertical-align: middle;
+  display: block;
   position: relative;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
 }
 
 .card-checkbox-inline input[type="checkbox"]::before,
+.card-single-episode-checkbox::before,
 .episode-item input[type="checkbox"]::before,
 .card-movie-checkbox::before {
   content: "";
@@ -1587,6 +1692,7 @@ body.modal-open {
   pointer-events: none;
 }
 .card-checkbox-inline input[type="checkbox"]:checked,
+.card-single-episode-checkbox:checked,
 .episode-item input[type="checkbox"]:checked,
 .card-movie-checkbox:checked {
   background: var(--primary);
@@ -1596,6 +1702,7 @@ body.modal-open {
   transform: scale(1.05);
 }
 .card-checkbox-inline input[type="checkbox"]:checked::after,
+.card-single-episode-checkbox:checked::after,
 .episode-item input[type="checkbox"]:checked::after,
 .card-movie-checkbox:checked::after {
   content: "";
@@ -1611,12 +1718,14 @@ body.modal-open {
 }
 
 .card-checkbox-inline input[type="checkbox"]:checked::before,
+.card-single-episode-checkbox:checked::before,
 .episode-item input[type="checkbox"]:checked::before,
 .card-movie-checkbox:checked::before {
   animation: checkboxBurst 0.5s ease;
 }
 .card-checkbox-inline .card-checkbox-box { display: none; }
 .card-checkbox-inline input[type="checkbox"]:focus-visible,
+.card-single-episode-checkbox:focus-visible,
 .episode-item input[type="checkbox"]:focus-visible {
   outline: 3px solid rgba(234,88,12,0.12);
   outline-offset: 3px;
@@ -1650,17 +1759,8 @@ body.modal-open {
   margin-bottom: var(--space-2);
 }
 
-.entry-single-episode-checklist .episode-list {
-  gap: 0;
-  overflow: visible;
-}
-
-.entry-single-episode-checklist .episode-item {
+.entry-single-episode-checklist .entry-quick-check {
   margin: 0;
-}
-
-.entry-single-episode-checklist .episode-item:hover {
-  transform: none;
 }
 
 .entry-episodes {
@@ -2282,6 +2382,21 @@ footer p {
   letter-spacing: 0.05em;
 }
 
+.modal-episodes-heading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.modal-episodes-remaining {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: var(--font-medium);
+}
+
 .modal-episodes-count { 
   color: var(--section-color, var(--primary)); 
   font-size: var(--text-sm); 
@@ -2291,6 +2406,24 @@ footer p {
   padding: var(--space-1) var(--space-2);
   border-radius: 0.25rem;
   border: 1px solid rgba(var(--section-color-rgb), 0.3);
+}
+
+.modal-episodes-progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.modal-episodes-progress-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--section-color), rgba(var(--section-color-rgb), 0.7));
+  transition: width 0.2s ease;
 }
 
 .episode-list-wrapper { 
@@ -2335,6 +2468,14 @@ footer p {
   border-color: rgba(var(--section-color-rgb), 0.2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+.episode-item.is-watched {
+  border-color: rgba(var(--section-color-rgb), 0.32);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--section-color-rgb), 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+}
 .episode-item label { display: flex; gap: var(--space-3); align-items: center; width: 100%; cursor: pointer; }
 .episode-title { 
   flex: 1; 
@@ -2346,6 +2487,16 @@ footer p {
 .episode-item:hover .episode-title {
   color: rgba(var(--section-color-rgb), 1);
 }
+.episode-item.is-watched .episode-title {
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+.episode-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
 .episode-time { 
   color: var(--text-secondary); 
   opacity: 0.75; 
@@ -2356,11 +2507,40 @@ footer p {
   padding: var(--space-1) var(--space-2);
   border-radius: 0.25rem;
 }
+.episode-status {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
+}
+.episode-item.is-watched .episode-status {
+  color: #ffffff;
+  border-color: rgba(var(--section-color-rgb), 0.55);
+  background: rgba(var(--section-color-rgb), 0.4);
+}
 .modal-actions { margin-top: auto; display: flex; gap: var(--space-3); }
+.modal-btn { min-height: 44px; }
+.modal-btn--primary,
 .modal-primary-btn { background: var(--primary); border: 1px solid var(--primary); color: #ffffff; padding: var(--space-2) var(--space-5); }
+.modal-btn--primary:hover,
 .modal-primary-btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+.modal-btn--secondary,
+.modal-secondary-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: var(--text-primary); padding: var(--space-2) var(--space-4); }
+.modal-btn--secondary:hover,
+.modal-secondary-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+.modal-btn--ghost,
 .modal-close-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: var(--text-primary); padding: var(--space-2) var(--space-5); }
+.modal-btn--ghost:hover,
 .modal-close-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+.modal-btn:disabled,
+.modal-secondary-btn:disabled,
+.modal-primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .reset-dialog {
   position: fixed;
@@ -2490,7 +2670,11 @@ footer p {
   .modal-left img { width: 100% !important; height: auto !important; max-height: calc(var(--vh, 1vh) * 50) !important; object-fit: cover !important; border-radius: 10px 10px 0 0 !important; display: block !important; }
   .modal-right { padding: var(--space-4) !important; height: calc(var(--vh, 1vh) * 50) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
   .modal-close { right: var(--space-4) !important; top: var(--space-4) !important; }
-  .modal-close-btn { width: 100% !important; box-sizing: border-box !important; }
+  .modal-actions { flex-wrap: wrap !important; }
+  .modal-actions .modal-btn {
+    flex: 1 1 calc(50% - var(--space-3));
+    box-sizing: border-box !important;
+  }
   .modal-backdrop { position: absolute !important; inset: 0 !important; }
   .modal.hidden { display: none !important; }
   .episode-list { max-height: 200px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
@@ -2500,6 +2684,10 @@ footer p {
   .modal-left img { max-height: calc(var(--vh, 1vh) * 38) !important; }
   .modal-right { padding: var(--space-3) !important; }
   .modal-right h2 { font-size: var(--text-xl) !important; }
+  .modal-actions .modal-btn {
+    flex: 1 1 100%;
+    width: 100% !important;
+  }
 }
 
 /* iPhone / small narrow screens: ensure this block comes after base rules so it wins */

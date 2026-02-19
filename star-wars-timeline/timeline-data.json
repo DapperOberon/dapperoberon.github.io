@@ -359,7 +359,7 @@
       },
       {
         "title": "Tales of the Jedi",
-        "year": "",
+        "year": "32 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./posters/tales-of-the-jedi.jpg",
@@ -2850,7 +2850,7 @@
     "entries": [
       {
         "title": "Star Wars: Visions",
-        "year": "",
+        "year": "Unknown",
         "type": "Various Styles",
         "canon": true,
         "poster": "./posters/visions-poster.jpg",
@@ -2859,112 +2859,112 @@
         "releaseYear": "2021-2023",
         "episodeDetails": [
           {
-            "title": "S1.E1",
-            "time": "The Duel"
+            "title": "S1.E1 - The Duel",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E2",
-            "time": "Tatooine Rhapsody"
+            "title": "S1.E2 - Tatooine Rhapsody",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E3",
-            "time": "THE TWINS"
+            "title": "S1.E3 - The Twins",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E4",
-            "time": "The Village Bride"
+            "title": "S1.E4 - The Village Bride",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E5",
-            "time": "The Ninth Jedi"
+            "title": "S1.E5 - The Ninth Jedi",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E6",
-            "time": "T0B1"
+            "title": "S1.E6 - T0-B1",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E7",
-            "time": "The Elder"
+            "title": "S1.E7 - The Elder",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E8",
-            "time": "Lop & Ochō"
+            "title": "S1.E8 - Lop & Ochō",
+            "time": "Unknown"
           },
           {
-            "title": "S1.E9",
-            "time": "Akakiri"
+            "title": "S1.E9 - Akakiri",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E1",
-            "time": "Sith"
+            "title": "S2.E1 - Sith",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E2",
-            "time": "Screecher's Reach"
+            "title": "S2.E2 - Screecher's Reach",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E3",
-            "time": "In the Stars"
+            "title": "S2.E3 - In the Stars",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E4",
-            "time": "I Am Your Mother"
+            "title": "S2.E4 - I Am Your Mother",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E5",
-            "time": "Journey to the Dark Head"
+            "title": "S2.E5 - Journey to the Dark Head",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E6",
-            "time": "The Spy Dancer"
+            "title": "S2.E6 - The Spy Dancer",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E7",
-            "time": "The Bandits of Golak"
+            "title": "S2.E7 - The Bandits of Golak",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E8",
-            "time": "The Pit"
+            "title": "S2.E8 - The Pit",
+            "time": "Unknown"
           },
           {
-            "title": "S2.E9",
-            "time": "Aau's Song"
+            "title": "S2.E9 - Aau's Song",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E1",
-            "time": "The Duel: Payback"
+            "title": "S3.E1 - The Duel: Payback",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E2",
-            "time": "The Song of Four Wings"
+            "title": "S3.E2 - The Song of Four Wings",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E3",
-            "time": "The Ninth Jedi: Child of Hope"
+            "title": "S3.E3 - The Ninth Jedi: Child of Hope",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E4",
-            "time": "The Bounty Hunters"
+            "title": "S3.E4 - The Bounty Hunters",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E5",
-            "time": "Yuko's Treasure"
+            "title": "S3.E5 - Yuko's Treasure",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E6",
-            "time": "The Lost Ones"
+            "title": "S3.E6 - The Lost Ones",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E7",
-            "time": "The Smuggler"
+            "title": "S3.E7 - The Smuggler",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E8",
-            "time": "The Bird of Paradise"
+            "title": "S3.E8 - The Bird of Paradise",
+            "time": "Unknown"
           },
           {
-            "title": "S3.E9",
-            "time": "BLACK"
+            "title": "S3.E9 - BLACK",
+            "time": "Unknown"
           }
         ]
       }
