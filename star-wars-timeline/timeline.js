@@ -200,6 +200,47 @@ function getModalController() {
   return modalController;
 }
 
+function buildStatsCardsMarkup(stats, sparklines, watchedProgressPercent, completedProgressPercent) {
+  return `
+    <div class="stat-box" data-stat="overall" data-filter="all" role="button" tabindex="0" aria-label="Show all progress">
+      <div class="stat-value" data-format="percent" data-target="${stats.overallProgress}">0%</div>
+      <div class="stat-label">OVERALL PROGRESS</div>
+      ${sparklines.overall}
+      <div class="stat-progress">
+        <div class="stat-progress-bar" style="width: ${stats.overallProgress}%"></div>
+      </div>
+    </div>
+    <div class="stat-box" data-stat="episodes" data-filter="in-progress" role="button" tabindex="0" aria-label="Filter to in progress entries">
+      <div class="stat-value" data-format="number" data-target="${stats.watchedEpisodes}">0</div>
+      <div class="stat-label">EPISODES WATCHED</div>
+      ${sparklines.watched}
+      <div class="stat-progress">
+        <div class="stat-progress-bar" style="width: ${watchedProgressPercent}%"></div>
+      </div>
+    </div>
+    <div class="stat-box" data-stat="completed" data-filter="completed" role="button" tabindex="0" aria-label="Filter to completed entries">
+      <div class="stat-value" data-format="fraction" data-target="${stats.completedShows}" data-total="${stats.totalShows}">0/${stats.totalShows}</div>
+      <div class="stat-label">COMPLETED SHOWS</div>
+      ${sparklines.completed}
+      <div class="stat-progress">
+        <div class="stat-progress-bar" style="width: ${completedProgressPercent}%"></div>
+      </div>
+    </div>
+    <div class="stat-box" data-stat="total" data-filter="not-started" role="button" tabindex="0" aria-label="Filter to not started entries">
+      <div class="stat-value" data-format="number" data-target="${stats.totalEpisodes}">0</div>
+      <div class="stat-label">TOTAL EPISODES</div>
+      ${sparklines.total}
+    </div>
+  `;
+}
+
+function applyProgressFilter(filter) {
+  const button = document.querySelector(`[data-progress-filter="${filter}"]`);
+  if (button) {
+    button.click();
+  }
+}
+
 // Render the timeline
 function render() {
   const app = document.getElementById('app');
@@ -207,6 +248,7 @@ function render() {
   const sparklines = buildStatSparklines();
   const watchedProgressPercent = stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0;
   const completedProgressPercent = stats.totalShows > 0 ? (stats.completedShows / stats.totalShows * 100) : 0;
+  const statsCardsMarkup = buildStatsCardsMarkup(stats, sparklines, watchedProgressPercent, completedProgressPercent);
   
   app.innerHTML = `
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -218,50 +260,33 @@ function render() {
         </div>
       </div>
       
-      <!-- Statistics Section -->
-      <div class="stats-container">
-        <div class="stat-box" data-stat="overall" data-filter="all" role="button" tabindex="0" aria-label="Show all progress">
-          <div class="stat-value" data-format="percent" data-target="${stats.overallProgress}">0%</div>
-          <div class="stat-label">OVERALL PROGRESS</div>
-          ${sparklines.overall}
-          <div class="stat-progress">
-            <div class="stat-progress-bar" style="width: ${stats.overallProgress}%"></div>
+      <div class="header-controls-row">
+        <div class="header-utility-row" aria-label="Quick progress and actions">
+          <button id="stats-drawer-toggle" class="stats-drawer-toggle" type="button" aria-expanded="false" aria-controls="stats-drawer">
+            Stats
+          </button>
+          <div class="stats-mini-summary" aria-live="polite" aria-label="Quick progress summary">
+            <button id="stats-mini-overall" class="stats-mini-pill" type="button" aria-label="Open stats panel">
+              ${stats.overallProgress}% overall
+            </button>
+            <button id="stats-mini-watched" class="stats-mini-pill" type="button" aria-label="Filter timeline to in progress entries">
+              ${stats.watchedEpisodes} watched
+            </button>
           </div>
         </div>
-        <div class="stat-box" data-stat="episodes" data-filter="in-progress" role="button" tabindex="0" aria-label="Filter to in progress entries">
-          <div class="stat-value" data-format="number" data-target="${stats.watchedEpisodes}">0</div>
-          <div class="stat-label">EPISODES WATCHED</div>
-          ${sparklines.watched}
-          <div class="stat-progress">
-            <div class="stat-progress-bar" style="width: ${watchedProgressPercent}%"></div>
-          </div>
-        </div>
-        <div class="stat-box" data-stat="completed" data-filter="completed" role="button" tabindex="0" aria-label="Filter to completed entries">
-          <div class="stat-value" data-format="fraction" data-target="${stats.completedShows}" data-total="${stats.totalShows}">0/${stats.totalShows}</div>
-          <div class="stat-label">COMPLETED SHOWS</div>
-          ${sparklines.completed}
-          <div class="stat-progress">
-            <div class="stat-progress-bar" style="width: ${completedProgressPercent}%"></div>
-          </div>
-        </div>
-        <div class="stat-box" data-stat="total" data-filter="not-started" role="button" tabindex="0" aria-label="Filter to not started entries">
-          <div class="stat-value" data-format="number" data-target="${stats.totalEpisodes}">0</div>
-          <div class="stat-label">TOTAL EPISODES</div>
-          ${sparklines.total}
-        </div>
-      </div>
 
-      <div class="interaction-toggles" aria-label="Interaction settings">
-        <label class="toggle">
-          <input type="checkbox" id="sound-toggle" aria-label="Toggle sound effects" />
-          <span class="toggle-track"></span>
-          <span class="toggle-label">Sound FX</span>
-        </label>
-        <label class="toggle">
-          <input type="checkbox" id="watch-mode-toggle" aria-label="Toggle watch order mode" />
-          <span class="toggle-track"></span>
-          <span class="toggle-label">Watch Mode</span>
-        </label>
+        <div class="interaction-toggles" aria-label="Interaction settings">
+          <label class="toggle">
+            <input type="checkbox" id="sound-toggle" aria-label="Toggle sound effects" />
+            <span class="toggle-track"></span>
+            <span class="toggle-label">Sound FX</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="watch-mode-toggle" aria-label="Toggle watch order mode" />
+            <span class="toggle-track"></span>
+            <span class="toggle-label">Watch Mode</span>
+          </label>
+        </div>
       </div>
       
       <!-- Search and Filters -->
@@ -304,6 +329,19 @@ function render() {
         </div>
       </div>
     </header>
+
+    <div id="stats-drawer" class="stats-drawer hidden" aria-hidden="true">
+      <button class="stats-drawer-backdrop" type="button" aria-label="Close stats panel"></button>
+      <aside class="stats-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="stats-drawer-title">
+        <div class="stats-drawer-header">
+          <h2 id="stats-drawer-title">Viewing Stats</h2>
+          <button id="stats-drawer-close" class="stats-drawer-close" type="button" aria-label="Close stats panel">✕</button>
+        </div>
+        <div class="stats-container stats-container--drawer">
+          ${statsCardsMarkup}
+        </div>
+      </aside>
+    </div>
 
     <nav class="timeline-rail" aria-label="Era navigation">
       <div class="timeline-rail-inner">
@@ -461,6 +499,7 @@ function render() {
   attachFilterHandlers();
   initMobileFilterPanel();
   attachStatHandlers();
+  initStatsDrawer();
   initSoundToggle();
   initWatchModeToggle();
   initEraToggles();
@@ -493,6 +532,7 @@ let watchModeEnabled = false;
 let eraObserver = null;
 let eraRailScrollBound = false;
 let eraRailScrollRaf = null;
+let statsDrawerEscapeBound = false;
 
 function loadCollapsedEras() {
   return loadCollapsedErasModule();
@@ -529,6 +569,78 @@ function initWatchModeToggle() {
     triggerHaptic('light');
     updateWatchModeHighlight();
   });
+}
+
+function initStatsDrawer() {
+  const toggleButton = document.getElementById('stats-drawer-toggle');
+  const quickOverall = document.getElementById('stats-mini-overall');
+  const quickWatched = document.getElementById('stats-mini-watched');
+  const drawer = document.getElementById('stats-drawer');
+  const closeButton = document.getElementById('stats-drawer-close');
+  const backdrop = drawer ? drawer.querySelector('.stats-drawer-backdrop') : null;
+  if (!toggleButton || !drawer || !closeButton || !backdrop) return;
+
+  const setDrawerOpen = (isOpen, { manageFocus = true } = {}) => {
+    drawer.classList.toggle('hidden', !isOpen);
+    drawer.classList.toggle('open', isOpen);
+    drawer.setAttribute('aria-hidden', String(!isOpen));
+    toggleButton.setAttribute('aria-expanded', String(isOpen));
+    document.body.classList.toggle('stats-drawer-open', isOpen);
+    if (!manageFocus) return;
+    if (isOpen) {
+      closeButton.focus();
+    } else {
+      toggleButton.focus();
+    }
+  };
+
+  const closeDrawer = ({ feedback = true, manageFocus = true } = {}) => {
+    if (!drawer.classList.contains('open')) return;
+    setDrawerOpen(false, { manageFocus });
+    if (feedback) {
+      playSound('click');
+      triggerHaptic('light');
+    }
+  };
+
+  setDrawerOpen(false, { manageFocus: false });
+
+  toggleButton.addEventListener('click', () => {
+    const willOpen = !drawer.classList.contains('open');
+    setDrawerOpen(willOpen, { manageFocus: false });
+    playSound('click');
+    triggerHaptic('light');
+  });
+
+  closeButton.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', () => closeDrawer({ manageFocus: false }));
+
+  if (quickOverall) {
+    quickOverall.addEventListener('click', () => {
+      setDrawerOpen(true, { manageFocus: false });
+      playSound('click');
+      triggerHaptic('light');
+    });
+  }
+
+  if (quickWatched) {
+    quickWatched.addEventListener('click', () => {
+      applyProgressFilter('in-progress');
+      playSound('click');
+      triggerHaptic('light');
+    });
+  }
+
+  if (!statsDrawerEscapeBound) {
+    statsDrawerEscapeBound = true;
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const activeDrawer = document.getElementById('stats-drawer');
+      if (activeDrawer && activeDrawer.classList.contains('open')) {
+        closeDrawer({ feedback: false, manageFocus: false });
+      }
+    });
+  }
 }
 
 function initEraToggles() {
@@ -881,6 +993,15 @@ function updateStats() {
     updateStatBox(statBoxes[3], stats.totalEpisodes, {
       format: 'number'
     });
+
+    const miniOverall = document.getElementById('stats-mini-overall');
+    if (miniOverall) {
+      miniOverall.textContent = `${stats.overallProgress}% overall`;
+    }
+    const miniWatched = document.getElementById('stats-mini-watched');
+    if (miniWatched) {
+      miniWatched.textContent = `${stats.watchedEpisodes} watched`;
+    }
 
     updateStatSparklines();
   });

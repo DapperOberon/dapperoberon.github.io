@@ -15,7 +15,7 @@ export function createFilterController({
     progress: 'all'
   };
 
-  let mobileFiltersResizeBound = false;
+  let filtersPanelListenersBound = false;
 
   function getActiveFilterCount() {
     let activeCount = 0;
@@ -190,16 +190,21 @@ export function createFilterController({
 
     document.querySelectorAll('.filter-btn').forEach((button) => {
       button.addEventListener('click', () => {
-        if (window.matchMedia('(max-width: 768px)').matches) {
-          setPanelOpen(false);
-        }
+        setPanelOpen(false);
       });
     });
 
-    if (!mobileFiltersResizeBound) {
-      mobileFiltersResizeBound = true;
-      window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
+    if (!filtersPanelListenersBound) {
+      filtersPanelListenersBound = true;
+
+      document.addEventListener('click', (event) => {
+        if (panel.classList.contains('open') && !panel.contains(event.target) && !toggleBtn.contains(event.target)) {
+          setPanelOpen(false);
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && panel.classList.contains('open')) {
           setPanelOpen(false);
         }
       });
