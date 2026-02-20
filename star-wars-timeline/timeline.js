@@ -457,7 +457,7 @@ function renderHeader(stats) {
           <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." />
+          <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." aria-label="Search timeline entries" autocomplete="off" spellcheck="false" />
         </div>
         <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false" aria-controls="filters-panel">
           <span>Filters</span>
@@ -658,7 +658,7 @@ function renderMainContent() {
 function renderFooter() {
   return `
     <footer>
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div class="footer-inner">
         <p>© 2026 DapperOberon. Star Wars is a trademark of Lucasfilm Ltd.</p>
         <button id="reset-progress-btn" title="Reset all watched progress">Reset Progress</button>
       </div>
