@@ -4,6 +4,7 @@
     "color": "#F5C563",
     "entries": [
       {
+        "id": "the-high-republic__young-jedi-adventures__show__232-bby",
         "title": "Young Jedi Adventures",
         "year": "232 BBY",
         "type": "Animated Show",
@@ -235,10 +236,16 @@
           }
         ],
         "synopsis": "The young Jedi take on new missions across the galaxy as they try to stop the rise of the pirates!",
-        "seasons": 3,
-        "id": "the-high-republic__young-jedi-adventures__show__232-bby"
-      },
+        "seasons": 3
+      }
+    ]
+  },
+  {
+    "era": "Fall of the Jedi",
+    "color": "#E5B889",
+    "entries": [
       {
+        "id": "fall-of-the-jedi__the-acolyte__show__132-bby",
         "title": "The Acolyte",
         "year": "132 BBY",
         "type": "Live Action Show",
@@ -282,16 +289,10 @@
           }
         ],
         "synopsis": "An investigation into a crime spree pits a Jedi Master against a dangerous warrior from his past.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__the-acolyte__show__132-bby"
-      }
-    ]
-  },
-  {
-    "era": "Fall of the Jedi",
-    "color": "#E5B889",
-    "entries": [
+        "seasons": 1
+      },
       {
+        "id": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
@@ -315,10 +316,10 @@
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby"
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby",
         "title": "Tales of the Underworld",
         "year": "62-18 BBY",
         "type": "Animated Show",
@@ -341,10 +342,10 @@
             "time": "approx. 33-35 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby"
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby",
         "title": "Episode I - The Phantom Menace",
         "year": "32 BBY",
         "type": "Live Action Film",
@@ -359,12 +360,12 @@
             "time": "32 BBY"
           }
         ],
-        "synopsis": "Jedi discover Anakin Skywalker, a boy unusually strong in the force.",
-        "id": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby"
+        "synopsis": "Jedi discover Anakin Skywalker, a boy unusually strong in the force."
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-jedi__show__2022",
         "title": "Tales of the Jedi",
-        "year": "32 BBY",
+        "year": "",
         "type": "Animated Show",
         "canon": true,
         "poster": "./posters/tales-of-the-jedi-poster.jpg",
@@ -373,15 +374,15 @@
         "releaseYear": "2022-",
         "episodeDetails": [
           {
-            "title": "S1.E4 - The Sith Lord",
-            "time": "32 BBY (takes place parallel to Star Wars Ep. 1 - The Phantom Menace)"
+            "title": "S1.E4 - The Sith Lord - 32 BBY (takes place parallel to \"Star Wars Ep. 1",
+            "time": "The Phantom Menace\")"
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-jedi__show__32-bby"
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby",
         "title": "Episode II - Attack of the Clones",
         "year": "22 BBY",
         "type": "Live Action Film",
@@ -396,10 +397,10 @@
             "time": "22 BBY"
           }
         ],
-        "synopsis": "Young Anakin and Padmé fall in love as galactic war looms.",
-        "id": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby"
+        "synopsis": "Young Anakin and Padmé fall in love as galactic war looms."
       },
       {
+        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby",
         "title": "Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -494,15 +495,15 @@
             "time": "22 BBY (Disney+ S1.E2 at 00:00-12:47)"
           }
         ],
-        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
-        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby"
+        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story."
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
-        "poster": "./posters/clone-wars-series-poster.jpg",
+        "poster": "./posters/clone-wars-film-poster.jpg",
         "episodes": 2,
         "watched": 2,
         "releaseYear": "2008-2020",
@@ -516,10 +517,10 @@
             "time": "22 BBY"
           }
         ],
-        "seasons": 2,
-        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby"
+        "seasons": 2
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars__film__22-bby",
         "title": "The Clone Wars",
         "year": "22 BBY",
         "type": "Animated Film",
@@ -533,10 +534,10 @@
             "title": "Star Wars: The Clone Wars",
             "time": "22 BBY"
           }
-        ],
-        "id": "fall-of-the-jedi__the-clone-wars__film__22-bby"
+        ]
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby",
         "title": "Tales of the Jedi - 68-19 BBY",
         "year": "68-19 BBY",
         "type": "Animated Show",
@@ -551,10 +552,10 @@
             "time": "between 21 and 19 BBY (the ending takes place parallel to The Clone Wars Season 7 Ep. 12)"
           }
         ],
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby"
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby",
         "title": "The Clone Wars - 22-19 BBY",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -897,10 +898,10 @@
             "time": "20 BBY"
           }
         ],
-        "seasons": 4,
-        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby"
+        "seasons": 4
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -915,10 +916,10 @@
             "time": "20 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2",
         "title": "The Clone Wars - 22-19 BBY",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -1121,10 +1122,10 @@
             "time": "19 BBY"
           }
         ],
-        "seasons": 7,
-        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2"
+        "seasons": 7
       },
       {
+        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby--2",
         "title": "Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -1151,15 +1152,15 @@
             "time": "19 BBY (Disney+ S1.E2 50:00-end, Legends version of the events leading into Star Wars Ep. 3)"
           }
         ],
-        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
-        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby--2"
+        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story."
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
-        "poster": "./posters/clone-wars-series-poster.jpg",
+        "poster": "./posters/clone-wars-film-poster.jpg",
         "episodes": 1,
         "watched": 0,
         "releaseYear": "2008-2020",
@@ -1169,8 +1170,7 @@
             "time": "19 BBY"
           }
         ],
-        "seasons": 7,
-        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2"
+        "seasons": 7
       }
     ]
   },
@@ -1179,6 +1179,7 @@
     "color": "#fff",
     "entries": [
       {
+        "id": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby",
         "title": "Episode III - Revenge of the Sith",
         "year": "19 BBY",
         "type": "Live Action Film",
@@ -1192,10 +1193,10 @@
             "title": "Star Wars: Episode III - Revenge of the Sith",
             "time": "19 BBY"
           }
-        ],
-        "id": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby"
+        ]
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -1214,15 +1215,15 @@
             "time": "19 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__the-clone-wars__show__22-19-bby",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
-        "poster": "./posters/clone-wars-series-poster.jpg",
+        "poster": "./posters/clone-wars-film-poster.jpg",
         "episodes": 3,
         "watched": 0,
         "releaseYear": "2008-2020",
@@ -1240,10 +1241,10 @@
             "time": "19 BBY (takes place parallel to Star Wars Ep. 3, the last scene of the finale takes place after Star Wars: The Bad Batch in 17 BBY)"
           }
         ],
-        "seasons": 7,
-        "id": "reign-of-the-empire__the-clone-wars__show__22-19-bby"
+        "seasons": 7
       },
       {
+        "id": "reign-of-the-empire__the-bad-batch__show__19-18-bby",
         "title": "The Bad Batch",
         "year": "19-18 BBY",
         "type": "Animated Show",
@@ -1438,10 +1439,10 @@
             "time": "18 BBY (epilogue between 2 BBY and 4 ABY)"
           }
         ],
-        "seasons": 3,
-        "id": "reign-of-the-empire__the-bad-batch__show__19-18-bby"
+        "seasons": 3
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby",
         "title": "Tales of the Underworld",
         "year": "62-18 BBY",
         "type": "Animated Show",
@@ -1464,10 +1465,10 @@
             "time": "18 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby"
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
@@ -1483,10 +1484,10 @@
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby"
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__star-wars-droids__show__15-bby",
         "title": "Star Wars: Droids",
         "year": "15 BBY",
         "type": "Animated Show",
@@ -1553,10 +1554,10 @@
             "time": "15 BBY"
           }
         ],
-        "seasons": 2,
-        "id": "reign-of-the-empire__star-wars-droids__show__15-bby"
+        "seasons": 2
       },
       {
+        "id": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby",
         "title": "Solo: A Star Wars Story",
         "year": "10 BBY",
         "type": "Live Action Film",
@@ -1570,10 +1571,10 @@
             "title": "Solo: A Star Wars Story",
             "time": "10 BBY"
           }
-        ],
-        "id": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby"
+        ]
       },
       {
+        "id": "reign-of-the-empire__obi-wan-kenobi__show__9-bby",
         "title": "Obi-Wan Kenobi",
         "year": "9 BBY",
         "type": "Live Action Show",
@@ -1608,10 +1609,10 @@
             "time": "9 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "reign-of-the-empire__obi-wan-kenobi__show__9-bby"
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -1626,10 +1627,10 @@
             "time": "between 9 and 0 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2"
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__andor__show__5-1-bby",
         "title": "Andor",
         "year": "5-1 BBY",
         "type": "Live Action Show",
@@ -1736,10 +1737,10 @@
             "time": "1 BBY"
           }
         ],
-        "seasons": 2,
-        "id": "reign-of-the-empire__andor__show__5-1-bby"
+        "seasons": 2
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -1754,10 +1755,10 @@
             "time": "between 9 and 2 BBY"
           }
         ],
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3"
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__star-wars-rebels__show__5-1-bby",
         "title": "Star Wars Rebels",
         "year": "5-1 BBY",
         "type": "Animated Show",
@@ -2068,8 +2069,7 @@
             "time": "1 BBY (9 ABY epilogue)"
           }
         ],
-        "seasons": 4,
-        "id": "reign-of-the-empire__star-wars-rebels__show__5-1-bby"
+        "seasons": 4
       }
     ]
   },
@@ -2078,6 +2078,7 @@
     "color": "#ef4444",
     "entries": [
       {
+        "id": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby",
         "title": "Rogue One: A Star Wars Story",
         "year": "0 BBY",
         "type": "Live Action Film",
@@ -2091,10 +2092,10 @@
             "title": "Rogue One: A Star Wars Story 0 BBY",
             "time": ""
           }
-        ],
-        "id": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby"
+        ]
       },
       {
+        "id": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby",
         "title": "Star Wars: Episode IV - A New Hope",
         "year": "0 ABY",
         "type": "Live Action Film",
@@ -2108,10 +2109,10 @@
             "title": "Star Wars: Episode IV - A New Hope",
             "time": "0 ABY"
           }
-        ],
-        "id": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby"
+        ]
       },
       {
+        "id": "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby",
         "title": "The Star Wars Holiday Special",
         "year": "1 ABY",
         "type": "Live Action TV Film",
@@ -2125,10 +2126,10 @@
             "title": "The Star Wars Holiday Special",
             "time": "1 ABY"
           }
-        ],
-        "id": "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby"
+        ]
       },
       {
+        "id": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby",
         "title": "Star Wars: Episode V - The Empire Strikes Back",
         "year": "3 ABY",
         "type": "Live Action Film",
@@ -2142,10 +2143,10 @@
             "title": "Star Wars: Episode V - The Empire Strikes Back",
             "time": "3 ABY"
           }
-        ],
-        "id": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby"
+        ]
       },
       {
+        "id": "age-of-the-rebellion__ewoks__show__3-aby",
         "title": "Ewoks",
         "year": "3 ABY",
         "type": "Animated Show",
@@ -2296,10 +2297,10 @@
             "time": "3 ABY"
           }
         ],
-        "seasons": 2,
-        "id": "age-of-the-rebellion__ewoks__show__3-aby"
+        "seasons": 2
       },
       {
+        "id": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby",
         "title": "Caravan of Courage: An Ewok Adventure",
         "year": "3 ABY",
         "type": "Live Action TV Film",
@@ -2313,10 +2314,10 @@
             "title": "Caravan of Courage: An Ewok Adventure",
             "time": "3 ABY"
           }
-        ],
-        "id": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby"
+        ]
       },
       {
+        "id": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby",
         "title": "Ewoks: The Battle for Endor",
         "year": "3 ABY",
         "type": "Live Action TV Film",
@@ -2330,10 +2331,10 @@
             "title": "Ewoks: The Battle for Endor",
             "time": "3 ABY"
           }
-        ],
-        "id": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby"
+        ]
       },
       {
+        "id": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby",
         "title": "Star Wars: Episode VI - Return of the Jedi",
         "year": "4 ABY",
         "type": "Live Action Film",
@@ -2347,8 +2348,7 @@
             "title": "Star Wars: Episode VI - Return of the Jedi",
             "time": "4 ABY"
           }
-        ],
-        "id": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby"
+        ]
       }
     ]
   },
@@ -2357,6 +2357,7 @@
     "color": "#5B7FDB",
     "entries": [
       {
+        "id": "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -2371,10 +2372,10 @@
             "time": "between 5 and 9 ABY"
           }
         ],
-        "seasons": 1,
-        "id": "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+        "seasons": 1
       },
       {
+        "id": "the-new-republic__the-mandalorian__show__9-aby",
         "title": "The Mandalorian",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -2449,10 +2450,10 @@
             "time": "9 ABY"
           }
         ],
-        "seasons": 2,
-        "id": "the-new-republic__the-mandalorian__show__9-aby"
+        "seasons": 2
       },
       {
+        "id": "the-new-republic__the-book-of-boba-fett__show__9-aby",
         "title": "The Book of Boba Fett",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -2491,10 +2492,10 @@
             "time": "9 ABY"
           }
         ],
-        "seasons": 1,
-        "id": "the-new-republic__the-book-of-boba-fett__show__9-aby"
+        "seasons": 1
       },
       {
+        "id": "the-new-republic__the-mandalorian__show__9-aby--2",
         "title": "The Mandalorian",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -2537,10 +2538,10 @@
             "time": "9 ABY"
           }
         ],
-        "seasons": 3,
-        "id": "the-new-republic__the-mandalorian__show__9-aby--2"
+        "seasons": 3
       },
       {
+        "id": "the-new-republic__ahsoka__show__9-aby",
         "title": "Ahsoka",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -2583,10 +2584,10 @@
             "time": "9 ABY"
           }
         ],
-        "seasons": 1,
-        "id": "the-new-republic__ahsoka__show__9-aby"
+        "seasons": 1
       },
       {
+        "id": "the-new-republic__skeleton-crew__show__9-aby",
         "title": "Skeleton Crew",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -2629,8 +2630,7 @@
             "time": "The Real Good Guys"
           }
         ],
-        "seasons": 1,
-        "id": "the-new-republic__skeleton-crew__show__9-aby"
+        "seasons": 1
       }
     ]
   },
@@ -2639,6 +2639,7 @@
     "color": "#ff0000",
     "entries": [
       {
+        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
@@ -2725,10 +2726,10 @@
             "time": "34 ABY"
           }
         ],
-        "seasons": 1,
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby"
+        "seasons": 1
       },
       {
+        "id": "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby",
         "title": "Star Wars: Episode VII - The Force Awakens",
         "year": "34 ABY",
         "type": "Live Action Film",
@@ -2742,12 +2743,12 @@
             "title": "Star Wars: Episode VII - The Force Awakens",
             "time": "34 ABY"
           }
-        ],
-        "id": "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby"
+        ]
       },
       {
+        "id": "rise-of-the-first-order__star-wars-resistance__show__2018-2020",
         "title": "Star Wars Resistance",
-        "year": "34 ABY",
+        "year": "",
         "type": "Animated Show",
         "canon": true,
         "poster": "./posters/resistance-poster.jpg",
@@ -2764,10 +2765,10 @@
             "time": "34 ABY (takes place parallel to Star Wars Ep. 7)"
           }
         ],
-        "seasons": 1,
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--2"
+        "seasons": 1
       },
       {
+        "id": "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby",
         "title": "Star Wars: Episode VIII - The Last Jedi",
         "year": "34 ABY",
         "type": "Live Action Film",
@@ -2781,10 +2782,10 @@
             "title": "Star Wars: Episode VIII - The Last Jedi",
             "time": "34 ABY"
           }
-        ],
-        "id": "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby"
+        ]
       },
       {
+        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--2",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
@@ -2871,10 +2872,10 @@
             "time": "34 ABY"
           }
         ],
-        "seasons": 2,
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--3"
+        "seasons": 2
       },
       {
+        "id": "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby",
         "title": "Star Wars: Episode IX - The Rise of Skywalker",
         "year": "35 ABY",
         "type": "Live Action Film",
@@ -2888,8 +2889,7 @@
             "title": "Star Wars: Episode IX - The Rise of Skywalker",
             "time": "35 ABY"
           }
-        ],
-        "id": "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby"
+        ]
       }
     ]
   },
@@ -2898,8 +2898,9 @@
     "color": "#64748b",
     "entries": [
       {
+        "id": "non-timeline__star-wars-visions__media__2021-2023",
         "title": "Star Wars: Visions",
-        "year": "Unknown",
+        "year": "",
         "type": "Various Styles",
         "canon": true,
         "poster": "./posters/visions-poster.jpg",
@@ -2908,115 +2909,114 @@
         "releaseYear": "2021-2023",
         "episodeDetails": [
           {
-            "title": "S1.E1 - The Duel",
-            "time": "Unknown"
+            "title": "S1.E1",
+            "time": "The Duel"
           },
           {
-            "title": "S1.E2 - Tatooine Rhapsody",
-            "time": "Unknown"
+            "title": "S1.E2",
+            "time": "Tatooine Rhapsody"
           },
           {
-            "title": "S1.E3 - The Twins",
-            "time": "Unknown"
+            "title": "S1.E3",
+            "time": "THE TWINS"
           },
           {
-            "title": "S1.E4 - The Village Bride",
-            "time": "Unknown"
+            "title": "S1.E4",
+            "time": "The Village Bride"
           },
           {
-            "title": "S1.E5 - The Ninth Jedi",
-            "time": "Unknown"
+            "title": "S1.E5",
+            "time": "The Ninth Jedi"
           },
           {
-            "title": "S1.E6 - T0-B1",
-            "time": "Unknown"
+            "title": "S1.E6",
+            "time": "T0B1"
           },
           {
-            "title": "S1.E7 - The Elder",
-            "time": "Unknown"
+            "title": "S1.E7",
+            "time": "The Elder"
           },
           {
-            "title": "S1.E8 - Lop & Ochō",
-            "time": "Unknown"
+            "title": "S1.E8",
+            "time": "Lop & Ochō"
           },
           {
-            "title": "S1.E9 - Akakiri",
-            "time": "Unknown"
+            "title": "S1.E9",
+            "time": "Akakiri"
           },
           {
-            "title": "S2.E1 - Sith",
-            "time": "Unknown"
+            "title": "S2.E1",
+            "time": "Sith"
           },
           {
-            "title": "S2.E2 - Screecher's Reach",
-            "time": "Unknown"
+            "title": "S2.E2",
+            "time": "Screecher's Reach"
           },
           {
-            "title": "S2.E3 - In the Stars",
-            "time": "Unknown"
+            "title": "S2.E3",
+            "time": "In the Stars"
           },
           {
-            "title": "S2.E4 - I Am Your Mother",
-            "time": "Unknown"
+            "title": "S2.E4",
+            "time": "I Am Your Mother"
           },
           {
-            "title": "S2.E5 - Journey to the Dark Head",
-            "time": "Unknown"
+            "title": "S2.E5",
+            "time": "Journey to the Dark Head"
           },
           {
-            "title": "S2.E6 - The Spy Dancer",
-            "time": "Unknown"
+            "title": "S2.E6",
+            "time": "The Spy Dancer"
           },
           {
-            "title": "S2.E7 - The Bandits of Golak",
-            "time": "Unknown"
+            "title": "S2.E7",
+            "time": "The Bandits of Golak"
           },
           {
-            "title": "S2.E8 - The Pit",
-            "time": "Unknown"
+            "title": "S2.E8",
+            "time": "The Pit"
           },
           {
-            "title": "S2.E9 - Aau's Song",
-            "time": "Unknown"
+            "title": "S2.E9",
+            "time": "Aau's Song"
           },
           {
-            "title": "S3.E1 - The Duel: Payback",
-            "time": "Unknown"
+            "title": "S3.E1",
+            "time": "The Duel: Payback"
           },
           {
-            "title": "S3.E2 - The Song of Four Wings",
-            "time": "Unknown"
+            "title": "S3.E2",
+            "time": "The Song of Four Wings"
           },
           {
-            "title": "S3.E3 - The Ninth Jedi: Child of Hope",
-            "time": "Unknown"
+            "title": "S3.E3",
+            "time": "The Ninth Jedi: Child of Hope"
           },
           {
-            "title": "S3.E4 - The Bounty Hunters",
-            "time": "Unknown"
+            "title": "S3.E4",
+            "time": "The Bounty Hunters"
           },
           {
-            "title": "S3.E5 - Yuko's Treasure",
-            "time": "Unknown"
+            "title": "S3.E5",
+            "time": "Yuko's Treasure"
           },
           {
-            "title": "S3.E6 - The Lost Ones",
-            "time": "Unknown"
+            "title": "S3.E6",
+            "time": "The Lost Ones"
           },
           {
-            "title": "S3.E7 - The Smuggler",
-            "time": "Unknown"
+            "title": "S3.E7",
+            "time": "The Smuggler"
           },
           {
-            "title": "S3.E8 - The Bird of Paradise",
-            "time": "Unknown"
+            "title": "S3.E8",
+            "time": "The Bird of Paradise"
           },
           {
-            "title": "S3.E9 - BLACK",
-            "time": "Unknown"
+            "title": "S3.E9",
+            "time": "BLACK"
           }
-        ],
-        "id": "non-timeline__star-wars-visions__media__unknown"
+        ]
       }
     ]
   }

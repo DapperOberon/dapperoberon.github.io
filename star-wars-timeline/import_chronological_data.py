@@ -30,6 +30,49 @@ def title_to_slug(title: str) -> str:
     return cleaned
 
 
+def normalize_id_token(text: str) -> str:
+    token = (text or "").strip().lower().replace("&", "and")
+    token = re.sub(r"[^a-z0-9]+", "-", token)
+    return re.sub(r"-+", "-", token).strip("-")
+
+
+def media_type_token(media_type: str) -> str:
+    value = (media_type or "").strip().lower()
+    if "film" in value:
+        return "film"
+    if "show" in value:
+        return "show"
+    if "anthology" in value:
+        return "anthology"
+    return "media"
+
+
+def build_entry_key(title: str, year: str, media_type: str, release_year: str) -> str:
+    return "|".join(
+        [
+            normalize_title(title),
+            normalize_id_token(year),
+            normalize_id_token(media_type),
+            normalize_id_token(release_year),
+        ]
+    )
+
+
+def generate_stable_entry_id(era_name: str, title: str, media_type: str, year: str, release_year: str, used_ids: dict) -> str:
+    era_token = normalize_id_token(era_name) or "era"
+    title_token = normalize_id_token(title) or "entry"
+    type_token = media_type_token(media_type)
+    chronology_source = year if year else release_year
+    chronology_token = normalize_id_token(chronology_source) or "unknown"
+
+    base_id = f"{era_token}__{title_token}__{type_token}__{chronology_token}"
+    count = used_ids.get(base_id, 0) + 1
+    used_ids[base_id] = count
+    if count == 1:
+        return base_id
+    return f"{base_id}--{count}"
+
+
 def split_meta(meta: str):
     parts = [part.strip() for part in meta.split(",")]
     release_year = parts[0] if parts else ""
@@ -121,6 +164,7 @@ def load_existing_metadata(path: Path):
 
     era_colors = {}
     title_metadata = {}
+    title_fallback_metadata = {}
 
     for era in data:
         era_name = era.get("era", "").strip()
@@ -131,18 +175,29 @@ def load_existing_metadata(path: Path):
             norm = normalize_title(entry.get("title", ""))
             if not norm:
                 continue
-            title_metadata[norm] = {
+
+            key = build_entry_key(
+                entry.get("title", ""),
+                entry.get("year", ""),
+                entry.get("type", ""),
+                entry.get("releaseYear", ""),
+            )
+            metadata = {
                 "poster": entry.get("poster", ""),
                 "synopsis": entry.get("synopsis", ""),
+                "id": entry.get("id", ""),
             }
+            title_metadata[key] = metadata
+            title_fallback_metadata[norm] = metadata
 
-    return era_colors, title_metadata
+    return era_colors, title_metadata, title_fallback_metadata
 
 
-def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict):
+def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict, title_fallback_metadata: dict):
     imported = []
     current_era = None
     current_entry = None
+    used_ids = {}
 
     for raw_line in markdown_text.splitlines():
         line = raw_line.rstrip()
@@ -171,13 +226,25 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
             media_year = media_header["year"]
             release_year, media_type, is_canon = split_meta(media_header["meta"])
 
-            normalized = normalize_title(media_title)
-            existing = title_metadata.get(normalized, {})
+            metadata_key = build_entry_key(media_title, media_year, media_type, release_year)
+            existing = title_metadata.get(metadata_key, {})
+            if not existing:
+                normalized = normalize_title(media_title)
+                existing = title_fallback_metadata.get(normalized, {})
 
             poster = existing.get("poster") or f"./posters/{title_to_slug(media_title)}-poster.jpg"
             synopsis = existing.get("synopsis", "")
+            stable_id = existing.get("id") or generate_stable_entry_id(
+                current_era["era"],
+                media_title,
+                media_type,
+                media_year,
+                release_year,
+                used_ids,
+            )
 
             current_entry = {
+                "id": stable_id,
                 "title": media_title,
                 "year": media_year,
                 "type": media_type,
@@ -229,8 +296,8 @@ def main():
         BACKUP_JSON_PATH.write_text(SOURCE_JSON_PATH.read_text(encoding="utf-8"), encoding="utf-8")
 
     markdown_text = MARKDOWN_PATH.read_text(encoding="utf-8")
-    era_colors, title_metadata = load_existing_metadata(SOURCE_JSON_PATH)
-    imported = build_import_data(markdown_text, era_colors, title_metadata)
+    era_colors, title_metadata, title_fallback_metadata = load_existing_metadata(SOURCE_JSON_PATH)
+    imported = build_import_data(markdown_text, era_colors, title_metadata, title_fallback_metadata)
 
     OUTPUT_JSON_PATH.write_text(
         json.dumps(imported, indent=2, ensure_ascii=False) + "\n",
