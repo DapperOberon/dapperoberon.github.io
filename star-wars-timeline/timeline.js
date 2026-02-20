@@ -578,8 +578,8 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
             <div class="progress-ring">
               <svg viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3" 
-                      stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0" 
+                    <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3"
+                      stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0"
                         style="transition: stroke-dasharray 0.3s ease;" />
               </svg>
               <span class="progress-text">${progress}%</span>
@@ -674,7 +674,7 @@ function render() {
   const watchedProgressPercent = stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0;
   const completedProgressPercent = stats.totalShows > 0 ? (stats.completedShows / stats.totalShows * 100) : 0;
   const statsCardsMarkup = buildStatsCardsMarkup(stats, sparklines, watchedProgressPercent, completedProgressPercent);
-  
+
   app.innerHTML = `
     <a href="#main-content" class="skip-link">Skip to main content</a>
     ${renderHeader(stats)}
