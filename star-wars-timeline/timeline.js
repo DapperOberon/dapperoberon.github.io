@@ -91,6 +91,11 @@ function updateFlowOffset() {
   const scrollProgress = Math.min(1, Math.max(0, (scrollY - containerTop + (viewHeight * 0.2)) / scrollRange));
   const offset = -scrollProgress * 200;
 
+  const relativeScroll = Math.max(0, scrollY - containerTop + (viewHeight * 0.35));
+  container.style.setProperty('--starfield-layer-slow', `${-relativeScroll * 0.0008}px`);
+  container.style.setProperty('--starfield-layer-mid', `${-relativeScroll * 0.0018}px`);
+  container.style.setProperty('--starfield-layer-fast', `${-relativeScroll * 0.0035}px`);
+
   document.querySelectorAll('.timeline-flow-svg').forEach((svg) => {
     svg.style.setProperty('--flow-offset', `${offset}px`);
   });
