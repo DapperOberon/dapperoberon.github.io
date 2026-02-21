@@ -345,7 +345,8 @@
           { "title": "S7.E10", "time": "" },
           { "title": "S7.E11", "time": "" },
           { "title": "S7.E12", "time": "" }
-        ]
+        ],
+        "synopsis": "The saga continues, set in a faraway galaxy!"
       },
       {
         "title": "The Clone Wars",
@@ -415,7 +416,8 @@
           { "title": "The Good Life", "time": "" },
           { "title": "A Good Turn", "time": "" },
           { "title": "One Good Deed", "time": "" }
-        ]
+        ],
+        "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies."
       },
       {
         "title": "The Bad Batch",

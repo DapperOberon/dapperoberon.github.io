@@ -1438,7 +1438,7 @@ h1 {
     rgba(var(--section-color-rgb), 0.2)
   );
   z-index: 0;
-  width: 150px;
+  width: 190px;
   left: 0 !important;
   transform: translateY(-50%);
 }
@@ -3805,28 +3805,35 @@ footer {
     row-gap: var(--space-1);
     border-radius: 16px;
     top: var(--space-1);
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "icon title title title"
+      ". . count toggle";
+    column-gap: var(--space-2);
+    align-items: center;
   }
 
   .timeline-section h2 .era-title {
     padding: var(--space-2) var(--space-3);
     font-size: 1.1rem;
-    order: 2;
-    flex: 1 1 auto;
+    grid-area: title;
+    justify-self: start;
     min-width: 0;
   }
 
   .era-image-badge {
     width: 36px;
     height: 36px;
-    order: 1;
+    grid-area: icon;
   }
 
   .timeline-section h2 .era-count {
     padding: var(--space-1) var(--space-2);
     font-size: 0.62rem;
-    order: 3;
-    margin-left: auto;
+    grid-area: count;
+    justify-self: end;
+    margin-left: 0;
   }
 
   .timeline-section h2 .era-toggle,
@@ -3834,7 +3841,8 @@ footer {
     min-height: 30px;
     padding: 0.24rem 0.75rem;
     font-size: 0.56rem;
-    order: 4;
+    grid-area: toggle;
+    justify-self: end;
   }
 
   .rail-marker .rail-era-icon {
