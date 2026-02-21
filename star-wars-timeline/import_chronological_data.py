@@ -232,7 +232,7 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
                 normalized = normalize_title(media_title)
                 existing = title_fallback_metadata.get(normalized, {})
 
-            poster = existing.get("poster") or f"./posters/{title_to_slug(media_title)}-poster.jpg"
+            poster = existing.get("poster") or f"./images/posters/{title_to_slug(media_title)}-poster.jpg"
             synopsis = existing.get("synopsis", "")
             stable_id = existing.get("id") or generate_stable_entry_id(
                 current_era["era"],

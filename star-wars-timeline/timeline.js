@@ -27,6 +27,22 @@ let TIMELINE_DATA = [];
 let filterController = null;
 let modalController = null;
 
+const ERA_IMAGE_PATHS = {
+  'the high republic': './images/eras/high-republic.png',
+  'fall of the jedi': './images/eras/fall-of-the-jedi.png',
+  'reign of the empire': './images/eras/reign-of-the-empire.png',
+  'age of the rebellion': './images/eras/age-of-the-rebellion.png',
+  'the new republic': './images/eras/new-republic.png',
+  'rise of the first order': './images/eras/rise-of-the-first-order.png',
+  'non-timeline': './images/eras/non-timeline.svg'
+};
+
+function getEraImagePath(eraName) {
+  if (!eraName) return '';
+  const normalizedEraName = String(eraName).trim().toLowerCase();
+  return ERA_IMAGE_PATHS[normalizedEraName] || '';
+}
+
 // Load timeline data from JSON file
 async function loadTimelineData() {
   const loadedData = await loadTimelineDataModule();
@@ -529,12 +545,17 @@ function renderTimelineRail() {
   return `
     <nav class="timeline-rail" aria-label="Era navigation">
       <div class="timeline-rail-inner">
-        ${TIMELINE_DATA.map((section, idx) => `
+        ${TIMELINE_DATA.map((section, idx) => {
+      const eraImagePath = getEraImagePath(section.era);
+    return `
           <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}">
-            <span class="rail-dot"></span>
+            ${eraImagePath
+      ? `<span class="rail-era-icon" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" /></span>`
+      : ''}
             <span class="rail-label">${section.era}</span>
           </button>
-        `).join('')}
+        `;
+  }).join('')}
       </div>
     </nav>
   `;
@@ -627,10 +648,14 @@ function renderEraSection(section, idx) {
   const itemCount = section.entries.length;
   const itemLabel = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
   const sectionColorRgb = hexToRgb(section.color);
+  const eraImagePath = getEraImagePath(section.era);
 
   return `
     <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
       <h2>
+        ${eraImagePath
+    ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" /></span>`
+    : ''}
         <span class="era-title">${section.era}</span>
         <span class="era-count">${itemLabel}</span>
         <button class="era-toggle" data-era-toggle="${idx}" aria-expanded="true" aria-controls="era-content-${idx}">Collapse</button>

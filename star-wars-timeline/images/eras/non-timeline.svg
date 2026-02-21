@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Non-Timeline Era Icon</title>
+  <desc id="desc">A stylized Star Wars inspired emblem indicating stories outside the main timeline.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="70%" stop-color="#070b14"/>
+      <stop offset="100%" stop-color="#03060d"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d1d5db"/>
+      <stop offset="100%" stop-color="#9ca3af"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f9fafb"/>
+      <stop offset="100%" stop-color="#d1d5db"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="110" fill="none" stroke="url(#ring)" stroke-width="8" opacity="0.7"/>
+  <circle cx="128" cy="128" r="78" fill="none" stroke="#9ca3af" stroke-width="7" opacity="0.35" stroke-dasharray="8 10"/>
+
+  <path d="M74 166 L182 90" stroke="#f3f4f6" stroke-width="14" stroke-linecap="round" opacity="0.92"/>
+
+  <g transform="translate(128 128)">
+    <path d="M0 -52 L7 -7 L52 0 L7 7 L0 52 L-7 7 L-52 0 L-7 -7 Z" fill="url(#spark)"/>
+    <circle cx="0" cy="0" r="11" fill="#0b1220" stroke="#e5e7eb" stroke-width="3"/>
+  </g>
+
+  <circle cx="67" cy="72" r="4" fill="#f3f4f6" opacity="0.85"/>
+  <circle cx="188" cy="63" r="3" fill="#e5e7eb" opacity="0.75"/>
+  <circle cx="203" cy="158" r="3" fill="#e5e7eb" opacity="0.75"/>
+  <circle cx="60" cy="183" r="2.5" fill="#d1d5db" opacity="0.7"/>
+</svg>
