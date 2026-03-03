@@ -22,12 +22,14 @@ import {
 import { createFilterController } from './modules/filters.js';
 import { createModalController } from './modules/modal.js';
 import { createAudioController } from './modules/audio.js';
+import { createTelemetryController } from './modules/telemetry.js';
 
 // Star Wars Timeline Data - loaded from JSON
 let TIMELINE_DATA = [];
 let filterController = null;
 let modalController = null;
 let audioController = null;
+let telemetryController = null;
 
 const ERA_IMAGE_PATHS = {
   'the high republic': './images/eras/high-republic.png',
@@ -271,10 +273,22 @@ function getFilterController() {
       updateEraRailVisibility,
       updateWatchModeHighlight,
       scheduleFlowLinesRedraw,
-      onFiltersChanged: updateActiveFilterChips
+      onFiltersChanged: handleFiltersChanged
     });
   }
   return filterController;
+}
+
+function getTelemetryController() {
+  if (!telemetryController) {
+    telemetryController = createTelemetryController();
+  }
+  return telemetryController;
+}
+
+function handleFiltersChanged(filters, activeFilterCount) {
+  updateActiveFilterChips(filters);
+  getTelemetryController().trackFilterUsage(filters, activeFilterCount);
 }
 
 function getModalController() {
@@ -501,11 +515,14 @@ function getNextUnwatchedVisibleCard() {
 function scrollToNextUnwatchedEntry() {
   const nextCard = getNextUnwatchedVisibleCard();
   if (!nextCard) {
+    getTelemetryController().trackContinueUsage(false);
     showToast('All visible entries are completed.', 'info');
     playSound('click');
     triggerHaptic('light');
     return;
   }
+
+  getTelemetryController().trackContinueUsage(true);
 
   const section = nextCard.closest('.timeline-section');
   if (section && section.classList.contains('collapsed')) {
@@ -585,35 +602,26 @@ function renderHeader(stats) {
           <button id="stats-drawer-toggle" class="stats-drawer-toggle" type="button" aria-expanded="false" aria-controls="stats-drawer">
             Stats
           </button>
-          <button id="continue-where-left-off" class="stats-mini-pill stats-mini-pill--cta" type="button" aria-label="Continue where you left off">
-            Continue Where I Left Off
-          </button>
           <button id="settings-open-btn" class="stats-mini-pill settings-trigger" type="button" aria-haspopup="dialog" aria-controls="settings-modal">
             Preferences
           </button>
         </div>
       </div>
-      
-      <div class="filters-container">
-        <div class="search-wrapper">
-          <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." aria-label="Search timeline entries" autocomplete="off" spellcheck="false" />
-        </div>
-        <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false" aria-controls="filters-panel">
-          <span>Filters</span>
-          <span id="filters-active-count" class="filters-toggle-count">All</span>
-        </button>
-      </div>
 
-      <div id="active-filters-bar" class="active-filters hidden" aria-live="polite">
-        <div id="active-filters-chips" class="active-filters-chips"></div>
-        <button id="clear-filters-btn" class="active-filters-clear" type="button">Clear all filters</button>
-      </div>
-      
-      <div class="filters-panel" id="filters-panel">
-        <div class="filters-row">
+      <div class="filters-container">
+        <div class="command-deck-row">
+          <div class="search-wrapper">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." aria-label="Search timeline entries" autocomplete="off" spellcheck="false" />
+          </div>
+          <button id="continue-where-left-off" class="stats-mini-pill stats-mini-pill--cta command-cta-btn" type="button" aria-label="Continue where you left off">
+            Continue Where I Left Off
+          </button>
+        </div>
+
+        <div class="quick-filters-row" aria-label="Primary timeline filters">
           <div class="filter-group filter-group-type">
             <span class="filter-group-label">Type:</span>
             <button class="filter-btn active" data-type-filter="all">All</button>
@@ -628,13 +636,16 @@ function renderHeader(stats) {
             <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
             <button class="filter-btn" data-progress-filter="completed">Completed</button>
           </div>
-
-          <button id="advanced-filters-toggle" class="filters-advanced-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters-groups">
-            More Filters
-          </button>
         </div>
 
-        <div id="advanced-filters-groups" class="filters-advanced hidden" aria-hidden="true">
+        <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false" aria-controls="filters-panel">
+          <span>More Filters</span>
+          <span id="filters-active-count" class="filters-toggle-count">All</span>
+        </button>
+      </div>
+
+      <div class="filters-panel" id="filters-panel">
+        <div class="filters-row">
           <div class="filter-group filter-group-canon">
             <span class="filter-group-label">Canon:</span>
             <button class="filter-btn active" data-canon-filter="all">All</button>
@@ -651,6 +662,11 @@ function renderHeader(stats) {
             <button class="filter-btn" data-arc-filter="george-lucas">George Lucas Arc</button>
           </div>
         </div>
+      </div>
+
+      <div id="active-filters-bar" class="active-filters hidden" aria-live="polite">
+        <div id="active-filters-chips" class="active-filters-chips"></div>
+        <button id="clear-filters-btn" class="active-filters-clear" type="button">Clear all filters</button>
       </div>
     </header>
   `;
@@ -926,6 +942,7 @@ function render() {
   const watchedProgressPercent = stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0;
   const completedProgressPercent = stats.totalShows > 0 ? (stats.completedShows / stats.totalShows * 100) : 0;
   const statsCardsMarkup = buildStatsCardsMarkup(stats, sparklines, watchedProgressPercent, completedProgressPercent);
+  getTelemetryController().trackProgress(stats);
 
   app.innerHTML = `
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -1011,8 +1028,6 @@ let eraObserver = null;
 let eraRailScrollBound = false;
 let eraRailScrollRaf = null;
 let currentActiveEraId = null;
-let statsDrawerEscapeBound = false;
-let settingsModalEscapeBound = false;
 let statsDrawerTrapRelease = null;
 let settingsModalTrapRelease = null;
 
@@ -1152,7 +1167,7 @@ function initSettingsModal() {
         settingsModalTrapRelease();
       }
       settingsModalTrapRelease = createKeyboardTrap(modal, {
-        onEscape: () => closeModal({ feedback: false, manageFocus: true })
+        onEscape: () => closeModal({ manageFocus: true })
       });
       if (manageFocus) {
         closeButton.focus();
@@ -1189,17 +1204,6 @@ function initSettingsModal() {
   closeButton.addEventListener('click', closeModal);
   backdrop.addEventListener('click', () => closeModal({ manageFocus: true }));
 
-  if (!settingsModalEscapeBound) {
-    settingsModalEscapeBound = true;
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
-      const activeModal = document.getElementById('settings-modal');
-      if (activeModal && !activeModal.classList.contains('hidden')) {
-        closeModal({ feedback: false, manageFocus: false });
-      }
-    });
-  }
-
   setWatchModeEnabled(watchModeEnabled, { withFeedback: false, persist: false });
   setLessMotionEnabled(lessMotionEnabled, { withFeedback: false, persist: false });
 }
@@ -1229,7 +1233,7 @@ function initStatsDrawer() {
         statsDrawerTrapRelease();
       }
       statsDrawerTrapRelease = createKeyboardTrap(drawer, {
-        onEscape: () => closeDrawer({ feedback: false, manageFocus: true })
+        onEscape: () => closeDrawer({ manageFocus: true })
       });
       if (manageFocus) {
         closeButton.focus();
@@ -1285,16 +1289,6 @@ function initStatsDrawer() {
     });
   }
 
-  if (!statsDrawerEscapeBound) {
-    statsDrawerEscapeBound = true;
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
-      const activeDrawer = document.getElementById('stats-drawer');
-      if (activeDrawer && activeDrawer.classList.contains('open')) {
-        closeDrawer({ feedback: false, manageFocus: false });
-      }
-    });
-  }
 }
 
 function initEraToggles() {
@@ -1503,8 +1497,6 @@ function attachEntryHandlers() {
   };
 
   const handleSingleCheckboxChange = (checkboxEl) => {
-    playSound(checkboxEl.checked ? 'success' : 'click');
-    triggerHaptic(checkboxEl.checked ? 'success' : 'light');
     const sectionIdx = Number(checkboxEl.dataset.section);
     const entryIdx = Number(checkboxEl.dataset.entry);
     const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
@@ -1513,6 +1505,8 @@ function attachEntryHandlers() {
     saveWatchedState(entry);
     updateEntryUI(sectionIdx, entryIdx);
     showToast(`${entry.title}: ${checkboxEl.checked ? 'Marked as Watched' : 'Marked as Unwatched'}`, 'info');
+    playSound(checkboxEl.checked ? 'success' : 'click');
+    triggerHaptic(checkboxEl.checked ? 'success' : 'light');
   };
 
   const handleMarkNextAction = (buttonEl) => {
@@ -1701,6 +1695,7 @@ function updateStats() {
       miniWatched.textContent = `${stats.watchedEpisodes} watched`;
     }
 
+    getTelemetryController().trackProgress(stats);
     updateStatSparklines();
   });
 }
@@ -1770,6 +1765,7 @@ function setupIntersectionObserver() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
   setVh();
+  getTelemetryController().startSession();
   
   // Load timeline data from JSON before rendering
   const loaded = await loadTimelineData();
