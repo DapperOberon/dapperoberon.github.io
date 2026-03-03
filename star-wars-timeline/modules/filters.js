@@ -332,6 +332,8 @@ export function createFilterController({
     const panel = document.getElementById('filters-panel');
     if (!toggleBtn || !panel) return;
 
+    const isCompactViewport = () => window.matchMedia('(max-width: 768px)').matches;
+
     const setPanelOpen = (isOpen) => {
       panel.classList.toggle('open', isOpen);
       toggleBtn.setAttribute('aria-expanded', String(isOpen));
@@ -353,7 +355,9 @@ export function createFilterController({
 
     document.querySelectorAll('.filter-btn').forEach((button) => {
       button.addEventListener('click', () => {
-        setPanelOpen(false);
+        if (isCompactViewport()) {
+          setPanelOpen(false);
+        }
       });
     });
 
