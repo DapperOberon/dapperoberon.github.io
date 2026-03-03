@@ -64,6 +64,14 @@ export function createFilterController({
 
   let filtersPanelListenersBound = false;
   let searchDebounceTimer = null;
+  let panelKeydownHandler = null;
+
+  function releasePanelKeyboardTrap() {
+    if (panelKeydownHandler) {
+      document.removeEventListener('keydown', panelKeydownHandler);
+      panelKeydownHandler = null;
+    }
+  }
 
   function getActiveFilterCount() {
     let activeCount = 0;
@@ -382,19 +390,82 @@ export function createFilterController({
     const toggleBtn = document.getElementById('filters-toggle');
     const panel = document.getElementById('filters-panel');
     if (!toggleBtn || !panel) return;
+    let previousFocusElement = toggleBtn;
 
     const isCompactViewport = () => window.matchMedia('(max-width: 768px)').matches;
 
-    const setPanelOpen = (isOpen) => {
+    const getFocusablePanelElements = () => Array.from(
+      panel.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true');
+
+    const trapPanelKeyboard = () => {
+      releasePanelKeyboardTrap();
+
+      panelKeydownHandler = (event) => {
+        if (!panel.classList.contains('open')) return;
+
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setPanelOpen(false);
+          return;
+        }
+
+        if (event.key !== 'Tab') return;
+        const focusable = getFocusablePanelElements();
+        if (focusable.length === 0) {
+          event.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement;
+
+        if (!panel.contains(active)) {
+          event.preventDefault();
+          first.focus();
+          return;
+        }
+
+        if (event.shiftKey && active === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+
+      document.addEventListener('keydown', panelKeydownHandler);
+    };
+
+    const setPanelOpen = (isOpen, { manageFocus = true } = {}) => {
       panel.classList.toggle('open', isOpen);
       toggleBtn.setAttribute('aria-expanded', String(isOpen));
       panel.setAttribute('aria-hidden', String(!isOpen));
-      if (!isOpen) {
+
+      if (isOpen) {
+        if (document.activeElement instanceof HTMLElement) {
+          previousFocusElement = document.activeElement;
+        }
+        trapPanelKeyboard();
+        if (manageFocus) {
+          const firstFocusable = getFocusablePanelElements()[0];
+          if (firstFocusable) firstFocusable.focus();
+        }
+      } else {
+        releasePanelKeyboardTrap();
         setAdvancedFiltersOpen(false);
+        if (manageFocus) {
+          const focusTarget = previousFocusElement && document.contains(previousFocusElement)
+            ? previousFocusElement
+            : toggleBtn;
+          focusTarget.focus();
+        }
       }
     };
 
-    setPanelOpen(false);
+    setPanelOpen(false, { manageFocus: false });
     updateMobileFilterSummary();
 
     toggleBtn.addEventListener('click', () => {
@@ -417,12 +488,6 @@ export function createFilterController({
 
       document.addEventListener('click', (event) => {
         if (panel.classList.contains('open') && !panel.contains(event.target) && !toggleBtn.contains(event.target)) {
-          setPanelOpen(false);
-        }
-      });
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && panel.classList.contains('open')) {
           setPanelOpen(false);
         }
       });
