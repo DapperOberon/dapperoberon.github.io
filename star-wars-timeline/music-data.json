@@ -1,0 +1,20 @@
+{
+  "tracks": [
+    { "src": "./audio/music/track-01-anakin-vs-dooku.mp3", "title": "Anakin vs. Dooku" },
+    { "src": "./audio/music/track-02-main-title-galaxy-divided.mp3", "title": "Main Title & A Galaxy Divided" },
+    { "src": "./audio/music/track-03-rebels-theme.mp3", "title": "Rebels Theme" },
+    { "src": "./audio/music/track-04-ahsoka-vs-maul.mp3", "title": "Ahsoka vs. Maul" },
+    { "src": "./audio/music/track-05-corellia-chase.mp3", "title": "Corellia Chase" },
+    { "src": "./audio/music/track-06-rogue-one.mp3", "title": "Rogue One" },
+    { "src": "./audio/music/track-07-light-and-magic.mp3", "title": "Light & Magic" },
+    { "src": "./audio/music/track-08-building-worlds.mp3", "title": "Building Worlds" },
+    { "src": "./audio/music/track-09-the-mandalorian.mp3", "title": "The Mandalorian" },
+    { "src": "./audio/music/track-10-andor-main-title.mp3", "title": "Andor Main Title" },
+    { "src": "./audio/music/track-11-cantina-boys.mp3", "title": "Cantina Boys" },
+    { "src": "./audio/music/track-12-christmas-in-the-stars.mp3", "title": "Christmas in the Stars" },
+    { "src": "./audio/music/track-13-main-title-and-escape.mp3", "title": "Main Title and Escape" },
+    { "src": "./audio/music/track-14-destiny-of-a-jedi.mp3", "title": "Destiny of a Jedi" },
+    { "src": "./audio/music/track-15-a-mystery.mp3", "title": "A Mystery" },
+    { "src": "./audio/music/track-16-a-new-threat.mp3", "title": "A New Threat" }
+  ]
+}

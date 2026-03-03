@@ -479,6 +479,9 @@ function renderHeader(stats) {
             <span class="toggle-track"></span>
             <span class="toggle-label">Watch Mode</span>
           </label>
+          <button id="settings-open-btn" class="stats-mini-pill settings-trigger" type="button" aria-haspopup="dialog" aria-controls="settings-modal">
+            Settings
+          </button>
         </div>
       </div>
       
@@ -549,6 +552,71 @@ function renderStatsDrawer(statsCardsMarkup) {
         </div>
         <div class="stats-container stats-container--drawer">
           ${statsCardsMarkup}
+        </div>
+      </aside>
+    </div>
+  `;
+}
+
+function renderSettingsModal() {
+  return `
+    <div id="settings-modal" class="modal settings-modal hidden" aria-hidden="true">
+      <button class="modal-backdrop settings-modal-backdrop" type="button" aria-label="Close settings"></button>
+      <aside class="modal-content settings-modal-panel" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" style="--section-color: var(--primary); --section-color-rgb: var(--primary-rgb);">
+        <div class="settings-modal-header">
+          <h2 id="settings-modal-title">Settings</h2>
+          <button id="settings-modal-close" class="modal-close settings-modal-close" type="button" aria-label="Close settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="settings-modal-group">
+          <div class="settings-modal-item settings-modal-item--toggle">
+            <div class="settings-modal-text">
+              <span class="settings-modal-label">Sound FX</span>
+              <span class="settings-modal-sub">UI interaction sounds</span>
+            </div>
+            <label class="settings-switch" aria-label="Toggle sound effects">
+              <input id="settings-sound-toggle" type="checkbox" />
+              <span class="settings-switch-track"></span>
+            </label>
+          </div>
+
+          <div class="settings-modal-item settings-modal-item--toggle">
+            <div class="settings-modal-text">
+              <span class="settings-modal-label">Background Music</span>
+              <span class="settings-modal-sub">Album-length playlist playback</span>
+            </div>
+            <label class="settings-switch" aria-label="Toggle background music">
+              <input id="settings-music-toggle" type="checkbox" />
+              <span class="settings-switch-track"></span>
+            </label>
+          </div>
+
+          <div class="settings-modal-item settings-modal-item--volume">
+            <div class="settings-modal-text">
+              <span class="settings-modal-label">Music Volume</span>
+              <span class="settings-modal-sub">Adjust background music level</span>
+            </div>
+            <div class="settings-modal-volume-wrap">
+              <span class="settings-modal-volume-icon" id="settings-volume-icon" aria-hidden="true">🔊</span>
+              <input id="settings-music-volume" class="settings-modal-volume" type="range" min="0" max="100" step="1" value="18" aria-label="Music volume" />
+            </div>
+          </div>
+
+          <div class="settings-modal-item settings-modal-item--toggle">
+            <div class="settings-modal-text">
+              <span class="settings-modal-label">Watch Mode</span>
+              <span class="settings-modal-sub">Highlight next item to watch</span>
+            </div>
+            <label class="settings-switch" aria-label="Toggle watch mode">
+              <input id="settings-watch-mode-toggle" type="checkbox" />
+              <span class="settings-switch-track"></span>
+            </label>
+          </div>
         </div>
       </aside>
     </div>
@@ -718,6 +786,7 @@ function render() {
     <a href="#main-content" class="skip-link">Skip to main content</a>
     ${renderHeader(stats)}
     ${renderStatsDrawer(statsCardsMarkup)}
+    ${renderSettingsModal()}
     ${renderTimelineRail()}
     ${renderMainContent()}
     ${renderFooter()}
@@ -759,6 +828,7 @@ function render() {
   initSoundToggle();
   initMusicToggle();
   initWatchModeToggle();
+  initSettingsModal();
   initEraToggles();
   initEraRail();
   attachEntryHandlers();
@@ -791,20 +861,52 @@ let backgroundMusicIndex = 0;
 let musicInteractionBindingAdded = false;
 let musicPillTitleEl = null;
 let musicPillToggleBtn = null;
+let musicVolume = 0.18;
 let watchModeEnabled = false;
 let eraObserver = null;
 let eraRailScrollBound = false;
 let eraRailScrollRaf = null;
 let statsDrawerEscapeBound = false;
+let settingsModalEscapeBound = false;
 
-const BACKGROUND_MUSIC_TRACKS = [
-  { src: './audio/music/track-01-bad-batch-logo.mp3', title: 'Bad Batch Logo' },
-  { src: './audio/music/track-02-story-in-the-stars.mp3', title: 'Story in the Stars' },
-  { src: './audio/music/track-03-familiar-pilot.mp3', title: 'Familiar Pilot' },
-  { src: './audio/music/track-04-encounter.mp3', title: 'Encounter' },
-  { src: './audio/music/track-05-saber-reunion.mp3', title: 'Saber Reunion' },
-  { src: './audio/music/track-06-cassians-prison.mp3', title: "Cassian's Prison" }
-];
+let BACKGROUND_MUSIC_TRACKS = [];
+
+function normalizeMusicTracks(rawTracks) {
+  if (!Array.isArray(rawTracks)) return [];
+
+  return rawTracks
+    .map((track) => {
+      if (!track || typeof track !== 'object') return null;
+      const src = typeof track.src === 'string' ? track.src.trim() : '';
+      const title = typeof track.title === 'string' ? track.title.trim() : '';
+      if (!src || !title) return null;
+      return { src, title };
+    })
+    .filter(Boolean);
+}
+
+async function loadMusicData() {
+  try {
+    const response = await fetch('./music-data.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load music data: ${response.status}`);
+    }
+
+    const rawData = await response.json();
+    const trackData = Array.isArray(rawData) ? rawData : rawData?.tracks;
+    const normalized = normalizeMusicTracks(trackData);
+
+    BACKGROUND_MUSIC_TRACKS = normalized;
+  } catch (error) {
+    console.error('Failed to load music-data.json:', error);
+    BACKGROUND_MUSIC_TRACKS = [];
+  }
+}
+
+function clampMusicVolume(value) {
+  if (!Number.isFinite(value)) return 0.18;
+  return Math.min(1, Math.max(0, value));
+}
 
 function loadCollapsedEras() {
   return loadCollapsedErasModule();
@@ -819,13 +921,33 @@ function initSoundToggle() {
   if (!toggle) return;
   const stored = localStorage.getItem('sw_sound_enabled');
   soundEnabled = stored === 'true';
-  toggle.checked = soundEnabled;
+  setSoundEnabled(soundEnabled, { withFeedback: false, persist: false });
   toggle.addEventListener('change', () => {
-    soundEnabled = toggle.checked;
+    setSoundEnabled(toggle.checked, { withFeedback: true });
+  });
+}
+
+function setSoundEnabled(enabled, { withFeedback = false, persist = true } = {}) {
+  soundEnabled = enabled;
+
+  if (persist) {
     localStorage.setItem('sw_sound_enabled', String(soundEnabled));
+  }
+
+  const mainToggle = document.getElementById('sound-toggle');
+  if (mainToggle) {
+    mainToggle.checked = soundEnabled;
+  }
+
+  const settingsToggle = document.getElementById('settings-sound-toggle');
+  if (settingsToggle) {
+    settingsToggle.checked = soundEnabled;
+  }
+
+  if (withFeedback) {
     playSound('toggle');
     triggerHaptic('light');
-  });
+  }
 }
 
 function initMusicToggle() {
@@ -836,7 +958,10 @@ function initMusicToggle() {
 
   const stored = localStorage.getItem('sw_music_enabled');
   musicEnabled = stored === null ? true : stored === 'true';
+  const storedVolume = Number(localStorage.getItem('sw_music_volume'));
+  musicVolume = clampMusicVolume(storedVolume);
   toggle.checked = musicEnabled;
+  setMusicVolume(musicVolume, { persist: false });
 
   if (musicEnabled) {
     startBackgroundMusic();
@@ -886,15 +1011,52 @@ function updateMusicPillUI() {
     musicPillToggleBtn.textContent = musicEnabled ? '⏸' : '▶';
     musicPillToggleBtn.setAttribute('aria-pressed', String(musicEnabled));
   }
+
+  const settingsVolumeIcon = document.getElementById('settings-volume-icon');
+  if (settingsVolumeIcon) {
+    if (musicVolume <= 0.001) {
+      settingsVolumeIcon.textContent = '🔇';
+    } else if (musicVolume < 0.5) {
+      settingsVolumeIcon.textContent = '🔉';
+    } else {
+      settingsVolumeIcon.textContent = '🔊';
+    }
+  }
 }
 
-function setMusicEnabled(enabled, { withFeedback = false } = {}) {
+function setMusicVolume(nextVolume, { persist = true } = {}) {
+  musicVolume = clampMusicVolume(nextVolume);
+
+  if (persist) {
+    localStorage.setItem('sw_music_volume', String(musicVolume));
+  }
+
+  if (backgroundMusicPlayer) {
+    backgroundMusicPlayer.volume = musicVolume;
+  }
+
+  const settingsSlider = document.getElementById('settings-music-volume');
+  if (settingsSlider) {
+    settingsSlider.value = String(Math.round(musicVolume * 100));
+  }
+
+  updateMusicPillUI();
+}
+
+function setMusicEnabled(enabled, { withFeedback = false, persist = true } = {}) {
   musicEnabled = enabled;
-  localStorage.setItem('sw_music_enabled', String(musicEnabled));
+  if (persist) {
+    localStorage.setItem('sw_music_enabled', String(musicEnabled));
+  }
 
   const toggle = document.getElementById('music-toggle');
   if (toggle) {
     toggle.checked = musicEnabled;
+  }
+
+  const settingsToggle = document.getElementById('settings-music-toggle');
+  if (settingsToggle) {
+    settingsToggle.checked = musicEnabled;
   }
 
   if (musicEnabled) {
@@ -919,7 +1081,7 @@ function ensureBackgroundMusicPlayer() {
   const player = new Audio();
   player.preload = 'auto';
   player.loop = false;
-  player.volume = 0.18;
+  player.volume = musicVolume;
   player.addEventListener('ended', () => {
     if (!musicEnabled) return;
     backgroundMusicIndex = (backgroundMusicIndex + 1) % BACKGROUND_MUSIC_TRACKS.length;
@@ -983,14 +1145,118 @@ function initWatchModeToggle() {
   if (!toggle) return;
   const stored = localStorage.getItem('sw_watch_mode_enabled');
   watchModeEnabled = stored === 'true';
-  toggle.checked = watchModeEnabled;
+  setWatchModeEnabled(watchModeEnabled, { withFeedback: false, persist: false });
   toggle.addEventListener('change', () => {
-    watchModeEnabled = toggle.checked;
+    setWatchModeEnabled(toggle.checked, { withFeedback: true });
+  });
+}
+
+function setWatchModeEnabled(enabled, { withFeedback = false, persist = true } = {}) {
+  watchModeEnabled = enabled;
+
+  if (persist) {
     localStorage.setItem('sw_watch_mode_enabled', String(watchModeEnabled));
+  }
+
+  const mainToggle = document.getElementById('watch-mode-toggle');
+  if (mainToggle) {
+    mainToggle.checked = watchModeEnabled;
+  }
+
+  const settingsToggle = document.getElementById('settings-watch-mode-toggle');
+  if (settingsToggle) {
+    settingsToggle.checked = watchModeEnabled;
+  }
+
+  updateWatchModeHighlight();
+
+  if (withFeedback) {
     playSound('toggle');
     triggerHaptic('light');
-    updateWatchModeHighlight();
+  }
+}
+
+function initSettingsModal() {
+  const trigger = document.getElementById('settings-open-btn');
+  const modal = document.getElementById('settings-modal');
+  const closeButton = document.getElementById('settings-modal-close');
+  const backdrop = modal ? modal.querySelector('.settings-modal-backdrop') : null;
+  if (!trigger || !modal || !closeButton || !backdrop) return;
+
+  const setModalOpen = (isOpen, { manageFocus = true } = {}) => {
+    modal.classList.toggle('hidden', !isOpen);
+    modal.setAttribute('aria-hidden', String(!isOpen));
+    document.body.classList.toggle('settings-modal-open', isOpen);
+    if (!manageFocus) return;
+    if (isOpen) {
+      closeButton.focus();
+    } else {
+      trigger.focus();
+    }
+  };
+
+  const closeModal = ({ feedback = true, manageFocus = true } = {}) => {
+    if (modal.classList.contains('hidden')) return;
+    setModalOpen(false, { manageFocus });
+    if (feedback) {
+      playSound('click');
+      triggerHaptic('light');
+    }
+  };
+
+  trigger.addEventListener('click', () => {
+    setModalOpen(true, { manageFocus: false });
+    playSound('click');
+    triggerHaptic('light');
   });
+
+  closeButton.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', () => closeModal({ manageFocus: false }));
+
+  const settingsSoundToggle = document.getElementById('settings-sound-toggle');
+  const settingsMusicToggle = document.getElementById('settings-music-toggle');
+  const settingsWatchToggle = document.getElementById('settings-watch-mode-toggle');
+  const settingsMusicVolume = document.getElementById('settings-music-volume');
+
+  if (settingsSoundToggle) {
+    settingsSoundToggle.addEventListener('change', () => {
+      setSoundEnabled(settingsSoundToggle.checked, { withFeedback: true });
+    });
+  }
+
+  if (settingsMusicToggle) {
+    settingsMusicToggle.addEventListener('change', () => {
+      setMusicEnabled(settingsMusicToggle.checked, { withFeedback: true });
+    });
+  }
+
+  if (settingsWatchToggle) {
+    settingsWatchToggle.addEventListener('change', () => {
+      setWatchModeEnabled(settingsWatchToggle.checked, { withFeedback: true });
+    });
+  }
+
+  if (settingsMusicVolume) {
+    settingsMusicVolume.addEventListener('input', () => {
+      setMusicVolume(Number(settingsMusicVolume.value) / 100);
+    });
+  }
+
+  if (!settingsModalEscapeBound) {
+    settingsModalEscapeBound = true;
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const activeModal = document.getElementById('settings-modal');
+      if (activeModal && !activeModal.classList.contains('hidden')) {
+        closeModal({ feedback: false, manageFocus: false });
+      }
+    });
+  }
+
+  setSoundEnabled(soundEnabled, { withFeedback: false, persist: false });
+  setMusicEnabled(musicEnabled, { withFeedback: false, persist: false });
+  setWatchModeEnabled(watchModeEnabled, { withFeedback: false, persist: false });
+  setMusicVolume(musicVolume, { persist: false });
 }
 
 function initStatsDrawer() {
@@ -1507,6 +1773,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load timeline data from JSON before rendering
   const loaded = await loadTimelineData();
   if (loaded) {
+    await loadMusicData();
     render();
     setupIntersectionObserver();
   } else {
