@@ -63,6 +63,15 @@ export function createFilterController({
   };
 
   let filtersPanelListenersBound = false;
+  let searchDebounceTimer = null;
+  let panelKeydownHandler = null;
+
+  function releasePanelKeyboardTrap() {
+    if (panelKeydownHandler) {
+      document.removeEventListener('keydown', panelKeydownHandler);
+      panelKeydownHandler = null;
+    }
+  }
 
   function getActiveFilterCount() {
     let activeCount = 0;
@@ -185,6 +194,18 @@ export function createFilterController({
       noResults.classList.toggle('hidden', visibleCount > 0);
     }
 
+    const resultsStatus = document.getElementById('filter-results-status');
+    if (resultsStatus) {
+      const totalCount = cards.length;
+      if (visibleCount === totalCount) {
+        resultsStatus.textContent = `Showing all ${totalCount} timeline entries.`;
+      } else if (visibleCount === 0) {
+        resultsStatus.textContent = 'No timeline entries match the current filters.';
+      } else {
+        resultsStatus.textContent = `Showing ${visibleCount} of ${totalCount} timeline entries.`;
+      }
+    }
+
     updateEraRailVisibility();
     updateWatchModeHighlight();
     scheduleFlowLinesRedraw();
@@ -196,6 +217,7 @@ export function createFilterController({
   function syncFilterButtonStates() {
     document.querySelectorAll('[data-canon-filter]').forEach((button) => {
       button.classList.remove('active');
+      button.setAttribute('aria-pressed', 'false');
     });
 
     const canonState = filters.canon && filters.legends
@@ -204,18 +226,32 @@ export function createFilterController({
         ? 'canon'
         : 'legends';
     const canonButton = document.querySelector(`[data-canon-filter="${canonState}"]`);
-    if (canonButton) canonButton.classList.add('active');
+    if (canonButton) {
+      canonButton.classList.add('active');
+      canonButton.setAttribute('aria-pressed', 'true');
+    }
 
     document.querySelectorAll('[data-type-filter]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.typeFilter === filters.type);
+      const isActive = button.dataset.typeFilter === filters.type;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
 
     document.querySelectorAll('[data-progress-filter]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.progressFilter === filters.progress);
+      const isActive = button.dataset.progressFilter === filters.progress;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
 
     document.querySelectorAll('[data-arc-filter]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.arcFilter === filters.arc);
+      const isActive = button.dataset.arcFilter === filters.arc;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+
+    document.querySelectorAll('.stat-box[data-filter]').forEach((box) => {
+      const isActive = box.dataset.filter === filters.progress;
+      box.setAttribute('aria-pressed', String(isActive));
     });
   }
 
@@ -288,7 +324,30 @@ export function createFilterController({
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        setSearchFilter(e.target.value, { syncInput: false });
+        if (searchDebounceTimer) {
+          clearTimeout(searchDebounceTimer);
+        }
+        const nextValue = e.target.value;
+        searchDebounceTimer = setTimeout(() => {
+          searchDebounceTimer = null;
+          setSearchFilter(nextValue, { syncInput: false });
+        }, 100);
+      });
+
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        if (searchDebounceTimer) {
+          clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = null;
+        }
+        setSearchFilter(searchInput.value, { syncInput: false });
+      });
+
+      searchInput.addEventListener('blur', () => {
+        if (!searchDebounceTimer) return;
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = null;
+        setSearchFilter(searchInput.value, { syncInput: false });
       });
     }
 
@@ -331,19 +390,82 @@ export function createFilterController({
     const toggleBtn = document.getElementById('filters-toggle');
     const panel = document.getElementById('filters-panel');
     if (!toggleBtn || !panel) return;
+    let previousFocusElement = toggleBtn;
 
     const isCompactViewport = () => window.matchMedia('(max-width: 768px)').matches;
 
-    const setPanelOpen = (isOpen) => {
+    const getFocusablePanelElements = () => Array.from(
+      panel.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true');
+
+    const trapPanelKeyboard = () => {
+      releasePanelKeyboardTrap();
+
+      panelKeydownHandler = (event) => {
+        if (!panel.classList.contains('open')) return;
+
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setPanelOpen(false);
+          return;
+        }
+
+        if (event.key !== 'Tab') return;
+        const focusable = getFocusablePanelElements();
+        if (focusable.length === 0) {
+          event.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement;
+
+        if (!panel.contains(active)) {
+          event.preventDefault();
+          first.focus();
+          return;
+        }
+
+        if (event.shiftKey && active === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+
+      document.addEventListener('keydown', panelKeydownHandler);
+    };
+
+    const setPanelOpen = (isOpen, { manageFocus = true } = {}) => {
       panel.classList.toggle('open', isOpen);
       toggleBtn.setAttribute('aria-expanded', String(isOpen));
       panel.setAttribute('aria-hidden', String(!isOpen));
-      if (!isOpen) {
+
+      if (isOpen) {
+        if (document.activeElement instanceof HTMLElement) {
+          previousFocusElement = document.activeElement;
+        }
+        trapPanelKeyboard();
+        if (manageFocus) {
+          const firstFocusable = getFocusablePanelElements()[0];
+          if (firstFocusable) firstFocusable.focus();
+        }
+      } else {
+        releasePanelKeyboardTrap();
         setAdvancedFiltersOpen(false);
+        if (manageFocus) {
+          const focusTarget = previousFocusElement && document.contains(previousFocusElement)
+            ? previousFocusElement
+            : toggleBtn;
+          focusTarget.focus();
+        }
       }
     };
 
-    setPanelOpen(false);
+    setPanelOpen(false, { manageFocus: false });
     updateMobileFilterSummary();
 
     toggleBtn.addEventListener('click', () => {
@@ -366,12 +488,6 @@ export function createFilterController({
 
       document.addEventListener('click', (event) => {
         if (panel.classList.contains('open') && !panel.contains(event.target) && !toggleBtn.contains(event.target)) {
-          setPanelOpen(false);
-        }
-      });
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && panel.classList.contains('open')) {
           setPanelOpen(false);
         }
       });

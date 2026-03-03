@@ -52,6 +52,18 @@ input:focus-visible {
   display: none !important;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Intersection Observer: Only enable expensive effects for visible cards */
 .entry-card {
   /* Animations/shadows initially disabled for performance */
@@ -1507,6 +1519,8 @@ h1 {
   padding: var(--space-8) 0;
   position: relative;
   scroll-margin-top: 140px;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1200px;
 }
 
 /* Era-specific background gradients */
@@ -1741,7 +1755,8 @@ h1 {
   transform: translateY(1%);
 }
 
-.rail-marker.active {
+.rail-marker.active,
+.rail-marker[aria-current="location"] {
   color: var(--text-primary);
   border-color: rgba(var(--white-rgb), 0.18);
   background: rgba(var(--black-rgb), 0.6);
@@ -1749,7 +1764,8 @@ h1 {
   transform: translateY(-1px);
 }
 
-.rail-marker.active .rail-era-icon {
+.rail-marker.active .rail-era-icon,
+.rail-marker[aria-current="location"] .rail-era-icon {
   border-color: color-mix(in srgb, var(--rail-color) 72%, white);
   box-shadow: 0 0 14px color-mix(in srgb, var(--rail-color) 72%, transparent);
 }

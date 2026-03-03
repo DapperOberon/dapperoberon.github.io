@@ -67,6 +67,7 @@ function getEntrySearchText(entry) {
 }
 
 let _flowLineRaf = null;
+let _flowLineTimeout = null;
 let _flowScrollRaf = null;
 let _flowScrollBound = false;
 let _flowTooltip = null;
@@ -136,10 +137,10 @@ function scheduleFlowLinesRedraw() {
   // Throttle redraws to avoid excessive CPU usage
   const now = Date.now();
   if (now - _lastFlowDrawTime < FLOW_REDRAW_THROTTLE) {
-    if (_flowLineRaf) return;
+    if (_flowLineTimeout) return;
     const remaining = FLOW_REDRAW_THROTTLE - (now - _lastFlowDrawTime);
-    _flowLineRaf = setTimeout(() => {
-      _flowLineRaf = null;
+    _flowLineTimeout = setTimeout(() => {
+      _flowLineTimeout = null;
       _lastFlowDrawTime = Date.now();
       drawTimelineFlowLines();
     }, remaining);
@@ -148,6 +149,12 @@ function scheduleFlowLinesRedraw() {
 
   if (_flowLineRaf) {
     cancelAnimationFrame(_flowLineRaf);
+    _flowLineRaf = null;
+  }
+
+  if (_flowLineTimeout) {
+    clearTimeout(_flowLineTimeout);
+    _flowLineTimeout = null;
   }
   _lastFlowDrawTime = now;
   _flowLineRaf = requestAnimationFrame(() => {
@@ -187,6 +194,62 @@ function hexToRgb(hex) {
 
 function getMediaTypeInfo(type) {
   return getMediaTypeInfoModule(type);
+}
+
+function getPreferredScrollBehavior() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
+function getFocusableElements(container) {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+  ).filter((el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true');
+}
+
+function createKeyboardTrap(container, { onEscape } = {}) {
+  if (!container) return () => {};
+
+  const keydownHandler = (event) => {
+    if (!container || container.classList.contains('hidden')) return;
+
+    if (event.key === 'Escape' && typeof onEscape === 'function') {
+      event.preventDefault();
+      onEscape();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const focusable = getFocusableElements(container);
+    if (focusable.length === 0) {
+      event.preventDefault();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (!container.contains(active)) {
+      event.preventDefault();
+      first.focus();
+      return;
+    }
+
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  document.addEventListener('keydown', keydownHandler);
+  return () => {
+    document.removeEventListener('keydown', keydownHandler);
+  };
 }
 
 function getFilterController() {
@@ -450,7 +513,7 @@ function scrollToNextUnwatchedEntry() {
   }
 
   const timelineEntry = nextCard.closest('.timeline-entry') || nextCard;
-  timelineEntry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  timelineEntry.scrollIntoView({ behavior: getPreferredScrollBehavior(), block: 'center' });
   window.setTimeout(() => {
     nextCard.focus({ preventScroll: true });
   }, 220);
@@ -652,9 +715,9 @@ function renderTimelineRail() {
         ${TIMELINE_DATA.map((section, idx) => {
       const eraImagePath = getEraImagePath(section.era);
     return `
-          <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}">
+          <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}" aria-current="false">
             ${eraImagePath
-      ? `<span class="rail-era-icon" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" /></span>`
+      ? `<span class="rail-era-icon" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
       : ''}
             <span class="rail-label">${section.era}</span>
           </button>
@@ -695,7 +758,7 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
       <div class="timeline-dot"></div>
       <div class="entry-card" data-canon="${entry.canon}" data-section="${sectionIdx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
         <div class="entry-poster">
-          <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
+          <img src="${entry.poster}" alt="${entry.title}" loading="lazy" decoding="async" fetchpriority="low" />
           <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
             ${entry.canon ? 'Canon' : 'Legends'}
           </span>
@@ -773,7 +836,7 @@ function renderEraSection(section, idx) {
     <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
       <h2>
         ${eraImagePath
-    ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" /></span>`
+    ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
     : ''}
         <span class="era-title">${section.era}</span>
         <span class="era-count">${itemLabel}</span>
@@ -790,6 +853,7 @@ function renderEraSection(section, idx) {
 function renderMainContent() {
   return `
     <main class="timeline-container" id="main-content" tabindex="-1">
+      <p id="filter-results-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
       <div id="no-results" class="hidden">
         <p>No entries match the selected filters.</p>
       </div>
@@ -911,6 +975,8 @@ let eraRailScrollRaf = null;
 let currentActiveEraId = null;
 let statsDrawerEscapeBound = false;
 let settingsModalEscapeBound = false;
+let statsDrawerTrapRelease = null;
+let settingsModalTrapRelease = null;
 
 let BACKGROUND_MUSIC_TRACKS = [];
 
@@ -1255,16 +1321,37 @@ function initSettingsModal() {
   const closeButton = document.getElementById('settings-modal-close');
   const backdrop = modal ? modal.querySelector('.settings-modal-backdrop') : null;
   if (!trigger || !modal || !closeButton || !backdrop) return;
+  let previousFocusElement = trigger;
 
   const setModalOpen = (isOpen, { manageFocus = true } = {}) => {
     modal.classList.toggle('hidden', !isOpen);
     modal.setAttribute('aria-hidden', String(!isOpen));
     document.body.classList.toggle('settings-modal-open', isOpen);
-    if (!manageFocus) return;
+
     if (isOpen) {
-      closeButton.focus();
+      if (document.activeElement instanceof HTMLElement) {
+        previousFocusElement = document.activeElement;
+      }
+      if (settingsModalTrapRelease) {
+        settingsModalTrapRelease();
+      }
+      settingsModalTrapRelease = createKeyboardTrap(modal, {
+        onEscape: () => closeModal({ feedback: false, manageFocus: true })
+      });
+      if (manageFocus) {
+        closeButton.focus();
+      }
     } else {
-      trigger.focus();
+      if (settingsModalTrapRelease) {
+        settingsModalTrapRelease();
+        settingsModalTrapRelease = null;
+      }
+      if (manageFocus) {
+        const focusTarget = previousFocusElement && document.contains(previousFocusElement)
+          ? previousFocusElement
+          : trigger;
+        focusTarget.focus();
+      }
     }
   };
 
@@ -1278,13 +1365,13 @@ function initSettingsModal() {
   };
 
   trigger.addEventListener('click', () => {
-    setModalOpen(true, { manageFocus: false });
+    setModalOpen(true);
     playSound('click');
     triggerHaptic('light');
   });
 
   closeButton.addEventListener('click', closeModal);
-  backdrop.addEventListener('click', () => closeModal({ manageFocus: false }));
+  backdrop.addEventListener('click', () => closeModal({ manageFocus: true }));
 
   if (!settingsModalEscapeBound) {
     settingsModalEscapeBound = true;
@@ -1311,6 +1398,7 @@ function initStatsDrawer() {
   const closeButton = document.getElementById('stats-drawer-close');
   const backdrop = drawer ? drawer.querySelector('.stats-drawer-backdrop') : null;
   if (!toggleButton || !drawer || !closeButton || !backdrop) return;
+  let previousFocusElement = toggleButton;
 
   const setDrawerOpen = (isOpen, { manageFocus = true } = {}) => {
     drawer.classList.toggle('hidden', !isOpen);
@@ -1318,11 +1406,31 @@ function initStatsDrawer() {
     drawer.setAttribute('aria-hidden', String(!isOpen));
     toggleButton.setAttribute('aria-expanded', String(isOpen));
     document.body.classList.toggle('stats-drawer-open', isOpen);
-    if (!manageFocus) return;
+
     if (isOpen) {
-      closeButton.focus();
+      if (document.activeElement instanceof HTMLElement) {
+        previousFocusElement = document.activeElement;
+      }
+      if (statsDrawerTrapRelease) {
+        statsDrawerTrapRelease();
+      }
+      statsDrawerTrapRelease = createKeyboardTrap(drawer, {
+        onEscape: () => closeDrawer({ feedback: false, manageFocus: true })
+      });
+      if (manageFocus) {
+        closeButton.focus();
+      }
     } else {
-      toggleButton.focus();
+      if (statsDrawerTrapRelease) {
+        statsDrawerTrapRelease();
+        statsDrawerTrapRelease = null;
+      }
+      if (manageFocus) {
+        const focusTarget = previousFocusElement && document.contains(previousFocusElement)
+          ? previousFocusElement
+          : toggleButton;
+        focusTarget.focus();
+      }
     }
   };
 
@@ -1339,17 +1447,17 @@ function initStatsDrawer() {
 
   toggleButton.addEventListener('click', () => {
     const willOpen = !drawer.classList.contains('open');
-    setDrawerOpen(willOpen, { manageFocus: false });
+    setDrawerOpen(willOpen);
     playSound('click');
     triggerHaptic('light');
   });
 
   closeButton.addEventListener('click', closeDrawer);
-  backdrop.addEventListener('click', () => closeDrawer({ manageFocus: false }));
+  backdrop.addEventListener('click', () => closeDrawer({ manageFocus: true }));
 
   if (quickOverall) {
     quickOverall.addEventListener('click', () => {
-      setDrawerOpen(true, { manageFocus: false });
+      setDrawerOpen(true);
       playSound('click');
       triggerHaptic('light');
     });
@@ -1413,7 +1521,7 @@ function initEraRail() {
       const targetId = marker.dataset.eraTarget;
       const section = document.getElementById(targetId);
       if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        section.scrollIntoView({ behavior: getPreferredScrollBehavior(), block: 'start' });
       }
     });
 
@@ -1455,12 +1563,13 @@ function initEraRail() {
         const isActive = marker.dataset.eraTarget === eraId;
         const wasActive = marker.classList.contains('active');
         marker.classList.toggle('active', isActive);
+        marker.setAttribute('aria-current', isActive ? 'location' : 'false');
         if (isActive && !wasActive) {
           marker.classList.remove('active-shift');
           marker.classList.add('active-shift');
           window.setTimeout(() => marker.classList.remove('active-shift'), 280);
           marker.scrollIntoView({
-            behavior: 'smooth',
+            behavior: getPreferredScrollBehavior(),
             block: 'nearest',
             inline: isDesktop ? 'nearest' : 'center'
           });
