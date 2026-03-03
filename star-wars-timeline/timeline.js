@@ -429,6 +429,15 @@ function initContinueWhereLeftOffButton() {
 function renderHeader(stats) {
   return `
     <header class="site-hero">
+      <div class="music-pill-row">
+        <div class="music-pill" id="music-pill" role="region" aria-label="Background music controls">
+          <span class="music-pill-label">Now Playing</span>
+          <span class="music-pill-title" id="music-pill-title">Music Off</span>
+          <button id="music-pill-toggle" class="music-pill-btn" type="button" aria-label="Play or pause background music" title="Play or pause background music">▶</button>
+          <button id="music-pill-next" class="music-pill-btn" type="button" aria-label="Skip to next track" title="Skip to next track">⏭</button>
+        </div>
+      </div>
+
       <div class="header-container">
         <div class="hero-title">
           <h1 data-text="GALACTIC ARCHIVE"><span class="hero-strong">GALACTIC</span> <span class="hero-accent">ARCHIVE</span></h1>
@@ -459,6 +468,11 @@ function renderHeader(stats) {
             <input type="checkbox" id="sound-toggle" aria-label="Toggle sound effects" />
             <span class="toggle-track"></span>
             <span class="toggle-label">Sound FX</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="music-toggle" aria-label="Toggle background music" />
+            <span class="toggle-track"></span>
+            <span class="toggle-label">Music</span>
           </label>
           <label class="toggle">
             <input type="checkbox" id="watch-mode-toggle" aria-label="Toggle watch order mode" />
@@ -743,6 +757,7 @@ function render() {
   initStatsDrawer();
   initContinueWhereLeftOffButton();
   initSoundToggle();
+  initMusicToggle();
   initWatchModeToggle();
   initEraToggles();
   initEraRail();
@@ -770,11 +785,26 @@ function attachStatHandlers() {
 
 let soundEnabled = false;
 let audioContext = null;
+let musicEnabled = false;
+let backgroundMusicPlayer = null;
+let backgroundMusicIndex = 0;
+let musicInteractionBindingAdded = false;
+let musicPillTitleEl = null;
+let musicPillToggleBtn = null;
 let watchModeEnabled = false;
 let eraObserver = null;
 let eraRailScrollBound = false;
 let eraRailScrollRaf = null;
 let statsDrawerEscapeBound = false;
+
+const BACKGROUND_MUSIC_TRACKS = [
+  { src: './audio/music/track-01-bad-batch-logo.mp3', title: 'Bad Batch Logo' },
+  { src: './audio/music/track-02-story-in-the-stars.mp3', title: 'Story in the Stars' },
+  { src: './audio/music/track-03-familiar-pilot.mp3', title: 'Familiar Pilot' },
+  { src: './audio/music/track-04-encounter.mp3', title: 'Encounter' },
+  { src: './audio/music/track-05-saber-reunion.mp3', title: 'Saber Reunion' },
+  { src: './audio/music/track-06-cassians-prison.mp3', title: "Cassian's Prison" }
+];
 
 function loadCollapsedEras() {
   return loadCollapsedErasModule();
@@ -796,6 +826,156 @@ function initSoundToggle() {
     playSound('toggle');
     triggerHaptic('light');
   });
+}
+
+function initMusicToggle() {
+  const toggle = document.getElementById('music-toggle');
+  if (!toggle) return;
+
+  initMusicPill();
+
+  const stored = localStorage.getItem('sw_music_enabled');
+  musicEnabled = stored === null ? true : stored === 'true';
+  toggle.checked = musicEnabled;
+
+  if (musicEnabled) {
+    startBackgroundMusic();
+  } else {
+    updateMusicPillUI();
+  }
+
+  toggle.addEventListener('change', () => {
+    setMusicEnabled(toggle.checked, { withFeedback: true });
+  });
+}
+
+function initMusicPill() {
+  musicPillTitleEl = document.getElementById('music-pill-title');
+  musicPillToggleBtn = document.getElementById('music-pill-toggle');
+  const nextButton = document.getElementById('music-pill-next');
+
+  if (musicPillToggleBtn) {
+    musicPillToggleBtn.addEventListener('click', () => {
+      setMusicEnabled(!musicEnabled, { withFeedback: true });
+    });
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener('click', () => {
+      if (BACKGROUND_MUSIC_TRACKS.length === 0) return;
+      if (!musicEnabled) {
+        setMusicEnabled(true, { withFeedback: false });
+      }
+      backgroundMusicIndex = (backgroundMusicIndex + 1) % BACKGROUND_MUSIC_TRACKS.length;
+      startBackgroundMusic(true);
+      playSound('click');
+      triggerHaptic('light');
+    });
+  }
+
+  updateMusicPillUI();
+}
+
+function updateMusicPillUI() {
+  if (musicPillTitleEl) {
+    const currentTrack = BACKGROUND_MUSIC_TRACKS[backgroundMusicIndex];
+    musicPillTitleEl.textContent = musicEnabled && currentTrack ? currentTrack.title : 'Music Off';
+  }
+
+  if (musicPillToggleBtn) {
+    musicPillToggleBtn.textContent = musicEnabled ? '⏸' : '▶';
+    musicPillToggleBtn.setAttribute('aria-pressed', String(musicEnabled));
+  }
+}
+
+function setMusicEnabled(enabled, { withFeedback = false } = {}) {
+  musicEnabled = enabled;
+  localStorage.setItem('sw_music_enabled', String(musicEnabled));
+
+  const toggle = document.getElementById('music-toggle');
+  if (toggle) {
+    toggle.checked = musicEnabled;
+  }
+
+  if (musicEnabled) {
+    startBackgroundMusic();
+  } else {
+    stopBackgroundMusic();
+  }
+
+  updateMusicPillUI();
+
+  if (withFeedback) {
+    playSound('toggle');
+    triggerHaptic('light');
+  }
+}
+
+function ensureBackgroundMusicPlayer() {
+  if (backgroundMusicPlayer) {
+    return backgroundMusicPlayer;
+  }
+
+  const player = new Audio();
+  player.preload = 'auto';
+  player.loop = false;
+  player.volume = 0.18;
+  player.addEventListener('ended', () => {
+    if (!musicEnabled) return;
+    backgroundMusicIndex = (backgroundMusicIndex + 1) % BACKGROUND_MUSIC_TRACKS.length;
+    startBackgroundMusic(true);
+  });
+
+  backgroundMusicPlayer = player;
+  return backgroundMusicPlayer;
+}
+
+function bindMusicStartOnInteraction() {
+  if (musicInteractionBindingAdded) return;
+  musicInteractionBindingAdded = true;
+
+  const startOnInteraction = () => {
+    if (!musicEnabled) return;
+    startBackgroundMusic(true);
+    window.removeEventListener('pointerdown', startOnInteraction);
+    window.removeEventListener('keydown', startOnInteraction);
+    window.removeEventListener('touchstart', startOnInteraction);
+    musicInteractionBindingAdded = false;
+  };
+
+  window.addEventListener('pointerdown', startOnInteraction, { once: true });
+  window.addEventListener('keydown', startOnInteraction, { once: true });
+  window.addEventListener('touchstart', startOnInteraction, { once: true, passive: true });
+}
+
+function startBackgroundMusic(keepCurrentTrack = false) {
+  if (!musicEnabled || BACKGROUND_MUSIC_TRACKS.length === 0) return;
+
+  const player = ensureBackgroundMusicPlayer();
+
+  if (!keepCurrentTrack && player.paused) {
+    backgroundMusicIndex = Math.floor(Math.random() * BACKGROUND_MUSIC_TRACKS.length);
+  }
+
+  const nextTrack = BACKGROUND_MUSIC_TRACKS[backgroundMusicIndex];
+  const nextSrc = nextTrack.src;
+  const absoluteNextSrc = new URL(nextSrc, window.location.href).href;
+
+  if (player.src !== absoluteNextSrc) {
+    player.src = nextSrc;
+  }
+
+  player.play().catch(() => {
+    bindMusicStartOnInteraction();
+  });
+
+  updateMusicPillUI();
+}
+
+function stopBackgroundMusic() {
+  if (!backgroundMusicPlayer) return;
+  backgroundMusicPlayer.pause();
+  updateMusicPillUI();
 }
 
 function initWatchModeToggle() {
@@ -1023,34 +1203,45 @@ function playSound(type) {
   if (!audioContext) {
     audioContext = new AudioCtx();
   }
-  if (audioContext.state === 'suspended') {
-    audioContext.resume().catch(() => {});
-  }
 
-  const now = audioContext.currentTime;
-  const gain = audioContext.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.06, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
-  gain.connect(audioContext.destination);
+  const schedulePlayback = () => {
+    if (!audioContext || audioContext.state !== 'running') return;
 
-  const playTone = (frequency, start, duration) => {
-    const osc = audioContext.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(frequency, start);
-    osc.connect(gain);
-    osc.start(start);
-    osc.stop(start + duration);
+    const now = audioContext.currentTime;
+    const gain = audioContext.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.06, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+    gain.connect(audioContext.destination);
+
+    const playTone = (frequency, start, duration) => {
+      const osc = audioContext.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(frequency, start);
+      osc.connect(gain);
+      osc.start(start);
+      osc.stop(start + duration);
+    };
+
+    if (type === 'success') {
+      playTone(640, now, 0.12);
+      playTone(880, now + 0.12, 0.12);
+    } else if (type === 'toggle') {
+      playTone(520, now, 0.12);
+    } else {
+      playTone(420, now, 0.1);
+    }
   };
 
-  if (type === 'success') {
-    playTone(640, now, 0.12);
-    playTone(880, now + 0.12, 0.12);
-  } else if (type === 'toggle') {
-    playTone(520, now, 0.12);
-  } else {
-    playTone(420, now, 0.1);
+  if (audioContext.state !== 'running') {
+    audioContext
+      .resume()
+      .then(schedulePlayback)
+      .catch(() => {});
+    return;
   }
+
+  schedulePlayback();
 }
 
 function triggerHaptic(level) {
