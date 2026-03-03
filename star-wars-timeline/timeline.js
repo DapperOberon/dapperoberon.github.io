@@ -315,6 +315,8 @@ function updateActiveFilterChips(filters) {
   const chips = getActiveFilterChipsMarkup(filters);
   activeFiltersBar.classList.toggle('hidden', chips.length === 0);
   clearButton.disabled = chips.length === 0;
+  clearButton.textContent = chips.length > 0 ? `Clear all (${chips.length})` : 'Clear all filters';
+  clearButton.setAttribute('aria-label', chips.length > 0 ? `Clear all ${chips.length} active filters` : 'Clear all filters');
 
   if (chips.length === 0) {
     chipsContainer.innerHTML = '';
@@ -336,11 +338,7 @@ function initActiveFilterControls() {
   const clearButton = document.getElementById('clear-filters-btn');
   if (!chipsContainer || !clearButton) return;
 
-  chipsContainer.addEventListener('click', (event) => {
-    const chip = event.target.closest('[data-filter-chip]');
-    if (!chip) return;
-
-    const chipType = chip.dataset.filterChip;
+  const clearChipByType = (chipType) => {
     const controller = getFilterController();
     if (chipType === 'search') {
       controller.setSearchFilter('');
@@ -353,9 +351,53 @@ function initActiveFilterControls() {
     } else if (chipType === 'arc') {
       controller.setArcFilter('all');
     }
+  };
+
+  chipsContainer.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-filter-chip]');
+    if (!chip) return;
+
+    const chipType = chip.dataset.filterChip;
+    const chipsBefore = Array.from(chipsContainer.querySelectorAll('[data-filter-chip]'));
+    const currentIndex = chipsBefore.indexOf(chip);
+
+    clearChipByType(chipType);
 
     playSound('click');
     triggerHaptic('light');
+
+    window.requestAnimationFrame(() => {
+      const chipsAfter = chipsContainer.querySelectorAll('[data-filter-chip]');
+      if (chipsAfter.length > 0) {
+        const nextIndex = Math.max(0, Math.min(chipsAfter.length - 1, currentIndex));
+        chipsAfter[nextIndex].focus();
+      } else {
+        clearButton.focus();
+      }
+    });
+  });
+
+  chipsContainer.addEventListener('keydown', (event) => {
+    const chip = event.target.closest('[data-filter-chip]');
+    if (!chip) return;
+    if (event.key !== 'Delete' && event.key !== 'Backspace') return;
+    event.preventDefault();
+
+    const chipsBefore = Array.from(chipsContainer.querySelectorAll('[data-filter-chip]'));
+    const currentIndex = chipsBefore.indexOf(chip);
+    clearChipByType(chip.dataset.filterChip);
+    playSound('click');
+    triggerHaptic('light');
+
+    window.requestAnimationFrame(() => {
+      const chipsAfter = chipsContainer.querySelectorAll('[data-filter-chip]');
+      if (chipsAfter.length > 0) {
+        const nextIndex = Math.max(0, Math.min(chipsAfter.length - 1, currentIndex));
+        chipsAfter[nextIndex].focus();
+      } else {
+        clearButton.focus();
+      }
+    });
   });
 
   clearButton.addEventListener('click', () => {
@@ -624,7 +666,10 @@ function renderTimelineRail() {
 }
 
 function renderEntryCard(entry, sectionIdx, entryIdx) {
-  const progress = entry.episodes > 0 ? Math.round((entry.watched / entry.episodes) * 100) : 0;
+  const watchedCount = Array.isArray(entry._watchedArray)
+    ? entry._watchedArray.filter(Boolean).length
+    : entry.watched;
+  const progress = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
   const isSingleItemEntry = entry.episodes === 1;
   const singleEpisodeTitle = Array.isArray(entry.episodeDetails)
     && entry.episodeDetails[0]
@@ -637,6 +682,8 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
     ? String(entry.episodeDetails[0].time).trim()
     : '';
   const showSingleEpisodeChecklist = isSingleItemEntry && !/film/i.test(entry.type) && Boolean(singleEpisodeTitle);
+  const canMarkNextEpisode = entry.episodes > 1;
+  const isEntryCompleted = entry.episodes > 0 && watchedCount >= entry.episodes;
   const entryMetaDetails = getEntryMetaDetails(entry);
   const mediaTypeInfo = getMediaTypeInfo(entry.type);
   const alignClass = entryIdx % 2 === 0 ? 'timeline-entry--left' : 'timeline-entry--right';
@@ -698,7 +745,17 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
             </div>
           ` : ''}
           <div class="entry-row">
-            <p class="entry-episodes">${entry.watched}/${entry.episodes} Watched</p>
+            <p class="entry-episodes">${watchedCount}/${entry.episodes} Watched</p>
+            ${canMarkNextEpisode ? `
+              <button
+                type="button"
+                class="entry-row-action card-mark-next-btn"
+                data-section="${sectionIdx}"
+                data-entry="${entryIdx}"
+                aria-label="Mark next episode for ${entry.title}"
+                ${isEntryCompleted ? 'disabled' : ''}
+              >${isEntryCompleted ? 'Completed' : 'Mark Next'}</button>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -851,6 +908,7 @@ let watchModeEnabled = false;
 let eraObserver = null;
 let eraRailScrollBound = false;
 let eraRailScrollRaf = null;
+let currentActiveEraId = null;
 let statsDrawerEscapeBound = false;
 let settingsModalEscapeBound = false;
 
@@ -1344,7 +1402,12 @@ function initEraToggles() {
 }
 
 function initEraRail() {
-  document.querySelectorAll('.rail-marker').forEach((marker) => {
+  currentActiveEraId = null;
+  const markers = Array.from(document.querySelectorAll('.rail-marker'));
+
+  const getInteractiveMarkers = () => markers.filter((marker) => !marker.classList.contains('disabled'));
+
+  markers.forEach((marker) => {
     marker.addEventListener('click', () => {
       if (marker.classList.contains('disabled')) return;
       const targetId = marker.dataset.eraTarget;
@@ -1353,19 +1416,55 @@ function initEraRail() {
         section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
+
+    marker.addEventListener('keydown', (event) => {
+      const interactiveMarkers = getInteractiveMarkers();
+      const currentIndex = interactiveMarkers.indexOf(marker);
+      if (currentIndex < 0) return;
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        const nextIndex = Math.min(interactiveMarkers.length - 1, currentIndex + 1);
+        interactiveMarkers[nextIndex].focus();
+      } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+        event.preventDefault();
+        const prevIndex = Math.max(0, currentIndex - 1);
+        interactiveMarkers[prevIndex].focus();
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        interactiveMarkers[0]?.focus();
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        interactiveMarkers[interactiveMarkers.length - 1]?.focus();
+      }
+    });
   });
 
   if (eraObserver) {
     eraObserver.disconnect();
   }
 
-  const markers = Array.from(document.querySelectorAll('.rail-marker'));
   eraObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       const eraId = entry.target.getAttribute('id');
+      if (!eraId || eraId === currentActiveEraId) return;
+      currentActiveEraId = eraId;
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
       markers.forEach((marker) => {
-        marker.classList.toggle('active', marker.dataset.eraTarget === eraId);
+        const isActive = marker.dataset.eraTarget === eraId;
+        const wasActive = marker.classList.contains('active');
+        marker.classList.toggle('active', isActive);
+        if (isActive && !wasActive) {
+          marker.classList.remove('active-shift');
+          marker.classList.add('active-shift');
+          window.setTimeout(() => marker.classList.remove('active-shift'), 280);
+          marker.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: isDesktop ? 'nearest' : 'center'
+          });
+        }
       });
     });
   }, { rootMargin: '-30% 0px -60% 0px', threshold: 0.1 });
@@ -1538,6 +1637,30 @@ function attachEntryHandlers() {
     showToast(`${entry.title}: ${checkboxEl.checked ? 'Marked as Watched' : 'Marked as Unwatched'}`, 'info');
   };
 
+  const handleMarkNextAction = (buttonEl) => {
+    const sectionIdx = Number(buttonEl.dataset.section);
+    const entryIdx = Number(buttonEl.dataset.entry);
+    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
+    if (!entry || entry.episodes <= 1) return;
+
+    entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
+    const nextEpisodeIdx = entry._watchedArray.findIndex((watched) => !watched);
+    if (nextEpisodeIdx < 0) {
+      showToast(`${entry.title}: Already completed`, 'info');
+      return;
+    }
+
+    entry._watchedArray[nextEpisodeIdx] = true;
+    saveWatchedState(entry);
+    updateEntryUI(sectionIdx, entryIdx);
+
+    const nextEpisode = Array.isArray(entry.episodeDetails) ? entry.episodeDetails[nextEpisodeIdx] : null;
+    const nextEpisodeTitle = nextEpisode && nextEpisode.title ? ` — ${nextEpisode.title}` : '';
+    showToast(`${entry.title}${nextEpisodeTitle}: Marked as Watched`, 'success');
+    playSound('success');
+    triggerHaptic('success');
+  };
+
   timelineContainer.addEventListener('click', (event) => {
     if (event.target.closest('.card-movie-checkbox, .card-single-episode-checkbox, label, button, a, select, textarea, input')) {
       return;
@@ -1563,6 +1686,13 @@ function attachEntryHandlers() {
     const checkbox = event.target.closest('.card-movie-checkbox, .card-single-episode-checkbox');
     if (!checkbox) return;
     handleSingleCheckboxChange(checkbox);
+  });
+
+  timelineContainer.addEventListener('click', (event) => {
+    const markNextButton = event.target.closest('.card-mark-next-btn');
+    if (!markNextButton) return;
+    event.preventDefault();
+    handleMarkNextAction(markNextButton);
   });
 }
 
@@ -1640,6 +1770,13 @@ function updateEntryUI(sectionIdx, entryIdx) {
   }
   const singleItemWatched = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
   updateCardQuickCheckState(card, singleItemWatched);
+
+  const markNextButton = card.querySelector('.card-mark-next-btn');
+  if (markNextButton) {
+    const isCompleted = watchedCount >= entry.episodes && entry.episodes > 0;
+    markNextButton.disabled = isCompleted;
+    markNextButton.textContent = isCompleted ? 'Completed' : 'Mark Next';
+  }
 
   updateWatchModeHighlight();
   
