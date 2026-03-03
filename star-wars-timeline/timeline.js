@@ -453,34 +453,8 @@ function renderHeader(stats) {
           <button id="continue-where-left-off" class="stats-mini-pill stats-mini-pill--cta" type="button" aria-label="Continue where you left off">
             Continue Where I Left Off
           </button>
-          <div class="stats-mini-summary" aria-live="polite" aria-label="Quick progress summary">
-            <button id="stats-mini-overall" class="stats-mini-pill" type="button" aria-label="Open stats panel">
-              ${stats.overallProgress}% overall
-            </button>
-            <button id="stats-mini-watched" class="stats-mini-pill" type="button" aria-label="Filter timeline to in progress entries">
-              ${stats.watchedEpisodes} watched
-            </button>
-          </div>
-        </div>
-
-        <div class="interaction-toggles" aria-label="Interaction settings">
-          <label class="toggle">
-            <input type="checkbox" id="sound-toggle" aria-label="Toggle sound effects" />
-            <span class="toggle-track"></span>
-            <span class="toggle-label">Sound FX</span>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="music-toggle" aria-label="Toggle background music" />
-            <span class="toggle-track"></span>
-            <span class="toggle-label">Music</span>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="watch-mode-toggle" aria-label="Toggle watch order mode" />
-            <span class="toggle-track"></span>
-            <span class="toggle-label">Watch Mode</span>
-          </label>
           <button id="settings-open-btn" class="stats-mini-pill settings-trigger" type="button" aria-haspopup="dialog" aria-controls="settings-modal">
-            Settings
+            Preferences
           </button>
         </div>
       </div>
@@ -511,20 +485,26 @@ function renderHeader(stats) {
             <button class="filter-btn" data-type-filter="films">Films</button>
             <button class="filter-btn" data-type-filter="shows">Shows</button>
           </div>
-          
-          <div class="filter-group filter-group-canon">
-            <span class="filter-group-label">Canon:</span>
-            <button class="filter-btn active" data-canon-filter="all">All</button>
-            <button class="filter-btn" data-canon-filter="canon">Canon</button>
-            <button class="filter-btn" data-canon-filter="legends">Legends</button>
-          </div>
-          
+
           <div class="filter-group filter-group-progress">
             <span class="filter-group-label">Progress:</span>
             <button class="filter-btn active" data-progress-filter="all">All</button>
             <button class="filter-btn" data-progress-filter="not-started">Not Started</button>
             <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
             <button class="filter-btn" data-progress-filter="completed">Completed</button>
+          </div>
+
+          <button id="advanced-filters-toggle" class="filters-advanced-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters-groups">
+            More Filters
+          </button>
+        </div>
+
+        <div id="advanced-filters-groups" class="filters-advanced hidden" aria-hidden="true">
+          <div class="filter-group filter-group-canon">
+            <span class="filter-group-label">Canon:</span>
+            <button class="filter-btn active" data-canon-filter="all">All</button>
+            <button class="filter-btn" data-canon-filter="canon">Canon</button>
+            <button class="filter-btn" data-canon-filter="legends">Legends</button>
           </div>
 
           <div class="filter-group filter-group-arc">
@@ -564,7 +544,7 @@ function renderSettingsModal() {
       <button class="modal-backdrop settings-modal-backdrop" type="button" aria-label="Close settings"></button>
       <aside class="modal-content settings-modal-panel" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" style="--section-color: var(--primary); --section-color-rgb: var(--primary-rgb);">
         <div class="settings-modal-header">
-          <h2 id="settings-modal-title">Settings</h2>
+          <h2 id="settings-modal-title">Preferences</h2>
           <button id="settings-modal-close" class="modal-close settings-modal-close" type="button" aria-label="Close settings">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -821,6 +801,7 @@ function render() {
   initializeWatchedState();
   attachFilterHandlers();
   initMobileFilterPanel();
+  initAdvancedFiltersPanel();
   initActiveFilterControls();
   attachStatHandlers();
   initStatsDrawer();
@@ -847,6 +828,10 @@ function attachFilterHandlers() {
 
 function initMobileFilterPanel() {
   getFilterController().initMobileFilterPanel();
+}
+
+function initAdvancedFiltersPanel() {
+  getFilterController().initAdvancedFiltersPanel();
 }
 
 function attachStatHandlers() {
@@ -917,14 +902,24 @@ function saveCollapsedEras(set) {
 }
 
 function initSoundToggle() {
-  const toggle = document.getElementById('sound-toggle');
-  if (!toggle) return;
+  const mainToggle = document.getElementById('sound-toggle');
+  const settingsToggle = document.getElementById('settings-sound-toggle');
+  if (!mainToggle && !settingsToggle) return;
   const stored = localStorage.getItem('sw_sound_enabled');
   soundEnabled = stored === 'true';
   setSoundEnabled(soundEnabled, { withFeedback: false, persist: false });
-  toggle.addEventListener('change', () => {
-    setSoundEnabled(toggle.checked, { withFeedback: true });
-  });
+
+  if (mainToggle) {
+    mainToggle.addEventListener('change', () => {
+      setSoundEnabled(mainToggle.checked, { withFeedback: true });
+    });
+  }
+
+  if (settingsToggle) {
+    settingsToggle.addEventListener('change', () => {
+      setSoundEnabled(settingsToggle.checked, { withFeedback: true });
+    });
+  }
 }
 
 function setSoundEnabled(enabled, { withFeedback = false, persist = true } = {}) {
@@ -952,7 +947,9 @@ function setSoundEnabled(enabled, { withFeedback = false, persist = true } = {})
 
 function initMusicToggle() {
   const toggle = document.getElementById('music-toggle');
-  if (!toggle) return;
+  const settingsToggle = document.getElementById('settings-music-toggle');
+  const settingsMusicVolume = document.getElementById('settings-music-volume');
+  if (!toggle && !settingsToggle) return;
 
   initMusicPill();
 
@@ -960,18 +957,26 @@ function initMusicToggle() {
   musicEnabled = stored === null ? true : stored === 'true';
   const storedVolume = Number(localStorage.getItem('sw_music_volume'));
   musicVolume = clampMusicVolume(storedVolume);
-  toggle.checked = musicEnabled;
   setMusicVolume(musicVolume, { persist: false });
+  setMusicEnabled(musicEnabled, { withFeedback: false, persist: false });
 
-  if (musicEnabled) {
-    startBackgroundMusic();
-  } else {
-    updateMusicPillUI();
+  if (toggle) {
+    toggle.addEventListener('change', () => {
+      setMusicEnabled(toggle.checked, { withFeedback: true });
+    });
   }
 
-  toggle.addEventListener('change', () => {
-    setMusicEnabled(toggle.checked, { withFeedback: true });
-  });
+  if (settingsToggle) {
+    settingsToggle.addEventListener('change', () => {
+      setMusicEnabled(settingsToggle.checked, { withFeedback: true });
+    });
+  }
+
+  if (settingsMusicVolume) {
+    settingsMusicVolume.addEventListener('input', () => {
+      setMusicVolume(Number(settingsMusicVolume.value) / 100);
+    });
+  }
 }
 
 function initMusicPill() {
@@ -1142,13 +1147,23 @@ function stopBackgroundMusic() {
 
 function initWatchModeToggle() {
   const toggle = document.getElementById('watch-mode-toggle');
-  if (!toggle) return;
+  const settingsToggle = document.getElementById('settings-watch-mode-toggle');
+  if (!toggle && !settingsToggle) return;
   const stored = localStorage.getItem('sw_watch_mode_enabled');
   watchModeEnabled = stored === 'true';
   setWatchModeEnabled(watchModeEnabled, { withFeedback: false, persist: false });
-  toggle.addEventListener('change', () => {
-    setWatchModeEnabled(toggle.checked, { withFeedback: true });
-  });
+
+  if (toggle) {
+    toggle.addEventListener('change', () => {
+      setWatchModeEnabled(toggle.checked, { withFeedback: true });
+    });
+  }
+
+  if (settingsToggle) {
+    settingsToggle.addEventListener('change', () => {
+      setWatchModeEnabled(settingsToggle.checked, { withFeedback: true });
+    });
+  }
 }
 
 function setWatchModeEnabled(enabled, { withFeedback = false, persist = true } = {}) {
@@ -1212,35 +1227,6 @@ function initSettingsModal() {
 
   closeButton.addEventListener('click', closeModal);
   backdrop.addEventListener('click', () => closeModal({ manageFocus: false }));
-
-  const settingsSoundToggle = document.getElementById('settings-sound-toggle');
-  const settingsMusicToggle = document.getElementById('settings-music-toggle');
-  const settingsWatchToggle = document.getElementById('settings-watch-mode-toggle');
-  const settingsMusicVolume = document.getElementById('settings-music-volume');
-
-  if (settingsSoundToggle) {
-    settingsSoundToggle.addEventListener('change', () => {
-      setSoundEnabled(settingsSoundToggle.checked, { withFeedback: true });
-    });
-  }
-
-  if (settingsMusicToggle) {
-    settingsMusicToggle.addEventListener('change', () => {
-      setMusicEnabled(settingsMusicToggle.checked, { withFeedback: true });
-    });
-  }
-
-  if (settingsWatchToggle) {
-    settingsWatchToggle.addEventListener('change', () => {
-      setWatchModeEnabled(settingsWatchToggle.checked, { withFeedback: true });
-    });
-  }
-
-  if (settingsMusicVolume) {
-    settingsMusicVolume.addEventListener('input', () => {
-      setMusicVolume(Number(settingsMusicVolume.value) / 100);
-    });
-  }
 
   if (!settingsModalEscapeBound) {
     settingsModalEscapeBound = true;
