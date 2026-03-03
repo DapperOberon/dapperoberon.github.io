@@ -86,8 +86,8 @@ export function createFilterController({
   function updateMobileFilterSummary() {
     const countEl = document.getElementById('filters-active-count');
     if (!countEl) return;
-    const activeCount = getActiveFilterCount();
-    countEl.textContent = activeCount === 0 ? 'All' : `${activeCount} active`;
+    const activeCount = getAdvancedFilterCount();
+    countEl.textContent = activeCount === 0 ? 'None' : `${activeCount} active`;
   }
 
   function getAdvancedFilterCount() {
@@ -353,33 +353,33 @@ export function createFilterController({
 
     document.querySelectorAll('[data-canon-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        setCanonFilter(btn.dataset.canonFilter);
         playSound('click');
         triggerHaptic('light');
-        setCanonFilter(btn.dataset.canonFilter);
       });
     });
 
     document.querySelectorAll('[data-type-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        setTypeFilter(btn.dataset.typeFilter);
         playSound('click');
         triggerHaptic('light');
-        setTypeFilter(btn.dataset.typeFilter);
       });
     });
 
     document.querySelectorAll('[data-progress-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        setProgressFilter(btn.dataset.progressFilter);
         playSound('click');
         triggerHaptic('light');
-        setProgressFilter(btn.dataset.progressFilter);
       });
     });
 
     document.querySelectorAll('[data-arc-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        setArcFilter(btn.dataset.arcFilter);
         playSound('click');
         triggerHaptic('light');
-        setArcFilter(btn.dataset.arcFilter);
       });
     });
 
@@ -391,6 +391,17 @@ export function createFilterController({
     const panel = document.getElementById('filters-panel');
     if (!toggleBtn || !panel) return;
     let previousFocusElement = toggleBtn;
+
+    const syncPanelOpenHeight = () => {
+      const row = panel.querySelector('.filters-row');
+      if (!row) {
+        panel.style.setProperty('--filters-panel-open-height', '0px');
+        return;
+      }
+      const openPaddingBottomPx = 12;
+      const targetHeight = Math.ceil(row.scrollHeight + openPaddingBottomPx);
+      panel.style.setProperty('--filters-panel-open-height', `${targetHeight}px`);
+    };
 
     const isCompactViewport = () => window.matchMedia('(max-width: 768px)').matches;
 
@@ -440,9 +451,17 @@ export function createFilterController({
     };
 
     const setPanelOpen = (isOpen, { manageFocus = true } = {}) => {
+      syncPanelOpenHeight();
       panel.classList.toggle('open', isOpen);
       toggleBtn.setAttribute('aria-expanded', String(isOpen));
       panel.setAttribute('aria-hidden', String(!isOpen));
+
+      if (isOpen) {
+        requestAnimationFrame(() => {
+          syncPanelOpenHeight();
+          requestAnimationFrame(syncPanelOpenHeight);
+        });
+      }
 
       if (isOpen) {
         if (document.activeElement instanceof HTMLElement) {
@@ -464,6 +483,11 @@ export function createFilterController({
         }
       }
     };
+
+    window.addEventListener('resize', () => {
+      if (!panel.classList.contains('open')) return;
+      syncPanelOpenHeight();
+    });
 
     setPanelOpen(false, { manageFocus: false });
     updateMobileFilterSummary();
@@ -487,7 +511,16 @@ export function createFilterController({
       filtersPanelListenersBound = true;
 
       document.addEventListener('click', (event) => {
-        if (panel.classList.contains('open') && !panel.contains(event.target) && !toggleBtn.contains(event.target)) {
+        const clickedPrimaryFilters = event.target instanceof Element
+          ? Boolean(event.target.closest('.quick-filters-row'))
+          : false;
+
+        if (
+          panel.classList.contains('open')
+          && !panel.contains(event.target)
+          && !toggleBtn.contains(event.target)
+          && !clickedPrimaryFilters
+        ) {
           setPanelOpen(false);
         }
       });

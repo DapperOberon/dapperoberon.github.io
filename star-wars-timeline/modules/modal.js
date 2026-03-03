@@ -14,6 +14,7 @@ export function createModalController({
   let currentModalEntry = null;
   let modalKeydownHandler = null;
   let modalPreviouslyFocusedElement = null;
+  let resetDialogPreviouslyFocusedElement = null;
 
   function releaseModalKeyboardTrap() {
     if (modalKeydownHandler) {
@@ -79,6 +80,10 @@ export function createModalController({
     if (!resetDialog) return;
     resetDialog.classList.add('hidden');
     resetDialog.setAttribute('aria-hidden', 'true');
+    if (resetDialogPreviouslyFocusedElement && document.contains(resetDialogPreviouslyFocusedElement)) {
+      resetDialogPreviouslyFocusedElement.focus({ preventScroll: true });
+    }
+    resetDialogPreviouslyFocusedElement = null;
   }
 
   function showToast(message, type = 'info') {
@@ -114,6 +119,9 @@ export function createModalController({
   function openResetDialog() {
     const resetDialog = document.getElementById('reset-dialog');
     if (!resetDialog) return;
+    if (document.activeElement instanceof HTMLElement) {
+      resetDialogPreviouslyFocusedElement = document.activeElement;
+    }
 
     resetDialog.innerHTML = `
       <div class="reset-dialog-backdrop"></div>
@@ -149,11 +157,11 @@ export function createModalController({
     if (backdrop) backdrop.addEventListener('click', handleClose);
     if (confirmBtn) {
       confirmBtn.addEventListener('click', () => {
-        playSound('success');
-        triggerHaptic('success');
         resetAllProgress();
         handleClose();
         showToast('All Watched Progress Has Been Reset.', 'success');
+        playSound('success');
+        triggerHaptic('success');
       });
       confirmBtn.focus();
     }
@@ -365,8 +373,6 @@ export function createModalController({
     const markAllBtn = modal.querySelector('#mark-all-watched');
     if (markAllBtn) {
       markAllBtn.addEventListener('click', () => {
-        playSound('success');
-        triggerHaptic('success');
         const wasCompleted = isShowCompleted(entry);
         const allChecked = entry._watchedArray.every(Boolean);
         const newState = !allChecked;
@@ -383,6 +389,8 @@ export function createModalController({
         if (!wasCompleted && isShowCompleted(entry)) {
           showToast(`${entry.title} completed!`, 'success');
         }
+        playSound('success');
+        triggerHaptic('success');
       });
 
       updateModalCount();
@@ -393,14 +401,12 @@ export function createModalController({
       markNextBtn.addEventListener('click', () => {
         const nextIdx = entry._watchedArray.findIndex((isWatched) => !isWatched);
         if (nextIdx === -1) {
+          showToast(`${entry.title}: All Episodes Are Already Watched`, 'info');
           playSound('click');
           triggerHaptic('light');
-          showToast(`${entry.title}: All Episodes Are Already Watched`, 'info');
           return;
         }
         const wasCompleted = isShowCompleted(entry);
-        playSound('success');
-        triggerHaptic('success');
         entry._watchedArray[nextIdx] = true;
         const nextCheckbox = modal.querySelector(`input[data-ep="${nextIdx}"]`);
         if (nextCheckbox) {
@@ -412,14 +418,14 @@ export function createModalController({
         if (!wasCompleted && isShowCompleted(entry)) {
           showToast(`${entry.title} completed!`, 'success');
         }
+        playSound('success');
+        triggerHaptic('success');
       });
     }
 
     const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach((cb) => {
       cb.addEventListener('change', () => {
-        playSound(cb.checked ? 'success' : 'click');
-        triggerHaptic(cb.checked ? 'success' : 'light');
         const wasCompleted = isShowCompleted(entry);
         const idx = Number(cb.dataset.ep);
         entry._watchedArray[idx] = cb.checked;
@@ -429,6 +435,8 @@ export function createModalController({
         if (!wasCompleted && isShowCompleted(entry)) {
           showToast(`${entry.title} completed!`, 'success');
         }
+        playSound(cb.checked ? 'success' : 'click');
+        triggerHaptic(cb.checked ? 'success' : 'light');
       });
     });
   }
