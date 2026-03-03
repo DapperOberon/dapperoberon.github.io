@@ -2229,6 +2229,46 @@ h1 {
   outline-offset: 2px;
 }
 
+.scroll-top-btn {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--primary-rgb), 0.28);
+  background: rgba(var(--bg-light-rgb), 0.9);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.32);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  z-index: 950;
+}
+
+.scroll-top-btn.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.scroll-top-btn:hover {
+  background: rgba(var(--bg-light-rgb), 0.98);
+  border-color: rgba(var(--primary-rgb), 0.45);
+}
+
+.scroll-top-btn:active {
+  transform: translateY(1px);
+}
+
 /* Body scroll lock while modal is open */
 body.modal-open {
   position: fixed !important;
@@ -4339,6 +4379,7 @@ footer {
 .stats-mini-pill:focus-visible,
 .stats-drawer-toggle:focus-visible,
 #reset-progress-btn:focus-visible,
+.scroll-top-btn:focus-visible,
 .modal-btn:focus-visible,
 .modal-close:focus-visible,
 .episode-item:focus-within,

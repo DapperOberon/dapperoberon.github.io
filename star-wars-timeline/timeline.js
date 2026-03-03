@@ -540,6 +540,27 @@ function initContinueWhereLeftOffButton() {
   });
 }
 
+function initScrollTopButton() {
+  const scrollTopButton = document.getElementById('scroll-top-btn');
+  if (!scrollTopButton) return;
+
+  const updateVisibility = () => {
+    const shouldShow = window.scrollY > 640;
+    scrollTopButton.classList.toggle('is-visible', shouldShow);
+    scrollTopButton.setAttribute('aria-hidden', String(!shouldShow));
+    scrollTopButton.tabIndex = shouldShow ? 0 : -1;
+  };
+
+  scrollTopButton.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: getPreferredScrollBehavior() });
+    playSound('click');
+    triggerHaptic('light');
+  });
+
+  window.addEventListener('scroll', updateVisibility, { passive: true });
+  updateVisibility();
+}
+
 function renderHeader(stats) {
   return `
     <header class="site-hero">
@@ -891,6 +912,9 @@ function renderFooter() {
         <button id="reset-progress-btn" title="Reset all watched progress">Reset Progress</button>
       </div>
     </footer>
+    <button id="scroll-top-btn" class="scroll-top-btn" type="button" aria-label="Scroll to top" title="Scroll to top" aria-hidden="true" tabindex="-1">
+      ↑
+    </button>
   `;
 }
 
@@ -947,6 +971,7 @@ function render() {
   attachStatHandlers();
   initStatsDrawer();
   initContinueWhereLeftOffButton();
+  initScrollTopButton();
   initSoundToggle();
   initMusicToggle();
   initWatchModeToggle();
