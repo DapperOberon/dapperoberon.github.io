@@ -52,6 +52,18 @@ input:focus-visible {
   display: none !important;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Intersection Observer: Only enable expensive effects for visible cards */
 .entry-card {
   /* Animations/shadows initially disabled for performance */
@@ -1507,6 +1519,8 @@ h1 {
   padding: var(--space-8) 0;
   position: relative;
   scroll-margin-top: 140px;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1200px;
 }
 
 /* Era-specific background gradients */

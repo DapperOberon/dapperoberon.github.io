@@ -63,6 +63,7 @@ export function createFilterController({
   };
 
   let filtersPanelListenersBound = false;
+  let searchDebounceTimer = null;
 
   function getActiveFilterCount() {
     let activeCount = 0;
@@ -185,6 +186,18 @@ export function createFilterController({
       noResults.classList.toggle('hidden', visibleCount > 0);
     }
 
+    const resultsStatus = document.getElementById('filter-results-status');
+    if (resultsStatus) {
+      const totalCount = cards.length;
+      if (visibleCount === totalCount) {
+        resultsStatus.textContent = `Showing all ${totalCount} timeline entries.`;
+      } else if (visibleCount === 0) {
+        resultsStatus.textContent = 'No timeline entries match the current filters.';
+      } else {
+        resultsStatus.textContent = `Showing ${visibleCount} of ${totalCount} timeline entries.`;
+      }
+    }
+
     updateEraRailVisibility();
     updateWatchModeHighlight();
     scheduleFlowLinesRedraw();
@@ -303,7 +316,30 @@ export function createFilterController({
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        setSearchFilter(e.target.value, { syncInput: false });
+        if (searchDebounceTimer) {
+          clearTimeout(searchDebounceTimer);
+        }
+        const nextValue = e.target.value;
+        searchDebounceTimer = setTimeout(() => {
+          searchDebounceTimer = null;
+          setSearchFilter(nextValue, { syncInput: false });
+        }, 100);
+      });
+
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        if (searchDebounceTimer) {
+          clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = null;
+        }
+        setSearchFilter(searchInput.value, { syncInput: false });
+      });
+
+      searchInput.addEventListener('blur', () => {
+        if (!searchDebounceTimer) return;
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = null;
+        setSearchFilter(searchInput.value, { syncInput: false });
       });
     }
 

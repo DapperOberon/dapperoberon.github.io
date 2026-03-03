@@ -801,6 +801,7 @@ function renderEraSection(section, idx) {
 function renderMainContent() {
   return `
     <main class="timeline-container" id="main-content" tabindex="-1">
+      <p id="filter-results-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
       <div id="no-results" class="hidden">
         <p>No entries match the selected filters.</p>
       </div>
