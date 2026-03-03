@@ -196,6 +196,7 @@ export function createFilterController({
   function syncFilterButtonStates() {
     document.querySelectorAll('[data-canon-filter]').forEach((button) => {
       button.classList.remove('active');
+      button.setAttribute('aria-pressed', 'false');
     });
 
     const canonState = filters.canon && filters.legends
@@ -204,18 +205,32 @@ export function createFilterController({
         ? 'canon'
         : 'legends';
     const canonButton = document.querySelector(`[data-canon-filter="${canonState}"]`);
-    if (canonButton) canonButton.classList.add('active');
+    if (canonButton) {
+      canonButton.classList.add('active');
+      canonButton.setAttribute('aria-pressed', 'true');
+    }
 
     document.querySelectorAll('[data-type-filter]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.typeFilter === filters.type);
+      const isActive = button.dataset.typeFilter === filters.type;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
 
     document.querySelectorAll('[data-progress-filter]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.progressFilter === filters.progress);
+      const isActive = button.dataset.progressFilter === filters.progress;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
 
     document.querySelectorAll('[data-arc-filter]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.arcFilter === filters.arc);
+      const isActive = button.dataset.arcFilter === filters.arc;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+
+    document.querySelectorAll('.stat-box[data-filter]').forEach((box) => {
+      const isActive = box.dataset.filter === filters.progress;
+      box.setAttribute('aria-pressed', String(isActive));
     });
   }
 

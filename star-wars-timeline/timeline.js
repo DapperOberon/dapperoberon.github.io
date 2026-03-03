@@ -67,6 +67,7 @@ function getEntrySearchText(entry) {
 }
 
 let _flowLineRaf = null;
+let _flowLineTimeout = null;
 let _flowScrollRaf = null;
 let _flowScrollBound = false;
 let _flowTooltip = null;
@@ -136,10 +137,10 @@ function scheduleFlowLinesRedraw() {
   // Throttle redraws to avoid excessive CPU usage
   const now = Date.now();
   if (now - _lastFlowDrawTime < FLOW_REDRAW_THROTTLE) {
-    if (_flowLineRaf) return;
+    if (_flowLineTimeout) return;
     const remaining = FLOW_REDRAW_THROTTLE - (now - _lastFlowDrawTime);
-    _flowLineRaf = setTimeout(() => {
-      _flowLineRaf = null;
+    _flowLineTimeout = setTimeout(() => {
+      _flowLineTimeout = null;
       _lastFlowDrawTime = Date.now();
       drawTimelineFlowLines();
     }, remaining);
@@ -148,6 +149,12 @@ function scheduleFlowLinesRedraw() {
 
   if (_flowLineRaf) {
     cancelAnimationFrame(_flowLineRaf);
+    _flowLineRaf = null;
+  }
+
+  if (_flowLineTimeout) {
+    clearTimeout(_flowLineTimeout);
+    _flowLineTimeout = null;
   }
   _lastFlowDrawTime = now;
   _flowLineRaf = requestAnimationFrame(() => {
@@ -187,6 +194,10 @@ function hexToRgb(hex) {
 
 function getMediaTypeInfo(type) {
   return getMediaTypeInfoModule(type);
+}
+
+function getPreferredScrollBehavior() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 }
 
 function getFilterController() {
@@ -450,7 +461,7 @@ function scrollToNextUnwatchedEntry() {
   }
 
   const timelineEntry = nextCard.closest('.timeline-entry') || nextCard;
-  timelineEntry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  timelineEntry.scrollIntoView({ behavior: getPreferredScrollBehavior(), block: 'center' });
   window.setTimeout(() => {
     nextCard.focus({ preventScroll: true });
   }, 220);
@@ -652,9 +663,9 @@ function renderTimelineRail() {
         ${TIMELINE_DATA.map((section, idx) => {
       const eraImagePath = getEraImagePath(section.era);
     return `
-          <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}">
+          <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}" aria-current="false">
             ${eraImagePath
-      ? `<span class="rail-era-icon" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" /></span>`
+      ? `<span class="rail-era-icon" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
       : ''}
             <span class="rail-label">${section.era}</span>
           </button>
@@ -695,7 +706,7 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
       <div class="timeline-dot"></div>
       <div class="entry-card" data-canon="${entry.canon}" data-section="${sectionIdx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
         <div class="entry-poster">
-          <img src="${entry.poster}" alt="${entry.title}" loading="lazy" />
+          <img src="${entry.poster}" alt="${entry.title}" loading="lazy" decoding="async" fetchpriority="low" />
           <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
             ${entry.canon ? 'Canon' : 'Legends'}
           </span>
@@ -773,7 +784,7 @@ function renderEraSection(section, idx) {
     <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
       <h2>
         ${eraImagePath
-    ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" /></span>`
+    ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
     : ''}
         <span class="era-title">${section.era}</span>
         <span class="era-count">${itemLabel}</span>
@@ -1413,7 +1424,7 @@ function initEraRail() {
       const targetId = marker.dataset.eraTarget;
       const section = document.getElementById(targetId);
       if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        section.scrollIntoView({ behavior: getPreferredScrollBehavior(), block: 'start' });
       }
     });
 
@@ -1455,12 +1466,13 @@ function initEraRail() {
         const isActive = marker.dataset.eraTarget === eraId;
         const wasActive = marker.classList.contains('active');
         marker.classList.toggle('active', isActive);
+        marker.setAttribute('aria-current', isActive ? 'location' : 'false');
         if (isActive && !wasActive) {
           marker.classList.remove('active-shift');
           marker.classList.add('active-shift');
           window.setTimeout(() => marker.classList.remove('active-shift'), 280);
           marker.scrollIntoView({
-            behavior: 'smooth',
+            behavior: getPreferredScrollBehavior(),
             block: 'nearest',
             inline: isDesktop ? 'nearest' : 'center'
           });

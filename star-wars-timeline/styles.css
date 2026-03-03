@@ -1741,7 +1741,8 @@ h1 {
   transform: translateY(1%);
 }
 
-.rail-marker.active {
+.rail-marker.active,
+.rail-marker[aria-current="location"] {
   color: var(--text-primary);
   border-color: rgba(var(--white-rgb), 0.18);
   background: rgba(var(--black-rgb), 0.6);
@@ -1749,7 +1750,8 @@ h1 {
   transform: translateY(-1px);
 }
 
-.rail-marker.active .rail-era-icon {
+.rail-marker.active .rail-era-icon,
+.rail-marker[aria-current="location"] .rail-era-icon {
   border-color: color-mix(in srgb, var(--rail-color) 72%, white);
   box-shadow: 0 0 14px color-mix(in srgb, var(--rail-color) 72%, transparent);
 }
