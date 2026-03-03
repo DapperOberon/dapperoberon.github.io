@@ -81,6 +81,30 @@ export function createFilterController({
     countEl.textContent = activeCount === 0 ? 'All' : `${activeCount} active`;
   }
 
+  function getAdvancedFilterCount() {
+    let activeCount = 0;
+    if (!(filters.canon && filters.legends)) activeCount += 1;
+    if (filters.arc !== 'all') activeCount += 1;
+    return activeCount;
+  }
+
+  function updateAdvancedFiltersToggleLabel() {
+    const toggle = document.getElementById('advanced-filters-toggle');
+    if (!toggle) return;
+    const count = getAdvancedFilterCount();
+    toggle.textContent = count > 0 ? `More Filters (${count})` : 'More Filters';
+  }
+
+  function setAdvancedFiltersOpen(isOpen) {
+    const toggle = document.getElementById('advanced-filters-toggle');
+    const advancedGroups = document.getElementById('advanced-filters-groups');
+    if (!toggle || !advancedGroups) return;
+    advancedGroups.classList.toggle('hidden', !isOpen);
+    advancedGroups.setAttribute('aria-hidden', String(!isOpen));
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    updateAdvancedFiltersToggleLabel();
+  }
+
   function updateFilters() {
     const timelineData = getTimelineData();
     const cards = document.querySelectorAll('.entry-card');
@@ -165,6 +189,7 @@ export function createFilterController({
     updateWatchModeHighlight();
     scheduleFlowLinesRedraw();
     updateMobileFilterSummary();
+    updateAdvancedFiltersToggleLabel();
     onFiltersChanged({ ...filters }, getActiveFilterCount());
   }
 
@@ -311,6 +336,9 @@ export function createFilterController({
       panel.classList.toggle('open', isOpen);
       toggleBtn.setAttribute('aria-expanded', String(isOpen));
       panel.setAttribute('aria-hidden', String(!isOpen));
+      if (!isOpen) {
+        setAdvancedFiltersOpen(false);
+      }
     };
 
     setPanelOpen(false);
@@ -346,6 +374,20 @@ export function createFilterController({
     }
   }
 
+  function initAdvancedFiltersPanel() {
+    const toggle = document.getElementById('advanced-filters-toggle');
+    if (!toggle) return;
+
+    setAdvancedFiltersOpen(false);
+
+    toggle.addEventListener('click', () => {
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      setAdvancedFiltersOpen(!isOpen);
+      playSound('click');
+      triggerHaptic('light');
+    });
+  }
+
   function attachStatHandlers() {
     const activateFilter = (filter) => {
       const button = document.querySelector(`[data-progress-filter="${filter}"]`);
@@ -368,6 +410,7 @@ export function createFilterController({
     getFilters: () => filters,
     attachFilterHandlers,
     initMobileFilterPanel,
+    initAdvancedFiltersPanel,
     attachStatHandlers,
     updateFilters,
     setSearchFilter,
