@@ -1,6 +1,6 @@
 # Star Wars Timeline — Phase 2 Plan
 
-Status: Ready to execute  
+Status: In progress  
 Owner: UI/System refactor pass  
 Date: 2026-03-03
 
@@ -137,9 +137,9 @@ Mitigations:
 
 ## 7) Execution Order (Start Now)
 Immediate next actions:
-1. Build WS2 audit matrix from current `styles.css`.
-2. Identify top 10 duplicate selector families by impact.
-3. Implement WS3 in narrow passes with quick regression checks.
+1. Continue WS3 narrow-pass cleanup for remaining selector families and responsive rule consolidation.
+2. Use `PHASE2_QA_CHECKLIST.md` after each meaningful Phase 2 batch.
+3. Finish WS4/WS5 consistency cleanup, then perform final regression sign-off.
 
 ## 8) WS2 Audit Matrix (Initial)
 

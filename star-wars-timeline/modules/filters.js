@@ -405,6 +405,22 @@ export function createFilterController({
 
     const isCompactViewport = () => window.matchMedia('(max-width: 768px)').matches;
 
+    const ensurePanelVisibleOnMobile = () => {
+      if (!isCompactViewport()) return;
+
+      const filtersContainer = document.querySelector('.filters-container');
+      const anchor = filtersContainer || toggleBtn;
+      if (!anchor) return;
+
+      const anchorRect = anchor.getBoundingClientRect();
+      const topOffset = 12;
+      const targetTop = Math.max(window.scrollY + anchorRect.top - topOffset, 0);
+      window.scrollTo({
+        top: targetTop,
+        behavior: 'auto'
+      });
+    };
+
     const getFocusablePanelElements = () => Array.from(
       panel.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
     ).filter((el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true');
@@ -459,7 +475,10 @@ export function createFilterController({
       if (isOpen) {
         requestAnimationFrame(() => {
           syncPanelOpenHeight();
-          requestAnimationFrame(syncPanelOpenHeight);
+          requestAnimationFrame(() => {
+            syncPanelOpenHeight();
+            ensurePanelVisibleOnMobile();
+          });
         });
       }
 

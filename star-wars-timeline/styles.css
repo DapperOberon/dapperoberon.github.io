@@ -683,6 +683,8 @@ header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  border-bottom: 2px solid var(--border-accent-soft);
+  padding: 0;
 }
 
 .quick-filters-row {
@@ -2204,28 +2206,6 @@ h1 {
   backdrop-filter: blur(4px);
 }
 
-/* Episode list wrapper with scroll indicator */
-.episode-list-wrapper {
-  position: relative;
-  overflow: hidden;
-  margin-bottom: var(--space-4);
-}
-
-.episode-list-wrapper::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 30px;
-  background: linear-gradient(to bottom, transparent, var(--bg));
-  pointer-events: none;
-}
-
-.episode-list {
-  overflow-y: auto;
-}
-
 #reset-progress-btn {
   background: rgba(var(--white-rgb), 0.04);
   border: 1px solid rgba(var(--white-rgb), 0.12);
@@ -3144,6 +3124,8 @@ footer p {
 }
 
 .episode-list-wrapper { 
+  position: relative;
+  margin-bottom: var(--space-4);
   background: linear-gradient(
     135deg,
     rgba(8, 12, 20, 0.8) 0%,
@@ -3161,7 +3143,6 @@ footer p {
     inset 0 1px 0 rgba(var(--white-rgb), 0.05),
     0 2px 8px rgba(var(--black-rgb), 0.2);
 }
-.modal .episode-list-wrapper::after { display: none; }
 .episode-list { display: flex; flex-direction: column; gap: var(--space-2); overflow-y: auto; margin-bottom: 0; padding: 6px 12px 6px 6px; scrollbar-gutter: stable; flex: 1; }
 .episode-item { 
   background: linear-gradient(
@@ -4087,11 +4068,6 @@ footer {
   border-radius: var(--surface-radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-elevation-1);
-}
-
-.command-deck-row {
-  border-bottom: 2px solid var(--border-accent-soft);
-  padding: 0;
 }
 
 .search-wrapper {
