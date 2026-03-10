@@ -174,3 +174,42 @@ Legend:
 - Confirm canonical block location for each priority family.
 - Mark expected deletions/moves per family before applying edits.
 - Preserve modal row clipping fix (`.episode-list` guttering and watched-row hover behavior) as non-regression constraints.
+
+### WS2 Canonical Block Map (Confirmed)
+
+| Selector / Family | Canonical Block | Keep | Move / Remove |
+|---|---|---|---|
+| `:root` tokens | Primary token block near top of `styles.css` (`~L128`) | All global tokens live here as the single source of truth. | Remove later duplicate token block. |
+| `.filters-panel` | Refined filter-panel block in the Phase 1 surface layer (`~L4185`) | Base panel shell, padding model, border treatment, open-state border logic. | Fold structural animation properties from early block into canonical block, then remove duplicate base/open declarations from `~L953` and keep only necessary mobile overrides. |
+| `.filters-row` | Base row at `~L1015`, with panel-scoped variant at `~L4211` | Generic row layout stays in the earlier shared filters section; panel-specific padding/animation stays scoped under `.filters-panel .filters-row`. | Remove duplicate later base row at `~L4206`; keep only true responsive deltas in media queries. |
+| `.filters-toggle[aria-expanded="true"]` | Later control-state block in Phase 1 surface layer (`~L4181`) | Expanded-state seam behavior for the refined filter surface. | Merge radius and border-bottom behavior into one declaration and remove the earlier duplicate at `~L942`. |
+| `.command-deck-row` | Early structural layout block in filters/header section (`~L673`) | Base flex alignment and gap remain canonical. | Move border/padding refinements from `~L4151` into the canonical block, then remove the later duplicate desktop block and keep mobile-only overrides. |
+| `.modal-actions` | Modal section base block (`~L3286`) | Base action layout belongs with modal component styles. | Keep only responsive layout changes in modal media queries; remove any duplicate base-like declarations from responsive sections if found. |
+| `.episode-list-wrapper` | Modal-specific wrapper block in modal section (`~L3183`) | Visual shell, flex behavior, border, shadow, and modal-specific overflow handling. | Scope any generic fade-overlay behavior explicitly if it is still needed outside the modal; remove the unspecific early duplicate at `~L2245` once parity is verified. |
+| `.episode-list` | Modal-specific list block in modal section (`~L3202`) | Canonical gutter, gap, scrolling, and flex behavior tied to the modal clipping fix. | Remove the early generic `overflow-y` block at `~L2262` after confirming no non-modal callers rely on it; keep only narrow responsive height/spacing overrides. |
+
+### WS2 Planned Moves / Deletions
+
+- `:root`
+  Keep the top-level token section as canonical. The duplicate Phase 1 token block has already been removed as part of the first Phase 2 pass.
+
+- `.filters-panel`
+  Merge structural animation concerns from the early block (`max-height`, visibility, pointer-events, transform origin, transition timing, `--filters-panel-open-height`, `--filters-panel-overlap`) into the later refined surface block. After that, delete the early duplicate base/open block and retain only mobile-specific overrides.
+
+- `.filters-row`
+  Preserve the early shared row layout for all filter rows. Keep the later `.filters-panel .filters-row` and `.filters-panel.open .filters-row` as the only panel animation path, and remove the later duplicate plain `.filters-row` declaration plus redundant media-query restatements that do not change behavior.
+
+- `.filters-toggle[aria-expanded="true"]`
+  Collapse the two expanded-state declarations into the later control-state block so the seam treatment is defined once. Remove the earlier duplicate after the merged state is in place.
+
+- `.command-deck-row`
+  Keep the early layout definition as the home for base structure. Fold in the later border-bottom and padding refinements, then delete the later duplicate desktop block. Preserve only the mobile stack override and any truly tablet-specific delta.
+
+- `.modal-actions`
+  Keep the modal component block as canonical. Trim responsive sections so they only express layout changes required by viewport size and do not restate base flex behavior.
+
+- `.episode-list-wrapper`
+  Treat the modal section as canonical because the wrapper’s current job is primarily modal-specific. If the top-level fade overlay is still needed, re-scope it to a modal selector or a clearly named variant; otherwise remove the early generic wrapper block.
+
+- `.episode-list`
+  Keep the modal section block as canonical to protect the clipping/gutter fix. Delete the earlier generic list rule after confirming there is no second usage site, and keep only the responsive max-height or spacing overrides that materially change small-screen behavior.
