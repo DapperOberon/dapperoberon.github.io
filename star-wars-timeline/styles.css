@@ -162,6 +162,15 @@ body.less-motion *::after {
   --surface-input-bg: linear-gradient(180deg, rgba(9, 11, 16, 0.94), rgba(5, 6, 9, 0.96));
   --surface-header-pill-bg: linear-gradient(140deg, rgba(16, 18, 24, 0.94), rgba(9, 10, 13, 0.9));
   --surface-filter-group-bg: rgba(8, 10, 14, 0.9);
+  --phase1-surface-bg: linear-gradient(140deg, rgba(16, 18, 24, 0.94), rgba(9, 10, 13, 0.9));
+  --phase1-surface-border: rgba(255, 212, 0, 0.18);
+  --phase1-surface-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
+  --phase1-surface-shadow-mobile: 0 8px 24px rgba(0, 0, 0, 0.34);
+  --phase1-control-text: #f7edc8;
+  --phase1-control-bg: linear-gradient(180deg, rgba(14, 16, 22, 0.94), rgba(6, 7, 10, 0.9));
+  --phase1-control-border: rgba(255, 212, 0, 0.35);
+  --phase1-control-border-hover: rgba(255, 212, 0, 0.72);
+  --phase1-control-shadow-hover: 0 0 0 1px rgba(255, 212, 0, 0.18), 0 10px 26px rgba(0, 0, 0, 0.46);
 
   --border-neutral-soft: rgba(var(--white-rgb), 0.12);
   --border-accent-subtle: rgba(var(--primary-rgb), 0.12);
@@ -183,18 +192,18 @@ body.less-motion *::after {
   /* Card Tokens */
   --card-bg: linear-gradient(135deg, rgba(var(--bg-light-rgb), 0.52) 0%, rgba(var(--bg-rgb), 0.82) 100%);
   --card-bg-hover: linear-gradient(135deg, rgba(var(--bg-light-rgb), 0.64) 0%, rgba(var(--bg-rgb), 0.9) 100%);
-  --card-border: rgba(var(--white-rgb), 0.14);
-  --card-border-hover: rgba(var(--primary-rgb), 0.38);
-  --card-shadow: 0 8px 20px rgba(var(--black-rgb), 0.28);
-  --card-shadow-hover: 0 12px 26px rgba(var(--black-rgb), 0.4);
-  --card-accent-line: linear-gradient(90deg, transparent 0%, rgba(var(--primary-rgb), 0.34) 50%, transparent 100%);
-  --card-accent-line-hover: linear-gradient(90deg, transparent 0%, rgba(var(--primary-rgb), 0.54) 50%, transparent 100%);
-  --card-ambient-glow: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), 0.08) 0%, transparent 70%);
+  --card-border: rgba(var(--primary-rgb), 0.16);
+  --card-border-hover: rgba(var(--primary-rgb), 0.42);
+  --card-shadow: 0 10px 22px rgba(var(--black-rgb), 0.34);
+  --card-shadow-hover: 0 13px 28px rgba(var(--black-rgb), 0.44);
+  --card-accent-line: linear-gradient(120deg, rgba(var(--primary-rgb), 0.16), rgba(var(--white-rgb), 0));
+  --card-accent-line-hover: linear-gradient(120deg, rgba(var(--primary-rgb), 0.34), rgba(var(--white-rgb), 0));
+  --card-ambient-glow: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), 0.11) 0%, transparent 70%);
   --card-overlay-bg: linear-gradient(135deg, rgba(var(--black-rgb), 0.46) 0%, rgba(var(--black-rgb), 0.18) 100%);
   --card-synopsis-bg: linear-gradient(to top, rgba(var(--black-rgb), 0.9) 0%, rgba(var(--black-rgb), 0.78) 50%, transparent 100%);
   --media-badge-border: var(--media-color);
-  --media-badge-shadow: 0 3px 10px rgba(var(--black-rgb), 0.28);
-  --media-badge-hover-shadow: 0 5px 14px rgba(var(--black-rgb), 0.34);
+  --media-badge-shadow: 0 4px 12px rgba(var(--black-rgb), 0.32);
+  --media-badge-hover-shadow: 0 6px 15px rgba(var(--black-rgb), 0.38);
 
   /* Era Colors */
   --era-high-republic: #F5C563;
@@ -3861,28 +3870,6 @@ footer,
   color: #dbcf9d;
   font-size: var(--text-xs);
   letter-spacing: 0.06em;
-}
-
-:root {
-  --phase1-surface-bg: linear-gradient(140deg, rgba(16, 18, 24, 0.94), rgba(9, 10, 13, 0.9));
-  --phase1-surface-border: rgba(255, 212, 0, 0.18);
-  --phase1-surface-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
-  --phase1-surface-shadow-mobile: 0 8px 24px rgba(0, 0, 0, 0.34);
-  --phase1-control-text: #f7edc8;
-  --phase1-control-bg: linear-gradient(180deg, rgba(14, 16, 22, 0.94), rgba(6, 7, 10, 0.9));
-  --phase1-control-border: rgba(255, 212, 0, 0.35);
-  --phase1-control-border-hover: rgba(255, 212, 0, 0.72);
-  --phase1-control-shadow-hover: 0 0 0 1px rgba(255, 212, 0, 0.18), 0 10px 26px rgba(0, 0, 0, 0.46);
-  --card-border: rgba(var(--primary-rgb), 0.16);
-  --card-border-hover: rgba(var(--primary-rgb), 0.42);
-  --card-shadow: 0 10px 22px rgba(var(--black-rgb), 0.34);
-  --card-shadow-hover: 0 13px 28px rgba(var(--black-rgb), 0.44);
-  --card-accent-line: linear-gradient(120deg, rgba(var(--primary-rgb), 0.16), rgba(var(--white-rgb), 0));
-  --card-accent-line-hover: linear-gradient(120deg, rgba(var(--primary-rgb), 0.34), rgba(var(--white-rgb), 0));
-  --card-ambient-glow: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), 0.11) 0%, transparent 70%);
-  --media-badge-border: var(--media-color);
-  --media-badge-shadow: 0 4px 12px rgba(var(--black-rgb), 0.32);
-  --media-badge-hover-shadow: 0 6px 15px rgba(var(--black-rgb), 0.38);
 }
 
 .entry-poster img {
