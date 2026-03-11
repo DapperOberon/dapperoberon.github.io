@@ -5,10 +5,38 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
   let backgroundMusicPlayer = null;
   let backgroundMusicIndex = 0;
   let musicInteractionBindingAdded = false;
+  let musicInteractionStartHandler = null;
+  let musicVisibilityStartHandler = null;
   let musicPillTitleEl = null;
   let musicPillToggleBtn = null;
   let musicVolume = 0.18;
   let backgroundMusicTracks = [];
+
+  function normalizeTrackSource(rawSource) {
+    if (typeof rawSource === 'string') {
+      const src = rawSource.trim();
+      if (!src) return null;
+      return { src, type: '' };
+    }
+
+    if (!rawSource || typeof rawSource !== 'object') return null;
+    const src = typeof rawSource.src === 'string' ? rawSource.src.trim() : '';
+    if (!src) return null;
+    const type = typeof rawSource.type === 'string' ? rawSource.type.trim() : '';
+    return { src, type };
+  }
+
+  function inferMimeTypeFromSource(src) {
+    if (typeof src !== 'string') return '';
+    const path = src.split('?')[0].split('#')[0].toLowerCase();
+    if (path.endsWith('.mp3')) return 'audio/mpeg';
+    if (path.endsWith('.ogg')) return 'audio/ogg';
+    if (path.endsWith('.opus')) return 'audio/ogg; codecs=opus';
+    if (path.endsWith('.m4a')) return 'audio/mp4';
+    if (path.endsWith('.aac')) return 'audio/aac';
+    if (path.endsWith('.wav')) return 'audio/wav';
+    return '';
+  }
 
   function normalizeMusicTracks(rawTracks) {
     if (!Array.isArray(rawTracks)) return [];
@@ -18,8 +46,33 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
         if (!track || typeof track !== 'object') return null;
         const src = typeof track.src === 'string' ? track.src.trim() : '';
         const title = typeof track.title === 'string' ? track.title.trim() : '';
-        if (!src || !title) return null;
-        return { src, title };
+        if (!title) return null;
+
+        const normalizedSources = [];
+        const pushSource = (candidate) => {
+          const normalized = normalizeTrackSource(candidate);
+          if (!normalized) return;
+          if (!normalizedSources.some((source) => source.src === normalized.src)) {
+            normalizedSources.push(normalized);
+          }
+        };
+
+        // Backward-compatible: existing schema uses a single `src`.
+        if (src) {
+          pushSource(src);
+        }
+
+        // New optional schemas for format fallback support.
+        if (Array.isArray(track.sources)) {
+          track.sources.forEach(pushSource);
+        }
+        pushSource(track.ogg);
+        pushSource(track.mp3);
+        pushSource(track.srcOgg);
+        pushSource(track.srcMp3);
+
+        if (normalizedSources.length === 0) return null;
+        return { title, sources: normalizedSources };
       })
       .filter(Boolean);
   }
@@ -88,7 +141,9 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
       audioContext
         .resume()
         .then(schedulePlayback)
-        .catch(() => {});
+        .catch((error) => {
+          console.warn('Sound effect resume failed:', error);
+        });
       return;
     }
 
@@ -126,11 +181,24 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
     const player = new Audio();
     player.preload = 'auto';
     player.loop = false;
+    player.muted = false;
     player.volume = musicVolume;
+    player.addEventListener('error', () => {
+      const mediaError = player.error;
+      console.error('Background music media error:', {
+        code: mediaError?.code ?? null,
+        message: mediaError?.message ?? 'unknown',
+        src: player.currentSrc || player.src || null
+      });
+    });
     player.addEventListener('ended', () => {
       if (!musicEnabled) return;
       backgroundMusicIndex = (backgroundMusicIndex + 1) % backgroundMusicTracks.length;
       startBackgroundMusic(true);
+    });
+    player.addEventListener('playing', () => {
+      // Playback finally started; no need to keep activation listeners around.
+      unbindMusicStartOnInteraction();
     });
 
     backgroundMusicPlayer = player;
@@ -141,18 +209,43 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
     if (musicInteractionBindingAdded) return;
     musicInteractionBindingAdded = true;
 
-    const startOnInteraction = () => {
+    musicInteractionStartHandler = () => {
       if (!musicEnabled) return;
       startBackgroundMusic(true);
-      window.removeEventListener('pointerdown', startOnInteraction);
-      window.removeEventListener('keydown', startOnInteraction);
-      window.removeEventListener('touchstart', startOnInteraction);
-      musicInteractionBindingAdded = false;
     };
 
-    window.addEventListener('pointerdown', startOnInteraction, { once: true });
-    window.addEventListener('keydown', startOnInteraction, { once: true });
-    window.addEventListener('touchstart', startOnInteraction, { once: true, passive: true });
+    musicVisibilityStartHandler = () => {
+      if (!musicEnabled) return;
+      if (document.visibilityState === 'visible') {
+        startBackgroundMusic(true);
+      }
+    };
+
+    // Keep listeners active until playback succeeds; some browsers need a very
+    // specific user-activation event and can reject earlier attempts.
+    window.addEventListener('pointerdown', musicInteractionStartHandler, { passive: true });
+    window.addEventListener('click', musicInteractionStartHandler, { passive: true });
+    window.addEventListener('keydown', musicInteractionStartHandler);
+    window.addEventListener('touchstart', musicInteractionStartHandler, { passive: true });
+    window.addEventListener('focus', musicInteractionStartHandler);
+    document.addEventListener('visibilitychange', musicVisibilityStartHandler);
+  }
+
+  function unbindMusicStartOnInteraction() {
+    if (!musicInteractionBindingAdded) return;
+    if (musicInteractionStartHandler) {
+      window.removeEventListener('pointerdown', musicInteractionStartHandler);
+      window.removeEventListener('click', musicInteractionStartHandler);
+      window.removeEventListener('keydown', musicInteractionStartHandler);
+      window.removeEventListener('touchstart', musicInteractionStartHandler);
+      window.removeEventListener('focus', musicInteractionStartHandler);
+      musicInteractionStartHandler = null;
+    }
+    if (musicVisibilityStartHandler) {
+      document.removeEventListener('visibilitychange', musicVisibilityStartHandler);
+      musicVisibilityStartHandler = null;
+    }
+    musicInteractionBindingAdded = false;
   }
 
   function startBackgroundMusic(keepCurrentTrack = false) {
@@ -164,17 +257,56 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
       backgroundMusicIndex = Math.floor(Math.random() * backgroundMusicTracks.length);
     }
 
-    const nextTrack = backgroundMusicTracks[backgroundMusicIndex];
-    const nextSrc = nextTrack.src;
+    const resolvePlayableTrack = (startIndex) => {
+      for (let offset = 0; offset < backgroundMusicTracks.length; offset += 1) {
+        const index = (startIndex + offset) % backgroundMusicTracks.length;
+        const track = backgroundMusicTracks[index];
+        const playableSource = track.sources.find((source) => {
+          const mimeType = source.type || inferMimeTypeFromSource(source.src);
+          if (!mimeType) return true;
+          const support = player.canPlayType(mimeType);
+          return support === 'probably' || support === 'maybe';
+        });
+
+        if (playableSource) {
+          return { index, track, source: playableSource };
+        }
+      }
+
+      return null;
+    };
+
+    const resolvedTrack = resolvePlayableTrack(backgroundMusicIndex);
+    if (!resolvedTrack) {
+      console.error('No playable background music source found for current browser.', {
+        tracks: backgroundMusicTracks.map((track) => ({
+          title: track.title,
+          sources: track.sources
+        }))
+      });
+      return;
+    }
+
+    backgroundMusicIndex = resolvedTrack.index;
+    const nextSrc = resolvedTrack.source.src;
     const absoluteNextSrc = new URL(nextSrc, window.location.href).href;
 
     if (player.src !== absoluteNextSrc) {
       player.src = nextSrc;
     }
 
-    player.play().catch(() => {
-      bindMusicStartOnInteraction();
-    });
+    player.play()
+      .then(() => {
+        unbindMusicStartOnInteraction();
+      })
+      .catch((error) => {
+        console.warn('Background music play blocked or failed; waiting for user interaction.', {
+          error,
+          src: nextSrc,
+          track: resolvedTrack.track.title
+        });
+        bindMusicStartOnInteraction();
+      });
 
     updateMusicPillUI();
   }
@@ -182,6 +314,7 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
   function stopBackgroundMusic() {
     if (!backgroundMusicPlayer) return;
     backgroundMusicPlayer.pause();
+    unbindMusicStartOnInteraction();
     updateMusicPillUI();
   }
 

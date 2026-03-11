@@ -1024,6 +1024,8 @@ function attachStatHandlers() {
 
 let watchModeEnabled = false;
 let lessMotionEnabled = false;
+let reducedMotionMediaQuery = null;
+let reducedMotionListenerBound = false;
 let eraObserver = null;
 let eraRailScrollBound = false;
 let eraRailScrollRaf = null;
@@ -1066,6 +1068,7 @@ function setMusicEnabled(enabled, { withFeedback = false, persist = true } = {})
 function initLessMotionToggle() {
   const settingsToggle = document.getElementById('settings-less-motion-toggle');
   if (!settingsToggle) return;
+  ensureReducedMotionListener();
   const stored = localStorage.getItem('sw_less_motion_enabled');
   lessMotionEnabled = stored === 'true';
   setLessMotionEnabled(lessMotionEnabled, { withFeedback: false, persist: false });
@@ -1096,8 +1099,33 @@ function setLessMotionEnabled(enabled, { withFeedback = false, persist = true } 
 }
 
 function isReducedMotionEnabled() {
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = getReducedMotionMediaQuery().matches;
   return prefersReduced || lessMotionEnabled;
+}
+
+function getReducedMotionMediaQuery() {
+  if (!reducedMotionMediaQuery) {
+    reducedMotionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  }
+
+  return reducedMotionMediaQuery;
+}
+
+function ensureReducedMotionListener() {
+  const mediaQuery = getReducedMotionMediaQuery();
+  if (reducedMotionListenerBound) return;
+
+  const handleReducedMotionPreferenceChange = () => {
+    document.body.classList.toggle('less-motion', isReducedMotionEnabled());
+  };
+
+  if (typeof mediaQuery.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', handleReducedMotionPreferenceChange);
+  } else if (typeof mediaQuery.addListener === 'function') {
+    mediaQuery.addListener(handleReducedMotionPreferenceChange);
+  }
+
+  reducedMotionListenerBound = true;
 }
 
 function initWatchModeToggle() {

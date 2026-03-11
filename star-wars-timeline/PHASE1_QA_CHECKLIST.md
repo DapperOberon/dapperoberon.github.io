@@ -81,14 +81,14 @@ If any item fails, capture viewport size + exact action + screenshot, then patch
 - [x] `filter-results-status` updates are wired
 
 ### Needs Visual Confirmation (browser-only)
-- [ ] Seam quality between `More Filters` row and expanded panel (desktop + vertical mobile)
-- [ ] No clipping of wrapped Story Arc rows on target mobile device(s)
-- [ ] Animation smoothness (open/close) on low-end mobile
-- [ ] Final spacing rhythm for active-filters bar in collapsed More Filters state
+- [x] Seam quality between `More Filters` row and expanded panel (desktop + vertical mobile)
+- [x] No clipping of wrapped Story Arc rows on target mobile device(s)
+- [x] Animation smoothness (open/close) on low-end mobile
+- [x] Final spacing rhythm for active-filters bar in collapsed More Filters state
 
 ### Merge Readiness
 - [x] Code readiness: PASS
-- [ ] Visual sign-off: pending the 4 checks above
+- [x] Visual sign-off: PASS
 
 ---
 
@@ -140,12 +140,12 @@ If any item fails, capture viewport size + exact action + screenshot, then patch
 - [x] Regression smoke checks now marked complete
 
 ### Remaining Manual Visual Sign-off
-- [ ] Seam quality between `More Filters` row and expanded panel
-- [ ] Primary quick filters readability/wrapping on target mobile devices
-- [ ] Full visibility of Canon + Story Arc buttons on mobile
-- [ ] No clipping of lower Story Arc rows on mobile
-- [ ] Rounded-corner artifact absence at mobile More Filters seam
-- [ ] Final visual smoothness/spacing checks for desktop + mobile filter flows
+- [x] Seam quality between `More Filters` row and expanded panel
+- [x] Primary quick filters readability/wrapping on target mobile devices
+- [x] Full visibility of Canon + Story Arc buttons on mobile
+- [x] No clipping of lower Story Arc rows on mobile
+- [x] Rounded-corner artifact absence at mobile More Filters seam
+- [x] Final visual smoothness/spacing checks for desktop + mobile filter flows
 
 ### Current Summary
 - [x] Engineering verification complete for non-visual Phase 1 checklist items

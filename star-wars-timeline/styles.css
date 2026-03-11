@@ -728,7 +728,7 @@ header {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: border-color var(--motion-base) var(--ease-standard), background var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
 .stats-drawer-toggle:hover {
@@ -759,7 +759,7 @@ header {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: border-color var(--motion-base) var(--ease-standard), background var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
 .stats-mini-pill--cta {
@@ -777,12 +777,6 @@ header {
   border-color: var(--state-border-hover);
   background: var(--surface-control-bg-hover);
   color: var(--text-primary);
-}
-
-.stats-mini-pill:focus-visible,
-.stats-drawer-toggle:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .interaction-toggles {
@@ -1368,7 +1362,7 @@ header {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: border-color var(--motion-base) var(--ease-standard), background var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
 .active-filter-chip {
@@ -1397,8 +1391,8 @@ header {
 }
 
 .active-filters-clear:disabled {
-  opacity: 0.5;
-  cursor: default;
+  border-color: var(--border-neutral-soft);
+  color: var(--text-secondary);
 }
 
 @media (max-width: 768px) {
@@ -1473,12 +1467,17 @@ header {
   display: none;
 }
 
-/* Button Press States - Micro-interaction */
+/* Shared control press state model */
+.stats-mini-pill:active,
+.stats-drawer-toggle:active,
 .filter-btn:active,
 #reset-progress-btn:active,
-.modal-btn:active {
-  transform: translateY(1px) scale(0.97);
-  box-shadow: 0 6px 12px rgba(var(--black-rgb), 0.35);
+.modal-btn:active,
+.active-filter-chip:active,
+.active-filters-clear:active,
+.entry-row-action:active {
+  transform: translateY(1px) scale(0.992);
+  box-shadow: none;
 }
 
 .header-back {
@@ -1684,12 +1683,6 @@ h1 {
   cursor: pointer;
   transition: all 0.2s ease;
   order: 3;
-}
-
-.era-toggle:hover {
-  color: var(--text-primary);
-  border-color: rgba(var(--section-color-rgb), 0.6);
-  box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.25);
 }
 
 .timeline-section.collapsed .era-content {
@@ -2218,11 +2211,6 @@ h1 {
   color: var(--text-primary);
 }
 
-#reset-progress-btn:focus-visible {
-  outline: 3px solid var(--primary);
-  outline-offset: 2px;
-}
-
 .scroll-top-btn {
   position: fixed;
   right: var(--space-4);
@@ -2333,19 +2321,6 @@ body.settings-modal-open {
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
-.entry-row-action:hover {
-  border-color: rgba(var(--primary-rgb), 0.6);
-  background: rgba(var(--primary-rgb), 0.2);
-}
-
-.entry-row-action:disabled {
-  opacity: 0.6;
-  cursor: default;
-  border-color: rgba(var(--white-rgb), 0.18);
-  background: rgba(var(--white-rgb), 0.06);
-  color: var(--text-secondary);
-}
-
 .card-checkbox-inline {
   display: flex;
   align-items: stretch;
@@ -2366,17 +2341,6 @@ body.settings-modal-open {
   background: rgba(var(--white-rgb), 0.03);
   transform: translateY(0);
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.entry-quick-check:hover {
-  background: rgba(var(--white-rgb), 0.06);
-  border-color: rgba(var(--white-rgb), 0.2);
-  box-shadow: 0 4px 14px rgba(var(--black-rgb), 0.2);
-  transform: translateY(-1px);
-}
-
-.entry-quick-check:active {
-  transform: translateY(0) scale(0.995);
 }
 
 .entry-quick-check.is-watched {
@@ -3019,7 +2983,6 @@ footer p {
 }
 .modal-close { position: absolute; right: 0.75rem; top: 0.75rem; background: rgba(var(--white-rgb), 0.06); border: 1px solid rgba(var(--white-rgb), 0.12); color: var(--text-primary); cursor: pointer; z-index: 20; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.3s ease, transform 0.3s ease; padding: 0; }
 .modal-close svg { display: block; }
-.modal-close:hover { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); transform: rotate(90deg); }
 .modal-left { 
   flex-shrink: 0;
   position: relative;
@@ -3243,9 +3206,14 @@ footer p {
 .modal-close-btn:hover { background: rgba(var(--white-rgb), 0.08); border-color: rgba(var(--white-rgb), 0.2); }
 .modal-btn:disabled,
 .modal-secondary-btn:disabled,
-.modal-primary-btn:disabled {
+.modal-primary-btn:disabled,
+.active-filters-clear:disabled,
+.entry-row-action:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  color: var(--text-secondary);
 }
 
 .reset-dialog {
@@ -3402,8 +3370,6 @@ footer p {
 }
 
 @media (max-width: 480px) {
-  .modal-left { aspect-ratio: 16 / 9 !important; }
-  .modal-left img { max-height: none !important; }
   .modal-right { padding: var(--space-3) !important; }
   .modal-right h2 { font-size: var(--text-xl) !important; }
   .modal-actions {
@@ -3415,9 +3381,9 @@ footer p {
 @media (max-width: 540px) {
   .modal { padding: 0 !important; }
   .modal-content { width: 100vw !important; height: calc(var(--vh, 1vh) * 100) !important; border-radius: 0 !important; margin: 0 !important; }
-  .modal-left { border-radius: 0 !important; aspect-ratio: 16 / 9 !important; }
-  .modal-left img { width: 100% !important; height: 100% !important; max-height: none !important; border-radius: 0 !important; }
-  .modal-right { height: auto !important; flex: 1 1 auto !important; min-height: 0 !important; padding: var(--space-4) !important; }
+  .modal-left { border-radius: 0 !important; }
+  .modal-left img { border-radius: 0 !important; }
+  .modal-right { padding: var(--space-4) !important; }
   .modal-close { top: max(env(safe-area-inset-top, 8px), 8px) !important; right: max(env(safe-area-inset-right, 8px), 8px) !important; }
 
   .settings-modal { padding: 0 !important; }
@@ -3900,10 +3866,6 @@ footer p,
   box-shadow: 0 5px 14px rgba(var(--black-rgb), 0.22);
 }
 
-.entry-row-action:active {
-  transform: translateY(1px) scale(0.992);
-}
-
 .entry-row-action:disabled {
   border-color: var(--border-neutral-soft);
   background: rgba(var(--bg-light-rgb), 0.32);
@@ -4209,10 +4171,6 @@ footer {
     border-radius: 16px;
   }
 
-  .filters-panel {
-    --filters-panel-overlap: 42px;
-  }
-
   .command-deck-row {
     padding: var(--space-2);
   }
@@ -4258,10 +4216,6 @@ footer {
     flex-wrap: wrap;
     justify-content: center;
     row-gap: var(--space-2);
-  }
-
-  .filters-row {
-    gap: var(--space-3);
   }
 
   .timeline-container {
@@ -4554,27 +4508,26 @@ footer {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .entry-card,
-  .entry-card:hover,
-  .episode-item,
-  .episode-item:hover,
-  .modal-close,
-  .modal-close:hover {
-    transform: none !important;
-  }
-
-  .timeline-container::after {
-    animation: none !important;
-  }
-}
-
 body.less-motion .entry-card,
 body.less-motion .entry-card:hover,
+body.less-motion .stats-drawer-toggle,
+body.less-motion .stats-mini-pill,
+body.less-motion .filter-btn,
+body.less-motion .modal-btn,
+body.less-motion .active-filter-chip,
+body.less-motion .active-filters-clear,
+body.less-motion .entry-row-action,
+body.less-motion .entry-quick-check,
 body.less-motion .episode-item,
 body.less-motion .episode-item:hover,
+body.less-motion .scroll-top-btn,
 body.less-motion .modal-close,
 body.less-motion .modal-close:hover {
+  transform: none !important;
+}
+
+body.less-motion .filters-panel .filters-row,
+body.less-motion .filters-panel.open .filters-row {
   transform: none !important;
 }
 

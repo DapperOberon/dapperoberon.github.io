@@ -41,6 +41,9 @@ Implementation Notes:
 Targets:
 - `styles.css`
 
+Status:
+- Completed
+
 Actions:
 1. Inventory duplicate tokens for color, border, shadow, spacing, radius, motion.
 2. Inventory repeated component states (`hover`, `active`, `focus-visible`, `disabled`).
@@ -52,6 +55,9 @@ Output:
 ### WS3 — Layered CSS Refactor
 Targets:
 - `styles.css`
+
+Status:
+- Completed
 
 Actions:
 1. Reorganize into strict order:
@@ -71,6 +77,9 @@ Definition of Done:
 Targets:
 - `styles.css`
 - `timeline.js` (only if class hook consistency requires minimal markup tweak)
+
+Status:
+- Completed
 
 Actions:
 1. Normalize shared control primitives:
@@ -92,6 +101,9 @@ Definition of Done:
 Targets:
 - `styles.css`
 
+Status:
+- Completed
+
 Actions:
 1. Consolidate overlapping mobile breakpoints.
 2. Remove duplicate orientation-specific rules where unified rules suffice.
@@ -104,6 +116,9 @@ Definition of Done:
 Targets:
 - `PHASE1_QA_CHECKLIST.md`
 - New `PHASE2_QA_CHECKLIST.md`
+
+Status:
+- In progress
 
 Actions:
 1. Create focused Phase 2 regression checklist.
@@ -140,6 +155,38 @@ Immediate next actions:
 1. Continue WS3 narrow-pass cleanup for remaining selector families and responsive rule consolidation.
 2. Use `PHASE2_QA_CHECKLIST.md` after each meaningful Phase 2 batch.
 3. Finish WS4/WS5 consistency cleanup, then perform final regression sign-off.
+
+### Progress Snapshot (2026-03-10)
+- [x] `:root` token duplication consolidated into one canonical block
+- [x] Canonical block map and planned moves documented for Phase 2 selector families
+- [x] Filter family deduplicated (`.filters-toggle[aria-expanded="true"]`, `.filters-panel`, `.filters-row`)
+- [x] `command-deck-row` deduplicated to one base definition
+- [x] `episode-list-wrapper` and `episode-list` collapsed to modal-specific canonical definitions
+- [x] `PHASE2_QA_CHECKLIST.md` created
+- [x] Reduced-motion runtime handling updated to react to OS preference changes
+- [x] Duplicate targeted reduced-motion override block removed
+- [x] Redundant modal mobile breakpoint declarations trimmed
+- [x] Disabled-state baseline aligned across shared control families
+- [x] Remaining WS3 cleanup for selector families outside the current audit set
+- [x] Remaining WS4 hover/active/focus normalization across control primitives
+- [ ] Final WS5 responsive rule consolidation and motion-path verification
+- [ ] WS6 regression execution and release sign-off
+
+### Progress Snapshot (2026-03-11)
+- [x] Consolidated press/active interaction behavior into one shared control rule for filter buttons, modal buttons, active-filter chips, clear chips, and entry-row actions
+- [x] Removed redundant tablet-only `.filters-row` spacing declaration that duplicated base behavior
+- [x] Folded stats utility controls into the shared pressed-state model and removed their duplicate local focus/press overrides
+- [x] Removed redundant mobile `.filters-panel` overlap override that matched the base declaration
+- [x] Removed duplicate local focus/hover/active state rules now covered by canonical shared control blocks
+- [x] Removed older hover overrides for selector families already owned by the canonical Phase 2 surface layer
+- [x] WS4 hover/focus normalization across audited control primitives
+- [x] Reduced `Less Motion` transform paths across control surfaces and animated filter-panel content
+- [x] WS5 responsive and motion cleanup completed in code
+- [x] Code-level WS6 verification completed for accessibility/motion and persistence flows
+- [x] Chromium browser QA pass completed for desktop header/filter shell, settings/stats controls, modal layout, and key mobile filter/modal flows
+- [x] Chromium modal-state QA completed for watched-row, disabled-button, and long-list scroll paths
+- [x] Final WS5 motion-path verification completed for filters panel open/close transitions
+- [x] WS6 regression execution and release sign-off completed
 
 ## 8) WS2 Audit Matrix (Initial)
 
