@@ -1,0 +1,1519 @@
+html[data-theme="holonet-archive"] {
+  --primary: #78f3ab;
+  --primary-dark: #3aa466;
+  --primary-rgb: 120, 243, 171;
+  --bg: #020403;
+  --bg-rgb: 2, 4, 3;
+  --bg-light: #08110c;
+  --bg-light-rgb: 8, 17, 12;
+  --text-primary: #edf4d9;
+  --text-secondary: #9db596;
+  --border: #303a33;
+  --font-display: Verdana, Arial, sans-serif;
+  --font-body: Georgia, "Times New Roman", serif;
+
+  --theme-page-bg: #000000;
+  --theme-page-text: var(--text-secondary);
+  --theme-shell-bg: transparent;
+  --theme-shell-border: rgba(120, 243, 171, 0.12);
+  --theme-elevated-surface: #020402;
+  --theme-panel-surface: #010201;
+  --theme-panel-surface-hover: #050805;
+  --theme-panel-border: rgba(120, 243, 171, 0.16);
+  --theme-panel-border-strong: rgba(120, 243, 171, 0.28);
+  --theme-panel-shadow: none;
+  --theme-panel-shadow-hover: none;
+  --theme-pill-bg: #010201;
+  --theme-pill-border: rgba(120, 243, 171, 0.16);
+  --theme-pill-button-bg: #050805;
+  --theme-pill-button-border: rgba(120, 243, 171, 0.18);
+  --theme-pill-button-hover-bg: #08100a;
+  --theme-pill-button-hover-border: rgba(120, 243, 171, 0.28);
+  --theme-stat-surface: #010201;
+  --theme-stat-border: rgba(120, 243, 171, 0.14);
+  --theme-stat-hover-border: rgba(120, 243, 171, 0.24);
+  --theme-stat-hover-shadow: none;
+  --theme-stat-accent-line: linear-gradient(90deg, transparent 0%, rgba(120, 243, 171, 0.8) 50%, transparent 100%);
+  --theme-card-surface: #010201;
+  --theme-card-surface-hover: #050805;
+  --theme-card-border: rgba(120, 243, 171, 0.16);
+  --theme-card-border-hover: rgba(120, 243, 171, 0.28);
+  --theme-card-shadow: none;
+  --theme-card-shadow-hover: none;
+  --theme-card-accent-line: linear-gradient(120deg, rgba(120, 243, 171, 0.28), rgba(237, 244, 217, 0));
+  --theme-card-accent-line-hover: linear-gradient(120deg, rgba(120, 243, 171, 0.46), rgba(237, 244, 217, 0));
+  --theme-card-ambient-glow: none;
+  --theme-card-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.76) 0%, rgba(0, 0, 0, 0.54) 100%);
+  --theme-card-synopsis: linear-gradient(to top, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.78) 45%, transparent 100%);
+  --theme-focus-ring: rgba(120, 243, 171, 0.62);
+  --theme-focus-ring-strong: rgba(120, 243, 171, 0.5);
+}
+
+html[data-theme="holonet-archive"] *,
+html[data-theme="holonet-archive"] *::before,
+html[data-theme="holonet-archive"] *::after {
+  border-radius: 0 !important;
+}
+
+html[data-theme="holonet-archive"] .hero-title h1,
+html[data-theme="holonet-archive"] .hero-title h1::before {
+  background: none;
+  -webkit-text-fill-color: #edf4d9;
+  color: #edf4d9;
+}
+
+html[data-theme="holonet-archive"] .hero-title .hero-accent {
+  background: none;
+  -webkit-text-fill-color: #78f3ab;
+  color: #78f3ab;
+  filter: none;
+}
+
+html[data-theme="holonet-archive"] .site-hero,
+html[data-theme="holonet-archive"] header,
+html[data-theme="holonet-archive"] footer {
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .stat-box,
+html[data-theme="holonet-archive"] .settings-modal-item,
+html[data-theme="holonet-archive"] .music-pill {
+  border-radius: 0;
+}
+
+html[data-theme="holonet-archive"] body {
+  text-shadow: 0 0 1px rgba(120, 243, 171, 0.04);
+}
+
+html[data-theme="holonet-archive"] body::before {
+  background-image:
+    radial-gradient(1px 1px at 12% 16%, rgba(120, 243, 171, 0.26), transparent 60%),
+    radial-gradient(1px 1px at 76% 24%, rgba(237, 244, 217, 0.22), transparent 60%),
+    radial-gradient(1px 1px at 24% 72%, rgba(120, 243, 171, 0.18), transparent 60%),
+    radial-gradient(1px 1px at 88% 82%, rgba(237, 244, 217, 0.14), transparent 60%);
+  opacity: 0.85;
+}
+
+html[data-theme="holonet-archive"] body::after {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42)),
+    repeating-linear-gradient(
+      180deg,
+      rgba(120, 243, 171, 0.012) 0 1px,
+      transparent 1px 4px
+    );
+}
+
+html[data-theme="holonet-archive"] .site-hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: 0.75rem;
+  padding-bottom: 0.35rem;
+}
+
+html[data-theme="holonet-archive"] .site-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0, rgba(120, 243, 171, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, transparent 0, rgba(120, 243, 171, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+html[data-theme="holonet-archive"] .hero-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  text-align: left;
+  max-width: 760px;
+}
+
+html[data-theme="holonet-archive"] .hero-title h1 {
+  font-size: 1.35rem;
+  letter-spacing: 0.03em;
+  text-shadow: none;
+  font-weight: 700;
+}
+
+html[data-theme="holonet-archive"] .hero-title .hero-strong,
+html[data-theme="holonet-archive"] .hero-title .hero-accent {
+  transform: none;
+  font-style: normal;
+}
+
+html[data-theme="holonet-archive"] .hero-sub {
+  max-width: 560px;
+  color: #d5dfc6;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0.25rem;
+}
+
+html[data-theme="holonet-archive"] .music-pill,
+html[data-theme="holonet-archive"] .stats-drawer-toggle,
+html[data-theme="holonet-archive"] .stats-mini-pill,
+html[data-theme="holonet-archive"] .filters-advanced-toggle,
+html[data-theme="holonet-archive"] .filter-btn,
+html[data-theme="holonet-archive"] .active-filter-chip,
+html[data-theme="holonet-archive"] .active-filters-clear,
+html[data-theme="holonet-archive"] #reset-progress-btn,
+html[data-theme="holonet-archive"] .modal-btn,
+html[data-theme="holonet-archive"] .entry-row-action,
+html[data-theme="holonet-archive"] .scroll-top-btn {
+  border-radius: 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+html[data-theme="holonet-archive"] .header-controls-row,
+html[data-theme="holonet-archive"] .filters-container,
+html[data-theme="holonet-archive"] .timeline-rail-inner,
+html[data-theme="holonet-archive"] .timeline-container,
+html[data-theme="holonet-archive"] .footer-inner {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-theme="holonet-archive"] .music-pill-row,
+html[data-theme="holonet-archive"] .header-container,
+html[data-theme="holonet-archive"] .header-controls-row,
+html[data-theme="holonet-archive"] .filters-container,
+html[data-theme="holonet-archive"] .active-filters,
+html[data-theme="holonet-archive"] .timeline-container,
+html[data-theme="holonet-archive"] footer {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html[data-theme="holonet-archive"] .header-controls-row {
+  justify-content: flex-start;
+  margin-top: 0.15rem;
+}
+
+html[data-theme="holonet-archive"] .header-utility-row,
+html[data-theme="holonet-archive"] .music-pill {
+  justify-content: flex-start;
+  background: transparent;
+  border: 0;
+  padding-left: 0;
+  padding-right: 0;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+html[data-theme="holonet-archive"] .command-deck-row,
+html[data-theme="holonet-archive"] .quick-filters-row,
+html[data-theme="holonet-archive"] .filters-row {
+  border-color: rgba(120, 243, 171, 0.16);
+}
+
+html[data-theme="holonet-archive"] .quick-filters-row {
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+html[data-theme="holonet-archive"] .filters-panel {
+  max-width: 760px;
+  margin: 0 auto;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  --filters-panel-overlap: 0px;
+}
+
+html[data-theme="holonet-archive"] .filters-panel.open {
+  margin-top: 0;
+  padding: 0.18rem 0 0;
+  border: 0;
+  border-top: 1px solid rgba(120, 243, 171, 0.16);
+}
+
+html[data-theme="holonet-archive"] .filters-panel .filters-row,
+html[data-theme="holonet-archive"] .filters-panel.open .filters-row {
+  gap: 0.8rem 1rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0;
+  transform: none;
+  opacity: 1;
+  align-items: flex-start;
+}
+
+html[data-theme="holonet-archive"] .filters-panel .filter-group {
+  background: transparent;
+  border: 0;
+  padding: 0.08rem 0.45rem 0.08rem 0;
+  box-shadow: none;
+  gap: 0.55rem;
+}
+
+html[data-theme="holonet-archive"] .filters-panel .filter-group-canon {
+  flex: 0 0 auto;
+}
+
+html[data-theme="holonet-archive"] .filters-panel .filter-group-arc {
+  flex: 1 1 auto;
+}
+
+html[data-theme="holonet-archive"] .filters-panel .filter-group-label {
+  min-width: 6.2rem;
+}
+
+html[data-theme="holonet-archive"] .search-input,
+html[data-theme="holonet-archive"] .filter-group,
+html[data-theme="holonet-archive"] .filters-toggle,
+html[data-theme="holonet-archive"] .stats-drawer-panel,
+html[data-theme="holonet-archive"] .settings-modal .settings-modal-panel,
+html[data-theme="holonet-archive"] .modal-content {
+  background: #000000;
+}
+
+html[data-theme="holonet-archive"] .filters-container,
+html[data-theme="holonet-archive"] .active-filters {
+  border: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .search-input,
+html[data-theme="holonet-archive"] .filters-toggle,
+html[data-theme="holonet-archive"] .filter-group {
+  border-color: rgba(120, 243, 171, 0.16);
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .search-input {
+  border-radius: 0;
+  color: var(--text-primary);
+  min-height: 34px;
+  font-size: 0.88rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  padding-left: 1.9rem;
+}
+
+html[data-theme="holonet-archive"] .search-input::placeholder {
+  color: #87a286;
+  opacity: 0.9;
+}
+
+html[data-theme="holonet-archive"] .search-input:focus {
+  box-shadow: inset 0 0 0 1px rgba(120, 243, 171, 0.28);
+}
+
+html[data-theme="holonet-archive"] .search-icon,
+html[data-theme="holonet-archive"] .filter-group-label,
+html[data-theme="holonet-archive"] .stats-mini-pill,
+html[data-theme="holonet-archive"] .filters-advanced-toggle,
+html[data-theme="holonet-archive"] .rail-marker,
+html[data-theme="holonet-archive"] .timeline-year,
+html[data-theme="holonet-archive"] .entry-quick-check-subtitle,
+html[data-theme="holonet-archive"] .entry-quick-check-time,
+html[data-theme="holonet-archive"] .entry-meta,
+html[data-theme="holonet-archive"] .settings-modal-sub,
+html[data-theme="holonet-archive"] .modal-meta-text,
+html[data-theme="holonet-archive"] .modal-synopsis {
+  color: #9db596;
+}
+
+html[data-theme="holonet-archive"] .filter-btn,
+html[data-theme="holonet-archive"] .stats-drawer-toggle,
+html[data-theme="holonet-archive"] .stats-mini-pill,
+html[data-theme="holonet-archive"] .filters-advanced-toggle,
+html[data-theme="holonet-archive"] .filters-toggle,
+html[data-theme="holonet-archive"] .active-filter-chip,
+html[data-theme="holonet-archive"] .active-filters-clear,
+html[data-theme="holonet-archive"] #reset-progress-btn,
+html[data-theme="holonet-archive"] .entry-row-action {
+  border-color: rgba(120, 243, 171, 0.18);
+  background: transparent;
+  color: #c9dec2;
+  box-shadow: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.78rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  min-height: auto;
+  padding: 0.2rem 0.45rem;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  border-width: 0 0 1px 0;
+  color: #7ff79d;
+}
+
+html[data-theme="holonet-archive"] .filters-toggle {
+  width: fit-content;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+html[data-theme="holonet-archive"] .filters-toggle-count {
+  color: #9db596;
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+html[data-theme="holonet-archive"] .filter-btn:hover,
+html[data-theme="holonet-archive"] .filter-btn.active,
+html[data-theme="holonet-archive"] .stats-drawer-toggle:hover,
+html[data-theme="holonet-archive"] .stats-mini-pill:hover,
+html[data-theme="holonet-archive"] .filters-advanced-toggle:hover,
+html[data-theme="holonet-archive"] .filters-toggle:hover,
+html[data-theme="holonet-archive"] .active-filter-chip:hover,
+html[data-theme="holonet-archive"] .active-filters-clear:hover,
+html[data-theme="holonet-archive"] #reset-progress-btn:hover,
+html[data-theme="holonet-archive"] .entry-row-action:hover {
+  border-color: rgba(120, 243, 171, 0.34);
+  background: transparent;
+  color: #dff5dc;
+}
+
+html[data-theme="holonet-archive"] .filter-btn::before,
+html[data-theme="holonet-archive"] .entry-card::before,
+html[data-theme="holonet-archive"] .entry-card::after {
+  display: none;
+}
+
+html[data-theme="holonet-archive"] .stats-mini-pill--cta,
+html[data-theme="holonet-archive"] .modal-primary-btn,
+html[data-theme="holonet-archive"] .modal-btn--primary {
+  font-weight: 400;
+}
+
+html[data-theme="holonet-archive"] .stats-container {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 520px;
+  margin-left: 0;
+}
+
+html[data-theme="holonet-archive"] .stat-box {
+  align-items: flex-start;
+  text-align: left;
+  min-height: auto;
+  padding: 0.35rem 0.55rem;
+  gap: 0.2rem;
+}
+
+html[data-theme="holonet-archive"] .stat-value {
+  font-size: 1.15rem;
+}
+
+html[data-theme="holonet-archive"] .stat-label {
+  font-size: 0.55rem;
+}
+
+html[data-theme="holonet-archive"] .stat-sparkline,
+html[data-theme="holonet-archive"] .stat-progress {
+  display: none;
+}
+
+html[data-theme="holonet-archive"] .timeline-container::before {
+  width: 1px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(120, 243, 171, 0.82) 0 8px,
+      rgba(120, 243, 171, 0.14) 8px 16px
+    );
+  box-shadow: 0 0 12px rgba(120, 243, 171, 0.16);
+}
+
+html[data-theme="holonet-archive"] .timeline-container::after {
+  background-image:
+    radial-gradient(2px 2px at 14% 18%, rgba(120, 243, 171, 0.16), transparent 62%),
+    radial-gradient(2px 2px at 72% 26%, rgba(237, 244, 217, 0.12), transparent 62%),
+    radial-gradient(1.6px 1.6px at 28% 68%, rgba(120, 243, 171, 0.12), transparent 62%),
+    radial-gradient(1.4px 1.4px at 88% 76%, rgba(237, 244, 217, 0.1), transparent 62%),
+    linear-gradient(180deg, rgba(2, 4, 3, 0.92), rgba(1, 2, 2, 0.98));
+  background-size: 320px 320px, 260px 260px, 220px 220px, 180px 180px, 100% 100%;
+  background-position: 0 0, 48px 22px, 18px 34px, 92px 60px, 0 0;
+  animation: none;
+  opacity: 0.64;
+  filter: none;
+}
+
+html[data-theme="holonet-archive"] .timeline-section::before {
+  background:
+    radial-gradient(ellipse at center, rgba(var(--section-color-rgb), 0.05) 0%, transparent 68%),
+    linear-gradient(90deg, transparent 0, rgba(120, 243, 171, 0.025) 1px, transparent 1px);
+  background-size: auto, 32px 32px;
+}
+
+html[data-theme="holonet-archive"] .timeline-section h2 {
+  background: #000000;
+  border: 1px solid rgba(120, 243, 171, 0.18);
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 540px;
+  width: auto;
+  justify-content: flex-start;
+  padding: 0.2rem 0.35rem;
+  margin-left: 4.8rem;
+  margin-right: auto;
+  position: relative;
+  top: 0;
+}
+
+html[data-theme="holonet-archive"] .era-image-badge,
+html[data-theme="holonet-archive"] .rail-marker .rail-era-icon {
+  border-radius: 0;
+  background: #000000;
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .timeline-section h2 .era-title {
+  background: transparent;
+  border-radius: 0;
+  border-width: 0;
+  box-shadow: none;
+  text-shadow: none;
+  letter-spacing: 0;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1rem;
+}
+
+html[data-theme="holonet-archive"] .timeline-section h2 .era-title::before {
+  content: "[";
+  margin-right: 0.35rem;
+  opacity: 0.75;
+}
+
+html[data-theme="holonet-archive"] .timeline-section h2 .era-title::after {
+  content: "]";
+  margin-left: 0.35rem;
+  opacity: 0.75;
+}
+
+html[data-theme="holonet-archive"] .timeline-section h2 .era-count,
+html[data-theme="holonet-archive"] .era-toggle,
+html[data-theme="holonet-archive"] .timeline-year {
+  border-radius: 0;
+  background: #000000;
+  border: 1px solid rgba(120, 243, 171, 0.18);
+  box-shadow: none;
+  font-family: Georgia, "Times New Roman", serif;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.72rem;
+}
+
+html[data-theme="holonet-archive"] .era-toggle:hover,
+html[data-theme="holonet-archive"] .rail-marker:hover {
+  border-color: rgba(120, 243, 171, 0.34);
+  color: var(--text-primary);
+}
+
+html[data-theme="holonet-archive"] .timeline-rail {
+  background: #000000;
+  border-bottom-color: rgba(120, 243, 171, 0.14);
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+html[data-theme="holonet-archive"] .timeline-rail-inner {
+  gap: 0.35rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+html[data-theme="holonet-archive"] .rail-marker {
+  border-radius: 0;
+  border-color: rgba(120, 243, 171, 0.12);
+  background: transparent;
+  font-family: Georgia, "Times New Roman", serif;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 0.1rem 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  border-width: 0 0 1px 0;
+}
+
+html[data-theme="holonet-archive"] .rail-marker.active,
+html[data-theme="holonet-archive"] .rail-marker[aria-current="location"] {
+  background: transparent;
+  border-color: rgba(120, 243, 171, 0.3);
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .timeline-connector {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(var(--section-color-rgb), 0.7), rgba(120, 243, 171, 0.14));
+}
+
+html[data-theme="holonet-archive"] .timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-width: 2px;
+  box-shadow: 0 0 10px rgba(var(--section-color-rgb), 0.45);
+}
+
+html[data-theme="holonet-archive"] .flow-tooltip {
+  background: #000000;
+  border-color: rgba(120, 243, 171, 0.18);
+  border-radius: 0;
+  color: var(--text-primary);
+}
+
+html[data-theme="holonet-archive"] .entry-card {
+  border-radius: 0;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
+  max-width: 420px;
+}
+
+html[data-theme="holonet-archive"] .timeline-entry {
+  max-width: 420px;
+}
+
+html[data-theme="holonet-archive"] .entry-content {
+  background: #000000;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  padding-left: 0.55rem;
+  padding-right: 0.35rem;
+}
+
+html[data-theme="holonet-archive"] .entry-poster {
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 126px;
+  background: #000000;
+  border-right: 1px solid rgba(120, 243, 171, 0.12);
+}
+
+html[data-theme="holonet-archive"] .entry-poster img {
+  filter: grayscale(0.12) contrast(0.9) brightness(0.82);
+}
+
+html[data-theme="holonet-archive"] .synopsis-preview {
+  position: static;
+  transform: none;
+  opacity: 1;
+  background: transparent;
+  padding: 0;
+  margin-top: 0.35rem;
+}
+
+html[data-theme="holonet-archive"] .synopsis-preview p {
+  font-size: 0.78rem;
+  color: #cfd8bf;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+html[data-theme="holonet-archive"] .entry-overlay {
+  display: none;
+}
+
+html[data-theme="holonet-archive"] .entry-content h3,
+html[data-theme="holonet-archive"] .modal-right h2,
+html[data-theme="holonet-archive"] .stats-drawer-header h2,
+html[data-theme="holonet-archive"] .settings-modal-header h2 {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html[data-theme="holonet-archive"] .entry-content h3 {
+  font-size: 0.96rem;
+  line-height: 1.3;
+  margin-bottom: 0.2rem;
+}
+
+html[data-theme="holonet-archive"] .settings-modal-backdrop,
+html[data-theme="holonet-archive"] .stats-drawer-backdrop,
+html[data-theme="holonet-archive"] .modal-backdrop,
+html[data-theme="holonet-archive"] .reset-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: none;
+}
+
+html[data-theme="holonet-archive"] .entry-episodes,
+html[data-theme="holonet-archive"] .modal-episodes-count,
+html[data-theme="holonet-archive"] .stat-value {
+  color: #96ffbf;
+}
+
+html[data-theme="holonet-archive"] .entry-row,
+html[data-theme="holonet-archive"] .episode-list-wrapper,
+html[data-theme="holonet-archive"] .episode-item,
+html[data-theme="holonet-archive"] .entry-quick-check {
+  border-color: rgba(120, 243, 171, 0.12);
+}
+
+html[data-theme="holonet-archive"] .entry-quick-check,
+html[data-theme="holonet-archive"] .episode-item,
+html[data-theme="holonet-archive"] .episode-list-wrapper {
+  background: #000000;
+}
+
+html[data-theme="holonet-archive"] .entry-row {
+  padding-top: 0.3rem;
+  gap: 0.35rem;
+}
+
+html[data-theme="holonet-archive"] .entry-meta,
+html[data-theme="holonet-archive"] .entry-episodes {
+  font-size: 0.74rem;
+  margin-bottom: 0.25rem;
+}
+
+html[data-theme="holonet-archive"] .entry-quick-check.is-watched,
+html[data-theme="holonet-archive"] .episode-item.is-watched {
+  background: linear-gradient(180deg, rgba(10, 24, 16, 0.96), rgba(4, 11, 8, 0.98));
+  border-color: rgba(120, 243, 171, 0.26);
+}
+
+html[data-theme="holonet-archive"] .entry-quick-check-state,
+html[data-theme="holonet-archive"] .entry-badge,
+html[data-theme="holonet-archive"] .modal-badge,
+html[data-theme="holonet-archive"] .media-type-badge {
+  border-radius: 0;
+}
+
+html[data-theme="holonet-archive"] .entry-badge.canon,
+html[data-theme="holonet-archive"] .modal-badge.canon {
+  background: #000000;
+  border-color: rgba(120, 243, 171, 0.22);
+  color: #dff5dc;
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .entry-badge.legends,
+html[data-theme="holonet-archive"] .modal-badge.legends {
+  background: #000000;
+  border-color: rgba(205, 174, 89, 0.28);
+  color: #f0e3b7;
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .media-type-badge {
+  background: transparent;
+  box-shadow: none;
+  padding: 0.08rem 0.2rem;
+  gap: 0.25rem;
+  border-width: 1px;
+}
+
+html[data-theme="holonet-archive"] .media-type-label,
+html[data-theme="holonet-archive"] .progress-text,
+html[data-theme="holonet-archive"] .lore-label {
+  color: var(--text-primary);
+}
+
+html[data-theme="holonet-archive"] .lore-label {
+  border-radius: 0;
+  background: rgba(3, 9, 6, 0.8);
+  border: 1px solid rgba(120, 243, 171, 0.12);
+}
+
+html[data-theme="holonet-archive"] .stats-drawer-panel,
+html[data-theme="holonet-archive"] .settings-modal .settings-modal-panel {
+  border: 1px solid rgba(120, 243, 171, 0.16);
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .settings-modal .settings-modal-panel {
+  width: min(680px, 94vw);
+  max-height: 88vh;
+  opacity: 1;
+}
+
+html[data-theme="holonet-archive"] .settings-modal-group {
+  gap: 0.35rem;
+}
+
+html[data-theme="holonet-archive"] .settings-modal-item {
+  background: #000000;
+  padding: 0.5rem 0.6rem;
+  border-color: rgba(120, 243, 171, 0.12);
+}
+
+html[data-theme="holonet-archive"] .settings-modal-label,
+html[data-theme="holonet-archive"] .settings-modal-sub {
+  font-family: Georgia, "Times New Roman", serif;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+html[data-theme="holonet-archive"] .settings-theme-select {
+  min-height: 34px;
+  background: #000000;
+  border: 1px solid rgba(120, 243, 171, 0.18);
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html[data-theme="holonet-archive"] .settings-switch-track {
+  background: #000000;
+  box-shadow: inset 0 0 0 1px rgba(120, 243, 171, 0.18);
+}
+
+html[data-theme="holonet-archive"] .settings-switch-track::after {
+  background: #dff5dc;
+}
+
+html[data-theme="holonet-archive"] .settings-modal-header h2,
+html[data-theme="holonet-archive"] .stats-drawer-header h2,
+html[data-theme="holonet-archive"] .modal-right h2 {
+  font-size: 1.1rem;
+}
+
+html[data-theme="holonet-archive"] .stats-drawer-close,
+html[data-theme="holonet-archive"] .modal-close {
+  border-radius: 0;
+  border-color: rgba(120, 243, 171, 0.16);
+  background: #000000;
+}
+
+html[data-theme="holonet-archive"] .modal-content {
+  border-color: rgba(var(--section-color-rgb), 0.18);
+  box-shadow: none;
+  width: min(980px, 94vw);
+  height: min(82vh, 620px);
+  backdrop-filter: none;
+}
+
+html[data-theme="holonet-archive"] .modal-left,
+html[data-theme="holonet-archive"] .modal-left img {
+  border-radius: 0;
+}
+
+html[data-theme="holonet-archive"] .modal-left {
+  flex-basis: 220px;
+  border-right: 1px solid rgba(120, 243, 171, 0.12);
+  background: #000000;
+}
+
+html[data-theme="holonet-archive"] .modal-left img {
+  width: 220px;
+}
+
+html[data-theme="holonet-archive"] .modal-right {
+  padding: 0.75rem;
+  background: #000000;
+}
+
+html[data-theme="holonet-archive"] .episode-list-wrapper {
+  margin-bottom: 0.5rem;
+  padding: 0.35rem;
+}
+
+html[data-theme="holonet-archive"] .episode-list {
+  padding: 0.15rem 0.35rem 0.15rem 0.15rem;
+}
+
+html[data-theme="holonet-archive"] .episode-item {
+  padding: 0.35rem 0.45rem;
+}
+
+html[data-theme="holonet-archive"] .modal-backdrop,
+html[data-theme="holonet-archive"] .reset-dialog-backdrop {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.96)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(120, 243, 171, 0.018) 0 1px,
+      transparent 1px 18px
+    );
+}
+
+html[data-theme="holonet-archive"] .modal-btn,
+html[data-theme="holonet-archive"] .modal-close-btn,
+html[data-theme="holonet-archive"] .modal-secondary-btn,
+html[data-theme="holonet-archive"] .modal-btn--secondary,
+html[data-theme="holonet-archive"] .modal-btn--ghost,
+html[data-theme="holonet-archive"] .modal-primary-btn,
+html[data-theme="holonet-archive"] .modal-btn--primary {
+  border-radius: 0;
+  letter-spacing: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  text-transform: none;
+}
+
+html[data-theme="holonet-archive"] .modal-primary-btn,
+html[data-theme="holonet-archive"] .modal-btn--primary {
+  background: transparent;
+  border-color: #3aa466;
+  color: #96ffbf;
+  border-width: 0 0 1px 0;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+html[data-theme="holonet-archive"] .modal-secondary-btn,
+html[data-theme="holonet-archive"] .modal-btn--secondary,
+html[data-theme="holonet-archive"] .modal-btn--ghost,
+html[data-theme="holonet-archive"] .modal-close-btn {
+  background: transparent;
+  border-color: rgba(120, 243, 171, 0.16);
+  color: var(--text-primary);
+  border-width: 0 0 1px 0;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+html[data-theme="holonet-archive"] .episode-time,
+html[data-theme="holonet-archive"] .episode-status,
+html[data-theme="holonet-archive"] .entry-quick-check-state {
+  border-radius: 0;
+  background: #000000;
+  border-color: rgba(120, 243, 171, 0.14);
+}
+
+html[data-theme="holonet-archive"] .episode-item:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] .episode-item.is-watched .episode-status,
+html[data-theme="holonet-archive"] .entry-quick-check-state.is-watched {
+  background: rgba(120, 243, 171, 0.16);
+  border-color: rgba(120, 243, 171, 0.3);
+  color: #dff5dc;
+}
+
+html[data-theme="holonet-archive"] .card-checkbox-inline input[type="checkbox"],
+html[data-theme="holonet-archive"] .card-single-episode-checkbox,
+html[data-theme="holonet-archive"] .episode-item input[type="checkbox"],
+html[data-theme="holonet-archive"] .card-movie-checkbox {
+  border-color: rgba(120, 243, 171, 0.22);
+  background: #000000;
+  border-radius: 0;
+}
+
+html[data-theme="holonet-archive"] .card-checkbox-inline input[type="checkbox"]:checked,
+html[data-theme="holonet-archive"] .card-single-episode-checkbox:checked,
+html[data-theme="holonet-archive"] .episode-item input[type="checkbox"]:checked,
+html[data-theme="holonet-archive"] .card-movie-checkbox:checked {
+  background: #96ffbf;
+  border-color: #96ffbf;
+  box-shadow: 0 0 10px rgba(120, 243, 171, 0.18);
+}
+
+html[data-theme="holonet-archive"] .card-checkbox-inline input[type="checkbox"]:checked::after,
+html[data-theme="holonet-archive"] .card-single-episode-checkbox:checked::after,
+html[data-theme="holonet-archive"] .episode-item input[type="checkbox"]:checked::after,
+html[data-theme="holonet-archive"] .card-movie-checkbox:checked::after {
+  border-color: #03110b;
+}
+
+html[data-theme="holonet-archive"] .reset-dialog-content,
+html[data-theme="holonet-archive"] .toast,
+html[data-theme="holonet-archive"] #no-results,
+html[data-theme="holonet-archive"] footer {
+  background: #000000;
+  border-color: rgba(120, 243, 171, 0.16);
+}
+
+html[data-theme="holonet-archive"] .toast {
+  border-left-color: #96ffbf;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-theme="holonet-archive"] footer {
+  border-top-width: 1px;
+}
+
+html[data-theme="holonet-archive"] .footer-inner {
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+  html[data-theme="holonet-archive"] .stats-container {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+
+  html[data-theme="holonet-archive"] .timeline-section h2 {
+    border-radius: 0;
+    margin-left: 4.5rem;
+    max-width: calc(100% - 4.5rem);
+  }
+
+  html[data-theme="holonet-archive"] .settings-modal .settings-modal-panel,
+  html[data-theme="holonet-archive"] .stats-drawer-panel,
+  html[data-theme="holonet-archive"] .modal-content {
+    border-radius: 0;
+  }
+
+  html[data-theme="holonet-archive"] .modal-left,
+  html[data-theme="holonet-archive"] .modal-left img {
+    border-radius: 0;
+  }
+
+  html[data-theme="holonet-archive"] .entry-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+    max-width: 100%;
+  }
+
+  html[data-theme="holonet-archive"] .entry-poster {
+    min-height: 108px;
+  }
+
+  html[data-theme="holonet-archive"] .modal-content {
+    width: calc(100% - 16px);
+    height: calc((var(--vh, 1vh) * 100) - 16px);
+  }
+
+  html[data-theme="holonet-archive"] .modal-left {
+    flex-basis: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(120, 243, 171, 0.12);
+  }
+
+  html[data-theme="holonet-archive"] .modal-left img {
+    width: 100%;
+  }
+}
+
+@media (max-width: 540px) {
+  html[data-theme="holonet-archive"] .settings-modal .settings-modal-panel,
+  html[data-theme="holonet-archive"] .modal-content,
+  html[data-theme="holonet-archive"] .modal-left,
+  html[data-theme="holonet-archive"] .modal-left img {
+    border-radius: 0;
+  }
+}
+
+html[data-theme="holonet-archive"] .modal-episodes-progress,
+html[data-theme="holonet-archive"] .stat-progress {
+  background: rgba(120, 243, 171, 0.08);
+  border-color: rgba(120, 243, 171, 0.12);
+}
+
+html[data-theme="holonet-archive"] .modal-episodes-progress-bar,
+html[data-theme="holonet-archive"] .stat-progress-bar {
+  background: linear-gradient(90deg, #3aa466 0%, #96ffbf 100%);
+  box-shadow: 0 0 8px rgba(120, 243, 171, 0.16);
+}
+
+html[data-theme="prequel-portal"] {
+  --primary: #c8a15b;
+  --primary-dark: #8f6a31;
+  --primary-rgb: 200, 161, 91;
+  --bg: #120d09;
+  --bg-rgb: 18, 13, 9;
+  --bg-light: #261a12;
+  --bg-light-rgb: 38, 26, 18;
+  --text-primary: #f6e7c1;
+  --text-secondary: #cfb98b;
+  --border: #4b3826;
+  --font-display: "Trebuchet MS", Verdana, sans-serif;
+  --font-body: Georgia, "Times New Roman", serif;
+
+  --theme-page-bg:
+    radial-gradient(circle at top, rgba(250, 227, 183, 0.14), transparent 26%),
+    linear-gradient(180deg, #100b08 0%, #18120e 24%, #0b0908 100%);
+  --theme-shell-bg: linear-gradient(180deg, rgba(36, 24, 16, 0.92), rgba(18, 13, 9, 0.84));
+  --theme-shell-border: rgba(200, 161, 91, 0.24);
+  --theme-elevated-surface: linear-gradient(160deg, rgba(47, 31, 20, 0.96), rgba(22, 15, 10, 0.94));
+  --theme-panel-surface: linear-gradient(180deg, rgba(59, 41, 27, 0.94), rgba(28, 19, 13, 0.96));
+  --theme-panel-surface-hover: linear-gradient(180deg, rgba(76, 54, 36, 0.96), rgba(36, 24, 16, 0.98));
+  --theme-panel-border: rgba(200, 161, 91, 0.26);
+  --theme-panel-border-strong: rgba(233, 198, 132, 0.5);
+  --theme-panel-shadow: inset 0 1px 0 rgba(255, 239, 214, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
+  --theme-panel-shadow-hover: inset 0 1px 0 rgba(255, 239, 214, 0.12), 0 12px 28px rgba(0, 0, 0, 0.34);
+  --theme-pill-bg: linear-gradient(140deg, rgba(52, 36, 24, 0.98), rgba(30, 20, 13, 0.94));
+  --theme-pill-border: rgba(200, 161, 91, 0.28);
+  --theme-pill-button-bg: linear-gradient(180deg, rgba(90, 67, 43, 0.34), rgba(51, 36, 24, 0.24));
+  --theme-pill-button-border: rgba(223, 194, 138, 0.28);
+  --theme-pill-button-hover-bg: linear-gradient(180deg, rgba(126, 94, 62, 0.4), rgba(68, 47, 31, 0.34));
+  --theme-pill-button-hover-border: rgba(246, 219, 165, 0.44);
+  --theme-stat-surface: linear-gradient(145deg, rgba(51, 35, 24, 0.9), rgba(26, 18, 12, 0.96));
+  --theme-stat-border: rgba(200, 161, 91, 0.18);
+  --theme-stat-hover-border: rgba(233, 198, 132, 0.36);
+  --theme-stat-hover-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+  --theme-stat-accent-line: linear-gradient(90deg, transparent 0%, #f1d49a 50%, transparent 100%);
+  --theme-card-surface: linear-gradient(155deg, rgba(47, 32, 22, 0.94), rgba(22, 15, 10, 0.96));
+  --theme-card-surface-hover: linear-gradient(155deg, rgba(61, 42, 29, 0.96), rgba(28, 19, 13, 0.98));
+  --theme-card-border: rgba(200, 161, 91, 0.24);
+  --theme-card-border-hover: rgba(240, 209, 148, 0.46);
+  --theme-card-shadow: 0 12px 24px rgba(0, 0, 0, 0.34);
+  --theme-card-shadow-hover: 0 16px 30px rgba(0, 0, 0, 0.4);
+  --theme-card-accent-line: linear-gradient(120deg, rgba(246, 219, 165, 0.22), rgba(255, 255, 255, 0));
+  --theme-card-accent-line-hover: linear-gradient(120deg, rgba(246, 219, 165, 0.34), rgba(255, 255, 255, 0));
+  --theme-card-ambient-glow: radial-gradient(circle at 50% 0%, rgba(200, 161, 91, 0.12) 0%, transparent 70%);
+  --theme-card-overlay: linear-gradient(180deg, rgba(15, 10, 8, 0.72) 0%, rgba(15, 10, 8, 0.34) 100%);
+  --theme-card-synopsis: linear-gradient(to top, rgba(14, 10, 8, 0.96) 0%, rgba(14, 10, 8, 0.76) 50%, transparent 100%);
+  --theme-focus-ring: rgba(233, 198, 132, 0.58);
+  --theme-focus-ring-strong: rgba(233, 198, 132, 0.42);
+  --theme-thread-line: linear-gradient(180deg, rgba(196, 159, 91, 0.92) 0%, rgba(147, 111, 58, 0.55) 60%, rgba(147, 111, 58, 0.12) 100%);
+  --theme-thread-shadow: 0 0 14px rgba(200, 161, 91, 0.2);
+  --theme-rail-surface: linear-gradient(180deg, rgba(44, 30, 20, 0.94), rgba(21, 15, 10, 0.92));
+  --theme-rail-border: rgba(200, 161, 91, 0.16);
+  --theme-rail-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  --theme-rail-marker-surface: linear-gradient(180deg, rgba(62, 44, 29, 0.86), rgba(32, 22, 15, 0.92));
+  --theme-rail-marker-border: rgba(200, 161, 91, 0.18);
+  --theme-rail-marker-active-surface: linear-gradient(180deg, rgba(88, 64, 41, 0.94), rgba(44, 30, 20, 0.96));
+  --theme-rail-marker-active-border: rgba(246, 219, 165, 0.42);
+  --theme-rail-marker-active-shadow: 0 0 18px rgba(200, 161, 91, 0.16);
+  --theme-modal-backdrop: rgba(7, 5, 4, 0.9);
+  --theme-modal-surface: linear-gradient(145deg, rgba(47, 33, 22, 0.98), rgba(20, 14, 9, 0.98));
+  --theme-modal-border: rgba(214, 178, 112, 0.34);
+  --theme-modal-shadow: 0 28px 60px rgba(0, 0, 0, 0.52), 0 0 40px rgba(200, 161, 91, 0.08), inset 0 1px 0 rgba(255, 239, 214, 0.08);
+  --theme-modal-close-surface: rgba(82, 60, 38, 0.4);
+  --theme-modal-close-border: rgba(224, 194, 137, 0.24);
+}
+
+html[data-theme="prequel-portal"] body::before {
+  background-image:
+    radial-gradient(220px 140px at 18% 14%, rgba(209, 173, 104, 0.1), transparent 72%),
+    radial-gradient(300px 180px at 82% 20%, rgba(139, 110, 66, 0.12), transparent 72%),
+    radial-gradient(1px 1px at 24% 38%, rgba(255, 235, 195, 0.18), transparent 60%),
+    radial-gradient(1px 1px at 74% 56%, rgba(255, 235, 195, 0.12), transparent 60%);
+  opacity: 1;
+}
+
+html[data-theme="prequel-portal"] body::after {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.48)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(200, 161, 91, 0.03) 0 1px,
+      transparent 1px 26px
+    );
+}
+
+html[data-theme="prequel-portal"] .site-hero {
+  padding-top: 1rem;
+  padding-bottom: 0.8rem;
+}
+
+html[data-theme="prequel-portal"] .hero-title {
+  max-width: 900px;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(180deg, rgba(49, 34, 23, 0.72), rgba(22, 15, 10, 0.4));
+  border: 1px solid rgba(200, 161, 91, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 239, 214, 0.08);
+}
+
+html[data-theme="prequel-portal"] .hero-title h1 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 16px rgba(214, 178, 112, 0.12);
+}
+
+html[data-theme="prequel-portal"] .hero-sub {
+  max-width: 680px;
+  color: #dfc89a;
+}
+
+html[data-theme="prequel-portal"] .music-pill-row,
+html[data-theme="prequel-portal"] .header-container,
+html[data-theme="prequel-portal"] .header-controls-row,
+html[data-theme="prequel-portal"] .filters-container,
+html[data-theme="prequel-portal"] .active-filters,
+html[data-theme="prequel-portal"] .timeline-container,
+html[data-theme="prequel-portal"] footer {
+  max-width: 980px;
+}
+
+html[data-theme="prequel-portal"] .music-pill,
+html[data-theme="prequel-portal"] .header-utility-row,
+html[data-theme="prequel-portal"] .filters-container,
+html[data-theme="prequel-portal"] .active-filters,
+html[data-theme="prequel-portal"] .timeline-section h2,
+html[data-theme="prequel-portal"] .stats-drawer-panel,
+html[data-theme="prequel-portal"] .settings-modal .settings-modal-panel {
+  box-shadow: inset 0 1px 0 rgba(255, 239, 214, 0.08), 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="prequel-portal"] .music-pill,
+html[data-theme="prequel-portal"] .header-utility-row {
+  background: linear-gradient(180deg, rgba(48, 33, 22, 0.88), rgba(26, 18, 12, 0.92));
+  border: 1px solid rgba(200, 161, 91, 0.18);
+}
+
+html[data-theme="prequel-portal"] .command-deck-row,
+html[data-theme="prequel-portal"] .quick-filters-row,
+html[data-theme="prequel-portal"] .filters-row {
+  background: linear-gradient(180deg, rgba(53, 37, 25, 0.82), rgba(24, 17, 11, 0.78));
+  border-color: rgba(200, 161, 91, 0.2);
+}
+
+html[data-theme="prequel-portal"] .filter-group-label,
+html[data-theme="prequel-portal"] .timeline-year,
+html[data-theme="prequel-portal"] .entry-meta,
+html[data-theme="prequel-portal"] .settings-modal-sub,
+html[data-theme="prequel-portal"] .modal-meta-text,
+html[data-theme="prequel-portal"] .modal-synopsis {
+  color: #d2bb90;
+}
+
+html[data-theme="prequel-portal"] .filter-btn,
+html[data-theme="prequel-portal"] .stats-drawer-toggle,
+html[data-theme="prequel-portal"] .stats-mini-pill,
+html[data-theme="prequel-portal"] .filters-toggle,
+html[data-theme="prequel-portal"] .active-filter-chip,
+html[data-theme="prequel-portal"] .active-filters-clear,
+html[data-theme="prequel-portal"] #reset-progress-btn,
+html[data-theme="prequel-portal"] .entry-row-action,
+html[data-theme="prequel-portal"] .modal-btn {
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+html[data-theme="prequel-portal"] .filter-btn.active,
+html[data-theme="prequel-portal"] .stats-mini-pill--cta,
+html[data-theme="prequel-portal"] .modal-primary-btn,
+html[data-theme="prequel-portal"] .modal-btn--primary {
+  color: #fff3d8;
+}
+
+html[data-theme="prequel-portal"] .timeline-section::before {
+  background:
+    radial-gradient(ellipse at center, rgba(200, 161, 91, 0.06) 0%, transparent 68%),
+    linear-gradient(90deg, transparent 0, rgba(228, 196, 136, 0.03) 1px, transparent 1px);
+  background-size: auto, 40px 40px;
+}
+
+html[data-theme="prequel-portal"] .timeline-section h2 {
+  max-width: 620px;
+}
+
+html[data-theme="prequel-portal"] .timeline-section h2 .era-title {
+  letter-spacing: 0.08em;
+}
+
+html[data-theme="prequel-portal"] .entry-card {
+  backdrop-filter: blur(2px);
+}
+
+html[data-theme="prequel-portal"] .entry-poster {
+  border-right: 1px solid rgba(200, 161, 91, 0.18);
+}
+
+html[data-theme="prequel-portal"] .entry-content {
+  background:
+    linear-gradient(180deg, rgba(53, 37, 24, 0.82), rgba(25, 17, 11, 0.9)),
+    linear-gradient(90deg, rgba(243, 222, 176, 0.03), transparent);
+}
+
+html[data-theme="prequel-portal"] .entry-content h3,
+html[data-theme="prequel-portal"] .modal-right h2,
+html[data-theme="prequel-portal"] .stats-drawer-header h2,
+html[data-theme="prequel-portal"] .settings-modal-header h2 {
+  color: #f8e7c0;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="prequel-portal"] .entry-row,
+html[data-theme="prequel-portal"] .episode-list-wrapper,
+html[data-theme="prequel-portal"] .episode-item,
+html[data-theme="prequel-portal"] .entry-quick-check {
+  border-color: rgba(200, 161, 91, 0.18);
+}
+
+html[data-theme="prequel-portal"] .entry-quick-check.is-watched,
+html[data-theme="prequel-portal"] .episode-item.is-watched {
+  background: linear-gradient(180deg, rgba(68, 50, 31, 0.96), rgba(36, 25, 16, 0.98));
+}
+
+html[data-theme="prequel-portal"] .entry-badge.canon,
+html[data-theme="prequel-portal"] .modal-badge.canon {
+  color: #fff4dc;
+}
+
+html[data-theme="prequel-portal"] .entry-badge.legends,
+html[data-theme="prequel-portal"] .modal-badge.legends {
+  color: #21160f;
+}
+
+html[data-theme="prequel-portal"] .media-type-badge {
+  color: #f0d9af;
+}
+
+html[data-theme="prequel-portal"] .modal-left::after {
+  background: radial-gradient(circle at center, transparent 28%, rgba(200, 161, 91, 0.24) 100%);
+}
+
+html[data-theme="prequel-portal"] .modal-content,
+html[data-theme="prequel-portal"] .stats-drawer-panel,
+html[data-theme="prequel-portal"] .settings-modal .settings-modal-panel {
+  border-width: 1px;
+}
+
+html[data-theme="databank-dashboard"] {
+  --primary: #79c6e8;
+  --primary-dark: #3e89aa;
+  --primary-rgb: 121, 198, 232;
+  --bg: #071018;
+  --bg-rgb: 7, 16, 24;
+  --bg-light: #11202f;
+  --bg-light-rgb: 17, 32, 47;
+  --text-primary: #e1f3fb;
+  --text-secondary: #9db8c7;
+  --border: #274356;
+  --font-display: "Trebuchet MS", Arial, sans-serif;
+  --font-body: "Segoe UI", Arial, sans-serif;
+  --surface-radius-lg: 6px;
+  --surface-radius-md: 4px;
+
+  --theme-page-bg:
+    radial-gradient(circle at top, rgba(121, 198, 232, 0.08), transparent 24%),
+    linear-gradient(180deg, #050c13 0%, #0a1420 24%, #050b12 100%);
+  --theme-shell-bg: linear-gradient(180deg, rgba(11, 24, 36, 0.92), rgba(8, 17, 26, 0.86));
+  --theme-shell-border: rgba(121, 198, 232, 0.18);
+  --theme-elevated-surface: linear-gradient(160deg, rgba(17, 33, 48, 0.96), rgba(8, 18, 28, 0.95));
+  --theme-panel-surface: linear-gradient(180deg, rgba(19, 38, 56, 0.94), rgba(9, 19, 29, 0.96));
+  --theme-panel-surface-hover: linear-gradient(180deg, rgba(25, 48, 70, 0.96), rgba(11, 22, 34, 0.98));
+  --theme-panel-border: rgba(121, 198, 232, 0.22);
+  --theme-panel-border-strong: rgba(162, 224, 247, 0.42);
+  --theme-panel-shadow: inset 0 1px 0 rgba(225, 243, 251, 0.05), 0 8px 18px rgba(0, 0, 0, 0.28);
+  --theme-panel-shadow-hover: inset 0 1px 0 rgba(225, 243, 251, 0.07), 0 12px 24px rgba(0, 0, 0, 0.34);
+  --theme-pill-bg: linear-gradient(140deg, rgba(16, 30, 44, 0.96), rgba(8, 18, 28, 0.94));
+  --theme-pill-border: rgba(121, 198, 232, 0.24);
+  --theme-pill-button-bg: rgba(121, 198, 232, 0.08);
+  --theme-pill-button-border: rgba(121, 198, 232, 0.18);
+  --theme-pill-button-hover-bg: rgba(121, 198, 232, 0.14);
+  --theme-pill-button-hover-border: rgba(162, 224, 247, 0.34);
+  --theme-stat-surface: linear-gradient(145deg, rgba(16, 31, 45, 0.92), rgba(8, 18, 28, 0.96));
+  --theme-stat-border: rgba(121, 198, 232, 0.16);
+  --theme-stat-hover-border: rgba(162, 224, 247, 0.32);
+  --theme-stat-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --theme-stat-accent-line: linear-gradient(90deg, transparent 0%, #79c6e8 50%, transparent 100%);
+  --theme-card-surface: linear-gradient(150deg, rgba(18, 35, 50, 0.96), rgba(8, 18, 28, 0.98));
+  --theme-card-surface-hover: linear-gradient(150deg, rgba(24, 45, 64, 0.98), rgba(10, 22, 33, 1));
+  --theme-card-border: rgba(121, 198, 232, 0.2);
+  --theme-card-border-hover: rgba(170, 231, 250, 0.42);
+  --theme-card-shadow: 0 12px 24px rgba(0, 0, 0, 0.34);
+  --theme-card-shadow-hover: 0 16px 30px rgba(0, 0, 0, 0.4);
+  --theme-card-accent-line: linear-gradient(120deg, rgba(121, 198, 232, 0.24), rgba(225, 243, 251, 0));
+  --theme-card-accent-line-hover: linear-gradient(120deg, rgba(121, 198, 232, 0.38), rgba(225, 243, 251, 0));
+  --theme-card-ambient-glow: radial-gradient(circle at 50% 0%, rgba(121, 198, 232, 0.1) 0%, transparent 72%);
+  --theme-card-overlay: linear-gradient(180deg, rgba(6, 12, 18, 0.72) 0%, rgba(6, 12, 18, 0.34) 100%);
+  --theme-card-synopsis: linear-gradient(to top, rgba(6, 12, 18, 0.94) 0%, rgba(6, 12, 18, 0.72) 50%, transparent 100%);
+  --theme-focus-ring: rgba(121, 198, 232, 0.58);
+  --theme-focus-ring-strong: rgba(121, 198, 232, 0.42);
+  --theme-thread-line: linear-gradient(180deg, rgba(121, 198, 232, 0.88) 0%, rgba(82, 141, 170, 0.48) 58%, rgba(82, 141, 170, 0.14) 100%);
+  --theme-thread-shadow: 0 0 14px rgba(121, 198, 232, 0.18);
+  --theme-era-shell-bg: linear-gradient(180deg, rgba(15, 31, 44, 0.94), rgba(8, 18, 28, 0.96));
+  --theme-era-shell-border: rgba(var(--section-color-rgb), 0.22);
+  --theme-era-shell-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+  --theme-era-shell-backdrop: none;
+  --theme-era-image-bg: rgba(8, 18, 28, 0.92);
+  --theme-era-image-border: rgba(var(--section-color-rgb), 0.28);
+  --theme-era-image-shadow: none;
+  --theme-era-title-bg: linear-gradient(135deg, rgba(var(--section-color-rgb), 0.16) 0%, rgba(8, 18, 28, 0.6) 100%);
+  --theme-era-title-border: rgba(var(--section-color-rgb), 0.3);
+  --theme-era-title-shadow: none;
+  --theme-era-title-text-shadow: none;
+  --theme-era-count-bg: rgba(8, 18, 28, 0.94);
+  --theme-era-toggle-bg: rgba(13, 26, 38, 0.96);
+  --theme-era-toggle-border: rgba(var(--section-color-rgb), 0.24);
+  --theme-era-collapsed-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.16);
+  --theme-rail-surface: linear-gradient(180deg, rgba(13, 26, 38, 0.96), rgba(8, 18, 28, 0.94));
+  --theme-rail-border: rgba(121, 198, 232, 0.12);
+  --theme-rail-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  --theme-rail-backdrop: none;
+  --theme-rail-marker-surface: linear-gradient(180deg, rgba(18, 35, 50, 0.92), rgba(9, 19, 29, 0.96));
+  --theme-rail-marker-border: rgba(121, 198, 232, 0.16);
+  --theme-rail-marker-active-surface: linear-gradient(180deg, rgba(25, 48, 70, 0.96), rgba(12, 25, 38, 0.98));
+  --theme-rail-marker-active-border: rgba(170, 231, 250, 0.36);
+  --theme-rail-marker-active-shadow: 0 0 18px rgba(121, 198, 232, 0.14);
+  --theme-rail-icon-surface: rgba(7, 16, 24, 0.86);
+  --theme-rail-icon-border: var(--rail-color, rgba(121, 198, 232, 0.3));
+  --theme-rail-icon-shadow: 0 0 10px color-mix(in srgb, var(--rail-color) 30%, transparent);
+  --theme-rail-icon-active-shadow: 0 0 14px color-mix(in srgb, var(--rail-color) 55%, transparent);
+  --theme-badge-canon-bg: linear-gradient(135deg, #1a4257 0%, #0d1d28 100%);
+  --theme-badge-canon-border: rgba(170, 231, 250, 0.22);
+  --theme-badge-canon-shadow: 0 2px 8px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(225, 243, 251, 0.08);
+  --theme-badge-legends-bg: linear-gradient(135deg, #48586a 0%, #1b2530 100%);
+  --theme-badge-legends-border: rgba(196, 208, 219, 0.22);
+  --theme-badge-legends-shadow: 0 2px 8px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(225, 243, 251, 0.06);
+  --theme-badge-legends-text-shadow: none;
+  --theme-media-badge-surface: rgba(8, 18, 28, 0.9);
+  --theme-media-badge-hover-surface: rgba(11, 24, 36, 0.96);
+  --theme-media-badge-backdrop: none;
+  --theme-media-badge-icon-shadow: none;
+  --theme-modal-backdrop: rgba(4, 8, 12, 0.9);
+  --theme-modal-surface: linear-gradient(145deg, rgba(17, 33, 48, 0.98), rgba(8, 18, 28, 0.99));
+  --theme-modal-border: rgba(var(--section-color-rgb), 0.28);
+  --theme-modal-shadow: 0 26px 58px rgba(0, 0, 0, 0.52), 0 0 34px rgba(121, 198, 232, 0.08), inset 0 1px 0 rgba(225, 243, 251, 0.05);
+  --theme-modal-backdrop-blur: none;
+  --theme-modal-close-surface: rgba(121, 198, 232, 0.08);
+  --theme-modal-close-border: rgba(121, 198, 232, 0.18);
+  --theme-modal-count-surface: rgba(var(--section-color-rgb), 0.12);
+  --theme-modal-count-border: rgba(var(--section-color-rgb), 0.24);
+  --theme-modal-progress-surface: rgba(225, 243, 251, 0.06);
+  --theme-modal-progress-border: rgba(225, 243, 251, 0.06);
+  --theme-modal-progress-fill: linear-gradient(90deg, var(--section-color), rgba(var(--section-color-rgb), 0.76));
+  --theme-modal-list-surface: linear-gradient(180deg, rgba(12, 24, 36, 0.92), rgba(8, 18, 28, 0.98));
+  --theme-modal-list-border: rgba(var(--section-color-rgb), 0.18);
+  --theme-modal-list-shadow: inset 0 1px 0 rgba(225, 243, 251, 0.04), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --theme-modal-item-surface: linear-gradient(135deg, rgba(225, 243, 251, 0.03) 0%, rgba(225, 243, 251, 0.015) 100%);
+  --theme-modal-item-hover-surface: linear-gradient(135deg, rgba(var(--section-color-rgb), 0.1) 0%, rgba(225, 243, 251, 0.06) 100%);
+  --theme-modal-item-hover-border: rgba(var(--section-color-rgb), 0.18);
+  --theme-modal-item-hover-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --theme-modal-item-watched-surface: linear-gradient(135deg, rgba(var(--section-color-rgb), 0.16) 0%, rgba(225, 243, 251, 0.04) 100%);
+}
+
+html[data-theme="databank-dashboard"] body::before {
+  background-image:
+    linear-gradient(90deg, rgba(121, 198, 232, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(121, 198, 232, 0.03) 1px, transparent 1px),
+    radial-gradient(220px 180px at 20% 16%, rgba(121, 198, 232, 0.08), transparent 74%),
+    radial-gradient(260px 220px at 82% 24%, rgba(90, 153, 184, 0.08), transparent 74%);
+  background-size: 44px 44px, 44px 44px, auto, auto;
+  opacity: 1;
+}
+
+html[data-theme="databank-dashboard"] body::after {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.38)),
+    repeating-linear-gradient(
+      180deg,
+      rgba(121, 198, 232, 0.012) 0 2px,
+      transparent 2px 12px
+    );
+}
+
+html[data-theme="databank-dashboard"] .site-hero {
+  padding-top: 0.85rem;
+  padding-bottom: 0.7rem;
+}
+
+html[data-theme="databank-dashboard"] .hero-title {
+  max-width: 980px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(121, 198, 232, 0.18);
+  background:
+    linear-gradient(180deg, rgba(17, 33, 48, 0.84), rgba(8, 18, 28, 0.68)),
+    linear-gradient(90deg, rgba(121, 198, 232, 0.04), transparent);
+  box-shadow: inset 0 1px 0 rgba(225, 243, 251, 0.05);
+}
+
+html[data-theme="databank-dashboard"] .hero-title h1 {
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-size: 1.5rem;
+}
+
+html[data-theme="databank-dashboard"] .hero-sub {
+  max-width: 700px;
+  font-size: 0.88rem;
+}
+
+html[data-theme="databank-dashboard"] .music-pill-row,
+html[data-theme="databank-dashboard"] .header-container,
+html[data-theme="databank-dashboard"] .header-controls-row,
+html[data-theme="databank-dashboard"] .filters-container,
+html[data-theme="databank-dashboard"] .active-filters,
+html[data-theme="databank-dashboard"] .timeline-container,
+html[data-theme="databank-dashboard"] footer {
+  max-width: 1040px;
+}
+
+html[data-theme="databank-dashboard"] .command-deck-row,
+html[data-theme="databank-dashboard"] .quick-filters-row,
+html[data-theme="databank-dashboard"] .filters-row,
+html[data-theme="databank-dashboard"] .filters-panel.open {
+  border-color: rgba(121, 198, 232, 0.18);
+}
+
+html[data-theme="databank-dashboard"] .filter-group-label,
+html[data-theme="databank-dashboard"] .timeline-year,
+html[data-theme="databank-dashboard"] .entry-meta,
+html[data-theme="databank-dashboard"] .settings-modal-sub,
+html[data-theme="databank-dashboard"] .modal-meta-text,
+html[data-theme="databank-dashboard"] .modal-synopsis {
+  color: #9db8c7;
+}
+
+html[data-theme="databank-dashboard"] .filter-btn,
+html[data-theme="databank-dashboard"] .stats-drawer-toggle,
+html[data-theme="databank-dashboard"] .stats-mini-pill,
+html[data-theme="databank-dashboard"] .filters-toggle,
+html[data-theme="databank-dashboard"] .active-filter-chip,
+html[data-theme="databank-dashboard"] .active-filters-clear,
+html[data-theme="databank-dashboard"] #reset-progress-btn,
+html[data-theme="databank-dashboard"] .entry-row-action,
+html[data-theme="databank-dashboard"] .modal-btn,
+html[data-theme="databank-dashboard"] .era-toggle {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+html[data-theme="databank-dashboard"] .timeline-section h2 {
+  max-width: 680px;
+}
+
+html[data-theme="databank-dashboard"] .timeline-section h2 .era-title {
+  letter-spacing: 0.06em;
+}
+
+html[data-theme="databank-dashboard"] .rail-marker,
+html[data-theme="databank-dashboard"] .timeline-year,
+html[data-theme="databank-dashboard"] .entry-badge,
+html[data-theme="databank-dashboard"] .modal-badge,
+html[data-theme="databank-dashboard"] .media-type-badge {
+  border-radius: 4px;
+}
+
+html[data-theme="databank-dashboard"] .entry-card {
+  border-radius: 6px;
+}
+
+html[data-theme="databank-dashboard"] .entry-content {
+  background:
+    linear-gradient(180deg, rgba(17, 33, 48, 0.84), rgba(8, 18, 28, 0.94)),
+    linear-gradient(90deg, rgba(121, 198, 232, 0.03), transparent);
+}
+
+html[data-theme="databank-dashboard"] .entry-content h3,
+html[data-theme="databank-dashboard"] .modal-right h2,
+html[data-theme="databank-dashboard"] .stats-drawer-header h2,
+html[data-theme="databank-dashboard"] .settings-modal-header h2 {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html[data-theme="databank-dashboard"] .entry-row,
+html[data-theme="databank-dashboard"] .episode-list-wrapper,
+html[data-theme="databank-dashboard"] .episode-item,
+html[data-theme="databank-dashboard"] .entry-quick-check {
+  border-color: rgba(121, 198, 232, 0.16);
+}
+
+html[data-theme="databank-dashboard"] .entry-quick-check.is-watched,
+html[data-theme="databank-dashboard"] .episode-item.is-watched {
+  background: linear-gradient(180deg, rgba(19, 42, 56, 0.94), rgba(10, 23, 32, 0.98));
+}
+
+html[data-theme="databank-dashboard"] .media-type-badge {
+  border-width: 1px;
+}
+
+html[data-theme="databank-dashboard"] .modal-left::after {
+  background: radial-gradient(circle at center, transparent 32%, rgba(121, 198, 232, 0.18) 100%);
+}
+
+html[data-theme="databank-dashboard"] .modal-content,
+html[data-theme="databank-dashboard"] .stats-drawer-panel,
+html[data-theme="databank-dashboard"] .settings-modal .settings-modal-panel {
+  border-width: 1px;
+}
