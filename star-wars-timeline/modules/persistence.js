@@ -2,6 +2,9 @@ export function getLegacyWatchedStorageKey(entry) {
   return 'watched_' + entry.title.replace(/\s+/g, '_');
 }
 
+const THEME_STORAGE_KEY = 'sw_theme';
+const DEFAULT_THEME_ID = 'modern-starwars';
+
 function getLegacyFingerprintStorageId(entry) {
   const firstEpisodeTitle =
     Array.isArray(entry.episodeDetails) && entry.episodeDetails.length > 0 && entry.episodeDetails[0].title
@@ -196,4 +199,34 @@ export function resetAllProgress(timelineData, updateEntryUI) {
       updateEntryUI(sectionIdx, entryIdx);
     });
   });
+}
+
+export function getDefaultThemeId() {
+  return DEFAULT_THEME_ID;
+}
+
+export function loadThemePreference(validThemeIds = []) {
+  try {
+    const raw = localStorage.getItem(THEME_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_THEME_ID;
+    }
+
+    const normalized = String(raw).trim().toLowerCase();
+    if (Array.isArray(validThemeIds) && validThemeIds.length > 0 && !validThemeIds.includes(normalized)) {
+      return DEFAULT_THEME_ID;
+    }
+
+    return normalized || DEFAULT_THEME_ID;
+  } catch (e) {
+    return DEFAULT_THEME_ID;
+  }
+}
+
+export function saveThemePreference(themeId) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, String(themeId || DEFAULT_THEME_ID));
+  } catch (e) {
+    // Ignore localStorage write failures
+  }
 }

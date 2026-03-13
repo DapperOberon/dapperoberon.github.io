@@ -11,7 +11,10 @@ import {
   saveCollapsedEras as saveCollapsedErasModule,
   saveWatchedState as saveWatchedStateModule,
   initializeWatchedState as initializeWatchedStateModule,
-  resetAllProgress as resetAllProgressModule
+  resetAllProgress as resetAllProgressModule,
+  getDefaultThemeId as getDefaultThemeIdModule,
+  loadThemePreference as loadThemePreferenceModule,
+  saveThemePreference as saveThemePreferenceModule
 } from './modules/persistence.js';
 import {
   calculateStats as calculateStatsModule,
@@ -30,6 +33,30 @@ let filterController = null;
 let modalController = null;
 let audioController = null;
 let telemetryController = null;
+
+const THEMES = [
+  {
+    id: 'modern-starwars',
+    label: 'Modern StarWars.com',
+    description: 'Premium editorial dark shell with cinematic contrast.'
+  },
+  {
+    id: 'holonet-archive',
+    label: 'Holonet Archive',
+    description: 'Archival terminal styling with green data accents.'
+  },
+  {
+    id: 'prequel-portal',
+    label: 'Prequel Portal',
+    description: 'Bronze portal styling with parchment highlights and metallic framing.'
+  },
+  {
+    id: 'databank-dashboard',
+    label: 'Databank Dashboard',
+    description: 'Steel-blue command center styling with angular utility surfaces.'
+  }
+];
+const THEME_IDS = THEMES.map((theme) => theme.id);
 
 const ERA_IMAGE_PATHS = {
   'the high republic': './images/eras/high-republic.png',
@@ -68,6 +95,48 @@ function getEntryMetaDetails(entry) {
 
 function getEntrySearchText(entry) {
   return getEntrySearchTextModule(entry);
+}
+
+function getDefaultThemeId() {
+  return getDefaultThemeIdModule();
+}
+
+function loadThemePreference() {
+  return loadThemePreferenceModule(THEME_IDS);
+}
+
+function saveThemePreference(themeId) {
+  saveThemePreferenceModule(themeId);
+}
+
+function getThemeById(themeId) {
+  return THEMES.find((theme) => theme.id === themeId) || THEMES[0];
+}
+
+function applyTheme(themeId, { persist = true, withFeedback = false } = {}) {
+  const resolvedThemeId = THEME_IDS.includes(themeId) ? themeId : getDefaultThemeId();
+  currentThemeId = resolvedThemeId;
+  document.documentElement.dataset.theme = resolvedThemeId;
+  document.body.dataset.theme = resolvedThemeId;
+
+  if (persist) {
+    saveThemePreference(resolvedThemeId);
+  }
+
+  const selector = document.getElementById('settings-theme-select');
+  if (selector) {
+    selector.value = resolvedThemeId;
+  }
+
+  const description = document.getElementById('settings-theme-description');
+  if (description) {
+    description.textContent = getThemeById(resolvedThemeId).description;
+  }
+
+  if (withFeedback) {
+    playSound('toggle');
+    triggerHaptic('light');
+  }
 }
 
 let _flowLineRaf = null;
@@ -738,6 +807,19 @@ function renderSettingsModal() {
             </div>
           </div>
 
+          <div class="settings-modal-item settings-modal-item--select">
+            <div class="settings-modal-text">
+              <span class="settings-modal-label">Theme</span>
+              <span id="settings-theme-description" class="settings-modal-sub">Premium editorial dark shell with cinematic contrast.</span>
+            </div>
+            <label class="settings-select-wrap" for="settings-theme-select">
+              <span class="sr-only">Select visual theme</span>
+              <select id="settings-theme-select" class="settings-theme-select" aria-label="Select visual theme">
+                ${THEMES.map((theme) => `<option value="${theme.id}">${theme.label}</option>`).join('')}
+              </select>
+            </label>
+          </div>
+
           <div class="settings-modal-item settings-modal-item--toggle">
             <div class="settings-modal-text">
               <span class="settings-modal-label">Watch Mode</span>
@@ -993,6 +1075,7 @@ function render() {
   initMusicToggle();
   initWatchModeToggle();
   initLessMotionToggle();
+  initThemeSelector();
   initSettingsModal();
   initEraToggles();
   initEraRail();
@@ -1024,6 +1107,7 @@ function attachStatHandlers() {
 
 let watchModeEnabled = false;
 let lessMotionEnabled = false;
+let currentThemeId = getDefaultThemeId();
 let reducedMotionMediaQuery = null;
 let reducedMotionListenerBound = false;
 let eraObserver = null;
@@ -1096,6 +1180,18 @@ function setLessMotionEnabled(enabled, { withFeedback = false, persist = true } 
     playSound('toggle');
     triggerHaptic('light');
   }
+}
+
+function initThemeSelector() {
+  const selector = document.getElementById('settings-theme-select');
+  if (!selector) return;
+
+  currentThemeId = loadThemePreference();
+  applyTheme(currentThemeId, { persist: false, withFeedback: false });
+
+  selector.addEventListener('change', () => {
+    applyTheme(selector.value, { persist: true, withFeedback: true });
+  });
 }
 
 function isReducedMotionEnabled() {
@@ -1234,6 +1330,7 @@ function initSettingsModal() {
 
   setWatchModeEnabled(watchModeEnabled, { withFeedback: false, persist: false });
   setLessMotionEnabled(lessMotionEnabled, { withFeedback: false, persist: false });
+  applyTheme(currentThemeId, { persist: false, withFeedback: false });
 }
 
 function initStatsDrawer() {
@@ -1794,7 +1891,9 @@ function setupIntersectionObserver() {
 document.addEventListener('DOMContentLoaded', async () => {
   setVh();
   getTelemetryController().startSession();
-  
+  currentThemeId = loadThemePreference();
+  applyTheme(currentThemeId, { persist: false, withFeedback: false });
+
   // Load timeline data from JSON before rendering
   const loaded = await loadTimelineData();
   if (loaded) {
