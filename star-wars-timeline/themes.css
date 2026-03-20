@@ -1517,3 +1517,785 @@ html[data-theme="databank-dashboard"] .stats-drawer-panel,
 html[data-theme="databank-dashboard"] .settings-modal .settings-modal-panel {
   border-width: 1px;
 }
+
+html[data-theme="modern-starwars"] {
+  --theme-card-surface: linear-gradient(180deg, rgba(8, 12, 22, 0.96) 0%, rgba(13, 19, 34, 0.94) 100%);
+  --theme-card-surface-hover: linear-gradient(180deg, rgba(10, 16, 29, 0.98) 0%, rgba(17, 24, 43, 0.96) 100%);
+  --theme-card-border: rgba(255, 255, 255, 0.1);
+  --theme-card-border-hover: rgba(255, 198, 94, 0.45);
+  --theme-card-shadow: 0 18px 45px rgba(2, 6, 16, 0.44);
+  --theme-card-shadow-hover: 0 24px 58px rgba(2, 6, 16, 0.58);
+  --theme-card-accent-line: linear-gradient(90deg, rgba(255, 198, 94, 0.95), rgba(255, 140, 66, 0.48) 42%, rgba(255, 255, 255, 0) 100%);
+  --theme-card-accent-line-hover: linear-gradient(90deg, rgba(255, 213, 125, 1), rgba(255, 166, 81, 0.72) 48%, rgba(255, 255, 255, 0) 100%);
+  --theme-card-ambient-glow:
+    radial-gradient(circle at top, rgba(255, 198, 94, 0.18), transparent 48%),
+    linear-gradient(180deg, rgba(70, 116, 255, 0.08), rgba(0, 0, 0, 0) 45%);
+  --theme-card-overlay: linear-gradient(180deg, rgba(5, 8, 16, 0.16) 0%, rgba(5, 8, 16, 0.72) 70%, rgba(4, 6, 12, 0.88) 100%);
+  --theme-card-synopsis: linear-gradient(to top, rgba(7, 10, 18, 0.97) 0%, rgba(10, 16, 28, 0.86) 44%, rgba(10, 16, 28, 0) 100%);
+}
+
+html[data-theme="modern-starwars"] .entry-card {
+  border-width: 1px;
+  border-radius: 24px;
+  overflow: clip;
+  backdrop-filter: blur(16px);
+}
+
+html[data-theme="modern-starwars"] .entry-card::before {
+  height: 4px;
+}
+
+html[data-theme="modern-starwars"] .entry-card::after {
+  opacity: 0.42;
+}
+
+html[data-theme="modern-starwars"] .entry-card:hover::after,
+html[data-theme="modern-starwars"] .entry-card:focus-visible::after {
+  opacity: 0.56;
+}
+
+html[data-theme="modern-starwars"] .entry-poster {
+  aspect-ratio: 5 / 6;
+  background:
+    radial-gradient(circle at top, rgba(255, 208, 114, 0.2), transparent 42%),
+    linear-gradient(180deg, rgba(10, 16, 29, 0.98), rgba(6, 10, 18, 0.96));
+}
+
+html[data-theme="modern-starwars"] .entry-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6, 10, 18, 0.02) 0%, rgba(6, 10, 18, 0.2) 54%, rgba(6, 10, 18, 0.86) 100%),
+    radial-gradient(circle at top right, rgba(255, 198, 94, 0.22), transparent 30%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+html[data-theme="modern-starwars"] .entry-card:hover .entry-poster img,
+html[data-theme="modern-starwars"] .entry-card:focus-visible .entry-poster img {
+  transform: scale(1.035);
+}
+
+html[data-theme="modern-starwars"] .entry-content {
+  padding: var(--space-5);
+  gap: var(--space-3);
+  background:
+    linear-gradient(180deg, rgba(10, 14, 26, 0.42), rgba(10, 14, 26, 0.06)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0));
+}
+
+html[data-theme="modern-starwars"] .entry-content h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.6vw, 1.78rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  max-width: 12ch;
+}
+
+html[data-theme="modern-starwars"] .entry-meta {
+  margin: 0;
+  color: rgba(224, 230, 255, 0.74);
+  font-size: 0.74rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+html[data-theme="modern-starwars"] .entry-single-episode-checklist {
+  margin-bottom: 0;
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check {
+  padding: 0.8rem 0.95rem;
+  border-radius: 18px;
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(10, 14, 24, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check:hover {
+  border-color: rgba(var(--primary-rgb), 0.34);
+  background:
+    linear-gradient(180deg, rgba(var(--primary-rgb), 0.15), rgba(255, 255, 255, 0.02)),
+    rgba(10, 14, 24, 0.86);
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check.is-watched {
+  border-color: rgba(var(--primary-rgb), 0.42);
+  background:
+    linear-gradient(180deg, rgba(var(--primary-rgb), 0.18), rgba(var(--primary-rgb), 0.08)),
+    rgba(10, 14, 24, 0.88);
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check-title {
+  font-size: 0.96rem;
+  letter-spacing: -0.02em;
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check-subtitle,
+html[data-theme="modern-starwars"] .entry-quick-check-time {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check-state {
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(232, 236, 255, 0.82);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-theme="modern-starwars"] .entry-quick-check-state.is-watched {
+  background: linear-gradient(180deg, rgba(var(--primary-rgb), 0.62), rgba(var(--primary-rgb), 0.44));
+  border-color: rgba(var(--primary-rgb), 0.74);
+  color: #fff5df;
+}
+
+html[data-theme="modern-starwars"] .entry-row {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="modern-starwars"] .entry-episodes {
+  margin: 0;
+  font-size: 0.77rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(244, 209, 142, 0.92);
+}
+
+html[data-theme="modern-starwars"] .music-pill-row,
+html[data-theme="modern-starwars"] .header-container,
+html[data-theme="modern-starwars"] .header-controls-row,
+html[data-theme="modern-starwars"] .filters-container,
+html[data-theme="modern-starwars"] .active-filters,
+html[data-theme="modern-starwars"] .timeline-container,
+html[data-theme="modern-starwars"] footer {
+  max-width: 1380px;
+}
+
+html[data-theme="modern-starwars"] .header-controls-row {
+  margin-top: calc(var(--space-2) * -1);
+}
+
+html[data-theme="modern-starwars"] .header-utility-row,
+html[data-theme="modern-starwars"] .music-pill {
+  background:
+    linear-gradient(180deg, rgba(7, 11, 20, 0.92), rgba(12, 18, 31, 0.78)),
+    linear-gradient(90deg, rgba(90, 153, 184, 0.12), rgba(255, 255, 255, 0));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 16px 34px rgba(4, 8, 16, 0.3);
+  backdrop-filter: blur(16px);
+}
+
+html[data-theme="modern-starwars"] .header-utility-row {
+  padding: 0.3rem 0.4rem;
+  border-radius: 20px;
+}
+
+html[data-theme="modern-starwars"] .music-pill {
+  gap: 0.5rem;
+  border-radius: 16px;
+}
+
+html[data-theme="modern-starwars"] .music-pill-label {
+  color: rgba(214, 224, 255, 0.68);
+}
+
+html[data-theme="modern-starwars"] .music-pill-title {
+  color: #f4f7ff;
+}
+
+html[data-theme="modern-starwars"] .music-pill-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 20, 0.88);
+}
+
+html[data-theme="modern-starwars"] .music-pill-btn:hover {
+  border-color: rgba(255, 208, 114, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 208, 114, 0.14), rgba(255, 255, 255, 0.01)),
+    rgba(12, 18, 29, 0.92);
+}
+
+html[data-theme="modern-starwars"] .filters-container {
+  position: relative;
+  z-index: 1;
+  margin-bottom: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 22, 0.95), rgba(11, 16, 28, 0.88)),
+    radial-gradient(circle at top right, rgba(90, 153, 184, 0.16), transparent 28%),
+    radial-gradient(circle at left center, rgba(255, 208, 114, 0.1), transparent 34%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 26px 60px rgba(4, 8, 16, 0.34);
+  overflow: hidden;
+}
+
+html[data-theme="modern-starwars"] .command-deck-row,
+html[data-theme="modern-starwars"] .quick-filters-row,
+html[data-theme="modern-starwars"] .filters-row {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="modern-starwars"] .command-deck-row {
+  padding: 1rem 1rem 0.75rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+    linear-gradient(90deg, rgba(90, 153, 184, 0.14), rgba(255, 255, 255, 0));
+}
+
+html[data-theme="modern-starwars"] .quick-filters-row {
+  padding: 0.85rem 1rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0)),
+    linear-gradient(90deg, rgba(255, 208, 114, 0.06), rgba(255, 255, 255, 0));
+}
+
+html[data-theme="modern-starwars"] .filters-panel {
+  --filters-panel-overlap: 14px;
+  background: transparent;
+}
+
+html[data-theme="modern-starwars"] .filters-panel.open {
+  border: 0;
+  padding-top: 0.15rem;
+}
+
+html[data-theme="modern-starwars"] .filters-panel .filters-row {
+  padding: 0.15rem 1rem 1rem;
+}
+
+html[data-theme="modern-starwars"] .filter-group {
+  border-radius: 18px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 20, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="modern-starwars"] .filter-group-label,
+html[data-theme="modern-starwars"] .filters-toggle-count {
+  color: rgba(214, 224, 255, 0.72);
+}
+
+html[data-theme="modern-starwars"] .search-input {
+  min-height: 60px;
+  border-radius: 18px;
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    rgba(7, 11, 20, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 24px rgba(4, 8, 16, 0.16);
+  font-size: 1.02rem;
+}
+
+html[data-theme="modern-starwars"] .search-input::placeholder {
+  color: rgba(214, 224, 255, 0.56);
+}
+
+html[data-theme="modern-starwars"] .search-input:focus {
+  border-color: rgba(90, 153, 184, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 3px rgba(90, 153, 184, 0.16);
+}
+
+html[data-theme="modern-starwars"] .search-icon {
+  color: rgba(139, 197, 255, 0.78);
+}
+
+html[data-theme="modern-starwars"] .filter-btn,
+html[data-theme="modern-starwars"] .stats-drawer-toggle,
+html[data-theme="modern-starwars"] .stats-mini-pill,
+html[data-theme="modern-starwars"] .filters-toggle,
+html[data-theme="modern-starwars"] .active-filter-chip,
+html[data-theme="modern-starwars"] .active-filters-clear {
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 22, 0.84);
+  color: rgba(240, 244, 255, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="modern-starwars"] .filter-btn:hover,
+html[data-theme="modern-starwars"] .filter-btn.active,
+html[data-theme="modern-starwars"] .stats-drawer-toggle:hover,
+html[data-theme="modern-starwars"] .stats-mini-pill:hover,
+html[data-theme="modern-starwars"] .filters-toggle:hover,
+html[data-theme="modern-starwars"] .active-filter-chip:hover,
+html[data-theme="modern-starwars"] .active-filters-clear:hover {
+  border-color: rgba(90, 153, 184, 0.22);
+  background:
+    linear-gradient(180deg, rgba(90, 153, 184, 0.12), rgba(255, 255, 255, 0.01)),
+    rgba(10, 15, 27, 0.9);
+  color: #ffffff;
+}
+
+html[data-theme="modern-starwars"] .active-filters {
+  border-radius: 22px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 20, 0.72);
+}
+
+html[data-theme="modern-starwars"] .active-filter-chip {
+  border-radius: 999px;
+}
+
+html[data-theme="modern-starwars"] .entry-row-action,
+html[data-theme="modern-starwars"] .command-cta-btn,
+html[data-theme="modern-starwars"] .stats-mini-pill--cta {
+  min-height: 44px;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 221, 132, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 229, 145, 0.96), rgba(255, 196, 86, 0.92) 58%, rgba(232, 154, 48, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
+  color: #0c111c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 220, 0.7),
+    0 14px 30px rgba(250, 185, 68, 0.24);
+  text-shadow: 0 1px 0 rgba(255, 248, 214, 0.32);
+}
+
+html[data-theme="modern-starwars"] .entry-row-action:hover,
+html[data-theme="modern-starwars"] .command-cta-btn:hover,
+html[data-theme="modern-starwars"] .stats-mini-pill--cta:hover {
+  border-color: rgba(255, 236, 163, 0.54);
+  background:
+    linear-gradient(180deg, rgba(255, 239, 171, 0.98), rgba(255, 210, 106, 0.94) 58%, rgba(245, 171, 58, 0.98)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 220, 0.72),
+    0 18px 34px rgba(250, 185, 68, 0.3);
+}
+
+html[data-theme="modern-starwars"] .entry-row-action[disabled] {
+  opacity: 0.62;
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(18, 24, 36, 0.76);
+  color: rgba(255, 255, 255, 0.62);
+}
+
+html[data-theme="modern-starwars"] .entry-badge,
+html[data-theme="modern-starwars"] .media-type-badge {
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+}
+
+html[data-theme="modern-starwars"] .entry-poster .entry-badge {
+  top: var(--space-4);
+  left: var(--space-4);
+  padding: 0.4rem 0.72rem;
+}
+
+html[data-theme="modern-starwars"] .media-type-badge {
+  top: var(--space-4);
+  right: var(--space-4);
+  padding: 0.55rem 0.8rem;
+  background: rgba(7, 11, 20, 0.66);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+html[data-theme="modern-starwars"] .media-type-label,
+html[data-theme="modern-starwars"] .lore-label {
+  color: #f8f1dd;
+}
+
+html[data-theme="modern-starwars"] .lore-label {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(7, 11, 20, 0.68);
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+}
+
+html[data-theme="modern-starwars"] .progress-ring {
+  width: 88px;
+  height: 88px;
+}
+
+html[data-theme="modern-starwars"] .progress-text {
+  color: #fff5df;
+  text-shadow: 0 0 18px rgba(255, 198, 94, 0.3);
+}
+
+html[data-theme="modern-starwars"] .timeline-rail {
+  padding: 0.4rem 0.9rem 0.55rem;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  background:
+    linear-gradient(180deg, rgba(4, 7, 13, 0.96), rgba(7, 10, 18, 0.88)),
+    linear-gradient(90deg, rgba(84, 151, 255, 0.04), rgba(255, 255, 255, 0));
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 14px 30px rgba(4, 8, 16, 0.2);
+  backdrop-filter: blur(22px);
+}
+
+html[data-theme="modern-starwars"] .timeline-rail-inner {
+  gap: 0.45rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 22, 0.9), rgba(5, 8, 15, 0.84)),
+    linear-gradient(90deg, rgba(84, 151, 255, 0.03), rgba(255, 255, 255, 0));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 14px 28px rgba(3, 6, 13, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+html[data-theme="modern-starwars"] .rail-marker {
+  position: relative;
+  overflow: hidden;
+  gap: 0.7rem;
+  padding: 0.52rem 0.82rem 0.66rem;
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.07);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
+    rgba(7, 10, 18, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  color: rgba(232, 236, 255, 0.68);
+  letter-spacing: 0.075em;
+}
+
+html[data-theme="modern-starwars"] .rail-marker::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.3rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(90, 153, 255, 0.98), rgba(138, 196, 255, 0.92));
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+html[data-theme="modern-starwars"] .rail-marker:hover {
+  border-color: rgba(84, 151, 255, 0.22);
+  background:
+    linear-gradient(180deg, rgba(84, 151, 255, 0.08), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 22, 0.94);
+  color: #f8f1dd;
+}
+
+html[data-theme="modern-starwars"] .rail-marker.active,
+html[data-theme="modern-starwars"] .rail-marker[aria-current="location"] {
+  border-color: rgba(84, 151, 255, 0.26);
+  background:
+    linear-gradient(180deg, rgba(84, 151, 255, 0.11), rgba(255, 255, 255, 0.01)),
+    rgba(10, 15, 27, 0.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 26px rgba(5, 8, 16, 0.24);
+  color: #f5f8ff;
+}
+
+html[data-theme="modern-starwars"] .rail-marker:hover::after,
+html[data-theme="modern-starwars"] .rail-marker.active::after,
+html[data-theme="modern-starwars"] .rail-marker[aria-current="location"]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+html[data-theme="modern-starwars"] .rail-marker .rail-era-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+    rgba(5, 8, 14, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="modern-starwars"] .rail-marker.active .rail-era-icon,
+html[data-theme="modern-starwars"] .rail-marker[aria-current="location"] .rail-era-icon {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(84, 151, 255, 0.22);
+}
+
+html[data-theme="modern-starwars"] .rail-marker:focus-visible {
+  outline-color: rgba(138, 196, 255, 0.58);
+}
+
+html[data-theme="modern-starwars"] .stats-drawer-backdrop,
+html[data-theme="modern-starwars"] .settings-modal-backdrop,
+html[data-theme="modern-starwars"] .modal-backdrop,
+html[data-theme="modern-starwars"] .reset-dialog-backdrop {
+  background: rgba(2, 6, 16, 0.78);
+  backdrop-filter: blur(16px);
+}
+
+html[data-theme="modern-starwars"] .stats-drawer-panel,
+html[data-theme="modern-starwars"] .settings-modal .settings-modal-panel,
+html[data-theme="modern-starwars"] .modal-content {
+  background:
+    linear-gradient(180deg, rgba(10, 16, 29, 0.96), rgba(7, 11, 20, 0.94)),
+    linear-gradient(90deg, rgba(255, 205, 110, 0.04), rgba(255, 255, 255, 0));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 28px 64px rgba(3, 7, 14, 0.52);
+  backdrop-filter: blur(18px);
+}
+
+html[data-theme="modern-starwars"] .stats-drawer-panel {
+  border-left-color: rgba(255, 205, 110, 0.18);
+}
+
+html[data-theme="modern-starwars"] .stats-drawer-header h2,
+html[data-theme="modern-starwars"] .settings-modal-header h2,
+html[data-theme="modern-starwars"] .modal-right h2 {
+  letter-spacing: 0.04em;
+}
+
+html[data-theme="modern-starwars"] .stats-drawer-close,
+html[data-theme="modern-starwars"] .modal-close {
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(9, 13, 22, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="modern-starwars"] .stats-drawer-close:hover,
+html[data-theme="modern-starwars"] .modal-close:hover {
+  border-color: rgba(255, 205, 110, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 205, 110, 0.14), rgba(255, 255, 255, 0.02)),
+    rgba(12, 18, 30, 0.86);
+}
+
+html[data-theme="modern-starwars"] .stat-box,
+html[data-theme="modern-starwars"] .settings-modal-item {
+  border-radius: 20px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)),
+    rgba(10, 14, 24, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 26px rgba(5, 8, 15, 0.24);
+}
+
+html[data-theme="modern-starwars"] .stat-box:hover,
+html[data-theme="modern-starwars"] .settings-modal-item:hover,
+html[data-theme="modern-starwars"] .settings-modal-item:focus-within {
+  border-color: rgba(255, 205, 110, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 205, 110, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(11, 16, 28, 0.92);
+}
+
+html[data-theme="modern-starwars"] .settings-theme-select,
+html[data-theme="modern-starwars"] .settings-modal-volume {
+  border-radius: 16px;
+}
+
+html[data-theme="modern-starwars"] .settings-theme-select {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 21, 0.92);
+}
+
+html[data-theme="modern-starwars"] .settings-switch-track {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 10px 20px rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="modern-starwars"] .modal-content {
+  width: min(1140px, 96%);
+  height: min(86vh, 740px);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+html[data-theme="modern-starwars"] .modal-left,
+html[data-theme="modern-starwars"] .modal-left img {
+  border-radius: 24px 0 0 24px;
+}
+
+html[data-theme="modern-starwars"] .modal-left::after {
+  background:
+    linear-gradient(180deg, rgba(5, 8, 16, 0.04), rgba(5, 8, 16, 0.48)),
+    radial-gradient(circle at center, transparent 28%, rgba(255, 198, 94, 0.18) 100%);
+}
+
+html[data-theme="modern-starwars"] .modal-right {
+  padding: clamp(1.4rem, 2vw, 2rem);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+    linear-gradient(90deg, rgba(255, 205, 110, 0.04), rgba(255, 255, 255, 0));
+}
+
+html[data-theme="modern-starwars"] .modal-meta {
+  gap: 0.8rem;
+}
+
+html[data-theme="modern-starwars"] .modal-meta-text,
+html[data-theme="modern-starwars"] .modal-synopsis,
+html[data-theme="modern-starwars"] .modal-episodes-remaining {
+  color: rgba(224, 230, 255, 0.78);
+}
+
+html[data-theme="modern-starwars"] .modal-badge,
+html[data-theme="modern-starwars"] .modal-episodes-count,
+html[data-theme="modern-starwars"] .episode-status,
+html[data-theme="modern-starwars"] .episode-time {
+  border-radius: 999px;
+}
+
+html[data-theme="modern-starwars"] .modal-episodes-count {
+  border-color: rgba(255, 205, 110, 0.2);
+  background:
+    linear-gradient(180deg, rgba(255, 205, 110, 0.12), rgba(255, 255, 255, 0.02)),
+    rgba(12, 18, 31, 0.84);
+}
+
+html[data-theme="modern-starwars"] .modal-episodes-progress {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="modern-starwars"] .episode-list-wrapper {
+  border-radius: 22px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)),
+    rgba(8, 12, 20, 0.84);
+}
+
+html[data-theme="modern-starwars"] .episode-item {
+  border-radius: 16px;
+  border-color: rgba(255, 255, 255, 0.04);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    rgba(10, 14, 24, 0.86);
+}
+
+html[data-theme="modern-starwars"] .episode-item:hover {
+  transform: translateX(6px);
+  border-color: rgba(255, 205, 110, 0.18);
+}
+
+html[data-theme="modern-starwars"] .episode-item.is-watched {
+  background:
+    linear-gradient(180deg, rgba(var(--section-color-rgb), 0.12), rgba(255, 255, 255, 0.01)),
+    rgba(9, 13, 23, 0.92);
+}
+
+html[data-theme="modern-starwars"] .episode-time {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="modern-starwars"] .modal-btn--secondary,
+html[data-theme="modern-starwars"] .modal-secondary-btn,
+html[data-theme="modern-starwars"] .modal-btn--ghost,
+html[data-theme="modern-starwars"] .modal-close-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(10, 14, 24, 0.84);
+  color: rgba(245, 247, 255, 0.92);
+}
+
+html[data-theme="modern-starwars"] .modal-btn--secondary:hover,
+html[data-theme="modern-starwars"] .modal-secondary-btn:hover,
+html[data-theme="modern-starwars"] .modal-btn--ghost:hover,
+html[data-theme="modern-starwars"] .modal-close-btn:hover {
+  border-color: rgba(255, 205, 110, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 205, 110, 0.1), rgba(255, 255, 255, 0.02)),
+    rgba(12, 18, 31, 0.9);
+}
+
+@media (max-width: 768px) {
+  html[data-theme="modern-starwars"] .entry-card {
+    border-radius: 22px;
+  }
+
+  html[data-theme="modern-starwars"] .entry-content {
+    padding: var(--space-4);
+  }
+
+  html[data-theme="modern-starwars"] .entry-content h3 {
+    font-size: 1.26rem;
+    max-width: none;
+  }
+
+  html[data-theme="modern-starwars"] .entry-poster .entry-badge,
+  html[data-theme="modern-starwars"] .media-type-badge {
+    top: var(--space-3);
+  }
+
+  html[data-theme="modern-starwars"] .timeline-rail {
+    padding: 0.4rem 0.75rem 0.55rem;
+  }
+
+  html[data-theme="modern-starwars"] .timeline-rail-inner {
+    gap: 0.45rem;
+    border-radius: 14px;
+    padding: 0.45rem;
+  }
+
+  html[data-theme="modern-starwars"] .rail-marker {
+    padding: 0.5rem 0.72rem 0.62rem;
+    border-radius: 10px;
+  }
+
+  html[data-theme="modern-starwars"] .rail-marker .rail-era-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+  }
+
+  html[data-theme="modern-starwars"] .stats-drawer-panel,
+  html[data-theme="modern-starwars"] .settings-modal .settings-modal-panel,
+  html[data-theme="modern-starwars"] .modal-content {
+    border-radius: 20px;
+  }
+
+  html[data-theme="modern-starwars"] .modal-left,
+  html[data-theme="modern-starwars"] .modal-left img {
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+@media (max-width: 540px) {
+  html[data-theme="modern-starwars"] .modal-content,
+  html[data-theme="modern-starwars"] .modal-left,
+  html[data-theme="modern-starwars"] .modal-left img,
+  html[data-theme="modern-starwars"] .settings-modal .settings-modal-panel {
+    border-radius: 0;
+  }
+}
