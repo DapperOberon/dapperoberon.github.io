@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>STAR WARS: CHRONICLES - Ultimate Timeline</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-effect:active {
+            box-shadow: 0 0 20px rgba(251, 228, 25, 0.3);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353534;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fbe419;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        .era-marker-dot::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 15px currentColor;
+            z-index: 30;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffffff",
+                        "primary-fixed": "#FFE81F",
+                        "secondary": "#75d1ff",
+                        "background": "#0e0e0e",
+                        "surface": "#131313",
+                        "surface-container": "#1c1b1b",
+                        "surface-container-low": "#131313",
+                        "surface-container-high": "#2a2a2a",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#cdc7ab",
+                        "outline-variant": "#4b4732",
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-black">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-[100] bg-background/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-8 h-20 shadow-2xl">
+<div class="text-xl font-bold tracking-tighter text-primary-fixed drop-shadow-[0_0_8px_rgba(251,228,25,0.4)] font-headline">
+        STAR WARS: CHRONICLES
+    </div>
+<div class="hidden md:flex items-center gap-8 font-headline uppercase tracking-widest text-sm">
+<a class="text-primary-fixed border-b-2 border-primary-fixed pb-1" href="#">Timeline</a>
+<a class="text-white/60 hover:text-primary-fixed transition-colors" href="#">Eras</a>
+<a class="text-white/60 hover:text-primary-fixed transition-colors" href="#">Media</a>
+<a class="text-white/60 hover:text-primary-fixed transition-colors" href="#">Vault</a>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group hidden lg:block">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 text-sm">search</span>
+<input class="bg-surface-container-high border-none border-b border-outline-variant/30 focus:border-secondary focus:ring-0 text-xs py-2 pl-10 pr-4 w-64 rounded-none transition-all" placeholder="Search the galaxy..." type="text"/>
+</div>
+<button class="active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary-fixed text-2xl">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- SideNavBar (Filter) -->
+<aside class="hidden lg:flex h-full w-72 fixed left-0 top-0 z-[60] bg-background flex-col py-8 border-r border-white/5 pt-24 bg-gradient-to-r from-white/5 to-transparent">
+<div class="px-8 mb-6">
+<h2 class="text-primary-fixed font-bold font-headline tracking-tighter text-xl uppercase">Galactic Eras</h2>
+<p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">Jump to Timeline</p>
+</div>
+<nav class="flex flex-col gap-1 overflow-y-auto pr-2">
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-[#F5C563] transition-all border-l-2 border-transparent hover:border-[#F5C563]" href="#era-the-high-republic">
+<span class="material-symbols-outlined text-lg">auto_awesome</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">The High Republic</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-[#E5B889] transition-all border-l-2 border-transparent hover:border-[#E5B889]" href="#era-fall-of-the-jedi">
+<span class="material-symbols-outlined text-lg">brightness_low</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">Fall of the Jedi</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-white transition-all border-l-2 border-transparent hover:border-white" href="#era-reign-of-the-empire">
+<span class="material-symbols-outlined text-lg">gavel</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">Reign of the Empire</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-[#ef4444] transition-all border-l-2 border-transparent hover:border-[#ef4444]" href="#era-age-of-the-rebellion">
+<span class="material-symbols-outlined text-lg">flare</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">Age of Rebellion</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-[#5B7FDB] transition-all border-l-2 border-transparent hover:border-[#5B7FDB]" href="#era-the-new-republic">
+<span class="material-symbols-outlined text-lg">public</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">The New Republic</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-[#ff0000] transition-all border-l-2 border-transparent hover:border-[#ff0000]" href="#era-rise-of-the-first-order">
+<span class="material-symbols-outlined text-lg">wifi_tethering</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">Rise of the First Order</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-white/60 hover:bg-white/5 hover:text-[#64748b] transition-all border-l-2 border-transparent hover:border-[#64748b]" href="#era-non-timeline">
+<span class="material-symbols-outlined text-lg">blur_on</span>
+<span class="font-medium text-xs font-body uppercase tracking-wider">Non-Timeline</span>
+</a>
+</nav>
+</aside>
+<main class="lg:ml-72 pt-20">
+<!-- Hero Section -->
+<section class="relative h-[600px] w-full overflow-hidden bg-background">
+<div class="absolute inset-0 z-0">
+<img alt="Space Background" class="w-full h-full object-cover opacity-40 scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdPivETFuobyiQVrXL0Zo9MmizDyfWUR2-t2_B0bKHeAtUdDZ8m6rp7It5B1V1ae8S0T9_uYiuzBbA6bej7eGvDP5MwlPxvKqwPc-6WpJpPSuhbhKIFUblVUFcoPqgbB47FORbu4zLzx7cO-SMMw3r_T0XmTwXnnIgdcu7oOzTzvG3VbRhRD1hQhF5VkOwgU8YgS2fYHOiw0G61SWGXHejpsbYMcoH5sN3R07BfzSzFvmaJ1eTvvRuoCwlTQ7g41BvxBqC1W2Uag"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 h-full flex flex-col justify-center px-8 md:px-16 max-w-5xl">
+<span class="inline-block px-3 py-1 bg-primary-fixed text-black text-[10px] font-bold uppercase tracking-widest mb-6 w-fit">Full Chronological Log</span>
+<h1 class="text-6xl md:text-8xl font-headline font-bold text-white tracking-tighter mb-4 leading-tight">THE DEFINITIVE<br/><span class="text-primary-fixed">WATCHLIST</span></h1>
+<p class="text-on-surface-variant max-w-xl text-lg mb-8 font-light leading-relaxed">From the golden age of the High Republic to the final stand against the First Order, experience the galaxy's history as it happened.</p>
+<div class="flex gap-4">
+<button class="px-8 py-4 bg-primary-fixed text-black font-bold uppercase text-xs tracking-widest flex items-center gap-2 hover:bg-white transition-all rounded-none">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    Resume Journey
+                </button>
+<button class="px-8 py-4 border border-white/20 text-white font-bold uppercase text-xs tracking-widest hover:bg-white/5 transition-all rounded-none">
+                    Watchlist Stats
+                </button>
+</div>
+</div>
+</section>
+<!-- Timeline Container -->
+<section class="px-8 md:px-16 py-16 relative">
+<div class="flex justify-between items-end mb-16 border-b border-white/10 pb-8">
+<div>
+<h2 class="text-4xl font-headline font-bold text-white uppercase tracking-tighter">The Galactic Timeline</h2>
+<p class="text-primary-fixed text-xs font-label uppercase tracking-widest mt-2">Every film and series in order</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-surface-container-high px-5 py-2 text-[10px] font-label text-white/60 hover:text-white transition-all uppercase tracking-widest flex items-center gap-2 border border-white/10">
+<span class="material-symbols-outlined text-sm">filter_alt</span> Filter
+                </button>
+<button class="bg-surface-container-high px-5 py-2 text-[10px] font-label text-white/60 hover:text-white transition-all uppercase tracking-widest flex items-center gap-2 border border-white/10">
+<span class="material-symbols-outlined text-sm">swap_vert</span> Chronological
+                </button>
+</div>
+</div>
+<div class="relative space-y-40 py-10 before:absolute before:left-1/2 before:-translate-x-1/2 before:top-0 before:bottom-0 before:w-[2px] before:bg-gradient-to-b before:from-primary-fixed before:via-secondary before:to-transparent">
+<!-- ERA: THE HIGH REPUBLIC -->
+<div class="relative" id="era-the-high-republic">
+<div class="absolute left-1/2 -translate-x-1/2 -top-12 era-marker-dot text-[#F5C563]"></div>
+<h3 class="text-center text-[#F5C563] font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-block left-1/2 -translate-x-1/2 px-8">The High Republic</h3>
+<div class="space-y-32">
+<!-- Young Jedi Adventures (Left) -->
+<div class="relative flex flex-col md:flex-row items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-[#F5C563] rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-[#F5C563] rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-right pr-12">
+<span class="text-[#F5C563] font-headline font-bold text-2xl tracking-tighter block mb-2">232 BBY</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">Young Jedi Adventures</h4>
+<div class="flex items-center gap-3 mt-3 justify-end">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Animated Show</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">3 Seasons</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Canon</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md ml-auto">The young Jedi take on new missions across the galaxy as they try to stop the rise of the pirates!</p>
+</div>
+<div class="md:w-[45%] pl-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdPivETFuobyiQVrXL0Zo9MmizDyfWUR2-t2_B0bKHeAtUdDZ8m6rp7It5B1V1ae8S0T9_uYiuzBbA6bej7eGvDP5MwlPxvKqwPc-6WpJpPSuhbhKIFUblVUFcoPqgbB47FORbu4zLzx7cO-SMMw3r_T0XmTwXnnIgdcu7oOzTzvG3VbRhRD1hQhF5VkOwgU8YgS2fYHOiw0G61SWGXHejpsbYMcoH5sN3R07BfzSzFvmaJ1eTvvRuoCwlTQ7g41BvxBqC1W2Uag"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<button class="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 border border-white/10 hover:border-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[#F5C563] text-sm">visibility</span>
+<span class="text-[9px] font-label text-white uppercase tracking-widest">Mark Watched</span>
+</button>
+</div>
+</div>
+</div>
+<!-- The Acolyte (Right) -->
+<div class="relative flex flex-col md:flex-row-reverse items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-[#F5C563] rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-[#F5C563] rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-left pl-12">
+<span class="text-[#F5C563] font-headline font-bold text-2xl tracking-tighter block mb-2">132 BBY</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">The Acolyte</h4>
+<div class="flex items-center gap-3 mt-3">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Live Action Show</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">1 Season</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Canon</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md">An investigation into a crime spree pits a Jedi Master against a dangerous warrior from his past.</p>
+</div>
+<div class="md:w-[45%] pr-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHL5UgkFFkW6HumwcRrhGehCRLEEUf1b4DyxFaGDTbpImuQHd0btCPLE1AJd2LjV3xUg-cMpmMe-1YVo8J5ee-16DWlEy9Oh511ydakgC_QiE8B9hR95VFtpy5y4_9ytFIKtFb2n3OWj5TZ-c9ZiKN0-8tzsFlAsn0FuVbVw3G0NwJsWZoQeaSeTjx-FZLtzKC1AurgXhPlOgy-120qPTZRz2pHOwa-AkqCe4XZ-KbnIVuBTLEJ9R-wfXkGVzd57Bet4nY3rLxtQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<button class="absolute bottom-4 right-4 flex items-center gap-2 bg-[#F5C563]/20 border border-[#F5C563]/50 px-4 py-2">
+<span class="material-symbols-outlined text-[#F5C563] text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-[9px] font-label text-[#F5C563] font-bold uppercase tracking-widest">Watched</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ERA: FALL OF THE JEDI -->
+<div class="relative" id="era-fall-of-the-jedi">
+<div class="absolute left-1/2 -translate-x-1/2 -top-12 era-marker-dot text-[#E5B889]"></div>
+<h3 class="text-center text-[#E5B889] font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-block left-1/2 -translate-x-1/2 px-8">Fall of the Jedi</h3>
+<div class="space-y-32">
+<!-- Tales of the Jedi (Left) -->
+<div class="relative flex flex-col md:flex-row items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-[#E5B889] rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-[#E5B889] rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-right pr-12">
+<span class="text-[#E5B889] font-headline font-bold text-2xl tracking-tighter block mb-2">68-19 BBY</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">Tales of the Jedi</h4>
+<div class="flex items-center gap-3 mt-3 justify-end">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Animated Show</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Canon</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md ml-auto">Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.</p>
+</div>
+<div class="md:w-[45%] pl-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover grayscale opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnPPdt4xxw6ps3fCNIZGEdI9ACxzs3no_xZMBghb_PYIxcg3CvIL5Cz57aj2RR1wwBWSeHkvngTsuwO6CzOkujNi65RBTAadFU-XdL8P9o-UQHMTtI43nhWFy222NeRM1oGmuTT5yHzL0qsyuI4pnJUhNmcG1Uxt-tVsHJ0o8Ez9J5E6A9JskRPpLtAW0Yjhzy-19bVaMXUe9e0eoYz9lnx27ZYADzd01hYduF6KAH0FsBACRBAIHg4rxrfA_N23Q_-aNMQPwbAg"/>
+<button class="absolute bottom-4 left-4 flex items-center gap-2 bg-[#E5B889]/20 border border-[#E5B889]/50 px-4 py-2">
+<span class="material-symbols-outlined text-[#E5B889] text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-[9px] font-label text-[#E5B889] font-bold uppercase tracking-widest">Watched</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Ep I: The Phantom Menace (Right) -->
+<div class="relative flex flex-col md:flex-row-reverse items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-[#E5B889] rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-[#E5B889] rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-left pl-12">
+<span class="text-[#E5B889] font-headline font-bold text-2xl tracking-tighter block mb-2">32 BBY</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">Episode I: The Phantom Menace</h4>
+<div class="flex items-center gap-3 mt-3">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Live Action Film</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Canon</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md">Jedi discover Anakin Skywalker, a boy unusually strong in the force. The Sith reappear after a thousand years.</p>
+</div>
+<div class="md:w-[45%] pr-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnPPdt4xxw6ps3fCNIZGEdI9ACxzs3no_xZMBghb_PYIxcg3CvIL5Cz57aj2RR1wwBWSeHkvngTsuwO6CzOkujNi65RBTAadFU-XdL8P9o-UQHMTtI43nhWFy222NeRM1oGmuTT5yHzL0qsyuI4pnJUhNmcG1Uxt-tVsHJ0o8Ez9J5E6A9JskRPpLtAW0Yjhzy-19bVaMXUe9e0eoYz9lnx27ZYADzd01hYduF6KAH0FsBACRBAIHg4rxrfA_N23Q_-aNMQPwbAg"/>
+<button class="absolute bottom-4 right-4 flex items-center gap-2 bg-[#E5B889]/20 border border-[#E5B889]/50 px-4 py-2">
+<span class="material-symbols-outlined text-[#E5B889] text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-[9px] font-label text-[#E5B889] font-bold uppercase tracking-widest">Watched</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ERA: REIGN OF THE EMPIRE -->
+<div class="relative" id="era-reign-of-the-empire">
+<div class="absolute left-1/2 -translate-x-1/2 -top-12 era-marker-dot text-white"></div>
+<h3 class="text-center text-white font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-block left-1/2 -translate-x-1/2 px-8">Reign of the Empire</h3>
+<div class="space-y-32">
+<!-- Andor (Left) -->
+<div class="relative flex flex-col md:flex-row items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-white rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-right pr-12">
+<span class="text-white/60 font-headline font-bold text-2xl tracking-tighter block mb-2">5-1 BBY</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">Andor</h4>
+<div class="flex items-center gap-3 mt-3 justify-end">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Live Action Show</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">2 Seasons</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md ml-auto">Cassian Andor continues the path toward his heroic rebel destiny in this gritty exploration of the early rebellion.</p>
+</div>
+<div class="md:w-[45%] pl-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover grayscale opacity-70 group-hover/card:grayscale-0 group-hover/card:opacity-100 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHL5UgkFFkW6HumwcRrhGehCRLEEUf1b4DyxFaGDTbpImuQHd0btCPLE1AJd2LjV3xUg-cMpmMe-1YVo8J5ee-16DWlEy9Oh511ydakgC_QiE8B9hR95VFtpy5y4_9ytFIKtFb2n3OWj5TZ-c9ZiKN0-8tzsFlAsn0FuVbVw3G0NwJsWZoQeaSeTjx-FZLtzKC1AurgXhPlOgy-120qPTZRz2pHOwa-AkqCe4XZ-KbnIVuBTLEJ9R-wfXkGVzd57Bet4nY3rLxtQ"/>
+<button class="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 border border-white/10 hover:border-white transition-all">
+<span class="material-symbols-outlined text-white text-sm">visibility</span>
+<span class="text-[9px] font-label text-white uppercase tracking-widest">Mark Watched</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ERA: THE NEW REPUBLIC -->
+<div class="relative" id="era-the-new-republic">
+<div class="absolute left-1/2 -translate-x-1/2 -top-12 era-marker-dot text-[#5B7FDB]"></div>
+<h3 class="text-center text-[#5B7FDB] font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-block left-1/2 -translate-x-1/2 px-8">The New Republic</h3>
+<div class="space-y-32">
+<!-- The Mandalorian (Right) -->
+<div class="relative flex flex-col md:flex-row-reverse items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-[#5B7FDB] rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-[#5B7FDB] rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-left pl-12">
+<span class="text-[#5B7FDB] font-headline font-bold text-2xl tracking-tighter block mb-2">9 ABY</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">The Mandalorian</h4>
+<div class="flex items-center gap-3 mt-3">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Live Action Show</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">3 Seasons</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md">After the Empire's fall, a lone Mandalorian makes his way through the galaxy with his foundling, Grogu.</p>
+</div>
+<div class="md:w-[45%] pr-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHL5UgkFFkW6HumwcRrhGehCRLEEUf1b4DyxFaGDTbpImuQHd0btCPLE1AJd2LjV3xUg-cMpmMe-1YVo8J5ee-16DWlEy9Oh511ydakgC_QiE8B9hR95VFtpy5y4_9ytFIKtFb2n3OWj5TZ-c9ZiKN0-8tzsFlAsn0FuVbVw3G0NwJsWZoQeaSeTjx-FZLtzKC1AurgXhPlOgy-120qPTZRz2pHOwa-AkqCe4XZ-KbnIVuBTLEJ9R-wfXkGVzd57Bet4nY3rLxtQ"/>
+<button class="absolute bottom-4 right-4 flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 border border-white/10 hover:border-[#5B7FDB] transition-all">
+<span class="material-symbols-outlined text-[#5B7FDB] text-sm">visibility</span>
+<span class="text-[9px] font-label text-white uppercase tracking-widest">Mark Watched</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ERA: NON-TIMELINE -->
+<div class="relative" id="era-non-timeline">
+<div class="absolute left-1/2 -translate-x-1/2 -top-12 era-marker-dot text-[#64748b]"></div>
+<h3 class="text-center text-[#64748b] font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-block left-1/2 -translate-x-1/2 px-8">Non-Timeline</h3>
+<div class="space-y-32">
+<!-- Visions (Left) -->
+<div class="relative flex flex-col md:flex-row items-center justify-between group">
+<div class="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-background border-2 border-[#64748b] rounded-full z-10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-[#64748b] rounded-full"></div>
+</div>
+<div class="md:w-[45%] text-right pr-12">
+<span class="text-[#64748b] font-headline font-bold text-2xl tracking-tighter block mb-2">Anthology</span>
+<h4 class="text-2xl font-headline font-bold text-white uppercase tracking-tight">Star Wars: Visions</h4>
+<div class="flex items-center gap-3 mt-3 justify-end">
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">Various Styles</span>
+<span class="text-[9px] uppercase font-label tracking-widest text-white/40 border border-white/10 px-2 py-1">27 Episodes</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-4 leading-relaxed max-w-md ml-auto">Nine new anime stories from legendary Japanese studios celebrating the mythos of Star Wars through unique visual styles.</p>
+</div>
+<div class="md:w-[45%] pl-12 hidden md:block">
+<div class="relative group/card bg-surface overflow-hidden border border-white/5 shadow-2xl aspect-video">
+<img alt="Poster" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnPPdt4xxw6ps3fCNIZGEdI9ACxzs3no_xZMBghb_PYIxcg3CvIL5Cz57aj2RR1wwBWSeHkvngTsuwO6CzOkujNi65RBTAadFU-XdL8P9o-UQHMTtI43nhWFy222NeRM1oGmuTT5yHzL0qsyuI4pnJUhNmcG1Uxt-tVsHJ0o8Ez9J5E6A9JskRPpLtAW0Yjhzy-19bVaMXUe9e0eoYz9lnx27ZYADzd01hYduF6KAH0FsBACRBAIHg4rxrfA_N23Q_-aNMQPwbAg"/>
+<button class="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 border border-white/10 hover:border-[#64748b] transition-all">
+<span class="material-symbols-outlined text-[#64748b] text-sm">visibility</span>
+<span class="text-[9px] font-label text-white uppercase tracking-widest">Mark Watched</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-16 px-8 border-t border-white/5 bg-background flex flex-col items-center gap-8 mt-20">
+<div class="text-primary-fixed font-bold font-headline tracking-tighter text-2xl drop-shadow-[0_0_10px_rgba(251,228,25,0.3)]">STAR WARS: CHRONICLES</div>
+<div class="flex flex-wrap justify-center gap-10">
+<a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Privacy Policy</a>
+<a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Terms of Use</a>
+<a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Support</a>
+<a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Official Galaxy Guide</a>
+</div>
+<div class="font-label uppercase tracking-[0.4em] text-[9px] text-white/20 text-center max-w-lg leading-relaxed">
+            © &amp; TM LUCASFILM LTD. ALL RIGHTS RESERVED. <br/> DATA SYNCED FROM GALACTIC ARCHIVES.
+        </div>
+</footer>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-10 right-10 w-16 h-16 bg-primary-fixed text-black flex items-center justify-center rounded-none shadow-[0_0_30px_rgba(251,228,25,0.3)] hover:scale-110 active:scale-95 transition-all z-[110] glow-effect">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</body></html>

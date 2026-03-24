@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Galactic Archive - Filter Temporal Sectors</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#131313",
+                        "primary": "#ffffff",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#003548",
+                        "secondary-fixed-dim": "#75d1ff",
+                        "tertiary-fixed": "#22fbf8",
+                        "tertiary-container": "#22fbf8",
+                        "on-secondary-fixed-variant": "#004d67",
+                        "background": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary-fixed": "#c2e8ff",
+                        "primary-fixed": "#fbe419",
+                        "surface-tint": "#ddc800",
+                        "on-tertiary-fixed": "#00201f",
+                        "tertiary": "#ffffff",
+                        "on-secondary-fixed": "#001e2b",
+                        "inverse-on-surface": "#313030",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-container": "#002e3f",
+                        "outline": "#969178",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "surface-bright": "#3a3939",
+                        "on-primary": "#373100",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-fixed": "#201c00",
+                        "surface-dim": "#131313",
+                        "on-tertiary-container": "#00706f",
+                        "outline-variant": "#4b4732",
+                        "secondary-container": "#189bcc",
+                        "on-tertiary-fixed-variant": "#00504f",
+                        "primary-container": "#fbe419",
+                        "on-background": "#e5e2e1",
+                        "on-surface-variant": "#cdc7ab",
+                        "surface-container": "#201f1f",
+                        "on-surface": "#e5e2e1",
+                        "secondary": "#75d1ff",
+                        "error-container": "#93000a",
+                        "tertiary-fixed-dim": "#00ddda",
+                        "on-tertiary": "#003736",
+                        "surface-variant": "#353534",
+                        "primary-fixed-dim": "#ddc800",
+                        "on-primary-container": "#706500",
+                        "inverse-primary": "#6a5f00",
+                        "surface-container-high": "#2a2a2a",
+                        "on-primary-fixed-variant": "#504700"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-yellow {
+            box-shadow: 0 0 15px rgba(251, 228, 25, 0.2);
+        }
+        .glow-blue {
+            box-shadow: 0 0 15px rgba(117, 209, 255, 0.2);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131313;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353534;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-800/50 flex justify-between items-center px-6 py-4 shadow-[0_0_15px_rgba(251,228,25,0.1)]">
+<div class="text-2xl font-bold tracking-tighter text-[#FFE81F] uppercase font-headline">GALACTIC CINEMA</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-neutral-400 hover:text-neutral-200 transition-colors font-headline tracking-tight" href="#">Timeline</a>
+<a class="text-[#FFE81F] border-b-2 border-[#FFE81F] pb-1 font-headline tracking-tight" href="#">Library</a>
+<a class="text-neutral-400 hover:text-neutral-200 transition-colors font-headline tracking-tight" href="#">Archive</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-neutral-400 hover:bg-neutral-800/50 p-2 rounded-full cursor-pointer transition-all duration-300">notifications</span>
+<span class="material-symbols-outlined text-neutral-400 hover:bg-neutral-800/50 p-2 rounded-full cursor-pointer transition-all duration-300">settings</span>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
+<img alt="User profile in pilot gear" class="w-full h-full object-cover" data-alt="Close up of a starship pilot wearing a detailed helmet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCsGfPSFsPt87f433twhSvUT6pZafEcpN8BmX3Q4QPlZj083BTngPaQH8zHebwTg8gVWEom8lKKICw2RVSzGRmkdCoySIy1DeOf7k08vyWqeSmeKGSQpqoUno0HqbxP3te0NRN43hAqEqxGwxazDy1PTsnnwtUl47A07R3ybvaj3iQ_zDxsMBBDeC3teL6-PjAfL1Zj6hxbQfSm8vNi6hVhst_VSSp48-BLGkRmDCxbydAYTYDWb74_Wiqh43u7JjElvep1ODhfQ"/>
+</div>
+</div>
+</header>
+<!-- Side Navigation Anchor (Hidden on Mobile) -->
+<aside class="hidden lg:flex flex-col h-screen w-72 fixed left-0 top-0 z-40 bg-[#131313] py-8 shadow-[10px_0_30px_-15px_rgba(0,0,0,0.5)]">
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary-fixed text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="text-lg font-black text-[#FFE81F] font-headline">ERA CHRONICLE</span>
+</div>
+<p class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-label">Select Temporal Sector</p>
+</div>
+<nav class="flex-1 space-y-1 overflow-y-auto px-2">
+<div class="flex items-center gap-4 text-neutral-500 px-4 py-3 hover:text-neutral-300 hover:bg-neutral-800/30 transition-colors cursor-pointer font-headline uppercase text-sm tracking-widest">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>High Republic</span>
+</div>
+<div class="flex items-center gap-4 text-neutral-500 px-4 py-3 hover:text-neutral-300 hover:bg-neutral-800/30 transition-colors cursor-pointer font-headline uppercase text-sm tracking-widest">
+<span class="material-symbols-outlined">flare</span>
+<span>Fall of the Jedi</span>
+</div>
+<div class="flex items-center gap-4 text-neutral-500 px-4 py-3 hover:text-neutral-300 hover:bg-neutral-800/30 transition-colors cursor-pointer font-headline uppercase text-sm tracking-widest">
+<span class="material-symbols-outlined">brightness_low</span>
+<span>Reign of the Empire</span>
+</div>
+<div class="flex items-center gap-4 text-[#FFE81F] bg-neutral-800/50 border-r-4 border-[#FFE81F] px-4 py-3 font-headline uppercase text-sm tracking-widest">
+<span class="material-symbols-outlined">brightness_high</span>
+<span>Age of Rebellion</span>
+</div>
+<div class="flex items-center gap-4 text-neutral-500 px-4 py-3 hover:text-neutral-300 hover:bg-neutral-800/30 transition-colors cursor-pointer font-headline uppercase text-sm tracking-widest">
+<span class="material-symbols-outlined">shield</span>
+<span>New Republic</span>
+</div>
+<div class="flex items-center gap-4 text-neutral-500 px-4 py-3 hover:text-neutral-300 hover:bg-neutral-800/30 transition-colors cursor-pointer font-headline uppercase text-sm tracking-widest">
+<span class="material-symbols-outlined">military_tech</span>
+<span>First Order</span>
+</div>
+</nav>
+<div class="mt-auto px-6 space-y-4">
+<button class="w-full text-xs font-label uppercase tracking-widest text-neutral-500 hover:text-primary-fixed transition-colors py-4 border-t border-neutral-800/50">Reset Filters</button>
+<div class="flex justify-between pb-4">
+<span class="material-symbols-outlined text-neutral-600 hover:text-secondary transition-colors cursor-pointer">movie</span>
+<span class="material-symbols-outlined text-neutral-600 hover:text-secondary transition-colors cursor-pointer">animation</span>
+<span class="material-symbols-outlined text-neutral-600 hover:text-secondary transition-colors cursor-pointer">live_tv</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-72 pt-24 pb-12 px-6 lg:px-12 min-h-screen">
+<!-- Dashboard Header -->
+<div class="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-5xl md:text-7xl font-headline font-bold tracking-tighter text-on-surface mb-2 uppercase">Galactic Vault</h1>
+<p class="text-secondary tracking-widest font-label text-xs uppercase opacity-80">Chronological Archive Protocol Active</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-6 py-3 rounded-full flex items-center gap-2 font-headline uppercase text-xs tracking-widest transition-all">
+<span class="material-symbols-outlined text-lg">sort</span> Sort
+                </button>
+<button class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-full flex items-center gap-2 font-headline font-bold uppercase text-xs tracking-widest glow-yellow active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">filter_alt</span> Refine Archive
+                </button>
+</div>
+</div>
+<!-- Bento Grid Mockup -->
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div class="md:col-span-2 lg:col-span-2 aspect-[16/9] rounded-xl overflow-hidden relative group bg-surface-container-low">
+<img alt="Starry galaxy view" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="Stunning deep space nebula with bright stars and gas clouds" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFAbWIE3g16KQtGd4NXqF8DayQeyaFU5jHHBjZL3DPKdElG8lCHXHRSiCWFj67LZj7gj5uv2az3yQBh5t2pz_MqNiFPIlca9ZLwNVBxli1khhIdhR4YvSEBeUN6HFeReOj-aEnQTZgsC3odHCHHaWG5nwI5xsfQ1fLOUMnyoP2LW-jAnnNlHuPbEMIxN2ep8fcaqp5XGTHQ3uPApfmVwx5GVFR5VGLoOuTzGKuji-1d1RyEYn_d_PELVDhmHSm7-og5Mbj6Q8ueQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<span class="bg-primary-fixed text-on-primary-fixed text-[10px] font-black px-2 py-0.5 rounded uppercase font-label mb-2 inline-block">Featured</span>
+<h3 class="text-3xl font-headline font-bold text-white uppercase tracking-tight">The Skywalker Saga</h3>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group bg-surface-container-low">
+<img alt="Futuristic interface" class="w-full h-full object-cover opacity-50" data-alt="Blue glowing technical schematics of a spaceship interior" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChh7_7DEW8JMKgbbA9UmT8VGLgITTlumIYJ9lMGCbrUddO-EqjFJqO8gagoufYAjM5Eqdmb3YdDILZnWi8CHG2YWVakyO3PAfu9XTwMXVXw5s0PjEK1eqmqbn-1fiTrFuqtD-Db6_8Au7cF5ZOLrVliFllM4QnhuJSmwOlML78nTXQfo3Uan_rjZHkg_eSi2TaMoNxxsd2upf2Dj46t6qtRhJIiRQoKcynGo09m1L-OUaGMMg7pAX_eSTjL0cCyly_qkT-VRTMNA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h3 class="text-xl font-headline font-bold text-white uppercase tracking-tight">The Mandalorian</h3>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group bg-surface-container-low">
+<img alt="Earth from orbit" class="w-full h-full object-cover opacity-50" data-alt="A cinematic view of a desert planet from space orbit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuyL1YUecGtDSVbmkU1Zeo26LHgDASZoM2kVbNKudfBKi36H-hgzK0eEYOM05yZh8ru4zwAIYw4uC5EHtbONVr4jb0ABdf9fHOtuj8wB0z6iTfUXMIh4KSAeXARzgYle_EmgP5p0jCu84Brvs1kNxYoupeRh4UvW9VfxiI4QO8rV7XJs5gm5JCzX6jNlnkv33dEIYCNvCQZE7jcu83u20h9EbRPykCE2sT9689Fv134ogJ31DZSMOPOLVt844lSYS1OYyhbSySDw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h3 class="text-xl font-headline font-bold text-white uppercase tracking-tight">Andor</h3>
+</div>
+</div>
+</div>
+</main>
+<!-- Filter Overlay (The Request) -->
+<div class="fixed inset-0 z-[60] flex justify-end pointer-events-none">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"></div>
+<!-- Filter Panel -->
+<div class="w-full max-w-md bg-surface-container-lowest h-screen pointer-events-auto relative flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.8)] border-l border-outline-variant/10">
+<!-- Header -->
+<div class="p-8 border-b border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-3xl font-headline font-bold tracking-tighter text-white uppercase">Archive Filters</h2>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-neutral-400">close</span>
+</button>
+</div>
+<p class="text-secondary font-label text-[10px] uppercase tracking-[0.2em] opacity-80">Refining Chronological Data Points</p>
+</div>
+<!-- Filter Content -->
+<div class="flex-1 overflow-y-auto p-8 space-y-10">
+<!-- 1. Galactic Eras -->
+<section>
+<label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Temporal Sectors (Eras)</label>
+<div class="space-y-3">
+<label class="flex items-center group cursor-pointer">
+<input class="hidden peer" type="checkbox"/>
+<div class="w-5 h-5 border-2 border-outline-variant rounded-sm flex items-center justify-center peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all mr-4 group-hover:border-secondary">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100">check</span>
+</div>
+<span class="font-headline uppercase tracking-widest text-sm text-neutral-400 peer-checked:text-primary-fixed transition-colors">High Republic</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input checked="" class="hidden peer" type="checkbox"/>
+<div class="w-5 h-5 border-2 border-outline-variant rounded-sm flex items-center justify-center peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all mr-4 group-hover:border-secondary">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100">check</span>
+</div>
+<span class="font-headline uppercase tracking-widest text-sm text-neutral-400 peer-checked:text-primary-fixed transition-colors">Fall of the Jedi</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input checked="" class="hidden peer" type="checkbox"/>
+<div class="w-5 h-5 border-2 border-outline-variant rounded-sm flex items-center justify-center peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all mr-4 group-hover:border-secondary">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100">check</span>
+</div>
+<span class="font-headline uppercase tracking-widest text-sm text-neutral-400 peer-checked:text-primary-fixed transition-colors">Reign of the Empire</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="hidden peer" type="checkbox"/>
+<div class="w-5 h-5 border-2 border-outline-variant rounded-sm flex items-center justify-center peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all mr-4 group-hover:border-secondary">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100">check</span>
+</div>
+<span class="font-headline uppercase tracking-widest text-sm text-neutral-400 peer-checked:text-primary-fixed transition-colors">Age of Rebellion</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="hidden peer" type="checkbox"/>
+<div class="w-5 h-5 border-2 border-outline-variant rounded-sm flex items-center justify-center peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all mr-4 group-hover:border-secondary">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100">check</span>
+</div>
+<span class="font-headline uppercase tracking-widest text-sm text-neutral-400 peer-checked:text-primary-fixed transition-colors">New Republic</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="hidden peer" type="checkbox"/>
+<div class="w-5 h-5 border-2 border-outline-variant rounded-sm flex items-center justify-center peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all mr-4 group-hover:border-secondary">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100">check</span>
+</div>
+<span class="font-headline uppercase tracking-widest text-sm text-neutral-400 peer-checked:text-primary-fixed transition-colors">Rise of the First Order</span>
+</label>
+</div>
+</section>
+<!-- 2. Media Type -->
+<section>
+<label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Transmission Format</label>
+<div class="grid grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded bg-primary-fixed text-on-primary-fixed glow-yellow transition-all">
+<span class="material-symbols-outlined">movie</span>
+<span class="text-[9px] font-label font-bold uppercase tracking-widest">Movies</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded bg-surface-container hover:bg-surface-container-high text-neutral-400 transition-all">
+<span class="material-symbols-outlined">animation</span>
+<span class="text-[9px] font-label font-bold uppercase tracking-widest">Animated</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded bg-surface-container hover:bg-surface-container-high text-neutral-400 transition-all">
+<span class="material-symbols-outlined">live_tv</span>
+<span class="text-[9px] font-label font-bold uppercase tracking-widest">Live Action</span>
+</button>
+</div>
+</section>
+<!-- 3. Canon Status & 4. Watch Status -->
+<div class="grid grid-cols-2 gap-8">
+<section>
+<label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Continuity</label>
+<div class="flex flex-col gap-3">
+<label class="relative flex items-center cursor-pointer">
+<input checked="" class="hidden peer" name="canon" type="radio"/>
+<div class="w-full py-2 px-4 rounded-full border border-outline-variant/30 text-center text-[10px] font-label uppercase tracking-widest text-neutral-500 peer-checked:bg-secondary/10 peer-checked:text-secondary peer-checked:border-secondary glow-blue transition-all">Canon</div>
+</label>
+<label class="relative flex items-center cursor-pointer">
+<input class="hidden peer" name="canon" type="radio"/>
+<div class="w-full py-2 px-4 rounded-full border border-outline-variant/30 text-center text-[10px] font-label uppercase tracking-widest text-neutral-500 peer-checked:bg-secondary/10 peer-checked:text-secondary peer-checked:border-secondary transition-all">Legends</div>
+</label>
+</div>
+</section>
+<section>
+<label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Archive Status</label>
+<div class="flex flex-col gap-3">
+<label class="relative flex items-center cursor-pointer">
+<input checked="" class="hidden peer" name="watch" type="radio"/>
+<div class="w-full py-2 px-4 rounded-full border border-outline-variant/30 text-center text-[10px] font-label uppercase tracking-widest text-neutral-500 peer-checked:border-primary-fixed peer-checked:text-primary-fixed transition-all">Show All</div>
+</label>
+<label class="relative flex items-center cursor-pointer">
+<input class="hidden peer" name="watch" type="radio"/>
+<div class="w-full py-2 px-4 rounded-full border border-outline-variant/30 text-center text-[10px] font-label uppercase tracking-widest text-neutral-500 peer-checked:border-primary-fixed peer-checked:text-primary-fixed transition-all">Watched</div>
+</label>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-8 bg-surface-container-low/50 backdrop-blur-md border-t border-outline-variant/10 grid grid-cols-2 gap-4">
+<button class="py-4 text-[10px] font-headline font-bold uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors">Clear All</button>
+<button class="py-4 bg-primary-fixed text-on-primary-fixed rounded-sm font-headline font-bold uppercase tracking-[0.2em] text-[10px] glow-yellow hover:translate-y-[-2px] active:translate-y-0 transition-all">Apply Filters</button>
+</div>
+<!-- Cosmetic Grid Overlay -->
+<div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 40px 40px;"></div>
+</div>
+</div>
+</body></html>

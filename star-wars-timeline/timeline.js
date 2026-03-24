@@ -647,97 +647,220 @@ function initScrollTopButton() {
   updateVisibility();
 }
 
+function getFeaturedEntry() {
+  const visibleNextCard = getNextUnwatchedVisibleCard();
+  if (visibleNextCard) {
+    const sectionIdx = Number(visibleNextCard.dataset.section);
+    const entryIdx = Number(visibleNextCard.dataset.entry);
+    return {
+      entry: TIMELINE_DATA[sectionIdx].entries[entryIdx],
+      section: TIMELINE_DATA[sectionIdx],
+      sectionIdx,
+      entryIdx
+    };
+  }
+
+  if (TIMELINE_DATA.length === 0 || TIMELINE_DATA[0].entries.length === 0) {
+    return null;
+  }
+
+  return {
+    entry: TIMELINE_DATA[0].entries[0],
+    section: TIMELINE_DATA[0],
+    sectionIdx: 0,
+    entryIdx: 0
+  };
+}
+
+function buildHeroStatsMarkup(stats) {
+  return `
+    <div class="flagship-hero-stat">
+      <span class="flagship-hero-stat-value">${TIMELINE_DATA.reduce((count, section) => count + section.entries.length, 0)}</span>
+      <span class="flagship-hero-stat-label">Entries</span>
+    </div>
+    <div class="flagship-hero-stat">
+      <span class="flagship-hero-stat-value">${stats.overallProgress}%</span>
+      <span class="flagship-hero-stat-label">Complete</span>
+    </div>
+    <div class="flagship-hero-stat">
+      <span class="flagship-hero-stat-value">${stats.watchedEpisodes}</span>
+      <span class="flagship-hero-stat-label">Watched</span>
+    </div>
+  `;
+}
+
+function featuredTag(isCanon) {
+  return `<span class="entry-tag">${isCanon ? 'Canon' : 'Legends'}</span>`;
+}
+
 function renderHeader(stats) {
   return `
-    <header class="site-hero">
-      <div class="music-pill-row">
-        <div class="music-pill" id="music-pill" role="region" aria-label="Background music controls">
-          <span class="music-pill-label">Now Playing</span>
-          <span class="music-pill-title" id="music-pill-title">Music Off</span>
-          <button id="music-pill-toggle" class="music-pill-btn" type="button" aria-label="Play or pause background music" title="Play or pause background music">▶</button>
-          <button id="music-pill-next" class="music-pill-btn" type="button" aria-label="Skip to next track" title="Skip to next track">⏭</button>
-        </div>
-      </div>
-
-      <div class="header-container">
-        <div class="hero-title">
-          <h1 data-text="GALACTIC ARCHIVE"><span class="hero-strong">GALACTIC</span> <span class="hero-accent">ARCHIVE</span></h1>
-          <p class="hero-sub">A comprehensive chronological guide to the Star Wars universe. Track your progress across the stars.</p>
-        </div>
-      </div>
-      
-      <div class="header-controls-row">
-        <div class="header-utility-row" aria-label="Quick progress and actions">
-          <button id="stats-drawer-toggle" class="stats-drawer-toggle" type="button" aria-expanded="false" aria-controls="stats-drawer">
-            Stats
-          </button>
-          <button id="settings-open-btn" class="stats-mini-pill settings-trigger" type="button" aria-haspopup="dialog" aria-controls="settings-modal">
-            Preferences
-          </button>
-        </div>
-      </div>
-
-      <div class="filters-container">
-        <div class="command-deck-row">
-          <div class="search-wrapper">
-            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <input type="text" id="search-input" class="search-input" placeholder="Search by title, year, or type..." aria-label="Search timeline entries" autocomplete="off" spellcheck="false" />
+    <header class="site-hero flagship-shell">
+      <nav class="flagship-topbar" aria-label="Primary navigation">
+        <div class="flagship-topbar-left">
+          <div class="flagship-brand-wrap">
+            <button class="flagship-mobile-menu" type="button" aria-label="Open era navigation">
+              <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+            </button>
+            <div class="flagship-brand">
+              <span class="flagship-brand-mark">STAR WARS: CHRONICLES</span>
+            </div>
           </div>
-          <button id="continue-where-left-off" class="stats-mini-pill stats-mini-pill--cta command-cta-btn" type="button" aria-label="Continue where you left off">
-            Continue Where I Left Off
+          <nav class="flagship-topnav" aria-label="Sections">
+            <a href="#main-content" class="flagship-topnav-link active">Timeline</a>
+            <a href="#timeline-chronology" class="flagship-topnav-link">Eras</a>
+            <a href="#active-filters-bar" class="flagship-topnav-link">Media</a>
+            <a href="#footer-reset-anchor" class="flagship-topnav-link">Vault</a>
+          </nav>
+        </div>
+        <div class="flagship-topbar-actions">
+          <label class="flagship-search-wrap" for="search-input">
+            <span class="flagship-search-icon material-symbols-outlined" aria-hidden="true">search</span>
+            <input type="text" id="search-input" class="search-input" placeholder="Search the galaxy..." aria-label="Search timeline entries" autocomplete="off" spellcheck="false" />
+          </label>
+          <button id="stats-drawer-toggle" class="stats-drawer-toggle flagship-icon-btn" type="button" aria-expanded="false" aria-controls="stats-drawer" aria-label="Open stats">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+          </button>
+          <button id="settings-open-btn" class="flagship-avatar-btn settings-trigger" type="button" aria-haspopup="dialog" aria-controls="settings-modal" aria-label="Open preferences">
+            <span class="material-symbols-outlined" aria-hidden="true">settings</span>
           </button>
         </div>
+      </nav>
+    </header>
+  `;
+}
 
-        <div class="quick-filters-row" aria-label="Primary timeline filters">
+function renderHeroSection(stats) {
+  const featured = getFeaturedEntry();
+  const featuredEntry = featured ? featured.entry : null;
+  const featuredSection = featured ? featured.section : null;
+  const featuredMeta = featuredEntry ? getEntryMetaDetails(featuredEntry) : '';
+  const featuredMedia = featuredEntry ? getMediaTypeInfo(featuredEntry.type) : getMediaTypeInfo('');
+  const featuredBackground = featuredEntry && featuredEntry.poster ? `style="--hero-image: url('${featuredEntry.poster}');"` : '';
+
+  return `
+    <section class="flagship-hero-panel" ${featuredBackground}>
+      <div class="flagship-hero-copy flagship-hero-copy--desktop">
+        <span class="flagship-currently-viewing">Currently Viewing</span>
+        <h1>THE SKYWALKER<br /><span class="flagship-yellow-text">SAGA</span></h1>
+        <p class="flagship-hero-sub">Experience the complete journey from the fall of the Republic to the rise of the Resistance in the definitive chronological order.</p>
+        <div class="flagship-hero-actions">
+          <button id="continue-where-left-off" class="command-cta-btn flagship-primary-btn" type="button" aria-label="Continue where you left off">
+            <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+            <span>Continue Watching</span>
+          </button>
+          <button class="flagship-secondary-btn" type="button" ${featured ? `data-open-featured="${featured.sectionIdx}:${featured.entryIdx}"` : 'disabled'}>View Details</button>
+        </div>
+        <div class="flagship-hero-stats">
+          <div class="flagship-hero-stat">
+            <span id="hero-stat-entries" class="flagship-hero-stat-value">${stats.totalShows}</span>
+            <span class="flagship-hero-stat-label">Entries</span>
+          </div>
+          <div class="flagship-hero-stat">
+            <span id="hero-stat-progress" class="flagship-hero-stat-value">${stats.overallProgress}%</span>
+            <span class="flagship-hero-stat-label">Complete</span>
+          </div>
+          <div class="flagship-hero-stat">
+            <span id="hero-stat-watched" class="flagship-hero-stat-value">${stats.watchedEpisodes}</span>
+            <span class="flagship-hero-stat-label">Watched</span>
+          </div>
+        </div>
+      </div>
+      <div class="flagship-mobile-hero-summary">
+        <p class="flagship-mobile-kicker">Current Mission</p>
+        <h2>MASTER<br />WATCHLIST</h2>
+        <div class="flagship-mobile-stat-row">
+          <div class="flagship-mobile-stat-card">
+            <span id="hero-mobile-entries" class="flagship-mobile-stat-value">${stats.totalShows}</span>
+            <span class="flagship-mobile-stat-label">Entries</span>
+          </div>
+          <div class="flagship-mobile-stat-card">
+            <span id="hero-mobile-progress" class="flagship-mobile-stat-value">${stats.overallProgress}%</span>
+            <span class="flagship-mobile-stat-label">Complete</span>
+          </div>
+        </div>
+      </div>
+      <div class="flagship-hero-feature">
+        <div class="music-pill-row">
+          <div class="music-pill" id="music-pill" role="region" aria-label="Background music controls">
+            <span class="music-pill-label">Audio Channel</span>
+            <span class="music-pill-title" id="music-pill-title">Music Off</span>
+            <button id="music-pill-toggle" class="music-pill-btn" type="button" aria-label="Play or pause background music" title="Play or pause background music">▶</button>
+            <button id="music-pill-next" class="music-pill-btn" type="button" aria-label="Skip to next track" title="Skip to next track">⏭</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderFilterSection() {
+  return `
+    <section class="flagship-command-section filters-container" id="timeline-chronology">
+      <div class="flagship-command-header">
+        <div>
+          <h2 class="flagship-command-title">Chronological Order</h2>
+          <p class="flagship-command-sub">${TIMELINE_DATA[0]?.entries[0]?.year || ''} - ${TIMELINE_DATA[TIMELINE_DATA.length - 1]?.entries.slice(-1)[0]?.year || ''}</p>
+        </div>
+        <div class="flagship-command-buttons">
+          <button id="filters-toggle" class="filters-toggle flagship-secondary-btn" type="button" aria-expanded="false" aria-controls="filters-panel">
+            <span class="material-symbols-outlined" aria-hidden="true">filter_list</span>
+            <span>Filter</span>
+            <span id="filters-active-count" class="filters-toggle-count">None</span>
+          </button>
+          <button id="stats-drawer-toggle-inline" class="flagship-secondary-btn flagship-inline-btn" type="button">
+            <span class="material-symbols-outlined" aria-hidden="true">sort</span>
+            <span>Release Date</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-panel" id="filters-panel" aria-hidden="true">
+        <div class="filters-row">
           <div class="filter-group filter-group-type">
-            <span class="filter-group-label">Type:</span>
+            <span class="filter-group-label">Type</span>
             <button class="filter-btn active" data-type-filter="all">All</button>
             <button class="filter-btn" data-type-filter="films">Films</button>
             <button class="filter-btn" data-type-filter="shows">Shows</button>
           </div>
 
           <div class="filter-group filter-group-progress">
-            <span class="filter-group-label">Progress:</span>
+            <span class="filter-group-label">Progress</span>
             <button class="filter-btn active" data-progress-filter="all">All</button>
             <button class="filter-btn" data-progress-filter="not-started">Not Started</button>
             <button class="filter-btn" data-progress-filter="in-progress">In Progress</button>
             <button class="filter-btn" data-progress-filter="completed">Completed</button>
           </div>
-        </div>
 
-        <button id="filters-toggle" class="filters-toggle" type="button" aria-expanded="false" aria-controls="filters-panel">
-          <span>More Filters</span>
-          <span id="filters-active-count" class="filters-toggle-count">All</span>
-        </button>
-      </div>
-
-      <div class="filters-panel" id="filters-panel">
-        <div class="filters-row">
           <div class="filter-group filter-group-canon">
-            <span class="filter-group-label">Canon:</span>
+            <span class="filter-group-label">Continuity</span>
             <button class="filter-btn active" data-canon-filter="all">All</button>
             <button class="filter-btn" data-canon-filter="canon">Canon</button>
             <button class="filter-btn" data-canon-filter="legends">Legends</button>
           </div>
 
-          <div class="filter-group filter-group-arc">
-            <span class="filter-group-label">Story Arc:</span>
-            <button class="filter-btn active" data-arc-filter="all">All</button>
-            <button class="filter-btn" data-arc-filter="clone-wars">Clone Wars Arc</button>
-            <button class="filter-btn" data-arc-filter="mandoverse">Mandoverse Arc</button>
-            <button class="filter-btn" data-arc-filter="sequel-era">Sequel-Era Arc</button>
-            <button class="filter-btn" data-arc-filter="george-lucas">George Lucas Arc</button>
+          <div class="filter-group filter-group-advanced">
+            <button id="advanced-filters-toggle" class="filter-group-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters-groups">Story Arcs</button>
+            <div id="advanced-filters-groups" class="advanced-filters-groups hidden" aria-hidden="true">
+              <button class="filter-btn active" data-arc-filter="all">All</button>
+              <button class="filter-btn" data-arc-filter="clone-wars">Clone Wars</button>
+              <button class="filter-btn" data-arc-filter="mandoverse">Mandoverse</button>
+              <button class="filter-btn" data-arc-filter="sequel-era">Sequel Era</button>
+              <button class="filter-btn" data-arc-filter="george-lucas">George Lucas</button>
+            </div>
           </div>
         </div>
       </div>
 
       <div id="active-filters-bar" class="active-filters hidden" aria-live="polite">
+        <div class="flagship-results-copy">
+          <span class="flagship-results-label">Active Filters</span>
+          <p class="flagship-results-sub">Current chronology is being narrowed by your selected signals.</p>
+        </div>
         <div id="active-filters-chips" class="active-filters-chips"></div>
         <button id="clear-filters-btn" class="active-filters-clear" type="button">Clear all filters</button>
       </div>
-    </header>
+    </section>
   `;
 }
 
@@ -850,15 +973,28 @@ function renderSettingsModal() {
 function renderTimelineRail() {
   return `
     <nav class="timeline-rail" aria-label="Era navigation">
+      <div class="timeline-rail-header">
+        <h2>Galactic Eras</h2>
+        <p>Filter by timeline</p>
+      </div>
       <div class="timeline-rail-inner">
         ${TIMELINE_DATA.map((section, idx) => {
-      const eraImagePath = getEraImagePath(section.era);
+      const iconMap = {
+        'the high republic': 'auto_awesome',
+        'fall of the jedi': 'brightness_low',
+        'reign of the empire': 'gavel',
+        'age of the rebellion': 'flare',
+        'the new republic': 'public',
+        'rise of the first order': 'wifi_tethering',
+        'non-timeline': 'hub'
+      };
+      const markerIcon = iconMap[String(section.era || '').trim().toLowerCase()] || 'auto_awesome';
     return `
           <button class="rail-marker" data-era-target="era-${idx}" style="--rail-color: ${section.color};" aria-label="Jump to ${section.era}" aria-current="false">
-            ${eraImagePath
-      ? `<span class="rail-era-icon" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
-      : ''}
-            <span class="rail-label">${section.era}</span>
+            <span class="rail-era-icon rail-era-icon--glyph material-symbols-outlined" aria-hidden="true">${markerIcon}</span>
+            <span class="rail-marker-copy">
+              <span class="rail-label">${section.era}</span>
+            </span>
           </button>
         `;
   }).join('')}
@@ -889,39 +1025,39 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
   const entryMetaDetails = getEntryMetaDetails(entry);
   const mediaTypeInfo = getMediaTypeInfo(entry.type);
   const alignClass = entryIdx % 2 === 0 ? 'timeline-entry--left' : 'timeline-entry--right';
+  const synopsis = entry.synopsis ? entry.synopsis.slice(0, 150) : '';
+  const isSeries = entry.episodes > 1;
+  const mediaTagText = mediaTypeInfo.label;
+  const watchedButtonLabel = isSeries ? 'View Details' : (isEntryCompleted ? 'Watched' : 'Mark Watched');
+  const watchedButtonClass = isEntryCompleted ? 'entry-visual-action is-complete' : 'entry-visual-action';
+  const watchIcon = isSeries ? 'visibility' : (isEntryCompleted ? 'check_circle' : 'visibility');
+  const entryStateClass = isEntryCompleted ? 'is-complete' : watchedCount > 0 ? 'is-in-progress' : 'is-unwatched';
+  const inlineMeta = entryMetaDetails || `${watchedCount}/${entry.episodes} watched`;
 
   return `
-    <div class="timeline-entry ${alignClass}">
-      <div class="timeline-year">${entry.year}</div>
-      <div class="timeline-connector"></div>
-      <div class="timeline-dot"></div>
-      <div class="entry-card" data-canon="${entry.canon}" data-section="${sectionIdx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
-        <div class="entry-poster">
+    <article class="timeline-entry ${alignClass} ${entryStateClass}">
+      <div class="timeline-dot"><div class="timeline-dot-core"></div></div>
+
+      <div class="entry-card entry-card--mobile" data-canon="${entry.canon}" data-section="${sectionIdx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
+        <div class="entry-mobile-visual">
           <img src="${entry.poster}" alt="${entry.title}" loading="lazy" decoding="async" fetchpriority="low" />
-          <span class="entry-badge ${entry.canon ? 'canon' : 'legends'}">
-            ${entry.canon ? 'Canon' : 'Legends'}
-          </span>
-          <span class="media-type-badge" style="--media-color: ${mediaTypeInfo.color};" title="${entry.type}">
-            <span class="media-type-icon">${mediaTypeInfo.icon}</span>
-            <span class="media-type-label">${mediaTypeInfo.label}</span>
-          </span>
-          ${entry.synopsis ? `<div class="synopsis-preview"><p>${entry.synopsis}</p></div>` : ''}
-          <div class="entry-overlay">
-            <div class="progress-ring">
-              <svg viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                    <circle class="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--section-color)" stroke-width="3"
-                      stroke-dasharray="${progress * 2.827}, 282.7" stroke-dashoffset="0"
-                        style="transition: stroke-dasharray 0.3s ease;" />
-              </svg>
-              <span class="progress-text">${progress}%</span>
-            </div>
-            <p class="lore-label">Click to view details</p>
-          </div>
+          <div class="entry-mobile-visual-scrim"></div>
+          <div class="entry-mobile-media-chip">${mediaTagText}</div>
         </div>
-        <div class="entry-content">
-          <h3>${entry.title}</h3>
-          ${entryMetaDetails ? `<p class="entry-meta">${entryMetaDetails}</p>` : ''}
+        <div class="entry-mobile-body">
+          <div class="entry-mobile-topline">
+            <div class="entry-mobile-heading">
+              <h3>${entry.title}</h3>
+              <div class="entry-mobile-meta">
+                <span class="entry-mobile-year">${entry.year}</span>
+                <span class="entry-mobile-separator"></span>
+                <span class="entry-mobile-canon">${entry.canon ? 'Canon' : 'Legends'}</span>
+              </div>
+            </div>
+            <button class="${watchedButtonClass} entry-mobile-check" type="button" data-action="${isSeries ? 'open-details' : 'toggle-watched'}" data-section="${sectionIdx}" data-entry="${entryIdx}" aria-label="${watchedButtonLabel} for ${entry.title}">
+              <span class="material-symbols-outlined entry-watch-icon" aria-hidden="true">${isSingleItemEntry ? (isEntryCompleted ? 'check_box' : 'check_box_outline_blank') : 'visibility'}</span>
+            </button>
+          </div>
           ${showSingleEpisodeChecklist ? `
             <div class="entry-single-episode-checklist">
               <label class="entry-quick-check entry-quick-check--single" title="Mark episode as watched">
@@ -946,22 +1082,32 @@ function renderEntryCard(entry, sectionIdx, entryIdx) {
               </label>
             </div>
           ` : ''}
-          <div class="entry-row">
-            <p class="entry-episodes">${watchedCount}/${entry.episodes} Watched</p>
-            ${canMarkNextEpisode ? `
-              <button
-                type="button"
-                class="entry-row-action card-mark-next-btn"
-                data-section="${sectionIdx}"
-                data-entry="${entryIdx}"
-                aria-label="Mark next episode for ${entry.title}"
-                ${isEntryCompleted ? 'disabled' : ''}
-              >${isEntryCompleted ? 'Completed' : 'Mark Next'}</button>
-            ` : ''}
+        </div>
+      </div>
+
+      <div class="entry-card entry-card--desktop" data-canon="${entry.canon}" data-section="${sectionIdx}" data-entry="${entryIdx}" role="button" tabindex="0" aria-label="Open details for ${entry.title}">
+        <div class="entry-card-copy entry-desktop-copy">
+          <span class="timeline-year-inline">${entry.year}</span>
+          <h3>${entry.title}</h3>
+          ${synopsis ? `<p class="flagship-entry-synopsis">${synopsis}${entry.synopsis.length > 150 ? '…' : ''}</p>` : ''}
+          <div class="entry-tag-row">
+            <span class="entry-tag">${mediaTagText}</span>
+            <span class="entry-tag">${entry.canon ? 'Canon' : 'Legends'}</span>
+          </div>
+        </div>
+        <div class="entry-card-visual entry-desktop-media">
+          <div class="entry-poster">
+            <img src="${entry.poster}" alt="${entry.title}" loading="lazy" decoding="async" fetchpriority="low" />
+            <div class="entry-overlay">
+              <button class="${watchedButtonClass}" type="button" data-action="${isSeries ? 'open-details' : 'toggle-watched'}" data-section="${sectionIdx}" data-entry="${entryIdx}">
+                <span class="material-symbols-outlined entry-watch-icon" aria-hidden="true">${watchIcon}</span>
+                <span class="entry-watch-label">${watchedButtonLabel}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </article>
   `;
 }
 
@@ -973,14 +1119,16 @@ function renderEraSection(section, idx) {
 
   return `
     <section class="timeline-section" id="era-${idx}" data-era="${idx}" style="--section-color: ${section.color}; --section-color-rgb: ${sectionColorRgb};">
-      <h2>
-        ${eraImagePath
-    ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
-    : ''}
-        <span class="era-title">${section.era}</span>
-        <span class="era-count">${itemLabel}</span>
+      <div class="flagship-era-header">
+        <h2>
+          ${eraImagePath
+      ? `<span class="era-image-badge" aria-hidden="true"><img src="${eraImagePath}" alt="" loading="lazy" decoding="async" fetchpriority="low" /></span>`
+      : ''}
+          <span class="era-title">${section.era}</span>
+          <span class="era-count">${itemLabel}</span>
+        </h2>
         <button class="era-toggle" data-era-toggle="${idx}" aria-expanded="true" aria-controls="era-content-${idx}">Collapse</button>
-      </h2>
+      </div>
       <div class="entries-grid era-content" id="era-content-${idx}">
         <div class="timeline-center-line"></div>
         ${section.entries.map((entry, entryIdx) => renderEntryCard(entry, idx, entryIdx)).join('')}
@@ -992,12 +1140,29 @@ function renderEraSection(section, idx) {
 function renderMainContent() {
   return `
     <main class="timeline-container" id="main-content" tabindex="-1">
-      <p id="filter-results-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
-      <div id="no-results" class="hidden">
-        <p>No entries match the selected filters.</p>
+      <aside class="flagship-sidebar-desktop">
+        ${renderTimelineRail()}
+      </aside>
+      <div class="flagship-main-shell">
+        ${renderHeroSection(calculateStats())}
+        ${renderFilterSection()}
       </div>
+      <div class="flagship-shell-layout">
+        <section class="flagship-main-column">
+          <p id="filter-results-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+          <div id="no-results" class="hidden">
+            <p>No entries match the selected filters.</p>
+          </div>
 
-      ${TIMELINE_DATA.map((section, idx) => renderEraSection(section, idx)).join('')}
+          ${TIMELINE_DATA.map((section, idx) => renderEraSection(section, idx)).join('')}
+        </section>
+      </div>
+      <nav class="flagship-mobile-bottom-nav" aria-label="Mobile quick navigation">
+        <a href="#main-content" class="flagship-mobile-bottom-link active">Timeline</a>
+        <button type="button" class="flagship-mobile-bottom-link" id="mobile-watchlist-link">Watchlist</button>
+        <label class="flagship-mobile-bottom-link flagship-mobile-search-link" for="search-input">Search</label>
+        <button type="button" class="flagship-mobile-bottom-link" id="mobile-holocron-link">Holocron</button>
+      </nav>
     </main>
   `;
 }
@@ -1007,7 +1172,7 @@ function renderFooter() {
     <footer>
       <div class="footer-inner">
         <p>© 2026 DapperOberon. Star Wars is a trademark of Lucasfilm Ltd.</p>
-        <button id="reset-progress-btn" title="Reset all watched progress">Reset Progress</button>
+        <button id="reset-progress-btn" title="Reset all watched progress"><span id="footer-reset-anchor">Reset Progress</span></button>
       </div>
     </footer>
     <button id="scroll-top-btn" class="scroll-top-btn" type="button" aria-label="Scroll to top" title="Scroll to top" aria-hidden="true" tabindex="-1">
@@ -1031,10 +1196,11 @@ function render() {
     ${renderHeader(stats)}
     ${renderStatsDrawer(statsCardsMarkup)}
     ${renderSettingsModal()}
-    ${renderTimelineRail()}
     ${renderMainContent()}
     ${renderFooter()}
   `;
+
+  document.body.classList.add('flagship-redesign', 'reference-rebuild');
 
   // ensure a modal container exists in the document body
   if (!document.getElementById('modal')) {
@@ -1080,6 +1246,7 @@ function render() {
   initEraToggles();
   initEraRail();
   attachEntryHandlers();
+  initFlagshipQuickActions();
   attachImageLoaders(); // Add blur-up image loading effect
   attachResetButton();
   scheduleFlowLinesRedraw();
@@ -1537,14 +1704,14 @@ function initEraRailVisibilityTracking() {
 }
 
 function syncEraRailViewportVisibility() {
-  const rail = document.querySelector('.timeline-rail');
+  const rails = document.querySelectorAll('.timeline-rail');
   const timelineContainer = document.querySelector('.timeline-container');
-  if (!rail || !timelineContainer) return;
+  if (rails.length === 0 || !timelineContainer) return;
 
   const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
 
   if (!isDesktop) {
-    rail.classList.add('is-visible');
+    rails.forEach((rail) => rail.classList.add('is-visible'));
     return;
   }
 
@@ -1552,7 +1719,7 @@ function syncEraRailViewportVisibility() {
   const hasTimelineFullyEnteredView = rect.top <= 0;
   const minimumVisibleHeight = Math.max(320, window.innerHeight * 0.35);
   const shouldShow = hasTimelineFullyEnteredView && rect.bottom >= minimumVisibleHeight;
-  rail.classList.toggle('is-visible', shouldShow);
+  rails.forEach((rail) => rail.classList.toggle('is-visible', shouldShow));
 }
 
 function updateEraRailVisibility() {
@@ -1658,6 +1825,29 @@ function attachEntryHandlers() {
     triggerHaptic('success');
   };
 
+  const handleVisualAction = (buttonEl) => {
+    const sectionIdx = Number(buttonEl.dataset.section);
+    const entryIdx = Number(buttonEl.dataset.entry);
+    const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
+    if (!entry) return;
+
+    if (buttonEl.dataset.action === 'open-details' || entry.episodes > 1) {
+      openModal(sectionIdx, entryIdx);
+      playSound('click');
+      triggerHaptic('light');
+      return;
+    }
+
+    entry._watchedArray = entry._watchedArray || new Array(entry.episodes).fill(false);
+    const nextState = !Boolean(entry._watchedArray[0]);
+    entry._watchedArray[0] = nextState;
+    saveWatchedState(entry);
+    updateEntryUI(sectionIdx, entryIdx);
+    showToast(`${entry.title}: ${nextState ? 'Marked as Watched' : 'Marked as Unwatched'}`, nextState ? 'success' : 'info');
+    playSound(nextState ? 'success' : 'click');
+    triggerHaptic(nextState ? 'success' : 'light');
+  };
+
   timelineContainer.addEventListener('click', (event) => {
     if (event.target.closest('.card-movie-checkbox, .card-single-episode-checkbox, label, button, a, select, textarea, input')) {
       return;
@@ -1691,6 +1881,55 @@ function attachEntryHandlers() {
     event.preventDefault();
     handleMarkNextAction(markNextButton);
   });
+
+  timelineContainer.addEventListener('click', (event) => {
+    const visualAction = event.target.closest('.entry-visual-action');
+    if (!visualAction) return;
+    event.preventDefault();
+    handleVisualAction(visualAction);
+  });
+}
+
+function initFlagshipQuickActions() {
+  const featuredTrigger = document.querySelector('[data-open-featured]');
+  if (featuredTrigger) {
+    featuredTrigger.addEventListener('click', () => {
+      const [sectionIdx, entryIdx] = String(featuredTrigger.dataset.openFeatured || '')
+        .split(':')
+        .map((value) => Number(value));
+      if (!Number.isFinite(sectionIdx) || !Number.isFinite(entryIdx)) return;
+      openModal(sectionIdx, entryIdx);
+      playSound('click');
+      triggerHaptic('light');
+    });
+  }
+
+  const mobileWatchlist = document.getElementById('mobile-watchlist-link');
+  if (mobileWatchlist) {
+    mobileWatchlist.addEventListener('click', () => {
+      scrollToNextUnwatchedEntry();
+    });
+  }
+
+  const mobileHolocron = document.getElementById('mobile-holocron-link');
+  if (mobileHolocron) {
+    mobileHolocron.addEventListener('click', () => {
+      const settingsButton = document.getElementById('settings-open-btn');
+      if (settingsButton) {
+        settingsButton.click();
+      }
+    });
+  }
+
+  const inlineStatsTrigger = document.getElementById('stats-drawer-toggle-inline');
+  if (inlineStatsTrigger) {
+    inlineStatsTrigger.addEventListener('click', () => {
+      const statsButton = document.getElementById('stats-drawer-toggle');
+      if (statsButton) {
+        statsButton.click();
+      }
+    });
+  }
 }
 
 function attachImageLoaders() {
@@ -1749,31 +1988,66 @@ function updateCardQuickCheckState(card, isWatched) {
 
 function updateEntryUI(sectionIdx, entryIdx) {
   const entry = TIMELINE_DATA[sectionIdx].entries[entryIdx];
-  const selector = `.entry-card[data-section="${sectionIdx}"][data-entry="${entryIdx}"]`;
-  const card = document.querySelector(selector);
-  if (!card) return;
   const watchedCount = entry._watchedArray ? entry._watchedArray.filter(Boolean).length : entry.watched;
-  const progress = entry.episodes > 0 ? Math.round((watchedCount / entry.episodes) * 100) : 0;
-  const progressText = card.querySelector('.progress-text'); if (progressText) progressText.textContent = progress + '%';
-  const progressCircle = card.querySelector('.progress-circle'); if (progressCircle) progressCircle.setAttribute('stroke-dasharray', `${progress * 2.827}, 282.7`);
-  const episodesText = card.querySelector('.entry-episodes'); if (episodesText) episodesText.textContent = `${watchedCount}/${entry.episodes} Watched`;
-  const movieCheckbox = card.querySelector('.card-movie-checkbox');
-  if (movieCheckbox) {
-    movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
-  }
-  const singleEpisodeCheckbox = card.querySelector('.card-single-episode-checkbox');
-  if (singleEpisodeCheckbox) {
-    singleEpisodeCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
-  }
-  const singleItemWatched = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
-  updateCardQuickCheckState(card, singleItemWatched);
+  const isSingleItem = entry.episodes === 1;
+  const isCompleted = watchedCount >= entry.episodes && entry.episodes > 0;
+  const selector = `.entry-card[data-section="${sectionIdx}"][data-entry="${entryIdx}"]`;
+  const cards = document.querySelectorAll(selector);
+  if (cards.length === 0) return;
 
-  const markNextButton = card.querySelector('.card-mark-next-btn');
-  if (markNextButton) {
-    const isCompleted = watchedCount >= entry.episodes && entry.episodes > 0;
-    markNextButton.disabled = isCompleted;
-    markNextButton.textContent = isCompleted ? 'Completed' : 'Mark Next';
-  }
+  cards.forEach((card) => {
+    const episodesText = card.querySelector('.entry-episodes');
+    if (episodesText) {
+      const entryMeta = getEntryMetaDetails(entry);
+      episodesText.textContent = entryMeta || `${watchedCount}/${entry.episodes} watched`;
+    }
+
+    const movieCheckbox = card.querySelector('.card-movie-checkbox');
+    if (movieCheckbox) {
+      movieCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
+    }
+
+    const singleEpisodeCheckbox = card.querySelector('.card-single-episode-checkbox');
+    if (singleEpisodeCheckbox) {
+      singleEpisodeCheckbox.checked = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
+    }
+
+    const singleItemWatched = Array.isArray(entry._watchedArray) ? Boolean(entry._watchedArray[0]) : Boolean(entry.watched);
+    updateCardQuickCheckState(card, singleItemWatched);
+
+    card.querySelectorAll('.entry-visual-action').forEach((visualAction) => {
+      const watchLabel = visualAction.querySelector('.entry-watch-label');
+      const watchIcon = visualAction.querySelector('.entry-watch-icon');
+      if (isSingleItem) {
+        visualAction.classList.toggle('is-complete', isCompleted);
+        visualAction.dataset.action = 'toggle-watched';
+        if (watchLabel) watchLabel.textContent = isCompleted ? 'Watched' : 'Mark Watched';
+        if (watchIcon) {
+          watchIcon.textContent = visualAction.classList.contains('entry-mobile-check')
+            ? (isCompleted ? 'check_box' : 'check_box_outline_blank')
+            : (isCompleted ? 'check_circle' : 'visibility');
+        }
+      } else {
+        visualAction.classList.remove('is-complete');
+        visualAction.dataset.action = 'open-details';
+        if (watchLabel) watchLabel.textContent = 'View Details';
+        if (watchIcon) watchIcon.textContent = visualAction.classList.contains('entry-mobile-check') ? 'visibility' : 'visibility';
+      }
+    });
+
+    const markNextButton = card.querySelector('.card-mark-next-btn');
+    if (markNextButton) {
+      markNextButton.disabled = isCompleted;
+      markNextButton.textContent = isCompleted ? 'Completed' : 'Mark Next';
+    }
+
+    const timelineEntry = card.closest('.timeline-entry');
+    if (timelineEntry) {
+      timelineEntry.classList.toggle('is-complete', isCompleted);
+      timelineEntry.classList.toggle('is-in-progress', watchedCount > 0 && !isCompleted);
+      timelineEntry.classList.toggle('is-unwatched', watchedCount === 0);
+    }
+  });
 
   updateWatchModeHighlight();
   
@@ -1789,6 +2063,16 @@ function updateStats() {
   requestAnimationFrame(() => {
     statsUpdateQueued = false;
     const stats = calculateStats();
+    const heroEntries = document.getElementById('hero-stat-entries');
+    if (heroEntries) heroEntries.textContent = stats.totalShows;
+    const heroProgress = document.getElementById('hero-stat-progress');
+    if (heroProgress) heroProgress.textContent = `${stats.overallProgress}%`;
+    const heroWatched = document.getElementById('hero-stat-watched');
+    if (heroWatched) heroWatched.textContent = stats.watchedEpisodes;
+    const heroMobileEntries = document.getElementById('hero-mobile-entries');
+    if (heroMobileEntries) heroMobileEntries.textContent = stats.totalShows;
+    const heroMobileProgress = document.getElementById('hero-mobile-progress');
+    if (heroMobileProgress) heroMobileProgress.textContent = `${stats.overallProgress}%`;
     const statBoxes = document.querySelectorAll('.stat-box');
 
     updateStatBox(statBoxes[0], stats.overallProgress, {

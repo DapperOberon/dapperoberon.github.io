@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#131313",
+                        "on-secondary-fixed": "#001e2b",
+                        "on-secondary": "#003548",
+                        "on-tertiary": "#003736",
+                        "outline-variant": "#4b4732",
+                        "inverse-surface": "#e5e2e1",
+                        "on-background": "#e5e2e1",
+                        "tertiary-fixed-dim": "#00ddda",
+                        "on-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-highest": "#353534",
+                        "secondary-container": "#189bcc",
+                        "tertiary-container": "#22fbf8",
+                        "inverse-primary": "#6a5f00",
+                        "primary-fixed": "#fbe419",
+                        "on-primary-fixed-variant": "#504700",
+                        "on-tertiary-fixed-variant": "#00504f",
+                        "primary-fixed-dim": "#ddc800",
+                        "surface-container-high": "#2a2a2a",
+                        "surface": "#131313",
+                        "outline": "#969178",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary-fixed": "#00201f",
+                        "error-container": "#93000a",
+                        "tertiary": "#ffffff",
+                        "on-secondary-container": "#002e3f",
+                        "on-primary": "#373100",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#22fbf8",
+                        "on-secondary-fixed-variant": "#004d67",
+                        "surface-container": "#201f1f",
+                        "secondary": "#75d1ff",
+                        "secondary-fixed": "#c2e8ff",
+                        "primary-container": "#fbe419",
+                        "on-tertiary-container": "#00706f",
+                        "on-primary-fixed": "#201c00",
+                        "surface-variant": "#353534",
+                        "on-primary-container": "#706500",
+                        "inverse-on-surface": "#313030",
+                        "primary": "#ffffff",
+                        "surface-tint": "#ddc800",
+                        "on-surface-variant": "#cdc7ab",
+                        "background": "#131313",
+                        "error": "#ffb4ab",
+                        "secondary-fixed-dim": "#75d1ff",
+                        "surface-bright": "#3a3939"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrim-bottom {
+            background: linear-gradient(to top, rgba(14, 14, 14, 1) 0%, rgba(14, 14, 14, 0) 100%);
+        }
+        .glass-panel {
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131313;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353534;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fbe419;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Background Layer (The Complete Alternating Timeline Watchlist) -->
+<div class="fixed inset-0 overflow-hidden opacity-30 grayscale pointer-events-none">
+<div class="p-12 space-y-12">
+<h1 class="text-6xl font-headline font-bold uppercase tracking-tighter">GALACTIC ARCHIVE</h1>
+<div class="grid grid-cols-4 gap-8">
+<div class="h-64 bg-surface-container-high rounded-xl"></div>
+<div class="h-64 bg-surface-container-high rounded-xl"></div>
+<div class="h-64 bg-surface-container-high rounded-xl border border-primary-fixed/20"></div>
+<div class="h-64 bg-surface-container-high rounded-xl"></div>
+</div>
+<div class="space-y-4">
+<div class="h-4 w-1/3 bg-surface-container-highest rounded"></div>
+<div class="h-4 w-1/4 bg-surface-container-highest rounded"></div>
+</div>
+</div>
+</div>
+<!-- Top Navigation Anchor -->
+<nav class="fixed top-0 w-full z-50 bg-[#131313]/80 backdrop-blur-xl flex justify-between items-center px-8 py-4 w-full shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+<div class="text-2xl font-bold tracking-tighter text-[#FFE81F] font-['Space_Grotesk'] uppercase tracking-widest">GALACTIC ARCHIVE</div>
+<div class="hidden md:flex items-center space-x-8 font-['Space_Grotesk'] uppercase tracking-widest">
+<a class="text-slate-400 hover:text-slate-200 transition-colors" href="#">Timeline</a>
+<a class="text-slate-400 hover:text-slate-200 transition-colors" href="#">Databank</a>
+<a class="text-[#FFE81F] border-b-2 border-[#FFE81F] pb-1" href="#">Watchlist</a>
+</div>
+<div class="flex items-center space-x-6 text-[#FFE81F]">
+<button class="material-symbols-outlined hover:text-[#75d1ff] transition-all duration-300 scale-95 active:scale-90" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined hover:text-[#75d1ff] transition-all duration-300 scale-95 active:scale-90" data-icon="settings">settings</button>
+<div class="w-10 h-10 rounded-full border-2 border-primary-fixed overflow-hidden">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="Close up portrait of a futuristic pilot avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrxJP6YCUecibbRNOy-nYrODaa97Xmj4N7mD_m9JiPHPjK1MOV_wGqCzjniBh2X3zASspkPpoX6YQwF0AJtJ_bfSw8fTILSPWgYJx31aSUXdUZNmqyXyOVv29_d1C3sja5Rc5-QKaxtUIZdgFXIDNwBbzlwwulcLUsE-tXZkdZ5jaGhXGe8zpcQUfucbeoPjWbb63qfkoyqH589QSTu--wH5moPP7YxiUsFoIUaik50B6DzWdgBqUGuA_R3N8vehQU8J_PtC-dig"/>
+</div>
+</div>
+</nav>
+<!-- Side Navigation Anchor -->
+<aside class="fixed left-0 top-0 h-full w-64 z-40 pt-20 bg-[#131313] border-r border-[#FFE81F]/10 flex flex-col h-full shadow-[10px_0_30px_rgba(0,0,0,0.3)]">
+<div class="px-6 py-8">
+<h3 class="text-[#75d1ff] font-['Manrope'] text-sm font-semibold tracking-tight uppercase opacity-50 mb-1">ERA FILTER</h3>
+<p class="text-[10px] text-slate-500 font-label uppercase tracking-widest mb-6">Select Timeline Phase</p>
+<nav class="space-y-1">
+<a class="flex items-center space-x-4 text-slate-500 py-3 px-6 hover:bg-white/5 transition-all group" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="brightness_low">brightness_low</span>
+<span class="font-['Manrope'] text-sm font-semibold tracking-tight group-hover:translate-x-1 transition-transform">High Republic</span>
+</a>
+<a class="flex items-center space-x-4 text-[#FFE81F] bg-[#FFE81F]/10 border-r-4 border-[#FFE81F] py-3 px-6 transition-all" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="shield">shield</span>
+<span class="font-['Manrope'] text-sm font-semibold tracking-tight">Prequel Era</span>
+</a>
+<a class="flex items-center space-x-4 text-slate-500 py-3 px-6 hover:bg-white/5 transition-all group" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="military_tech">military_tech</span>
+<span class="font-['Manrope'] text-sm font-semibold tracking-tight group-hover:translate-x-1 transition-transform">Reign of Empire</span>
+</a>
+<a class="flex items-center space-x-4 text-slate-500 py-3 px-6 hover:bg-white/5 transition-all group" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="flare">flare</span>
+<span class="font-['Manrope'] text-sm font-semibold tracking-tight group-hover:translate-x-1 transition-transform">Age of Rebellion</span>
+</a>
+<a class="flex items-center space-x-4 text-slate-500 py-3 px-6 hover:bg-white/5 transition-all group" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-['Manrope'] text-sm font-semibold tracking-tight group-hover:translate-x-1 transition-transform">New Republic</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto px-6 py-8 border-t border-white/5">
+<a class="flex items-center space-x-4 text-slate-500 py-3 px-6 hover:bg-white/5 transition-all group" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="history">history</span>
+<span class="font-['Manrope'] text-sm font-semibold tracking-tight">BBY/ABY Toggle</span>
+</a>
+</div>
+</aside>
+<!-- Modal Overlay Container -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8 md:pl-72">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-surface-container-lowest/90 backdrop-blur-md"></div>
+<!-- Modal Content -->
+<div class="relative w-full max-w-5xl h-[921px] glass-panel rounded-xl overflow-hidden flex flex-col shadow-2xl ring-1 ring-white/10">
+<!-- Close Button -->
+<button class="absolute top-6 right-6 z-20 w-10 h-10 rounded-full bg-surface-container-highest/80 flex items-center justify-center hover:bg-primary-fixed hover:text-on-primary-fixed transition-all">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<!-- Modal Header Section -->
+<header class="relative flex-shrink-0">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-40" data-alt="Cinematic space nebula with debris in golden light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNILbZvXAZmFU8z5DCgJqmW_6mYFd7jscPBrgBfmErFe46Mc-aUnEraz0nM8fzK4C4n2c6nn9a0_qXjjiBCV-Ivm73yUn_f07zSpavkWjzCqUk9xE8_f7noWy7Y1Hj9uTqtZN38xYgmZml4Ux7yBxmfWQn17Az6lKkOV6laxVlhNlOzm05kMzXsZH_AILJCx34erebFDlF_1jzbvtpn4PXdleUOt2CDYCFGLjCNijYk_qD8JvwQztqv5hkrYhxKYc419xrMafsgg"/>
+<div class="absolute inset-0 scrim-bottom"></div>
+</div>
+<div class="relative z-10 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-end">
+<!-- Poster Image -->
+<div class="w-40 md:w-56 aspect-[2/3] rounded-lg overflow-hidden shadow-2xl ring-2 ring-primary-fixed/30 flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Stark portrait of an armored clone soldier helmet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADoXlLhGFu5H21Emasyx0mUXpWnF8Do-SkgP1Se9NcRxTIj_kk3MsNsxSscBGauGuKedgsCiMOGZCumBCPkSRHv-8p1ifQw9mq0MOpBnNO79r7uuMUfa-Zu9n4dx49PKSAcEDMCL9M6Gqfh-27-gXisSIdxfHoNvsN45NolkeHJdSodXSs505OgbQvFkWRP6teMylXGqhFpA8DIPFWyCF8x7EOJa5RwyBOT3ws8m_FsXYKZE1m7xhnsjkFFvPG4I5ggA-tFrOMuQ"/>
+</div>
+<!-- Title & Synopsis -->
+<div class="flex-grow space-y-4">
+<div class="flex items-center space-x-3 mb-2">
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed text-[10px] font-label font-bold uppercase tracking-[0.2em] rounded-sm">Fall of the Jedi</span>
+<span class="text-secondary font-label text-[10px] uppercase tracking-widest">S1 - S7 • Animated Series</span>
+</div>
+<h2 class="text-4xl md:text-6xl font-headline font-bold text-white tracking-tighter uppercase leading-none">The Clone Wars</h2>
+<p class="max-w-2xl text-slate-300 font-body text-sm md:text-base leading-relaxed opacity-90">
+                            Grand Army of the Republic’s clone troopers against the droid armies of the Separatists. As the war rages on, the Jedi struggle to maintain peace while the dark side looms.
+                        </p>
+<div class="flex items-center space-x-6 pt-4">
+<button class="px-6 py-2 bg-primary-fixed text-on-primary-fixed font-headline font-bold uppercase text-xs tracking-widest rounded-full hover:shadow-[0_0_20px_rgba(251,228,25,0.4)] transition-all">Continue Watching</button>
+<div class="flex items-center space-x-2 text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-sm font-headline">9.4/10</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Episode List Section -->
+<main class="flex-grow overflow-y-auto px-8 md:px-12 pb-12">
+<div class="flex items-center justify-between sticky top-0 z-20 py-6 bg-transparent">
+<h3 class="font-headline text-lg uppercase tracking-widest text-[#75d1ff]">Episode Chronology</h3>
+<div class="flex items-center space-x-4">
+<span class="text-[10px] font-label text-slate-500 uppercase tracking-widest">Sort: Chronological</span>
+<div class="h-1 w-24 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full w-2/3 bg-primary-fixed shadow-[0_0_8px_rgba(251,228,25,0.5)]"></div>
+</div>
+<span class="text-[10px] font-label text-white uppercase tracking-widest">86/133 Watched</span>
+</div>
+</div>
+<div class="space-y-3">
+<!-- Episode Card 1 -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high ring-1 ring-white/5 transition-all">
+<div class="flex items-center space-x-6">
+<label class="relative flex items-center cursor-pointer">
+<input checked="" class="peer hidden" type="checkbox"/>
+<div class="w-6 h-6 border-2 border-slate-700 rounded-sm peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100" data-icon="check">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<span class="text-[10px] font-label text-secondary uppercase tracking-tighter">S2.E16</span>
+<span class="font-headline text-white group-hover:text-primary-fixed transition-colors">Cat and Mouse</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="text-right">
+<span class="block text-[10px] font-label text-slate-500 uppercase tracking-widest">Timestamp</span>
+<span class="text-sm font-headline text-slate-300">22 BBY</span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-secondary transition-colors" data-icon="play_circle">play_circle</button>
+</div>
+</div>
+<!-- Episode Card 2 -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high ring-1 ring-white/5 transition-all">
+<div class="flex items-center space-x-6">
+<label class="relative flex items-center cursor-pointer">
+<input checked="" class="peer hidden" type="checkbox"/>
+<div class="w-6 h-6 border-2 border-slate-700 rounded-sm peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100" data-icon="check">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<span class="text-[10px] font-label text-secondary uppercase tracking-tighter">S1.E16</span>
+<span class="font-headline text-white group-hover:text-primary-fixed transition-colors">The Hidden Enemy</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="text-right">
+<span class="block text-[10px] font-label text-slate-500 uppercase tracking-widest">Timestamp</span>
+<span class="text-sm font-headline text-slate-300">22 BBY</span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-secondary transition-colors" data-icon="play_circle">play_circle</button>
+</div>
+</div>
+<!-- Episode Card 3 (Active) -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-white/5 ring-1 ring-primary-fixed/50 shadow-[0_0_20px_rgba(251,228,25,0.1)] transition-all">
+<div class="flex items-center space-x-6">
+<label class="relative flex items-center cursor-pointer">
+<input class="peer hidden" type="checkbox"/>
+<div class="w-6 h-6 border-2 border-primary-fixed/50 rounded-sm peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100" data-icon="check">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<span class="text-[10px] font-label text-primary-fixed uppercase tracking-tighter animate-pulse">Next Episode</span>
+<span class="font-headline text-white">The Clone Wars (Movie)</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="text-right">
+<span class="block text-[10px] font-label text-slate-500 uppercase tracking-widest">Timestamp</span>
+<span class="text-sm font-headline text-slate-300">22 BBY</span>
+</div>
+<button class="material-symbols-outlined text-primary-fixed" data-icon="play_circle" style="font-variation-settings: 'FILL' 1;">play_circle</button>
+</div>
+</div>
+<!-- Episode Card 4 -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high ring-1 ring-white/5 transition-all opacity-60 hover:opacity-100">
+<div class="flex items-center space-x-6">
+<label class="relative flex items-center cursor-pointer">
+<input class="peer hidden" type="checkbox"/>
+<div class="w-6 h-6 border-2 border-slate-700 rounded-sm peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100" data-icon="check">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<span class="text-[10px] font-label text-secondary uppercase tracking-tighter">S3.E01</span>
+<span class="font-headline text-white group-hover:text-primary-fixed transition-colors">Clone Cadets</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="text-right">
+<span class="block text-[10px] font-label text-slate-500 uppercase tracking-widest">Timestamp</span>
+<span class="text-sm font-headline text-slate-300">22 BBY</span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-secondary transition-colors" data-icon="play_circle">play_circle</button>
+</div>
+</div>
+<!-- Episode Card 5 -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high ring-1 ring-white/5 transition-all opacity-60 hover:opacity-100">
+<div class="flex items-center space-x-6">
+<label class="relative flex items-center cursor-pointer">
+<input class="peer hidden" type="checkbox"/>
+<div class="w-6 h-6 border-2 border-slate-700 rounded-sm peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100" data-icon="check">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<span class="text-[10px] font-label text-secondary uppercase tracking-tighter">S3.E03</span>
+<span class="font-headline text-white group-hover:text-primary-fixed transition-colors">Supply Lines</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="text-right">
+<span class="block text-[10px] font-label text-slate-500 uppercase tracking-widest">Timestamp</span>
+<span class="text-sm font-headline text-slate-300">22 BBY</span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-secondary transition-colors" data-icon="play_circle">play_circle</button>
+</div>
+</div>
+<!-- Episode Card 6 -->
+<div class="group flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high ring-1 ring-white/5 transition-all opacity-60 hover:opacity-100">
+<div class="flex items-center space-x-6">
+<label class="relative flex items-center cursor-pointer">
+<input class="peer hidden" type="checkbox"/>
+<div class="w-6 h-6 border-2 border-slate-700 rounded-sm peer-checked:bg-primary-fixed peer-checked:border-primary-fixed transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold opacity-0 peer-checked:opacity-100" data-icon="check">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<span class="text-[10px] font-label text-secondary uppercase tracking-tighter">S1.E01</span>
+<span class="font-headline text-white group-hover:text-primary-fixed transition-colors">Ambush</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="text-right">
+<span class="block text-[10px] font-label text-slate-500 uppercase tracking-widest">Timestamp</span>
+<span class="text-sm font-headline text-slate-300">22 BBY</span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-secondary transition-colors" data-icon="play_circle">play_circle</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Footer -->
+<footer class="p-6 bg-surface-container-highest/30 border-t border-white/5 flex items-center justify-between">
+<div class="flex space-x-4">
+<button class="text-[10px] font-label text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Previous Series</button>
+<button class="text-[10px] font-label text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Next Series</button>
+</div>
+<div class="flex items-center space-x-6">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary-fixed" data-icon="share">share</button>
+<button class="material-symbols-outlined text-slate-400 hover:text-primary-fixed" data-icon="info">info</button>
+</div>
+</footer>
+</div>
+</div>
+<!-- Global Footer Component (Under the modal) -->
+<footer class="fixed bottom-0 w-full z-10 bg-[#131313] py-12 border-t border-white/5 flex flex-col items-center justify-center space-y-4 w-full">
+<p class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] text-slate-500 text-center">© 2024 Lucasfilm Ltd. All Rights Reserved.</p>
+<div class="flex space-x-8 font-['Inter'] text-[10px] uppercase tracking-[0.2em]">
+<a class="text-slate-600 hover:text-[#FFE81F] transition-all" href="#">Privacy Policy</a>
+<a class="text-slate-600 hover:text-[#FFE81F] transition-all" href="#">Terms of Service</a>
+<a class="text-slate-600 hover:text-[#FFE81F] transition-all" href="#">Cookie Settings</a>
+</div>
+</footer>
+</body></html>

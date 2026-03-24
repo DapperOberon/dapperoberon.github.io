@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Galactic Watch | Stats Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed": "#201c00",
+                        "inverse-on-surface": "#313030",
+                        "on-surface-variant": "#cdc7ab",
+                        "on-background": "#e5e2e1",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed": "#001e2b",
+                        "on-secondary-fixed-variant": "#004d67",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#00504f",
+                        "background": "#131313",
+                        "outline": "#969178",
+                        "surface-container-low": "#1c1b1b",
+                        "secondary": "#75d1ff",
+                        "on-secondary-container": "#002e3f",
+                        "outline-variant": "#4b4732",
+                        "primary-container": "#fbe419",
+                        "on-primary": "#373100",
+                        "error": "#ffb4ab",
+                        "on-tertiary": "#003736",
+                        "surface-container-highest": "#353534",
+                        "secondary-container": "#189bcc",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#00ddda",
+                        "surface": "#131313",
+                        "inverse-primary": "#6a5f00",
+                        "secondary-fixed-dim": "#75d1ff",
+                        "on-tertiary-fixed": "#00201f",
+                        "on-primary-fixed-variant": "#504700",
+                        "surface-bright": "#3a3939",
+                        "on-primary-container": "#706500",
+                        "on-secondary": "#003548",
+                        "primary-fixed-dim": "#ddc800",
+                        "surface-dim": "#131313",
+                        "secondary-fixed": "#c2e8ff",
+                        "on-surface": "#e5e2e1",
+                        "primary": "#ffffff",
+                        "tertiary-container": "#22fbf8",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-container-high": "#2a2a2a",
+                        "tertiary": "#ffffff",
+                        "surface-variant": "#353534",
+                        "tertiary-fixed": "#22fbf8",
+                        "on-tertiary-container": "#00706f",
+                        "surface-tint": "#ddc800",
+                        "surface-container": "#201f1f",
+                        "primary-fixed": "#fbe419"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(42, 42, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .scanline-overlay {
+            background: linear-gradient(to bottom, transparent 50%, rgba(251, 228, 25, 0.02) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(251, 228, 25, 0.05) 0%, transparent 70%);
+        }
+    </style>
+</head>
+<body class="bg-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex justify-between items-center w-full px-12 py-6">
+<div class="text-2xl font-black tracking-tighter text-yellow-400 font-['Space_Grotesk']">GALACTIC_WATCH</div>
+<div class="hidden md:flex items-center space-x-8 font-['Space_Grotesk'] uppercase tracking-[0.1em] text-sm">
+<a class="text-zinc-500 hover:text-zinc-200 transition-colors hover:text-yellow-300 transition-all duration-300" href="#">Timeline</a>
+<a class="text-yellow-400 border-b-2 border-yellow-400 pb-1 hover:text-yellow-300 transition-all duration-300" href="#">Stats</a>
+<a class="text-zinc-500 hover:text-zinc-200 transition-colors hover:text-yellow-300 transition-all duration-300" href="#">Library</a>
+<a class="text-zinc-500 hover:text-zinc-200 transition-colors hover:text-yellow-300 transition-all duration-300" href="#">Collections</a>
+</div>
+<div class="flex items-center space-x-4">
+<div class="bg-zinc-900/50 p-2 rounded-full border border-white/5">
+<span class="material-symbols-outlined text-yellow-400">account_circle</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="relative pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto min-h-screen">
+<!-- Background Atmosphere -->
+<div class="fixed inset-0 scanline-overlay z-0"></div>
+<div class="fixed top-0 left-1/2 -translate-x-1/2 w-full h-full hero-gradient z-0 pointer-events-none"></div>
+<!-- Dashboard Header -->
+<header class="relative z-10 mb-16 text-center md:text-left">
+<div class="inline-flex items-center space-x-3 mb-4">
+<div class="h-[1px] w-12 bg-primary-fixed"></div>
+<span class="font-label text-xs uppercase tracking-[0.3em] text-secondary">Operational Log: Active</span>
+</div>
+<h1 class="font-headline text-5xl md:text-7xl font-bold tracking-tight text-white mb-4 uppercase">Archive Terminal</h1>
+<p class="font-body text-on-surface-variant max-w-xl text-lg">Detailed telemetry of your journey through the Force. Analyzing watchlist efficiency and chronological progress.</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- 1. Overall Galactic Completion -->
+<section class="md:col-span-4 glass-panel p-8 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center space-y-6">
+<h3 class="font-label text-xs uppercase tracking-widest text-secondary">Overall Completion</h3>
+<div class="relative w-56 h-56 flex items-center justify-center">
+<!-- Gauge SVG -->
+<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="rgba(255,255,255,0.05)" stroke-width="8"></circle>
+<circle class="drop-shadow-[0_0_12px_rgba(251,228,25,0.4)]" cx="50" cy="50" fill="none" r="45" stroke="#fbe419" stroke-dasharray="282.7" stroke-dashoffset="163.9" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline text-5xl font-bold text-white tracking-tighter">42%</span>
+<span class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Efficiency</span>
+</div>
+</div>
+<div class="space-y-1">
+<p class="font-headline text-2xl text-primary-fixed">152 / 360</p>
+<p class="font-label text-[11px] text-zinc-500 uppercase tracking-widest">Entries Logged</p>
+</div>
+</section>
+<!-- 2. Era Progress Breakdown -->
+<section class="md:col-span-8 glass-panel p-8 rounded-xl border border-white/5 space-y-8">
+<div class="flex justify-between items-end">
+<h3 class="font-label text-xs uppercase tracking-widest text-secondary">Era Progress Breakdown</h3>
+<span class="text-[10px] font-label text-zinc-500">REAL-TIME DATA RECEPTION</span>
+</div>
+<div class="space-y-6">
+<!-- Era Item -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[11px] font-label tracking-widest uppercase">
+<span class="text-white">The High Republic</span>
+<span class="text-zinc-400">85%</span>
+</div>
+<div class="h-1.5 w-full bg-white/5 overflow-hidden">
+<div class="h-full bg-amber-400 w-[85%] shadow-[0_0_8px_rgba(251,191,36,0.3)]"></div>
+</div>
+</div>
+<!-- Era Item -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[11px] font-label tracking-widest uppercase">
+<span class="text-white">Fall of the Jedi</span>
+<span class="text-zinc-400">100%</span>
+</div>
+<div class="h-1.5 w-full bg-white/5 overflow-hidden">
+<div class="h-full bg-blue-500 w-[100%] shadow-[0_0_8px_rgba(59,130,246,0.3)]"></div>
+</div>
+</div>
+<!-- Era Item -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[11px] font-label tracking-widest uppercase">
+<span class="text-white">Reign of the Empire</span>
+<span class="text-zinc-400">32%</span>
+</div>
+<div class="h-1.5 w-full bg-white/5 overflow-hidden">
+<div class="h-full bg-red-600 w-[32%] shadow-[0_0_8px_rgba(220,38,38,0.3)]"></div>
+</div>
+</div>
+<!-- Era Item -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[11px] font-label tracking-widest uppercase">
+<span class="text-white">Age of Rebellion</span>
+<span class="text-zinc-400">68%</span>
+</div>
+<div class="h-1.5 w-full bg-white/5 overflow-hidden">
+<div class="h-full bg-orange-500 w-[68%] shadow-[0_0_8px_rgba(249,115,22,0.3)]"></div>
+</div>
+</div>
+<!-- Era Item -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[11px] font-label tracking-widest uppercase">
+<span class="text-white">New Republic</span>
+<span class="text-zinc-400">15%</span>
+</div>
+<div class="h-1.5 w-full bg-white/5 overflow-hidden">
+<div class="h-full bg-emerald-500 w-[15%] shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Media Format Distribution -->
+<section class="md:col-span-5 glass-panel p-8 rounded-xl border border-white/5 space-y-10">
+<h3 class="font-label text-xs uppercase tracking-widest text-secondary text-center">Media Format Distribution</h3>
+<div class="flex justify-around items-end">
+<div class="flex flex-col items-center space-y-4">
+<div class="w-12 bg-primary-fixed/20 h-32 relative group overflow-hidden border border-primary-fixed/30">
+<div class="absolute bottom-0 w-full bg-primary-fixed h-3/4 group-hover:h-full transition-all duration-700"></div>
+</div>
+<span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Movies</span>
+</div>
+<div class="flex flex-col items-center space-y-4">
+<div class="w-12 bg-secondary/20 h-32 relative group overflow-hidden border border-secondary/30">
+<div class="absolute bottom-0 w-full bg-secondary h-1/2 group-hover:h-full transition-all duration-700"></div>
+</div>
+<span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Animated</span>
+</div>
+<div class="flex flex-col items-center space-y-4">
+<div class="w-12 bg-tertiary-fixed/20 h-32 relative group overflow-hidden border border-tertiary-fixed/30">
+<div class="absolute bottom-0 w-full bg-tertiary-fixed h-[40%] group-hover:h-full transition-all duration-700"></div>
+</div>
+<span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Live Action</span>
+</div>
+</div>
+<div class="pt-6 border-t border-white/5 grid grid-cols-3 gap-4 text-center">
+<div>
+<p class="font-headline text-lg font-bold text-white">42</p>
+<p class="font-label text-[9px] text-zinc-500 uppercase">Archive</p>
+</div>
+<div>
+<p class="font-headline text-lg font-bold text-white">88</p>
+<p class="font-label text-[9px] text-zinc-500 uppercase">Chapters</p>
+</div>
+<div>
+<p class="font-headline text-lg font-bold text-white">22</p>
+<p class="font-label text-[9px] text-zinc-500 uppercase">Series</p>
+</div>
+</div>
+</section>
+<!-- 4. Time Spent in Hyperspace -->
+<section class="md:col-span-3 glass-panel p-8 rounded-xl border border-white/5 flex flex-col justify-between overflow-hidden relative group">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-secondary opacity-30 text-4xl transform group-hover:scale-110 transition-transform">rocket_launch</span>
+</div>
+<div>
+<h3 class="font-label text-xs uppercase tracking-widest text-secondary mb-8">Time in Hyperspace</h3>
+<div class="space-y-1">
+<p class="font-headline text-6xl font-bold text-white">742</p>
+<p class="font-label text-sm text-primary-fixed uppercase tracking-[0.2em]">Standard Hours</p>
+</div>
+</div>
+<div class="mt-8">
+<div class="flex items-center space-x-2 text-zinc-500">
+<span class="material-symbols-outlined text-xs">info</span>
+<span class="text-[10px] font-label uppercase">Approx. 31 Earth Days Watched</span>
+</div>
+</div>
+<!-- Visual Noise -->
+<div class="absolute bottom-0 right-0 w-24 h-24 opacity-10 bg-gradient-to-tl from-secondary to-transparent rounded-tl-full"></div>
+</section>
+<!-- 5. Next in the Timeline -->
+<section class="md:col-span-4 glass-panel rounded-xl border border-white/5 overflow-hidden group flex flex-col">
+<div class="relative h-48 w-full overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="A lone figure walking in a desert landscape during a dual sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXg2tnQ-FnNk5VVLBOxyENsLB5vCZYskY4TbzhwL1WGj-Deh5ni4AUveRSrUGEraRGgUEh0LGJUmm_mEeMWxeJI9t-ANV7Bc5NE_PPmOmq2NDNY6Dyx9Ry2RVhOwGJ5sX5ghHXWytSkjE8zFOxqtwA7Iywc0Iz4DA_1d2_8Ft98eWhm2DDuuquOKD07ntURFaWl7B45fmDkzynB2YY2dagYwVdGeJ4QLeLDHR4HQNc_6AxXIxqI-OSDk5RbNEZJ8OavnrEBXz5BA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#1c1b1b] to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 font-label text-[10px] font-bold uppercase tracking-widest">Next Objective</span>
+</div>
+</div>
+<div class="p-6 flex-grow flex flex-col justify-between">
+<div>
+<h4 class="font-label text-xs text-secondary uppercase tracking-widest mb-1">Reign of the Empire</h4>
+<h2 class="font-headline text-2xl font-bold text-white uppercase leading-none mb-3">The Bad Batch: S02 E01</h2>
+<p class="font-body text-sm text-on-surface-variant line-clamp-2 italic">"A high-stakes mission leads the squad into a web of imperial deceit..."</p>
+</div>
+<button class="mt-6 w-full py-3 bg-primary-fixed text-on-primary-fixed font-label text-xs font-bold uppercase tracking-[0.2em] rounded-full hover:bg-primary-fixed-dim transition-colors flex items-center justify-center space-x-2">
+<span>Initialize Protocol</span>
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Terminal Status Overlay -->
+<div class="mt-12 flex flex-wrap gap-4 items-center justify-between font-label text-[10px] text-zinc-600 uppercase tracking-widest relative z-10">
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>System Nominal</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Sync Complete</span>
+</div>
+<div class="flex items-center space-x-2">
+<span>Target: Coruscant_Prime</span>
+</div>
+</div>
+<div class="hidden md:block">
+<span>LAT: 32.41 // LONG: 124.08 // SPD: 0.8c</span>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-950 w-full py-16 border-t border-white/5 bg-gradient-to-t from-black to-zinc-950 flex flex-col items-center justify-center space-y-8 px-6 text-center">
+<div class="flex flex-wrap justify-center gap-8 mb-4">
+<a class="font-['Inter'] uppercase text-[10px] tracking-[0.2em] leading-relaxed text-zinc-600 hover:text-sky-300 hover:tracking-[0.25em] transition-all" href="#">Legal Documentation</a>
+<a class="font-['Inter'] uppercase text-[10px] tracking-[0.2em] leading-relaxed text-zinc-600 hover:text-sky-300 hover:tracking-[0.25em] transition-all" href="#">Streaming Protocol</a>
+<a class="font-['Inter'] uppercase text-[10px] tracking-[0.2em] leading-relaxed text-zinc-600 hover:text-sky-300 hover:tracking-[0.25em] transition-all" href="#">System Status</a>
+<a class="font-['Inter'] uppercase text-[10px] tracking-[0.2em] leading-relaxed text-zinc-600 hover:text-sky-300 hover:tracking-[0.25em] transition-all" href="#">Imperial Support</a>
+</div>
+<p class="font-['Inter'] uppercase text-[10px] tracking-[0.2em] leading-relaxed text-zinc-600 max-w-2xl opacity-50">
+            © 2024 GALACTIC ARCHIVE. STAR WARS AND ALL ASSOCIATED ITEMS ARE THE INTELLECTUAL PROPERTY OF LUCASFILM LTD.
+        </p>
+</footer>
+</body></html>

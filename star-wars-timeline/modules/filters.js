@@ -116,12 +116,14 @@ export function createFilterController({
 
   function updateFilters() {
     const timelineData = getTimelineData();
-    const cards = document.querySelectorAll('.entry-card');
+    const entries = document.querySelectorAll('.timeline-entry');
     const entryUpdates = [];
     let visibleCount = 0;
 
-    for (let i = 0; i < cards.length; i++) {
-      const card = cards[i];
+    for (let i = 0; i < entries.length; i++) {
+      const entryNode = entries[i];
+      const card = entryNode.querySelector('.entry-card[data-section][data-entry]');
+      if (!card) continue;
       const sectionIdx = parseInt(card.dataset.section, 10);
       const entryIdx = parseInt(card.dataset.entry, 10);
       const entry = timelineData[sectionIdx].entries[entryIdx];
@@ -163,17 +165,16 @@ export function createFilterController({
       }
 
       const shouldShow = canonMatch && searchMatch && typeMatch && progressMatch && arcMatch;
-      const entryNode = card.closest('.timeline-entry');
       entryUpdates.push({ card, entryNode, shouldShow });
       if (shouldShow) visibleCount++;
     }
 
     entryUpdates.forEach(({ card, entryNode, shouldShow }) => {
       if (shouldShow) {
-        card.classList.remove('hidden');
+        entryNode.querySelectorAll('.entry-card').forEach((entryCard) => entryCard.classList.remove('hidden'));
         if (entryNode) entryNode.classList.remove('hidden');
       } else {
-        card.classList.add('hidden');
+        entryNode.querySelectorAll('.entry-card').forEach((entryCard) => entryCard.classList.add('hidden'));
         if (entryNode) entryNode.classList.add('hidden');
       }
     });
@@ -196,7 +197,7 @@ export function createFilterController({
 
     const resultsStatus = document.getElementById('filter-results-status');
     if (resultsStatus) {
-      const totalCount = cards.length;
+      const totalCount = entries.length;
       if (visibleCount === totalCount) {
         resultsStatus.textContent = `Showing all ${totalCount} timeline entries.`;
       } else if (visibleCount === 0) {

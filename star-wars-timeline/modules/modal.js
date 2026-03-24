@@ -204,12 +204,18 @@ export function createModalController({
       const episodeTimeText = String(episodeTime).trim() || '—';
       episodesHTML += `
         <div class="episode-item ${isChecked ? 'is-watched' : ''}" data-episode-item="${i}">
-          <label>
+          <label class="flagship-episode-row">
             <input type="checkbox" data-ep="${i}" ${checked} />
-            <span class="episode-title">${episodeTitle}</span>
-            <span class="episode-meta">
-              <span class="episode-time">${episodeTimeText}</span>
-              <span class="episode-status">${isChecked ? 'Watched' : 'Up Next'}</span>
+            <span class="flagship-episode-thumb" aria-hidden="true">
+              <span class="flagship-episode-thumb-play">${isChecked ? '✓' : '▶'}</span>
+            </span>
+            <span class="flagship-episode-copy">
+              <span class="episode-kicker">EP ${i + 1}</span>
+              <span class="episode-title">${episodeTitle || `Episode ${i + 1}`}</span>
+              <span class="episode-meta">
+                <span class="episode-time">${episodeTimeText}</span>
+                <span class="episode-status">${isChecked ? 'Watched' : 'Up Next'}</span>
+              </span>
             </span>
           </label>
         </div>
@@ -236,19 +242,31 @@ export function createModalController({
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-        <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
-        <div class="modal-right">
-          <h2 id="modal-title">${entry.title}</h2>
-          <div class="modal-meta">
-            <span class="modal-meta-text">${mediaTypeInfo.label} • ${entryMetaText}</span>
-            <span class="modal-badge ${entry.canon ? 'canon' : 'legends'}">${entry.canon ? 'CANON' : 'LEGENDS'}</span>
+        <div class="flagship-modal-hero">
+          <div class="modal-left"><img src="${entry.poster}" alt="${entry.title}"/></div>
+          <div class="modal-right">
+            <div class="flagship-modal-kicker-row">
+              <span class="flagship-modal-era">${section.era}</span>
+              <span class="flagship-modal-type">${mediaTypeInfo.label}</span>
+              <span class="modal-badge ${entry.canon ? 'canon' : 'legends'}">${entry.canon ? 'CANON' : 'LEGENDS'}</span>
+            </div>
+            <h2 id="modal-title">${entry.title}</h2>
+            <div class="modal-meta">
+              <span class="modal-meta-text">${entryMetaText}</span>
+            </div>
+            ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
+            <div class="flagship-modal-hero-actions">
+              <button class="modal-btn modal-btn--primary modal-primary-btn">${showEpisodes ? 'Continue Watching' : 'Mark Watched'}</button>
+              ${showEpisodes ? `<button class="modal-btn modal-btn--secondary" id="mark-next-episode">Mark Next Episode</button>` : ''}
+              ${showEpisodes ? `<button class="modal-btn modal-btn--ghost" id="mark-all-watched">Mark All Watched</button>` : ''}
+            </div>
           </div>
-          ${synopsis ? `<p class="modal-synopsis">${synopsis}</p>` : ''}
-          ${showEpisodes ? `
-            <div class="modal-episodes">
+        </div>
+        ${showEpisodes ? `
+            <div class="modal-episodes flagship-modal-episodes">
               <div class="modal-episodes-header">
                 <div class="modal-episodes-heading">
-                  <span class="modal-episodes-title">Episodes</span>
+                  <span class="modal-episodes-title">Episode Chronology</span>
                   <span id="modal-episode-remaining" class="modal-episodes-remaining">${remainingText}</span>
                 </div>
                 <span id="modal-episode-count" class="modal-episodes-count">${episodeCountText}</span>
@@ -258,15 +276,8 @@ export function createModalController({
               </div>
               <div class="episode-list-wrapper"><div class="episode-list">${episodesHTML}</div></div>
             </div>
-          ` : ''}
-          <div class="modal-actions">
-            ${showEpisodes ? `
-              <button class="modal-btn modal-btn--secondary modal-secondary-btn" id="mark-next-episode">Mark Next Episode</button>
-              <button class="modal-btn modal-btn--primary modal-primary-btn" id="mark-all-watched">Mark All Watched</button>
-            ` : ''}
-            <button class="modal-btn modal-btn--ghost modal-close-btn">Close</button>
-          </div>
-        </div>
+          ` : `<div class="modal-actions"><button class="modal-btn modal-btn--ghost modal-close-btn">Close</button></div>`}
+        ${showEpisodes ? `<div class="modal-actions flagship-modal-footer"><button class="modal-btn modal-btn--ghost modal-close-btn">Close</button></div>` : ''}
       </div>
     `;
 

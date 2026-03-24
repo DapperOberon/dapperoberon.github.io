@@ -1,4 +1,8 @@
-export function createAudioController({ triggerHaptic = () => {} } = {}) {
+export function createAudioController({
+  triggerHaptic = () => {},
+  musicDataPath = './music-data.json',
+  mediaBasePath = ''
+} = {}) {
   let soundEnabled = false;
   let audioContext = null;
   let musicEnabled = false;
@@ -11,16 +15,53 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
   let musicPillToggleBtn = null;
   let musicVolume = 0.18;
   let backgroundMusicTracks = [];
+  const stateListeners = new Set();
+
+  function emitStateChange() {
+    const currentTrack = backgroundMusicTracks[backgroundMusicIndex];
+    const state = {
+      musicEnabled,
+      musicVolume,
+      currentTrackTitle: musicEnabled && currentTrack ? currentTrack.title : 'Music Off'
+    };
+
+    stateListeners.forEach((listener) => {
+      try {
+        listener(state);
+      } catch (error) {
+        console.warn('Audio state listener failed:', error);
+      }
+    });
+  }
+
+  function resolveMediaSource(src) {
+    if (typeof src !== 'string') return '';
+    const trimmed = src.trim();
+    if (!trimmed) return '';
+    if (/^(?:[a-z]+:)?\/\//i.test(trimmed) || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+      return trimmed;
+    }
+
+    if (!mediaBasePath) {
+      return trimmed;
+    }
+
+    try {
+      return new URL(trimmed, mediaBasePath).href;
+    } catch (error) {
+      return trimmed;
+    }
+  }
 
   function normalizeTrackSource(rawSource) {
     if (typeof rawSource === 'string') {
-      const src = rawSource.trim();
+      const src = resolveMediaSource(rawSource);
       if (!src) return null;
       return { src, type: '' };
     }
 
     if (!rawSource || typeof rawSource !== 'object') return null;
-    const src = typeof rawSource.src === 'string' ? rawSource.src.trim() : '';
+    const src = resolveMediaSource(typeof rawSource.src === 'string' ? rawSource.src : '');
     if (!src) return null;
     const type = typeof rawSource.type === 'string' ? rawSource.type.trim() : '';
     return { src, type };
@@ -79,7 +120,7 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
 
   async function loadMusicData() {
     try {
-      const response = await fetch('./music-data.json');
+      const response = await fetch(musicDataPath);
       if (!response.ok) {
         throw new Error(`Failed to load music data: ${response.status}`);
       }
@@ -171,6 +212,8 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
         settingsVolumeIcon.textContent = '🔊';
       }
     }
+
+    emitStateChange();
   }
 
   function ensureBackgroundMusicPlayer() {
@@ -442,9 +485,9 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
     const toggle = document.getElementById('music-toggle');
     const settingsToggle = document.getElementById('settings-music-toggle');
     const settingsMusicVolume = document.getElementById('settings-music-volume');
-    if (!toggle && !settingsToggle) return;
-
     initMusicPill();
+
+    if (!toggle && !settingsToggle && !musicPillToggleBtn) return;
 
     const stored = localStorage.getItem('sw_music_enabled');
     musicEnabled = stored === null ? true : stored === 'true';
@@ -472,6 +515,43 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
     }
   }
 
+  function getCurrentTrackTitle() {
+    const currentTrack = backgroundMusicTracks[backgroundMusicIndex];
+    return musicEnabled && currentTrack ? currentTrack.title : 'Music Off';
+  }
+
+  function getMusicEnabled() {
+    return musicEnabled;
+  }
+
+  function getMusicVolume() {
+    return musicVolume;
+  }
+
+  function subscribe(listener) {
+    if (typeof listener !== 'function') {
+      return () => {};
+    }
+    stateListeners.add(listener);
+    emitStateChange();
+    return () => {
+      stateListeners.delete(listener);
+    };
+  }
+
+  function nextTrack({ withFeedback = true } = {}) {
+    if (backgroundMusicTracks.length === 0) return;
+    if (!musicEnabled) {
+      setMusicEnabled(true, { withFeedback: false });
+    }
+    backgroundMusicIndex = (backgroundMusicIndex + 1) % backgroundMusicTracks.length;
+    startBackgroundMusic(true);
+    if (withFeedback) {
+      playSound('click');
+      triggerHaptic('light');
+    }
+  }
+
   return {
     loadMusicData,
     initSoundToggle,
@@ -479,6 +559,11 @@ export function createAudioController({ triggerHaptic = () => {} } = {}) {
     initMusicToggle,
     setMusicEnabled,
     setMusicVolume,
-    playSound
+    playSound,
+    nextTrack,
+    getCurrentTrackTitle,
+    getMusicEnabled,
+    getMusicVolume,
+    subscribe
   };
 }
