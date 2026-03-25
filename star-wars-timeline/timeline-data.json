@@ -368,15 +368,18 @@
         "episodeDetails": [
           {
             "title": "S1.E2 - Justice",
-            "time": "between 68 and 58 BBY"
+            "time": "between 68 and 58 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/340b1a4b-663b-4d47-b562-ae2de1fedb89"
           },
           {
             "title": "S1.E3 - Choices",
-            "time": "between 50 and 42 BBY"
+            "time": "between 50 and 42 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/04d7e7dd-a74d-45e6-ae45-6c24b938a3a8"
           },
           {
             "title": "S1.E1 - Life and Death",
-            "time": "36-35 BBY"
+            "time": "36-35 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/95be7b36-8a05-4dff-9017-a27c2d0403fc"
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
@@ -396,15 +399,18 @@
         "episodeDetails": [
           {
             "title": "S1.E4 - The Good Life",
-            "time": "approx. 52 BBY"
+            "time": "approx. 52 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0b9b3945-dbea-4b0e-a6c6-76fe37121262"
           },
           {
             "title": "S1.E5 - A Good Turn",
-            "time": "approx. 44-42 BBY"
+            "time": "approx. 44-42 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d3c6312a-35be-4cfc-8aa0-ed35274e9e08"
           },
           {
             "title": "S1.E6 - One Good Deed",
-            "time": "approx. 33-35 BBY"
+            "time": "approx. 33-35 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6062e7c9-58ad-408a-a094-f66043345405"
           }
         ],
         "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies.",
@@ -424,12 +430,14 @@
         "episodeDetails": [
           {
             "title": "Star Wars: Episode I - The Phantom Menace",
-            "time": "32 BBY"
+            "time": "32 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e0a9fee4-2959-4077-ad8c-8fab4fd6e4d1"
           }
         ],
         "synopsis": "Jedi discover Anakin Skywalker, a boy unusually strong in the force.",
         "id": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_I_The_Phantom_Menace"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_I_The_Phantom_Menace",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/e0a9fee4-2959-4077-ad8c-8fab4fd6e4d1"
       },
       {
         "title": "Tales of the Jedi",
@@ -443,7 +451,8 @@
         "episodeDetails": [
           {
             "title": "S1.E4 - The Sith Lord",
-            "time": "32 BBY (takes place parallel to Star Wars Ep. 1 - The Phantom Menace)"
+            "time": "32 BBY (takes place parallel to Star Wars Ep. 1 - The Phantom Menace)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/65f7de7d-9538-4363-8d6f-f8d0eff241a7"
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
@@ -463,12 +472,14 @@
         "episodeDetails": [
           {
             "title": "Star Wars: Episode II - Attack of the Clones",
-            "time": "22 BBY"
+            "time": "22 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6"
           }
         ],
         "synopsis": "Young Anakin and Padm\u00e9 fall in love as galactic war looms.",
         "id": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_II_Attack_of_the_Clones"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_II_Attack_of_the_Clones",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6"
       },
       {
         "title": "Clone Wars",
@@ -482,87 +493,108 @@
         "episodeDetails": [
           {
             "title": "Volume 1 Chapter 6",
-            "time": "22 BBY (Disney+ S1.E1 at 16:24-19:43)"
+            "time": "22 BBY (Disney+ S1.E1 at 16:24-19:43)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 7",
-            "time": "22 BBY (Disney+ S1.E1 at 19:44-22:58)"
+            "time": "22 BBY (Disney+ S1.E1 at 19:44-22:58)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 1",
-            "time": "22 BBY (Disney+ S1.E1 at 00:00-03:30)"
+            "time": "22 BBY (Disney+ S1.E1 at 00:00-03:30)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 2",
-            "time": "22 BBY (Disney+ S1.E1 at 03:31-06:40)"
+            "time": "22 BBY (Disney+ S1.E1 at 03:31-06:40)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 3",
-            "time": "22 BBY (Disney+ S1.E1 at 06:41-09:58)"
+            "time": "22 BBY (Disney+ S1.E1 at 06:41-09:58)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 4",
-            "time": "22 BBY (Disney+ S1.E1 at 13:07-16:23)"
+            "time": "22 BBY (Disney+ S1.E1 at 13:07-16:23)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 12",
-            "time": "22 BBY (Disney+ S1.E1 at 35:45-38:57)"
+            "time": "22 BBY (Disney+ S1.E1 at 35:45-38:57)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 13",
-            "time": "22 BBY (Disney+ S1.E1 at 38:58-42:07)"
+            "time": "22 BBY (Disney+ S1.E1 at 38:58-42:07)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 14",
-            "time": "22 BBY (Disney+ S1.E1 at 42:08-46:27)"
+            "time": "22 BBY (Disney+ S1.E1 at 42:08-46:27)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 15",
-            "time": "22 BBY (Disney+ S1.E1 at 46:28-48:50)"
+            "time": "22 BBY (Disney+ S1.E1 at 46:28-48:50)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 16",
-            "time": "22 BBY (Disney+ S1.E1 at 48:51-52:07)"
+            "time": "22 BBY (Disney+ S1.E1 at 48:51-52:07)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 5",
-            "time": "22 BBY (Disney+ S1.E1 at 9:59-13:06)"
+            "time": "22 BBY (Disney+ S1.E1 at 9:59-13:06)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 8",
-            "time": "22 BBY (Disney+ S1.E1 at 22:59-25:59)"
+            "time": "22 BBY (Disney+ S1.E1 at 22:59-25:59)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 9",
-            "time": "22 BBY (Disney+ S1.E1 at 26:00-29:06)"
+            "time": "22 BBY (Disney+ S1.E1 at 26:00-29:06)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 10",
-            "time": "22 BBY (Disney+ S1.E1 at 29:07-32:22)"
+            "time": "22 BBY (Disney+ S1.E1 at 29:07-32:22)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 11",
-            "time": "22 BBY (Disney+ S1.E1 at 32:23-38:56)"
+            "time": "22 BBY (Disney+ S1.E1 at 32:23-38:56)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 17",
-            "time": "22 BBY (Disney+ S1.E1 at 52:08-55:20)"
+            "time": "22 BBY (Disney+ S1.E1 at 52:08-55:20)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 18",
-            "time": "22 BBY (Disney+ S1.E1 at 55:21-58:29)"
+            "time": "22 BBY (Disney+ S1.E1 at 55:21-58:29)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 19",
-            "time": "22 BBY (Disney+ S1.E1 at 58:30-1:01:30)"
+            "time": "22 BBY (Disney+ S1.E1 at 58:30-1:01:30)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 1 Chapter 20",
-            "time": "22 BBY (Disney+ S1.E1 at 1:01:31-end)"
+            "time": "22 BBY (Disney+ S1.E1 at 1:01:31-end)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/da9c2452-f449-435f-a9c6-321fec360fd8"
           },
           {
             "title": "Volume 2 Chapter 21",
-            "time": "22 BBY (Disney+ S1.E2 at 00:00-12:47)"
+            "time": "22 BBY (Disney+ S1.E2 at 00:00-12:47)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           }
         ],
         "synopsis": "Enjoy this thrilling, Emmy\u00ae Award-winning animated series that continues the Star Wars story.",
@@ -628,7 +660,8 @@
         "episodeDetails": [
           {
             "title": "S1.E5 - Practice Makes Perfect",
-            "time": "between 21 and 19 BBY (the ending takes place parallel to The Clone Wars Season 7 Ep. 12)"
+            "time": "between 21 and 19 BBY (the ending takes place parallel to The Clone Wars Season 7 Ep. 12)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f7d69be6-d68d-4b2f-b8de-fa3eaa80297c"
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
@@ -1079,7 +1112,8 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - The Path of Fear",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/11d3220b-8d16-4407-b8fa-d8e8fbbd4acd"
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
@@ -1099,196 +1133,244 @@
         "episodeDetails": [
           {
             "title": "S4.E20 - Bounty",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/96f480ae-1ea7-43e7-85d2-42dfd5b81e38"
           },
           {
             "title": "S4.E21 - Brothers",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/653ad433-8103-472f-9ec3-898fafe6c14f"
           },
           {
             "title": "S4.E22 - Revenge",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b7dfe12a-fa38-4412-8a80-e3d9f6dc7315"
           },
           {
             "title": "S5.E2 - A War on Two Fronts",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/bb749358-fc88-49f8-ae99-c82fa0f84727"
           },
           {
             "title": "S5.E3 - Front Runners",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/bd174ae1-3b41-43cb-8d25-598c3209812d"
           },
           {
             "title": "S5.E4 - The Soft War",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0c0b47fe-c497-4c46-9aca-df44f542fcb2"
           },
           {
             "title": "S5.E5 - Tipping Points",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/11c48219-533e-4ea7-b48a-38d39cb33e95"
           },
           {
             "title": "S5.E6 - The Gathering",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d23eda78-ff6a-4635-9fa3-42d1d9ea3016"
           },
           {
             "title": "S5.E7 - A Test of Strength",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/93b022fc-476e-419f-8324-14f3b63367dd"
           },
           {
             "title": "S5.E8 - Bound for Rescue",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c2d4c88f-658c-43f1-8aed-adae71325f64"
           },
           {
             "title": "S5.E9 - A Necessary Bond",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9c27f2ad-6621-4fa3-9f96-02f372f7f6ec"
           },
           {
             "title": "S5.E10 - Secret Weapons",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7dc55713-fb4e-4326-891c-3b4b4521cbd5"
           },
           {
             "title": "S5.E11 - A Sunny Day in the Void",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/53dd675e-2ae0-461d-8f94-80a53a9faf6c"
           },
           {
             "title": "S5.E12 - Missing in Action",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0a3e9cf9-6e1d-4260-be55-6a4826ed18e2"
           },
           {
             "title": "S5.E13 - Point of No Return",
-            "time": "20 BBY"
+            "time": "20 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/62207f7a-4329-4b97-8585-97e8ec15663d"
           },
           {
             "title": "S5.E1 - Revival",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2b38dc2b-a862-453b-9e3b-86f4d4eecd98"
           },
           {
             "title": "S5.E14 - Eminence",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c815deb4-6f24-482c-97b9-5190e1dbeea2"
           },
           {
             "title": "S5.E15 - Shades of Reason",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6acceee3-7baa-4fef-9507-26535c6ff445"
           },
           {
             "title": "S5.E16 - The Lawless",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c99b75e0-80e4-42dc-afc3-8f4ecc23ad96"
           },
           {
             "title": "S5.E17 - Sabotage",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/942606f4-f3cc-4139-aa30-f300c5b7147c"
           },
           {
             "title": "S5.E18 - The Jedi Who Knew Too Much",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0c0e9128-a08e-4cf5-9e0e-87288293d7ed"
           },
           {
             "title": "S5.E19 - To Catch a Jedi",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b3f4bc09-4ab6-4591-95f2-e927e67296a1"
           },
           {
             "title": "S5.E20 - The Wrong Jedi",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7a9fbe45-af41-4074-9e3c-f7a5dc2227f9"
           },
           {
             "synopsis": "The saga continues, set in a faraway galaxy!",
             "title": "S6.E1 - The Unknown",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e8ec40cb-c1ae-4e97-afc4-bae2b0975d0b"
           },
           {
             "title": "S6.E2 - Conspiracy",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/bc826cbc-5282-46c2-82ac-17ab18110f11"
           },
           {
             "title": "S6.E3 - Fugitive",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/03d78318-6af7-462e-8d86-dfcf8783c724"
           },
           {
             "title": "S6.E4 - Orders",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/958a4704-ca99-435a-a0b9-b359bbfa97b6"
           },
           {
             "title": "S6.E5 - An Old Friend",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/08d49036-42ac-4763-94db-f1dad7bf1d2d"
           },
           {
             "title": "S6.E6 - The Rise of Clovis",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c0407e81-d8c3-48cb-8cfa-a78624d7934a"
           },
           {
             "title": "S6.E7 - Crisis at the Heart",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/28a89d9e-eeb7-4de9-9469-9e4ca0336351"
           },
           {
             "title": "S6.E8 - The Disappeared, Part I",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0584e54d-e075-4176-befd-4c43c333cc0e"
           },
           {
             "title": "S6.E9 - The Disappeared, Part II",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3c0cde77-a696-44d2-9c87-54e02d6d160b"
           },
           {
             "title": "S6.E10 - The Lost One",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/061e37fb-aec7-4e43-92c5-3569a97044b7"
           },
           {
             "title": "S6.E11 - Voices",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5be23415-5e4b-4445-ab75-28fd513575ec"
           },
           {
             "title": "S6.E12 - Destiny",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6fc273f4-c329-47ea-aea0-7146f3045670"
           },
           {
             "title": "S6.E13 - Sacrifice",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7eb1658b-d907-4c10-9267-e7541fa56409"
           },
           {
             "title": "Crystal Crisis on Utapau: 1 - A Death on Utapau",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.youtube.com/watch?v=8nEyxhgBcgI"
           },
           {
             "title": "Crystal Crisis on Utapau: 2 - In Search of the Crystal",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.youtube.com/watch?v=lzyaq5JsSns"
           },
           {
             "title": "Crystal Crisis on Utapau: 3 - Crystal Crisis",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.youtube.com/watch?v=_HqEt_NKR6c"
           },
           {
             "title": "Crystal Crisis on Utapau: 4 - The Big Bang",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.youtube.com/watch?v=-V592f0QxGE"
           },
           {
             "title": "S7.E5 - Gone with a Trace",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6d5a7001-71f5-47f7-b87a-2e9bb6bb42d6"
           },
           {
             "title": "S7.E6 - Deal No Deal",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ddd64119-8310-43b2-8569-0a193a2119c7"
           },
           {
             "title": "S7.E7 - Dangerous Debt",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/91a62261-aa7d-4ad2-8fce-7a6448492fc0"
           },
           {
             "title": "S7.E8 - Together Again",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c20cdf44-4dc0-4470-971e-93534c06cf36"
           },
           {
             "title": "S7.E1 - The Bad Batch",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d16ae824-6ef6-4209-8b7a-fe5d5f66d764"
           },
           {
             "title": "S7.E2 - A Distant Echo",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e54dcacf-85c3-47d1-96d0-ad1293bcbe08"
           },
           {
             "title": "S7.E3 - On the Wings of Keeradaks",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3c4d915d-00d5-4d4f-b2bd-5a459116b7cd"
           },
           {
             "title": "S7.E4 - Unfinished Business",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a796f087-baba-4b0d-afca-d9c01d5431c7"
           }
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
@@ -1308,19 +1390,23 @@
         "episodeDetails": [
           {
             "title": "Volume 2 Chapter 22",
-            "time": "19 BBY (Disney+ S1.E2 at 12:48-15:25)"
+            "time": "19 BBY (Disney+ S1.E2 at 12:48-15:25)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           },
           {
             "title": "Volume 2 Chapter 23",
-            "time": "19 BBY (Disney+ S1.E2 at 15:26-33:20)"
+            "time": "19 BBY (Disney+ S1.E2 at 15:26-33:20)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           },
           {
             "title": "Volume 2 Chapter 24",
-            "time": "19 BBY (Disney+ S1.E2 33:21-50:00)"
+            "time": "19 BBY (Disney+ S1.E2 33:21-50:00)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           },
           {
             "title": "Volume 2 Chapter 25",
-            "time": "19 BBY (Disney+ S1.E2 50:00-end, Legends version of the events leading into Star Wars Ep. 3)"
+            "time": "19 BBY (Disney+ S1.E2 50:00-end, Legends version of the events leading into Star Wars Ep. 3)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           }
         ],
         "synopsis": "Enjoy this thrilling, Emmy\u00ae Award-winning animated series that continues the Star Wars story.",
@@ -1366,12 +1452,14 @@
         "episodeDetails": [
           {
             "title": "Star Wars: Episode III - Revenge of the Sith",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/eb1e2c5f-69bf-4240-a61f-7ffc4e0311b3"
           }
         ],
         "synopsis": "As the Republic falls, Anakin Skywalker becomes the evil Darth Vader.",
         "id": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_III_Revenge_of_the_Sith"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_III_Revenge_of_the_Sith",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/eb1e2c5f-69bf-4240-a61f-7ffc4e0311b3"
       },
       {
         "title": "Tales of the Empire - 20 BBY",
@@ -1385,11 +1473,13 @@
         "episodeDetails": [
           {
             "title": "S1.E4 - Devoted",
-            "time": "19 BBY (takes place parallel and after Ep. 3)"
+            "time": "19 BBY (takes place parallel and after Ep. 3)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6223ca2c-f46f-4bcb-a7fb-9f6525a6c83b"
           },
           {
             "title": "S1.E5 - Realization",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/61ccb731-58bd-4d24-9634-b266c8340378"
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
@@ -1440,187 +1530,233 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - Aftermath",
-            "time": "19 BBY (takes place parallel to Ep. 3)"
+            "time": "19 BBY (takes place parallel to Ep. 3)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3b75b359-ac7d-4228-844e-c1494e2bd4b7"
           },
           {
             "title": "S1.E2 - Cut and Run",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/8bdaaefe-7a13-4389-a503-64a1fa746757"
           },
           {
             "title": "S1.E3 - Replacements",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ada8af01-e57f-4263-98ac-db4f6be55572"
           },
           {
             "title": "S1.E4 - Cornered",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/1c3a2336-dc12-4a52-8946-08fc8b3afec0"
           },
           {
             "title": "S1.E5 - Rampage",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7a2eed3d-a33e-4dba-aaa6-c76684e0edf1"
           },
           {
             "title": "S1.E6 - Decommissioned",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/39851fec-0e00-4886-83fd-f9dcfcc66bd8"
           },
           {
-            "title": "S1. E7 - Battle Scars",
-            "time": "19 BBY"
+            "title": "S1.E7 - Battle Scars",
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/eb0732d7-837f-42fb-be0c-a74c8b5a584f"
           },
           {
             "title": "S1.E8 - Reunion",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/42ab589a-0951-4414-832b-a4c67ec31222"
           },
           {
             "title": "S1.E9 - Bounty Lost",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f5fbcae1-4469-417e-9156-6b55f0d4e1f1"
           },
           {
             "title": "S1.E10 - Common Ground",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c86b3c5c-970d-4c3a-87fd-0505ef31a6ed"
           },
           {
             "title": "S1.E11 - Devil's Deal",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6976834a-3a9a-4d1c-9fe1-98f8d6e51411"
           },
           {
             "title": "S1.E12 - Rescue on Ryloth",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ea1e0394-930d-4154-b074-156d5b895d29"
           },
           {
             "title": "S1.E13 - Infested",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/00221b77-0c5e-4a38-8477-8a7614a32691"
           },
           {
             "title": "S1.E14 - War-Mantle",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/769feb58-f14a-4927-9a7b-d0f79616f6ff"
           },
           {
             "title": "S1.E15 - Return to Kamino",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/8ff39c47-a378-4323-aa7e-e91c97501f16"
           },
           {
             "title": "S1.E16 - Kamino Lost",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0f795c0b-59fc-41d5-aa24-c8ebe9dfe741"
           },
           {
             "title": "S2.E1 - Spoils of War",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ca5d5bcb-ca13-45d6-81da-1ff1c0d16d7a"
           },
           {
             "title": "S2.E2 - Ruins of War",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ce7a508f-3540-4045-9477-5676e9040b18"
           },
           {
             "title": "S2.E3 - The Solitary Clone",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/25cfb54a-0b37-47b8-b801-15089bb99173"
           },
           {
             "title": "S2.E4 - Faster",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/cbfd4805-678a-48ee-8715-33d2c737045b"
           },
           {
             "title": "S2.E5 - Entombed",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a6b6e120-0c2f-48d5-a06e-2a5985d96d74"
           },
           {
             "title": "S2.E6 - Tribe",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3841726a-7ff1-4736-9028-eca231fed7ce"
           },
           {
             "title": "S2.E7 - The Clone Conspiracy",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d76b9b49-5cf1-4aed-a533-c5697e1bbb39"
           },
           {
             "title": "S2.E8 - Truth and Consequence",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/04adef29-ae25-4d0e-b7e1-276f6fe9e5fc"
           },
           {
             "title": "S2.E9 - The Crossing",
-            "time": "19 BBY"
+            "time": "19 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/62910013-c753-4bac-93b6-b5a9db02040c"
           },
           {
             "title": "S2.E10 - Retrieval",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/77abc863-69ff-46d0-b8e0-8bdd1c2dbdd9"
           },
           {
             "title": "S2.E11 - Metamorphosis",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/118f136c-da27-40d7-b424-0204eea0abaa"
           },
           {
             "title": "S2.E12 - The Outpost",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d2e192be-3abf-4af1-b2a4-6133dad1ca21"
           },
           {
             "title": "S2.E13 - Pabu",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c9cd7d26-20e8-4125-bd07-cd04e83d604c"
           },
           {
             "title": "S2.E14 - Tipping Point",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/502daf78-cf91-4f22-949f-4ee2057c2888"
           },
           {
             "title": "S2.E15 - The Summit",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5b49cab9-7711-47bc-89bf-9a5c9c3088c6"
           },
           {
             "title": "S2.E16 - Plan 99",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6cbfff94-5001-4641-a2e7-4ee273f83103"
           },
           {
             "title": "S3.E2 - Paths Unknown",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/be6b8dc0-cf18-4f91-b062-cc8e4d3889b3"
           },
           {
             "title": "S3.E3 - Shadows of Tantis",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/fd335cd0-1885-4933-9a49-e29cf0f47161"
           },
           {
             "title": "S3.E4 - A Different Approach",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e08c49fc-f952-4729-bafd-f54ee77f4887"
           },
           {
             "title": "S3.E5 - The Return",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0b9c1f0f-9b9d-4f3a-9756-55e075acf5aa"
           },
           {
             "title": "S3.E6 - Infiltration",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/57824aac-a05c-4f2a-837f-c8bb662cd4d2"
           },
           {
             "title": "S3.E7 - Extraction",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6368e2c5-b443-4904-88ff-094b8169ef79"
           },
           {
             "title": "S3.E8 - Bad Territory",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a6fd95e9-8677-49ed-981d-dd31ab4c4359"
           },
           {
             "title": "S3.E9 - The Harbinger",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d12a45e7-650c-49d3-bfe8-2069ce05196d"
           },
           {
             "title": "S3.E10 - Identity Crisis",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/1ce773da-6b31-4ae5-9acb-62d2cf3d85ec"
           },
           {
             "title": "S3.E11 - Point of No Return",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/796c3f99-0bfd-47cb-9ea4-7bc3c1d88b59"
           },
           {
             "title": "S3.E12 - Juggernaut",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b55d68b1-857a-4c63-bdb7-9bea709b0f37"
           },
           {
             "title": "S3.E13 - Into the Breach",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0d575919-9fa8-4533-83ec-fdfcd381ac5d"
           },
           {
             "title": "S3.E14 - Flash Strike",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5b0817e9-65c5-4a70-be65-54aabb3e0752"
           },
           {
             "title": "S3.E15 - The Cavalry Has Arrived",
-            "time": "18 BBY (epilogue between 2 BBY and 4 ABY)"
+            "time": "18 BBY (epilogue between 2 BBY and 4 ABY)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/00c7f243-d36b-4d0b-ba09-edc8abdb7458"
           }
         ],
         "synopsis": "Clone Force 99's battle to survive the newly formed Empire comes to an epic conclusion.",
@@ -1640,15 +1776,18 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - A Way Forward",
-            "time": "18 BBY (19 BBY prologue)"
+            "time": "18 BBY (19 BBY prologue)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f5db5af5-5426-4e36-87a5-74fc063a98c8"
           },
           {
             "title": "S1.E2 - Friends",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3fe7c642-c919-4f4e-a888-51aa73018e81"
           },
           {
             "title": "S1.E3 - One Warrior to Another",
-            "time": "18 BBY"
+            "time": "18 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/48152bdf-6b1d-44f9-b379-4b43a0d4ff50"
           }
         ],
         "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies.",
@@ -1668,7 +1807,8 @@
         "episodeDetails": [
           {
             "title": "S1.E6 - Resolve",
-            "time": "between 18 and 5 BBY (the beginning takes place parallel to Star Wars Ep. 3 in 19 BBY)"
+            "time": "between 18 and 5 BBY (the beginning takes place parallel to Star Wars Ep. 3 in 19 BBY)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e7d825ee-a382-4b86-97ed-0d7c3787c7e9"
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
@@ -1688,59 +1828,73 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - The White Witch",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/1d74c3fb-8125-48d1-8c4c-0b9a55981baf"
           },
           {
             "title": "S1.E2 - Escape Into Terror",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6e7a8d23-ec0a-4548-86d3-698a840c8d6c"
           },
           {
             "title": "S1.E3 - The Trigon Unleashed",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/40f8fc71-9999-4eda-bfcc-4a0d9caa21a6"
           },
           {
             "title": "S1.E4 - A Race to the Finish",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9aadfcb3-6098-4f73-9997-c326e8a9207d"
           },
           {
             "title": "S1.E5 - The Lost Prince",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2eb8b1c2-27ad-4fd3-81af-b501ea9a26fd"
           },
           {
             "title": "S1.E6 - The New King",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/292111a0-14e2-4ba0-8af8-6ba279cf2e03"
           },
           {
             "title": "S1.E7 - The Pirates of Tarnoonga",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/324e7c79-913e-498a-a9e1-4c1149a37068"
           },
           {
             "title": "S1.E8 - The Revenge of Kybo Ren",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/05cee894-6614-41ae-8a72-1d38f4e17676"
           },
           {
             "title": "S1.E9 - Coby and the Starhunters",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/97818ffb-4417-4a39-a553-c014c410e196"
           },
           {
             "title": "S2.E1 - The Great Heep",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b4f28162-8c59-4b17-97c7-ffffb5365703"
           },
           {
             "title": "S1.E10 - Tail of the Roon Comets",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e4cc3ed4-3920-4d1e-82d9-e9863ba6ed8d"
           },
           {
             "title": "S1.E11 - The Roon Games",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0af17fc8-3a03-4d22-9d65-6ab38a917ac3"
           },
           {
             "title": "S1.E12 - Across the Roon Sea",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b881c024-cf79-4726-8edd-b1cb160774a6"
           },
           {
             "title": "S1.E13 - The Frozen Citadel",
-            "time": "15 BBY"
+            "time": "15 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/568febf8-6aa8-42f6-a65e-2be952d31423"
           }
         ],
         "synopsis": "Share the early adventures of R2-D2 and C-3PO in this action-packed animated series!",
@@ -1760,12 +1914,14 @@
         "episodeDetails": [
           {
             "title": "Solo: A Star Wars Story",
-            "time": "10 BBY"
+            "time": "10 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/791bc772-d930-40c9-83ec-5ef85923573e"
           }
         ],
         "synopsis": "Witness the beginning of the Star Wars saga's most unlikely hero.",
         "id": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Solo:_A_Star_Wars_Story"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Solo:_A_Star_Wars_Story",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/791bc772-d930-40c9-83ec-5ef85923573e"
       },
       {
         "title": "Obi-Wan Kenobi",
@@ -1779,27 +1935,33 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - Part I",
-            "time": "9 BBY"
+            "time": "9 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ac0c7d43-6a21-4848-8a74-d2c922926f21"
           },
           {
             "title": "S1.E2 - Part II",
-            "time": "9 BBY"
+            "time": "9 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/198c32fb-eb5c-48dc-bdde-2242da3e16a0"
           },
           {
             "title": "S1.E3 - Part III",
-            "time": "9 BBY"
+            "time": "9 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/25b0f43a-3b45-436a-a297-de11893ec5aa"
           },
           {
             "title": "S1.E4 - Part IV",
-            "time": "9 BBY"
+            "time": "9 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f3711532-515e-42aa-8094-81dbe4189e08"
           },
           {
             "title": "S1.E5 - Part V",
-            "time": "9 BBY"
+            "time": "9 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/265b7343-3eb1-4f44-9acb-dbee9551b808"
           },
           {
             "title": "S1.E6 - Part VI",
-            "time": "9 BBY"
+            "time": "9 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/56a7920e-bfe4-4576-a7e2-6038d93d1e25"
           }
         ],
         "synopsis": "During the reign of the Empire, Obi-Wan Kenobi embarks on a crucial mission.",
@@ -1819,7 +1981,8 @@
         "episodeDetails": [
           {
             "title": "S1.E6 - The Way Out",
-            "time": "between 9 and 0 BBY"
+            "time": "between 9 and 0 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/553895fb-49f6-4de2-97b6-0afb06077603"
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
@@ -1839,99 +2002,123 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - Kassa",
-            "time": "5 BBY (approx. 24 BBY for flashbacks)"
+            "time": "5 BBY (approx. 24 BBY for flashbacks)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/91310366-d44b-44a4-bdc4-71f999472826"
           },
           {
             "title": "S1.E2 - That Would Be Me",
-            "time": "5 BBY (approx. 24 BBY for flashbacks)"
+            "time": "5 BBY (approx. 24 BBY for flashbacks)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ef6356d6-19c9-49c0-a633-fe5a4153316a"
           },
           {
             "title": "S1.E3 - Reckoning",
-            "time": "5 BBY (approx. 24 BBY for flashbacks)"
+            "time": "5 BBY (approx. 24 BBY for flashbacks)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d7de71f0-ad76-4500-89fc-7f88a276a10d"
           },
           {
             "title": "S1.E4 - Aldhani",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e93bb276-1af1-486a-9945-4d07d9e3a801"
           },
           {
             "title": "S1.E5 - The Axe Forgets",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/14ec4983-6436-42b9-bdbb-462f6ffb319e"
           },
           {
             "title": "S1.E6 - The Eye",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/53524656-6b7b-4dc1-b2ed-6ed67b3c06e2"
           },
           {
             "title": "S1.E7 - Announcement",
-            "time": "5 BBY (18 BBY for flashbacks)"
+            "time": "5 BBY (18 BBY for flashbacks)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/04b71fbf-7367-4f5d-b208-924a75b2eacf"
           },
           {
             "title": "S1.E8 - Narkina 5",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/dceabdb9-0f5f-4776-8138-81be413a1af6"
           },
           {
             "title": "S1.E9 - Nobody's Listening!",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/936fde0c-d9f9-435b-85a0-905f1f5a67ea"
           },
           {
             "title": "S1.E10 - One Way Out",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/30cdaace-ebbf-43ef-bb3c-235fdcb6f5ce"
           },
           {
             "title": "S1.E11 - Daughter of Ferrix",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3fd5e737-a706-4b28-a555-3da23686f7d7"
           },
           {
             "title": "S1.E12 - Rix Road",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/671b433b-1095-42c8-850b-246f6506c0a5"
           },
           {
             "title": "S2.E1 - One Year Later",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/38cf9b36-27a6-4a73-8d7b-49dfdcd2fb2c"
           },
           {
             "title": "S2.E2 - Sagrona Teema",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/87ed6fbd-d172-40b2-9aee-8d8fe406d00e"
           },
           {
             "title": "S2.E3 - Harvest",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b340405a-d786-4714-b700-a21f2d2cce1a"
           },
           {
             "title": "S2.E4 - Ever Been to Ghorman?",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d0e8b255-4829-40c5-afb8-a6ba931ed4f3"
           },
           {
             "title": "S2.E5 - I Have Friends Everywhere",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/38b4a9b4-f3f8-4c93-a5c8-8932ce552ba4"
           },
           {
             "title": "S2.E6 - What a Festive Evening",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ed8ff963-98d3-4406-8e64-641b218459b9"
           },
           {
             "title": "S2.E7 - Messenger",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/25aed73f-031b-4fdd-a8d9-b1fe36478327"
           },
           {
             "title": "S2.E8 - Who Are You?",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a60bd1c2-6169-465e-9f50-b2af0ac6c859"
           },
           {
             "title": "S2.E9 - Welcome to the Rebellion",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/159a6962-d5a4-487a-a3e4-274c0ad30165"
           },
           {
             "title": "S2.E10 - Make It Stop",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2f40e444-1f86-4c30-9e4b-a7b00961b771"
           },
           {
             "title": "S2.E11 - Who Else Knows?",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3ddc0437-eb4e-4002-947c-b129eaed9bf4"
           },
           {
             "title": "S2.E12 - Jedha, Kyber, Erso",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5e7dca41-e8b3-4260-b32a-309f302f68ce"
           }
         ],
         "synopsis": "Cassian Andor continues the path toward his heroic rebel desinty.",
@@ -1951,7 +2138,8 @@
         "episodeDetails": [
           {
             "title": "S1.E2 - The Path of Anger",
-            "time": "between 9 and 2 BBY"
+            "time": "between 9 and 2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6ffdbfe3-67c4-4da6-a855-06f30adc254c"
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
@@ -1971,303 +2159,378 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - Spark of Rebellion Part 1",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6cbbed26-c910-46d9-9548-0fbae3ebdea7"
           },
           {
             "title": "S1.E2 - Spark of Rebellion Part 2",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/34aecab3-bf9d-4ef7-935d-c06b2bb182ec"
           },
           {
             "title": "S1.E3 - Droids in Distress",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/030fd959-96c1-42ae-9049-e1b963d573d5"
           },
           {
             "title": "S1.E4 - Fighter Flight",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2e8c994b-c635-4b30-b4c2-d91ea899705e"
           },
           {
             "title": "S1.E5 - Rise of the Old Masters",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c97bafbc-6273-4bc3-8e83-91e37f2c21a7"
           },
           {
             "title": "S1.E6 - Breaking Ranks",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/abbb266b-bebb-4df0-9300-9e8b49c221f1"
           },
           {
             "title": "S1.E7 - Out of Darkness",
-            "time": "5 BBY"
+            "time": "5 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/91c3a84e-6a20-4c7d-ba04-c9f740917cf8"
           },
           {
             "title": "S1.E8 - Empire Day",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e2284040-4005-4a51-8326-417b175a44d3"
           },
           {
             "title": "S1.E9 - Gathering Forces",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2ae35c51-b85f-4f37-a4bc-8b656ac43939"
           },
           {
             "title": "S1.E10 - Path of the Jedi",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/89af5809-e964-4bc3-9a48-069c44c81e98"
           },
           {
             "title": "S1.E11 - Idiot's Array",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b87479c7-eda7-4a7d-9afd-155b806cbb2e"
           },
           {
             "title": "S1.E12 - Vision of Hope",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/8048d662-3224-4106-8921-bd6355652adb"
           },
           {
             "title": "S1.E13 - Call to Action",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/21d5636a-14d5-4be5-af6f-ddee846314c6"
           },
           {
             "title": "S1.E14 - Rebel Resolve",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e562f54e-1c73-4ea8-8565-33ec85b762d1"
           },
           {
             "title": "S1.E15 - Fire Across the Galaxy",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2bb2612e-4e45-4cc2-8a94-38e60427a645"
           },
           {
             "title": "S2.E1 - The Siege of Lothal Part 1",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/45c35778-7248-46e9-a3e9-2c873eda642c"
           },
           {
             "title": "S2.E2 - The Siege of Lothal Part 2",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/84905dd3-f6ac-4e70-961b-1631119efd11"
           },
           {
             "title": "S2.E3 - The Lost Commanders",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/53dfbe14-223f-4ce2-ae82-2a8002580d13"
           },
           {
             "title": "S2.E4 - Relics of the Old Republic",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/8299c527-407f-41ca-8ad9-b5cc193f46b2"
           },
           {
             "title": "S2.E5 - Always Two There Are",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2417b1cb-a88e-4494-a3fa-252d23fe6236"
           },
           {
             "title": "S2.E6 - Brothers of the Broken Horn",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9f72332d-3c97-46ba-a6da-bad3d1b63b39"
           },
           {
             "title": "S2.E7 - Wings of the Master",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e82a645f-316d-4bb3-94ee-d4ff86678827"
           },
           {
             "title": "S2.E8 - Blood Sisters",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2921922b-36ec-460f-8da4-f3776673df92"
           },
           {
             "title": "S2.E9 - Stealth Strike",
-            "time": "4 BBY"
+            "time": "4 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/98080c49-e75b-4676-98c8-c012ded40b16"
           },
           {
             "title": "S2.E10 - The Future of the Force",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f46e9c80-2666-4c42-aa21-0d8ba3a39730"
           },
           {
             "title": "S2.E11 - Legacy",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/132d58bb-ff18-4db4-bd4d-29a936c69544"
           },
           {
             "title": "S2.E12 - A Princess on Lothal",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/84cca241-b952-4d7d-a749-e6a6ab14bd9b"
           },
           {
             "title": "S2.E13 - The Protector of Concord Dawn",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/fc84e1aa-a583-44eb-838f-7fe68e3bccaa"
           },
           {
             "title": "S2.E14 - Legends of the Lasat",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/190f8ca7-55f7-4814-8979-43db0972155b"
           },
           {
             "title": "S2.E15 - The Call",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5f8c04df-ddeb-49aa-b7c8-90d821946ebd"
           },
           {
             "title": "S2.E16 - Homecoming",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ee4e6fa0-b6d5-478c-a78d-873f3cf71733"
           },
           {
             "title": "S2.E17 - The Honorable Ones",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0bb58c88-3d97-41a9-9565-41aa999daa3e"
           },
           {
             "title": "S2.E18 - Shroud of Darkness",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/18a908cf-fb89-45f9-84b4-f7793947ebd5"
           },
           {
             "title": "S2.E19 - The Forgotten Droid",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/93d35ba5-15c9-478d-88ab-988aacef9aca"
           },
           {
             "title": "S2.E20 - The Mystery of the Chopper Base",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9769a037-95d4-43ee-a4c0-068bac7e617f"
           },
           {
             "title": "S2.E21 - Twilight of the Apprentice Part 1",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/70d7796e-83ca-4a7a-8452-2c6e1bac97e6"
           },
           {
             "title": "S2.E22 - Twilight of the Apprentice Part 2",
-            "time": "3 BBY"
+            "time": "3 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0fb84327-9754-4f51-876c-ef7908f9d833"
           },
           {
             "title": "S3.E1 - Steps Into Shadow Part 1",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a0b34574-da6f-427c-a467-f8df80f3966c"
           },
           {
             "title": "S3.E2 - Steps Into Shadow Part 2",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5b41d763-d5b3-4ded-99ab-1a9f1a069424"
           },
           {
             "title": "S3.E3 - The Holocrons of Fate",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e6d583ba-420a-4733-8768-74cbde197cd7"
           },
           {
             "title": "S3.E4 - The Antilles Extraction",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b077e7ac-bee1-4799-a706-0c848eb08b6c"
           },
           {
             "title": "S3.E5 - Hera's Heroes",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/cfbd7a2b-cc61-4545-be96-c609cf522383"
           },
           {
             "title": "S3.E6 - The Last Battle",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/66b6daaf-1b82-48f7-b8f9-a45a8163b1dd"
           },
           {
             "title": "S3.E7 - Imperial Supercommandos",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/650b5d16-5929-4773-8de3-232549733730"
           },
           {
             "title": "S3.E8 - Iron Squadron",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9f2300d0-ffb3-4558-bce2-f0d656b73d93"
           },
           {
             "title": "S3.E9 - The Wynkanthu Job",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ce419b17-f379-42e5-91f9-f4623a8300cc"
           },
           {
             "title": "S3.E10 - An Inside Man",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b694b9e9-85f2-48e0-a1ae-ceeabc83f1c3"
           },
           {
             "title": "S3.E11 - Visions and Voices",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/6355c93a-9cc4-474c-9150-21b03b6ea519"
           },
           {
             "title": "S3.E12 - Ghosts of Geonosis Part 1",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/38e2e483-fbea-4cf4-82d9-146daab60bae"
           },
           {
             "title": "S3.E13 - Ghosts of Geonosis Part 2",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/38983150-329b-4291-89ad-2c4919a76721"
           },
           {
             "title": "S3.E14 - Warhead",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/4edb29fe-1340-40a7-9666-faf02cfde61b"
           },
           {
             "title": "S3.E15 - Trials of the Darksaber",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/bb4bc334-1301-408d-8793-fcc3b61e2c96"
           },
           {
             "title": "S3.E16 - Legacy of Mandalore",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/4a505496-cb5f-4656-9d0c-22590aae5e87"
           },
           {
             "title": "S3.E17 - Through Imperial Eyes",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3fdeedd5-abb6-4795-a1e4-7a8d0479875e"
           },
           {
             "title": "S3.E18 - Secret Cargo",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/061b2863-79d7-4e0b-9ac1-7bef46682edf"
           },
           {
             "title": "S3.E19 - Double Agent Droid",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5816d2e2-57ab-4bb8-9a6a-7c8fbbeba350"
           },
           {
             "title": "S3.E20 - Twin Suns",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/aecd4e4a-6dbb-4e73-af27-914c70621bd8"
           },
           {
             "title": "S3.E21 - Zero Hour Part 1",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7e591dcd-9dc8-4784-8afb-ac7d45be5f80"
           },
           {
             "title": "S3.E22 - Zero Hour Part 2",
-            "time": "2 BBY"
+            "time": "2 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/69a996eb-86f6-443e-8165-34385db3d92f"
           },
           {
             "title": "S4.E1 - Heroes of Mandalore Part 1",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/354e8f3c-373a-426e-98a9-f290a80af2a9"
           },
           {
             "title": "S4.E2 - Heroes of Mandalore Part 2",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a0dc08a4-11d7-492a-b082-64e55ddae787"
           },
           {
             "title": "S4.E3 - In the Name of the Rebellion Part 1",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d324ab85-076e-48ec-8f41-ea99874b6c9c"
           },
           {
             "title": "S4.E4 - In the Name of the Rebellion Part 2",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/1a8caaff-5bc8-4a1e-8f76-d3a98fd70ec3"
           },
           {
             "title": "S4.E5 - The Occupation",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7dfc61fa-3ca5-4300-969f-849b61a78d1d"
           },
           {
             "title": "S4.E6",
-            "time": "Flight of the Defender -1 BBY"
+            "time": "Flight of the Defender -1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/c44e1c11-6856-40a5-9b89-c5cda77c793b"
           },
           {
             "title": "S4.E7 - Kindred",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7a71f83f-4d37-44d7-82ee-1409af8952c0"
           },
           {
             "title": "S4.E8 - Crawler Commandeers",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/97e5f719-076e-4c57-9107-77660c55cf65"
           },
           {
             "title": "S4.E9 - Rebel Assault",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/67374937-a6f9-43a6-91bf-f8cfcf77eff5"
           },
           {
             "title": "S4.E10 - Jedi Night",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2c3bf112-fdae-429e-8256-16327935fe14"
           },
           {
             "title": "S4.E11 - DUME",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/a94b7613-274a-4592-8cfa-f2b9ca872cd1"
           },
           {
             "title": "S4.E12 - Wolves and a Door",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/49d2c54e-f5e7-4eb8-b13d-ada3a494ca10"
           },
           {
             "title": "S4.E13 - A World Between Worlds",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/e271fb79-9efa-4ec6-8bce-c5d3373bdd1c"
           },
           {
             "title": "S4.E14 - A Fool's Hope",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/241b39f6-2726-4381-a43d-eafe6c4e2980"
           },
           {
             "title": "S4.E15 - Family Reunion - and Farewell Part 1",
-            "time": "1 BBY"
+            "time": "1 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/958d81ee-5ce8-4600-a7d5-d61fcc6d9aa0"
           },
           {
             "title": "S4.E16 - Family Reunion - and Farewell Part 2",
-            "time": "1 BBY (9 ABY epilogue)"
+            "time": "1 BBY (9 ABY epilogue)",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/958d81ee-5ce8-4600-a7d5-d61fcc6d9aa0"
           }
         ],
         "synopsis": "The Ghost crew provides a spark to ignite a rebellion.",
@@ -2292,13 +2555,15 @@
         "releaseYear": "2016",
         "episodeDetails": [
           {
-            "title": "Rogue One: A Star Wars Story 0 BBY",
-            "time": ""
+            "title": "Rogue One: A Star Wars Story",
+            "time": "0 BBY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5ec74210-f970-42b7-a39f-8653c0a9eab8"
           }
         ],
         "synopsis": "Unlikely heroes band together to steal the plans to the Death Star.",
         "id": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Rogue_One:_A_Star_Wars_Story"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Rogue_One:_A_Star_Wars_Story",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/5ec74210-f970-42b7-a39f-8653c0a9eab8"
       },
       {
         "title": "Star Wars: Episode IV - A New Hope",
@@ -2312,12 +2577,14 @@
         "episodeDetails": [
           {
             "title": "Star Wars: Episode IV - A New Hope",
-            "time": "0 ABY"
+            "time": "0 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9a280e53-fcc0-4e17-a02c-b1f40913eb0b"
           }
         ],
         "synopsis": "A young farm boy intercepts a distress call from the captive Princess Leia.",
         "id": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IV_A_New_Hope"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IV_A_New_Hope",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/9a280e53-fcc0-4e17-a02c-b1f40913eb0b"
       },
       {
         "title": "The Star Wars Holiday Special",
@@ -2331,7 +2598,8 @@
         "episodeDetails": [
           {
             "title": "The Star Wars Holiday Special",
-            "time": "1 ABY"
+            "time": "1 ABY",
+            "disneyPlusUrl": "https://youtu.be/KxtSX1lg8rE"
           }
         ],
         "synopsis": "Chewbacca and Han Solo attempt to visit the Wookiee home planet of Kashyyyk to celebrate \"Life Day\".",
@@ -2350,12 +2618,14 @@
         "episodeDetails": [
           {
             "title": "Star Wars: Episode V - The Empire Strikes Back",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/0f5c5223-f4f6-46ef-ba8a-69cb0e17d8d3"
           }
         ],
         "synopsis": "Luke Skywalker trains as a Jedi and confronts Darth Vader.",
         "id": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_V_The_Empire_Strikes_Back"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_V_The_Empire_Strikes_Back",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/0f5c5223-f4f6-46ef-ba8a-69cb0e17d8d3"
       },
       {
         "title": "Ewoks",
@@ -2369,107 +2639,133 @@
         "episodeDetails": [
           {
             "title": "S1.E1 - The Cries of the Trees",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/590a4de7-20c4-4d9d-b4a9-23556703acd5"
           },
           {
             "title": "S1.E2 - The Haunted Village",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/ed939cf8-a5fb-4c8c-b637-de10a7097979"
           },
           {
             "title": "S1.E3 - Rampage of the Phlogs",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/aad02355-8091-412a-a27f-621e5af2b3eb"
           },
           {
             "title": "S1.E4 - To Save Deej",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/49a23565-3887-4d0e-93a0-792b7331961e"
           },
           {
             "title": "S1.E5 - The Travelling Jindas",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/4d282ecd-f5ea-4ed3-90c8-8e359a88614c"
           },
           {
             "title": "S1.E6 - The Tree of Light",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/908905ef-16f3-4a0e-88f3-ee946b48e21f"
           },
           {
             "title": "S1.E7 - The Curse of the Jindas",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f6e2f25f-a372-41b8-85f7-84b648950d15"
           },
           {
             "title": "S1.E8 - The Land of the Gupins",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d0c74829-7ea8-4bbe-9af9-50a90f755054"
           },
           {
             "title": "S1.E9 - Sunstar vs. Shadowstone",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5542378f-6d1a-4ea0-b2c6-142561f0720c"
           },
           {
             "title": "S1.E10 - Wicket's Wagon",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5beffcd3-1e4c-490e-adec-6e92fa8323e2"
           },
           {
             "title": "S1.E11 - The Three Lessons",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2d7f47b9-9c8e-407c-80a2-ba8db7228f08"
           },
           {
             "title": "S1.E12 - Blue Harvest",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/8d10795c-51a3-43ba-9d3e-695bd89794cd"
           },
           {
             "title": "S1.E13 - Asha",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/55dd0c6d-78c5-4500-9a8d-da71150266d4"
           },
           {
             "title": "S2.E1 - The Crystal Cloak",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5bf27fe0-1a98-4815-9eb8-5c32bac72808"
           },
           {
             "title": "S2.E2 - The Wish Plan",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/7c818381-84ff-40df-ac39-9ab15a226a83"
           },
           {
             "title": "S2.E3 - Home is Where the Shrieks Are",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/3fdc61cc-4286-4c6e-bb52-1a9634970116"
           },
           {
             "title": "S2.E4 - Princess Latara",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/beb4f97a-faec-4804-afdc-da4eebc949b4"
           },
           {
             "title": "S2.E5 - The Raich",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/f6989725-ddb3-4c9a-a997-88f6b645cb68"
           },
           {
             "title": "S2.E6 - The Totem Master",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/67ba25e3-b985-49ea-8c55-a60a91e8a79b"
           },
           {
             "title": "S2.E7 - A Gift for Shodu",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/1c467a57-a81a-45cc-bb35-891d1f6efe38"
           },
           {
             "title": "S2.E8 - Night of the Stranger",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/b188184a-dfa7-4d97-89ae-1b7066eab020"
           },
           {
             "title": "S2.E9 - Gone With the Mimphs",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/2d2173a1-0894-49e6-89c8-a7f26a9bd648"
           },
           {
             "title": "S2.E10 - The First Apprentice",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/de171b10-02b5-4b3f-9077-960e37046769"
           },
           {
             "title": "S2.E11 - Hard Sell",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/33a90172-9dbe-4910-8e98-ea100581ebc0"
           },
           {
             "title": "S2.E12 - A Warrior and a Lurdo",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/5ee3a5f8-5479-4707-8b97-4b72261d6aed"
           },
           {
             "title": "S2.E13 - The Season Scepter",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/9d6d7c0f-0ce2-447b-94ba-f4c6058ee0a1"
           },
           {
             "title": "S2.E14 - Prow Beaten",
@@ -2525,12 +2821,14 @@
         "episodeDetails": [
           {
             "title": "Caravan of Courage: An Ewok Adventure",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/de308fb3-331d-44c1-a0fa-fb90c8b1ade2"
           }
         ],
         "synopsis": "After Cindel and Mace are separated from their parent, courageous Ewoks aid in reuiniting them.",
         "id": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Caravan_of_Courage:_An_Ewok_Adventure"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Caravan_of_Courage:_An_Ewok_Adventure",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/de308fb3-331d-44c1-a0fa-fb90c8b1ade2"
       },
       {
         "title": "Ewoks: The Battle for Endor",
@@ -2544,12 +2842,14 @@
         "episodeDetails": [
           {
             "title": "Ewoks: The Battle for Endor",
-            "time": "3 ABY"
+            "time": "3 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/1a3764d6-c7f7-4b54-938b-18faf67c0a98"
           }
         ],
         "synopsis": "The adventures of the Ewoks continue as Wicket and friends confront th evil Marauders.",
         "id": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Ewoks:_The_Battle_for_Endor"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Ewoks:_The_Battle_for_Endor",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/1a3764d6-c7f7-4b54-938b-18faf67c0a98"
       },
       {
         "title": "Star Wars: Episode VI - Return of the Jedi",
@@ -2563,12 +2863,14 @@
         "episodeDetails": [
           {
             "title": "Star Wars: Episode VI - Return of the Jedi",
-            "time": "4 ABY"
+            "time": "4 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/4b6e7cda-daa5-4f2d-9b61-35bbe562c69c"
           }
         ],
         "synopsis": "Luke Skywalker faces Darth Vader in a final duel.",
         "id": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VI_Return_of_the_Jedi"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VI_Return_of_the_Jedi",
+        "disneyPlusUrl": "https://www.disneyplus.com/play/4b6e7cda-daa5-4f2d-9b61-35bbe562c69c"
       }
     ]
   },
@@ -2588,7 +2890,8 @@
         "episodeDetails": [
           {
             "title": "S1.E3 - The Path of Hate",
-            "time": "between 5 and 9 ABY"
+            "time": "between 5 and 9 ABY",
+            "disneyPlusUrl": "https://www.disneyplus.com/play/d02ed1f9-4caa-4eac-9b59-b45346878e35"
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",

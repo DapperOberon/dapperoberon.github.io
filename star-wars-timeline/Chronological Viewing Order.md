@@ -286,7 +286,7 @@ E: Episode
 * [ ] S1.E4 - Cornered - 19 BBY
 * [ ] S1.E5 - Rampage - 19 BBY
 * [ ] S1.E6 - Decommissioned - 19 BBY
-* [ ] S1. E7 - Battle Scars - 19 BBY
+* [ ] S1.E7 - Battle Scars - 19 BBY
 * [ ] S1.E8 - Reunion - 19 BBY
 * [ ] S1.E9 - Bounty Lost - 19 BBY
 * [ ] S1.E10 - Common Ground - 19 BBY
