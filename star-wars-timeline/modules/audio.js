@@ -524,6 +524,10 @@ export function createAudioController({
     return musicEnabled;
   }
 
+  function getSoundEnabled() {
+    return soundEnabled;
+  }
+
   function getMusicVolume() {
     return musicVolume;
   }
@@ -563,6 +567,7 @@ export function createAudioController({
     nextTrack,
     getCurrentTrackTitle,
     getMusicEnabled,
+    getSoundEnabled,
     getMusicVolume,
     subscribe
   };

@@ -8,6 +8,7 @@ import { calculateStats } from "../modules/stats.js";
 import { getEntrySearchText } from "../modules/data.js";
 
 const PREFERENCES_STORAGE_KEY = "sw_redesign_preferences";
+const PREFERENCES_SCHEMA_VERSION = 2;
 
 const app = document.getElementById("app");
 const appState = {
@@ -54,6 +55,59 @@ const TYPE_LABELS = [
   [/series|show/i, "Series"]
 ];
 
+const STORY_ARC_OPTIONS = [
+  ["all", "All Arcs"],
+  ["clone-wars", "Clone Wars"],
+  ["mandoverse", "Mandoverse"],
+  ["sequel-era", "Sequel Era"],
+  ["george-lucas", "George Lucas"]
+];
+
+const STORY_ARC_MATCHERS = {
+  "clone-wars": (entry, section) => {
+    const title = String(entry.title || "").toLowerCase();
+    const era = String((section && section.era) || "").toLowerCase();
+    return (
+      title.includes("clone wars")
+      || title.includes("attack of the clones")
+      || title.includes("revenge of the sith")
+      || title.includes("bad batch")
+      || title.includes("tales of the jedi")
+      || title.includes("tales of the underworld")
+      || era.includes("fall of the jedi")
+    );
+  },
+  mandoverse: (entry, section) => {
+    const title = String(entry.title || "").toLowerCase();
+    const era = String((section && section.era) || "").toLowerCase();
+    return (
+      title.includes("the mandalorian")
+      || title.includes("book of boba fett")
+      || title.includes("ahsoka")
+      || title.includes("skeleton crew")
+      || era.includes("new republic")
+    );
+  },
+  "sequel-era": (entry, section) => {
+    const title = String(entry.title || "").toLowerCase();
+    const era = String((section && section.era) || "").toLowerCase();
+    return (
+      title.includes("the force awakens")
+      || title.includes("the last jedi")
+      || title.includes("the rise of skywalker")
+      || title.includes("star wars resistance")
+      || era.includes("rise of the first order")
+    );
+  },
+  "george-lucas": (entry) => {
+    const title = String(entry.title || "");
+    const titleLower = title.toLowerCase();
+    const isEpisodeOneToSix = /\bepisode\s+(i|ii|iii|iv|v|vi)\b/i.test(title);
+    const isTheCloneWars = titleLower.includes("the clone wars") || titleLower.includes("star wars: the clone wars");
+    return isEpisodeOneToSix || isTheCloneWars;
+  }
+};
+
 function normalizePosterPath(path) {
   if (!path) return "";
   if (path.startsWith("./")) return `..${path.slice(1)}`;
@@ -75,12 +129,21 @@ function slugifyEra(value) {
     .replace(/^-|-$/g, "");
 }
 
+function slugifyTitle(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getEraAssetPath(era) {
   return ERA_ASSETS[era] || "";
 }
 
 function getDefaultPreferences() {
   return {
+    schemaVersion: PREFERENCES_SCHEMA_VERSION,
     displayBbyAbyDates: true,
     standardHoursRuntime: false,
     chronologicalSortLock: true,
@@ -88,10 +151,25 @@ function getDefaultPreferences() {
     legendsIntegration: true,
     includeAnimatedShorts: true,
     audioEnabled: true,
+    soundEffectsEnabled: false,
     scanlineIntensity: 30,
     glowRadius: 65,
     interfaceTheme: "sith-dark"
   };
+}
+
+function normalizeContinuityPreferences(preferences) {
+  const normalized = {
+    ...preferences
+  };
+
+  if (normalized.canonOnly) {
+    normalized.legendsIntegration = false;
+  } else {
+    normalized.legendsIntegration = true;
+  }
+
+  return normalized;
 }
 
 function getAudioController() {
@@ -110,9 +188,26 @@ function loadPreferences() {
     const raw = localStorage.getItem(PREFERENCES_STORAGE_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw);
-    return {
+    let migrated = {
       ...defaults,
       ...parsed
+    };
+
+    if (!parsed.schemaVersion || Number(parsed.schemaVersion) < PREFERENCES_SCHEMA_VERSION) {
+      migrated.canonOnly = false;
+      migrated.legendsIntegration = true;
+      migrated.schemaVersion = PREFERENCES_SCHEMA_VERSION;
+      try {
+        localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(migrated));
+      } catch (error) {
+        // Ignore localStorage failures during migration.
+      }
+    }
+
+    migrated = normalizeContinuityPreferences(migrated);
+
+    return {
+      ...migrated
     };
   } catch (error) {
     return defaults;
@@ -150,7 +245,8 @@ function createDefaultFilters() {
     eras: new Set(getAllEraNames()),
     type: "all",
     canon: "all",
-    progress: "all"
+    progress: "all",
+    arc: "all"
   };
 }
 
@@ -160,7 +256,8 @@ function cloneFilters(filters) {
     eras: new Set(filters.eras),
     type: filters.type,
     canon: filters.canon,
-    progress: filters.progress
+    progress: filters.progress,
+    arc: filters.arc
   };
 }
 
@@ -170,6 +267,7 @@ function countActiveFilters(filters) {
   if (filters.type !== "all") count += 1;
   if (filters.canon !== "all") count += 1;
   if (filters.progress !== "all") count += 1;
+  if (filters.arc !== "all") count += 1;
   if (filters.eras.size !== getAllEraNames().length) count += 1;
   return count;
 }
@@ -225,6 +323,14 @@ function entryMatchesFilters(entry, filters) {
     return false;
   }
 
+  if (filters.arc !== "all") {
+    const matcher = STORY_ARC_MATCHERS[filters.arc];
+    const section = appState.timelineData.find((candidate) => candidate.era === entry.era);
+    if (typeof matcher === "function" && !matcher(entry, section)) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -235,6 +341,70 @@ function getFilteredSections() {
       entries: section.entries.filter((entry) => entryMatchesFilters(entry, appState.filters))
     }))
     .filter((section) => section.entries.length > 0);
+}
+
+function getFilteredEntries() {
+  return getFilteredSections().flatMap((section) => section.entries);
+}
+
+function getModalEntryNavigation(entryId) {
+  const entries = getFilteredEntries();
+  const currentIndex = entries.findIndex((entry) => entry.id === entryId);
+  if (currentIndex === -1) {
+    return {
+      previous: null,
+      next: null
+    };
+  }
+
+  return {
+    previous: currentIndex > 0 ? entries[currentIndex - 1] : null,
+    next: currentIndex < entries.length - 1 ? entries[currentIndex + 1] : null
+  };
+}
+
+function buildEntryShareUrl(entry) {
+  const url = new URL(window.location.href);
+  if (!entry || !entry.id) {
+    url.searchParams.delete("entry");
+    url.searchParams.delete("title");
+    return url;
+  }
+
+  url.searchParams.set("entry", entry.id);
+  url.searchParams.set("title", slugifyTitle(entry.title));
+  return url;
+}
+
+function syncEntryUrl(entry, { mode = "replace" } = {}) {
+  const url = buildEntryShareUrl(entry);
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  if (mode === "push") {
+    window.history.pushState({}, "", nextUrl);
+    return;
+  }
+  window.history.replaceState({}, "", nextUrl);
+}
+
+function getEntryIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const entryId = params.get("entry");
+  return entryId ? String(entryId).trim() : "";
+}
+
+function applyEntryStateFromUrl({ shouldRender = true } = {}) {
+  const entryId = getEntryIdFromUrl();
+  const nextEntryId = entryId && appState.entryMap.has(entryId) ? entryId : null;
+  if (entryId && !nextEntryId) {
+    syncEntryUrl(null, { mode: "replace" });
+  }
+  appState.activeEntryId = nextEntryId;
+  if (nextEntryId) {
+    appState.pendingOverlayFocusSelector = "#entry-modal button[data-close-modal='true']";
+  }
+  if (shouldRender) {
+    renderApp(appState.timelineData);
+  }
 }
 
 function getMediaDistribution(entries) {
@@ -372,6 +542,7 @@ function flattenSections(sections) {
   return sections.flatMap((section, sectionIndex) =>
     section.entries.map((entry, entryIndex) => ({
       ...entry,
+      id: entry.id || `${sectionIndex}-${entryIndex}`,
       poster: normalizePosterPath(entry.poster),
       era: section.era,
       eraColor: section.color,
@@ -388,7 +559,7 @@ function normalizeSections(sections) {
     anchorId: `era-${slugifyEra(section.era)}`,
     entries: section.entries.map((entry, entryIndex) => ({
       ...entry,
-      id: `${sectionIndex}-${entryIndex}`,
+      id: entry.id || `${sectionIndex}-${entryIndex}`,
       poster: normalizePosterPath(entry.poster),
       era: section.era,
       eraColor: section.color,
@@ -462,6 +633,29 @@ function isComplete(entry) {
   return entry.episodes > 0 && getWatchedCount(entry) >= entry.episodes;
 }
 
+function getTimelineEntryLabel(entry) {
+  const watchedCount = getWatchedCount(entry);
+  if (isComplete(entry)) return "Watched";
+  if (watchedCount > 0) return "Continue Watching";
+  return isSeriesEntry(entry) ? "See Details" : "Start Watching";
+}
+
+function getModalPrimaryLabel(entry) {
+  const watchedCount = getWatchedCount(entry);
+  if (isComplete(entry)) return "Watched";
+  if (watchedCount > 0) return "Continue Watching";
+  return "Start Watching";
+}
+
+function getEntryPlayUrl(entry) {
+  if (!entry) return "";
+  if (entry.disneyPlusUrl) return entry.disneyPlusUrl;
+  if (Array.isArray(entry.episodeDetails) && entry.episodeDetails.length === 1) {
+    return entry.episodeDetails[0].disneyPlusUrl || "";
+  }
+  return "";
+}
+
 function entryEpisodes(entry) {
   if (Array.isArray(entry.episodeDetails) && entry.episodeDetails.length > 0) {
     return entry.episodeDetails;
@@ -479,8 +673,17 @@ function buildEpisodeCode(title, index) {
 }
 
 function renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount) {
-  const watched = index < watchedCount;
-  const isNext = index === nextIndex;
+  const watched = Array.isArray(watchedCount)
+    ? Boolean(watchedCount[index])
+    : index < watchedCount;
+  const isNext = nextIndex >= 0 && index === nextIndex;
+  const playAction = episode.disneyPlusUrl
+    ? `
+        <a class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-400 hover:text-primary-fixed"} transition-colors" href="${escapeHtml(episode.disneyPlusUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Play ${escapeHtml(episode.title)} on Disney+">play_circle</a>
+      `
+    : `
+        <span class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-600"}" aria-hidden="true" style="font-variation-settings: 'FILL' ${isNext ? 1 : 0};">play_circle</span>
+      `;
   const cardClass = isNext
     ? "bg-white/[0.06] ring-1 ring-primary-fixed/45 shadow-[0_0_24px_rgba(251,228,25,0.12)]"
     : watched
@@ -504,26 +707,41 @@ function renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount) {
           <span class="block text-[10px] font-label text-slate-500 uppercase tracking-[0.2em]">Timestamp</span>
           <span class="text-sm font-headline text-slate-300">${escapeHtml(episode.time || "")}</span>
         </div>
-        <button class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-600 hover:text-secondary"}" type="button" aria-label="Play ${escapeHtml(episode.title)}" style="font-variation-settings: 'FILL' ${isNext ? 1 : 0};">play_circle</button>
+        ${playAction}
       </div>
     </div>
   `;
 }
 
 function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster) {
-  const watched = index < watchedCount;
+  const watched = Array.isArray(watchedCount)
+    ? Boolean(watchedCount[index])
+    : index < watchedCount;
+  const isNext = nextIndex >= 0 && index === nextIndex;
   const actionIcon = watched ? "check_circle" : "bookmark_add";
-  return `
-    <div class="glass-card rounded-xl p-4 flex items-center gap-4 border border-white/5 active:bg-white/5 transition-colors group">
-      <div class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
-        <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
-        <div class="absolute inset-0 flex items-center justify-center">
-          <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+  const playSurface = episode.disneyPlusUrl
+    ? `
+        <a class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest group/play" href="${escapeHtml(episode.disneyPlusUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Play ${escapeHtml(episode.title)} on Disney+">
+          <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 group-hover/play:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+          </div>
+        </a>
+      `
+    : `
+        <div class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
+          <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+          </div>
         </div>
-      </div>
+      `;
+  return `
+    <div class="glass-card rounded-xl p-4 flex items-center gap-4 active:bg-white/5 transition-colors group">
+      ${playSurface}
       <div class="flex-grow min-w-0">
         <div class="flex items-center gap-2 mb-0.5">
-          <span class="text-[10px] font-label font-bold ${index === nextIndex ? "text-primary-fixed" : "text-secondary"} tracking-tight uppercase">${escapeHtml(buildEpisodeCode(episode.title, index))}</span>
+          <span class="text-[10px] font-label font-bold ${isNext ? "text-primary-fixed" : "text-secondary"} tracking-tight uppercase">${escapeHtml(buildEpisodeCode(episode.title, index))}</span>
           <span class="w-1 h-1 bg-outline-variant rounded-full"></span>
           <span class="text-[10px] font-label text-on-surface-variant font-medium tracking-widest">${escapeHtml(episode.time || "")}</span>
         </div>
@@ -540,13 +758,33 @@ function renderModal(entry) {
   if (!entry) return "";
 
   const episodes = entryEpisodes(entry);
-  const watchedCount = Math.max(0, Math.min(getWatchedCount(entry), episodes.length));
-  const nextIndex = Math.min(watchedCount, Math.max(episodes.length - 1, 0));
+  const modalNav = getModalEntryNavigation(entry.id);
+  const watchedStates = Array.isArray(entry._watchedArray) && entry._watchedArray.length === entry.episodes
+    ? entry._watchedArray.slice()
+    : new Array(episodes.length).fill(false).map((_, index) => index < Math.max(0, Math.min(getWatchedCount(entry), episodes.length)));
+  const watchedCount = watchedStates.filter(Boolean).length;
+  const rawNextIndex = watchedStates.findIndex((watched) => !watched);
+  const nextIndex = rawNextIndex >= 0 ? rawNextIndex : -1;
   const watchedSummary = `${watchedCount}/${episodes.length} Watched`;
   const metaLine = entry.episodes > 1
     ? `${entry.episodes} Episodes • ${mediaLabel(entry.type)}`
     : mediaLabel(entry.type);
-  const mobileSeasonLabel = entry.episodes > 1 ? `Season View` : "Detail View";
+  const mobileStoryMeta = entry.canon ? entryMeta(entry) : `${entryMeta(entry)} • Legends`;
+  const infoAction = entry.wookieepediaUrl
+    ? `
+      <a class="ghost-button px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] inline-flex items-center gap-2" href="${escapeHtml(entry.wookieepediaUrl)}" target="_blank" rel="noopener noreferrer" data-entry-info="${escapeHtml(entry.id)}">
+        <span class="material-symbols-outlined text-sm">info</span>
+        Info
+      </a>
+    `
+    : "";
+  const mobileInfoAction = entry.wookieepediaUrl
+    ? `
+      <a class="ghost-button px-4 py-4 text-[10px] font-label font-bold uppercase tracking-[0.2em] inline-flex items-center justify-center" href="${escapeHtml(entry.wookieepediaUrl)}" target="_blank" rel="noopener noreferrer" data-entry-info="${escapeHtml(entry.id)}" aria-label="Open ${escapeHtml(entry.title)} on Wookieepedia">
+        <span class="material-symbols-outlined text-sm">info</span>
+      </a>
+    `
+    : "";
 
   return `
     <div id="entry-modal" class="fixed inset-0 z-[90]" aria-hidden="false" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title">
@@ -569,14 +807,19 @@ function renderModal(entry) {
               <div class="flex-grow space-y-5 max-w-4xl">
                 <div class="flex items-center gap-3 mb-1 flex-wrap">
                   <span class="kicker-label">${escapeHtml(entry.era)}</span>
-                  <span class="text-secondary font-label text-[10px] uppercase tracking-[0.22em]">${escapeHtml(metaLine)}</span>
+                  <span class="story-meta text-secondary">${escapeHtml(metaLine)}</span>
                 </div>
                 <h2 id="entry-modal-title" class="max-w-4xl text-4xl md:text-6xl xl:text-7xl font-headline font-bold text-white tracking-tighter uppercase leading-[0.95]">${escapeHtml(entry.title)}</h2>
                 <p class="max-w-2xl text-slate-300 font-body text-sm md:text-lg leading-relaxed opacity-90">${escapeHtml(entry.synopsis || "Entry synopsis coming soon.")}</p>
                 <div class="flex items-center gap-6 pt-3 flex-wrap">
                   <button class="cta-primary px-7" type="button" data-modal-primary>
-                    ${getWatchedCount(entry) > 0 ? "Continue Watching" : "Start Watching"}
+                    ${getModalPrimaryLabel(entry)}
                   </button>
+                  <button class="ghost-button px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em]" type="button" data-share-entry="${escapeHtml(entry.id)}">
+                    <span class="material-symbols-outlined text-sm">share</span>
+                    Share
+                  </button>
+                  ${infoAction}
                   <div class="flex items-center space-x-2 text-slate-300">
                     <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">visibility</span>
                     <span class="text-sm font-headline tracking-wide">${escapeHtml(watchedSummary)}</span>
@@ -587,7 +830,7 @@ function renderModal(entry) {
           </header>
           <main class="flex-grow overflow-y-auto px-8 md:px-12 lg:px-14 pb-12">
             <div class="flex items-center justify-between sticky top-0 z-20 py-6 bg-[linear-gradient(to_bottom,rgba(22,22,22,0.96),rgba(22,22,22,0.84),transparent)] backdrop-blur-sm">
-              <h3 class="font-headline text-lg uppercase tracking-[0.18em] text-[#75d1ff]">Episode Chronology</h3>
+              <h3 class="font-headline text-lg uppercase tracking-[0.18em] text-[#75d1ff]">Episodes</h3>
               <div class="flex items-center space-x-4">
                 <div class="h-1 w-24 bg-surface-container-highest rounded-full overflow-hidden">
                   <div class="h-full" style="width:${episodes.length ? Math.round((watchedCount / episodes.length) * 100) : 0}%; background:#fbe419; box-shadow:0 0 8px rgba(251,228,25,0.5);"></div>
@@ -596,19 +839,19 @@ function renderModal(entry) {
               </div>
             </div>
             <div class="space-y-2.5">
-              ${episodes.map((episode, index) => renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount)).join("")}
+              ${episodes.map((episode, index) => renderDesktopEpisodeItem(episode, index, nextIndex, watchedStates)).join("")}
+            </div>
+            <div class="pt-8 flex items-center justify-between gap-4">
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.previous ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.previous ? `data-modal-nav="previous"` : "disabled"}>
+                <span class="material-symbols-outlined text-sm">west</span>
+                ${modalNav.previous ? `Previous: ${escapeHtml(modalNav.previous.title)}` : "Start of Timeline"}
+              </button>
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.next ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.next ? `data-modal-nav="next"` : "disabled"}>
+                ${modalNav.next ? `Next: ${escapeHtml(modalNav.next.title)}` : "End of Timeline"}
+                <span class="material-symbols-outlined text-sm">east</span>
+              </button>
             </div>
           </main>
-          <footer class="p-6 bg-surface-container-highest/30 flex items-center justify-between">
-            <div class="flex space-x-4">
-              <button class="text-[10px] font-label text-slate-400 uppercase tracking-widest hover:text-white transition-colors" type="button">Previous Series</button>
-              <button class="text-[10px] font-label text-slate-400 uppercase tracking-widest hover:text-white transition-colors" type="button">Next Series</button>
-            </div>
-            <div class="flex items-center space-x-6">
-              <button class="material-symbols-outlined text-slate-400 hover:text-primary-fixed" type="button">share</button>
-              <button class="material-symbols-outlined text-slate-400 hover:text-primary-fixed" type="button">info</button>
-            </div>
-          </footer>
         </div>
       </div>
 
@@ -620,7 +863,7 @@ function renderModal(entry) {
               <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
               <div class="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent"></div>
             </div>
-            <button class="absolute top-20 right-6 z-20 w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface border border-white/10 active:scale-90 transition-transform" type="button" data-close-modal="true" aria-label="Close details">
+            <button class="absolute top-20 right-6 z-20 w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface active:scale-90 transition-transform" type="button" data-close-modal="true" aria-label="Close details">
               <span class="material-symbols-outlined">close</span>
             </button>
             <div class="absolute bottom-0 left-0 w-full p-6 z-10 space-y-4">
@@ -634,29 +877,40 @@ function renderModal(entry) {
                   ${escapeHtml(watchedSummary)}
                 </span>
                 <span class="w-1 h-1 bg-outline-variant rounded-full"></span>
-                <span>${escapeHtml(mobileSeasonLabel)}</span>
-                <span class="w-1 h-1 bg-outline-variant rounded-full"></span>
-                <span>${escapeHtml(entryMeta(entry))}</span>
+                <span>${escapeHtml(mobileStoryMeta)}</span>
               </div>
               <p class="text-on-surface-variant text-sm leading-relaxed max-w-md line-clamp-3 font-light">${escapeHtml(entry.synopsis || "Entry synopsis coming soon.")}</p>
               <div class="pt-2">
-                <button class="w-full py-4 bg-primary-fixed text-on-primary-fixed font-headline font-bold rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(251,228,25,0.3)] active:scale-[0.98] transition-all" type="button" data-modal-primary>
-                  <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-                  ${getWatchedCount(entry) > 0 ? "CONTINUE WATCHING" : "START WATCHING"}
-                </button>
+                <div class="flex gap-3">
+                  <button class="flex-1 w-full py-4 bg-primary-fixed text-on-primary-fixed font-headline font-bold rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(251,228,25,0.3)] active:scale-[0.98] transition-all" type="button" data-modal-primary>
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    ${getModalPrimaryLabel(entry).toUpperCase()}
+                  </button>
+                  <button class="ghost-button px-4 py-4 text-[10px] font-label font-bold uppercase tracking-[0.2em]" type="button" data-share-entry="${escapeHtml(entry.id)}" aria-label="Share ${escapeHtml(entry.title)}">
+                    <span class="material-symbols-outlined text-sm">share</span>
+                  </button>
+                  ${mobileInfoAction}
+                </div>
               </div>
             </div>
           </section>
           <section class="px-6 space-y-6 mt-4">
             <div class="flex items-center justify-between">
               <h3 class="font-headline text-lg font-bold tracking-widest uppercase text-white">Episodes</h3>
-              <button class="flex items-center gap-1 text-xs font-label text-secondary uppercase tracking-widest font-semibold" type="button">
-                ${escapeHtml(entry.episodes > 1 ? "Series View" : "Detail View")}
-                <span class="material-symbols-outlined text-sm">expand_more</span>
-              </button>
+              <span class="story-meta">${escapeHtml(watchedSummary)}</span>
             </div>
             <div class="space-y-3 pb-4">
-              ${episodes.map((episode, index) => renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, entry.poster)).join("")}
+              ${episodes.map((episode, index) => renderMobileEpisodeItem(episode, index, nextIndex, watchedStates, entry.poster)).join("")}
+            </div>
+            <div class="grid grid-cols-2 gap-3 pb-6">
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.previous ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.previous ? `data-modal-nav="previous"` : "disabled"}>
+                <span class="material-symbols-outlined text-sm">west</span>
+                Prev
+              </button>
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.next ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.next ? `data-modal-nav="next"` : "disabled"}>
+                Next
+                <span class="material-symbols-outlined text-sm">east</span>
+              </button>
             </div>
           </section>
         </main>
@@ -668,19 +922,19 @@ function renderModal(entry) {
 function renderDesktopEntry(entry, index) {
   const reverse = index % 2 === 1;
   const watchedCount = getWatchedCount(entry);
+  const playUrl = getEntryPlayUrl(entry);
   const nodeBorder = watchedCount > 0 ? "border-secondary" : "border-primary-fixed";
   const nodeCore = watchedCount > 0 ? "bg-secondary" : "bg-primary-fixed";
   const yearTone = watchedCount > 0 ? "text-secondary" : "text-primary-fixed";
-  const watchLabel = isSeriesEntry(entry)
-    ? (watchedCount > 0 ? "Continue Series" : "View Details")
-    : (isComplete(entry) ? "Watched" : "Mark Watched");
+  const watchLabel = getTimelineEntryLabel(entry);
   const watchIcon = isSeriesEntry(entry)
-    ? "visibility"
+    ? (isComplete(entry) ? "check_circle" : "visibility")
     : (isComplete(entry) ? "check_circle" : "visibility");
   const watchButton = isComplete(entry)
     ? "bg-primary-fixed/90 text-on-primary-fixed"
     : "bg-background/80 text-white";
   const synopsis = entry.synopsis ? escapeHtml(entry.synopsis.slice(0, 170)) : "";
+  const storyMeta = entry.canon ? mediaLabel(entry.type) : `${mediaLabel(entry.type)} • Legends`;
 
   return `
     <article class="relative flex flex-col md:${reverse ? "flex-row-reverse" : "flex-row"} items-center justify-between group gap-8 md:gap-0 cursor-pointer" data-era="${escapeHtml(entry.era)}" data-entry-id="${escapeHtml(entry.id)}" tabindex="0"${entry.anchorId ? ` id="${escapeHtml(entry.anchorId)}"` : ""}>
@@ -690,27 +944,34 @@ function renderDesktopEntry(entry, index) {
       <div class="md:w-[45%] pl-12 md:pl-0 ${reverse ? "" : "md:text-right"}">
         <div class="inline-flex items-center gap-3 mb-3 ${reverse ? "" : "md:ml-auto md:justify-end"}">
           <span class="${yearTone} font-headline font-bold text-2xl tracking-tighter block">${escapeHtml(entry.year)}</span>
-          <span class="h-px w-10 bg-white/10 hidden md:block"></span>
+          <span class="story-meta hidden md:inline-flex items-center gap-2">
+            <span class="story-meta-dot"></span>
+            <span>${escapeHtml(storyMeta)}</span>
+          </span>
         </div>
         <h3 class="text-xl xl:text-[1.65rem] font-headline font-bold text-white uppercase tracking-tight leading-none">${escapeHtml(entry.title)}</h3>
         ${synopsis ? `<p class="text-on-surface-variant text-sm mt-3 leading-relaxed max-w-md ${reverse ? "" : "ml-auto"}">${synopsis}${entry.synopsis.length > 170 ? "..." : ""}</p>` : ""}
-        <div class="flex items-center gap-4 mt-6 ${reverse ? "" : "md:justify-end"} flex-wrap">
-          <span class="meta-chip">${escapeHtml(mediaLabel(entry.type))}</span>
-          <span class="meta-chip">${escapeHtml(entry.era)}</span>
-        </div>
       </div>
       <div class="hidden md:block w-[45%]">
-        <div class="relative overflow-hidden group/card bg-surface-container-low aspect-video border border-white/5 shadow-2xl">
+        <div class="relative overflow-hidden group/card bg-surface-container-low aspect-video shadow-2xl">
           <img class="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 grayscale-[0.5] group-hover/card:grayscale-0" src="${escapeHtml(entry.poster)}" alt="${escapeHtml(entry.title)}"/>
           <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"></div>
           <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-fixed/80 via-primary-fixed/20 to-transparent"></div>
           <div class="absolute top-4 left-4">
-            <span class="meta-chip bg-black/45 backdrop-blur-md text-white/75">${escapeHtml(entryMeta(entry))}</span>
+            <span class="story-meta bg-black/35 backdrop-blur-md px-3 py-1.5 rounded-full text-white/68">${escapeHtml(entryMeta(entry))}</span>
           </div>
-          <button class="desktop-media-button absolute bottom-4 ${reverse ? "left-4" : "right-4"} flex items-center gap-2 ${watchButton} backdrop-blur-md px-4 py-2 rounded-full border border-white/10 transition-all" type="button" ${isSeriesEntry(entry) ? `data-open-modal="${escapeHtml(entry.id)}"` : `data-toggle-entry="${escapeHtml(entry.id)}"`}>
+          <div class="absolute bottom-4 ${reverse ? "left-4" : "right-4"} flex items-center gap-3">
+          ${playUrl && !isSeriesEntry(entry) ? `
+            <a class="ghost-button inline-flex items-center gap-2 px-4 py-2 rounded-full" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Play ${escapeHtml(entry.title)} on Disney+">
+              <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+              <span class="text-[10px] font-label uppercase tracking-widest">Play</span>
+            </a>
+          ` : ""}
+          <button class="desktop-media-button flex items-center gap-2 ${watchButton} backdrop-blur-md px-4 py-2 rounded-full transition-all" type="button" ${isSeriesEntry(entry) ? `data-open-modal="${escapeHtml(entry.id)}"` : `data-toggle-entry="${escapeHtml(entry.id)}"`}>
             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">${watchIcon}</span>
             <span class="text-[10px] font-label uppercase tracking-widest ${watchedCount > 0 ? "font-bold" : ""}">${watchLabel}</span>
           </button>
+          </div>
         </div>
       </div>
     </article>
@@ -753,16 +1014,18 @@ function renderMobileSection(section) {
 function renderMobileEntry(entry) {
   const checked = getWatchedCount(entry) > 0;
   const series = isSeriesEntry(entry);
+  const playUrl = getEntryPlayUrl(entry);
+  const storyMeta = entry.canon ? entry.year : `${entry.year} • Legends`;
   return `
     <article class="relative cursor-pointer" data-era="${escapeHtml(entry.era)}" data-entry-id="${escapeHtml(entry.id)}" tabindex="0">
-      <div class="absolute -left-[37px] top-6 w-3 h-3 rounded-full ${checked ? "bg-secondary/40 border border-secondary" : "bg-primary-container shadow-[0_0_10px_#fbe419]"}"></div>
-      <div class="bg-surface-container-low rounded-[1.25rem] overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform duration-200 border border-white/5">
+      <div class="absolute -left-[37px] top-6 w-3 h-3 rounded-full ${checked ? "bg-secondary/55 shadow-[0_0_10px_rgba(117,209,255,0.25)]" : "bg-primary-container shadow-[0_0_10px_#fbe419]"}"></div>
+      <div class="bg-surface-container-low rounded-[1.25rem] overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform duration-200">
         <div class="h-44 relative">
           <img class="w-full h-full object-cover" src="${escapeHtml(entry.poster)}" alt="${escapeHtml(entry.title)}"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
           <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-fixed/80 via-primary-fixed/20 to-transparent"></div>
           <div class="absolute top-3 right-3">
-            <div class="bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[9px] font-label font-bold uppercase tracking-wider text-[#75d1ff] border border-[#75d1ff]/20">${escapeHtml(mediaLabel(entry.type))}</div>
+            <div class="story-meta bg-black/55 backdrop-blur-md px-2.5 py-1 rounded-full text-[#75d1ff]">${escapeHtml(mediaLabel(entry.type))}</div>
           </div>
         </div>
         <div class="p-5">
@@ -770,14 +1033,19 @@ function renderMobileEntry(entry) {
             <div>
               <h4 class="font-headline font-bold text-lg leading-tight mb-1">${escapeHtml(entry.title)}</h4>
               <div class="flex items-center gap-2 opacity-60">
-                <span class="font-label text-[10px] uppercase">${escapeHtml(entry.year)}</span>
-                <span class="w-1 h-1 rounded-full bg-on-surface/30"></span>
-                <span class="font-label text-[10px] uppercase tracking-widest text-[#FFE81F]">${entry.canon ? "Canon" : "Legends"}</span>
+                <span class="story-meta">${escapeHtml(storyMeta)}</span>
               </div>
             </div>
-            <button class="w-10 h-10 rounded-full border ${checked ? "border-primary-container bg-primary-container/10 text-primary-container" : "border-outline-variant/30 text-outline"} flex items-center justify-center" type="button" ${series ? `data-open-modal="${escapeHtml(entry.id)}"` : `data-toggle-entry="${escapeHtml(entry.id)}"`}>
+            <div class="flex items-center gap-2">
+            ${playUrl && !series ? `
+              <a class="icon-button w-10 h-10 text-primary-fixed/85 flex items-center justify-center" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Play ${escapeHtml(entry.title)} on Disney+">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+              </a>
+            ` : ""}
+            <button class="icon-button w-10 h-10 ${checked ? "text-primary-container bg-primary-container/10" : "text-outline"} flex items-center justify-center" type="button" ${series ? `data-open-modal="${escapeHtml(entry.id)}"` : `data-toggle-entry="${escapeHtml(entry.id)}"`}>
               <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${checked ? 1 : 0};">${series ? "visibility" : (checked ? "check_box" : "check_box_outline_blank")}</span>
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -798,16 +1066,15 @@ function renderFilterPanel() {
         <div class="filter-sheet w-full max-w-md h-screen pointer-events-auto relative flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.8)]">
           <div class="p-8">
             <div class="flex items-center justify-between mb-2">
-              <h2 id="filter-panel-title" class="text-3xl font-headline font-bold tracking-tighter text-white uppercase">Archive Filters</h2>
+              <h2 id="filter-panel-title" class="text-3xl font-headline font-bold tracking-tighter text-white uppercase">Filters</h2>
               <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors" type="button" data-close-filters="true">
                 <span class="material-symbols-outlined text-neutral-400">close</span>
               </button>
             </div>
-            <p class="text-secondary font-label text-[10px] uppercase tracking-[0.2em] opacity-80">Refining Chronological Data Points</p>
           </div>
           <div class="flex-1 overflow-y-auto p-8 space-y-10">
             <section class="filter-block p-6">
-              <label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Temporal Sectors (Eras)</label>
+              <label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Eras</label>
               <div class="space-y-3">
                 ${eras.map((era) => `
                   <label class="filter-option flex items-center group cursor-pointer px-4 py-3">
@@ -834,7 +1101,7 @@ function renderFilterPanel() {
                   </button>
                 `).join("")}
               </div>
-              <button class="filter-link-button mt-4 text-[10px] font-label uppercase tracking-widest" type="button" data-filter-type="all">Show All Formats</button>
+              <button class="filter-link-button mt-4 text-[10px] font-label uppercase tracking-widest" type="button" data-filter-type="all">All Formats</button>
             </section>
             <div class="grid grid-cols-2 gap-8">
               <section class="filter-block p-6">
@@ -848,7 +1115,7 @@ function renderFilterPanel() {
                 </div>
               </section>
               <section class="filter-block p-6">
-                <label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Archive Status</label>
+                <label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Status</label>
                 <div class="filter-segment flex flex-col gap-1 p-1.5">
                   ${[
                     ["all", "Show All"],
@@ -863,27 +1130,36 @@ function renderFilterPanel() {
                 </div>
               </section>
             </div>
+            <section class="filter-block p-6">
+              <label class="text-[10px] font-label font-bold uppercase tracking-[0.3em] text-neutral-500 mb-6 block">Story Arc</label>
+              <div class="grid grid-cols-2 gap-3">
+                ${STORY_ARC_OPTIONS.map(([value, label]) => `
+                  <button class="filter-segment-button py-3 px-4 text-center text-[10px] font-label uppercase tracking-widest ${filters.arc === value ? "is-active text-primary-fixed" : "text-neutral-500"} transition-all ${value === "all" ? "col-span-2" : ""}" type="button" data-filter-arc="${value}">
+                    ${label}
+                  </button>
+                `).join("")}
+              </div>
+            </section>
           </div>
           <div class="p-8 bg-surface-container-low/35 backdrop-blur-md grid grid-cols-2 gap-4">
             <button class="filter-link-button py-4 text-[10px] font-headline font-bold uppercase tracking-[0.2em]" type="button" data-clear-filters="true">Clear All</button>
-            <button class="py-4 bg-primary-fixed text-on-primary-fixed rounded-sm font-headline font-bold uppercase tracking-[0.2em] text-[10px] glow-yellow hover:translate-y-[-2px] active:translate-y-0 transition-all" type="button" data-apply-filters="true">Apply Filters</button>
+            <button class="cta-primary w-full py-4 text-[10px]" type="button" data-apply-filters="true">Apply Filters</button>
           </div>
         </div>
       </div>
 
       <div class="md:hidden fixed inset-0 z-50 flex flex-col glass-panel">
         <header class="flex items-center justify-between px-6 pt-12 pb-6">
-          <div class="space-y-1">
-            <h1 class="font-headline font-bold text-2xl tracking-[0.2em] text-on-surface">ARCHIVE FILTERS</h1>
-            <p class="font-body text-xs text-secondary/70 uppercase tracking-widest">Refining Chronological Data Points</p>
-          </div>
+            <div class="space-y-1">
+              <h1 class="font-headline font-bold text-2xl tracking-[0.2em] text-on-surface">FILTERS</h1>
+            </div>
           <button class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface active:scale-95 transition-transform" type="button" data-close-filters="true">
             <span class="material-symbols-outlined">close</span>
           </button>
         </header>
         <main class="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-10">
           <section class="space-y-4">
-            <h2 class="font-label text-[10px] font-bold tracking-[0.15em] text-secondary uppercase opacity-60">Timeline Eras</h2>
+            <h2 class="font-label text-[10px] font-bold tracking-[0.15em] text-secondary uppercase opacity-60">Eras</h2>
             <div class="grid gap-3">
               ${eras.map((era) => `
                 <label class="filter-option flex items-center justify-between p-4 group cursor-pointer active:bg-surface-container-high transition-colors">
@@ -907,7 +1183,7 @@ function renderFilterPanel() {
                 </button>
               `).join("")}
             </div>
-            <button class="filter-link-button text-on-surface/50 font-label text-[10px] font-bold tracking-[0.2em] uppercase" type="button" data-filter-type="all">Show All Formats</button>
+            <button class="filter-link-button text-on-surface/50 font-label text-[10px] font-bold tracking-[0.2em] uppercase" type="button" data-filter-type="all">All Formats</button>
           </section>
           <section class="space-y-6 pb-32">
             <div class="space-y-4">
@@ -935,11 +1211,21 @@ function renderFilterPanel() {
                 `).join("")}
               </div>
             </div>
+            <div class="space-y-4">
+              <h2 class="font-label text-[10px] font-bold tracking-[0.15em] text-secondary uppercase opacity-60">Story Arc</h2>
+              <div class="grid grid-cols-2 gap-3">
+                ${STORY_ARC_OPTIONS.map(([value, label]) => `
+                  <button class="filter-segment-button py-3 text-xs font-bold font-label uppercase tracking-widest ${filters.arc === value ? "is-active text-primary-fixed" : "text-on-surface opacity-40 filter-segment"} ${value === "all" ? "col-span-2" : ""}" type="button" data-filter-arc="${value}">
+                    ${label}
+                  </button>
+                `).join("")}
+              </div>
+            </div>
           </section>
         </main>
         <footer class="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-surface-dim via-surface-dim to-transparent pt-12">
           <div class="flex flex-col gap-4">
-            <button class="w-full py-5 bg-primary-fixed rounded-full text-on-primary-fixed font-headline font-black text-sm tracking-[0.2em] uppercase shadow-[0_8px_32px_rgba(251,228,25,0.3)] active:scale-[0.98] transition-all" type="button" data-apply-filters="true">Apply Filters</button>
+            <button class="cta-primary w-full py-5 text-sm" type="button" data-apply-filters="true">Apply Filters</button>
             <button class="w-full py-2 text-on-surface/50 font-label text-[10px] font-bold tracking-[0.2em] uppercase hover:text-on-surface transition-colors" type="button" data-clear-filters="true">Clear All</button>
           </div>
         </footer>
@@ -965,16 +1251,12 @@ function renderStatsPanel() {
             <div class="absolute inset-0 scanline-overlay opacity-30 pointer-events-none"></div>
             <header class="relative z-10 p-8 mb-8">
               <div class="space-y-1">
-                <div class="flex items-center gap-2 text-[10px] font-label text-secondary tracking-[0.3em] uppercase">
-                  <span class="material-symbols-outlined text-[12px]">monitoring</span> Chronicle Status
-                </div>
                 <h1 class="text-4xl font-headline font-bold text-white tracking-tight">WATCHLIST STATUS</h1>
-                <p class="text-sm text-on-surface-variant font-body max-w-2xl">A calmer readout of your current progress through the archive, organized to match the same system language as preferences.</p>
               </div>
             </header>
             <div class="relative z-10 p-8 grid grid-cols-1 md:grid-cols-12 gap-6">
               <section id="stats-overview" class="utility-section md:col-span-4 p-6 flex flex-col items-center justify-center text-center space-y-6">
-                <h3 class="font-headline font-bold tracking-widest text-sm uppercase">Overall Completion</h3>
+                <h3 class="font-headline font-bold tracking-widest text-sm uppercase">Completion</h3>
                 <div class="relative w-56 h-56 flex items-center justify-center">
                   <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" fill="none" r="45" stroke="rgba(255,255,255,0.05)" stroke-width="8"></circle>
@@ -982,18 +1264,17 @@ function renderStatsPanel() {
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center">
                     <span class="font-headline text-5xl font-bold text-white tracking-tighter">${stats.overallProgress}%</span>
-                    <span class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Efficiency</span>
+                    <span class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Complete</span>
                   </div>
                 </div>
                 <div class="space-y-1">
                   <p class="font-headline text-2xl text-primary-fixed">${stats.watchedEpisodes} / ${stats.totalEpisodes}</p>
-                  <p class="font-label text-[11px] text-zinc-500 uppercase tracking-widest">Episodes Logged</p>
+                  <p class="font-label text-[11px] text-zinc-500 uppercase tracking-widest">Logged</p>
                 </div>
               </section>
               <section id="stats-era-breakdown" class="utility-section md:col-span-8 p-6 space-y-8">
                 <div class="flex justify-between items-end">
-                  <h3 class="font-headline font-bold tracking-widest text-sm uppercase">Era Progress Breakdown</h3>
-                  <span class="text-[10px] font-label text-zinc-500">Current Archive View</span>
+                  <h3 class="font-headline font-bold tracking-widest text-sm uppercase">Era Progress</h3>
                 </div>
                 <div class="space-y-6">
                   ${eraProgress.map((item) => `
@@ -1010,7 +1291,7 @@ function renderStatsPanel() {
                 </div>
               </section>
               <section id="stats-media-distribution" class="utility-section md:col-span-5 p-6 space-y-10">
-                <h3 class="font-headline font-bold tracking-widest text-sm uppercase text-center">Media Format Distribution</h3>
+                <h3 class="font-headline font-bold tracking-widest text-sm uppercase text-center">Formats</h3>
                 <div class="flex justify-around items-end">
                   ${[
                     ["Movies", media.movies, "bg-primary-fixed/40"],
@@ -1033,16 +1314,16 @@ function renderStatsPanel() {
               </section>
               <section id="stats-completed-series" class="utility-section md:col-span-3 p-6 flex flex-col justify-between overflow-hidden relative">
                 <div>
-                  <h3 class="font-headline font-bold tracking-widest text-sm uppercase mb-8">Completed Series</h3>
+                  <h3 class="font-headline font-bold tracking-widest text-sm uppercase mb-8">Completed</h3>
                   <div class="space-y-1">
                     <p class="font-headline text-6xl font-bold text-white">${stats.completedShows}</p>
-                    <p class="font-label text-sm text-primary-fixed uppercase tracking-[0.2em]">Archive Milestones</p>
+                    <p class="font-label text-sm text-primary-fixed uppercase tracking-[0.2em]">Completed</p>
                   </div>
                 </div>
                 <div class="mt-8">
                   <div class="flex items-center space-x-2 text-zinc-500">
                     <span class="material-symbols-outlined text-xs">info</span>
-                    <span class="text-[10px] font-label uppercase">${stats.totalShows} total entries tracked</span>
+                    <span class="text-[10px] font-label uppercase">${stats.totalShows} entries</span>
                   </div>
                 </div>
                 <div class="absolute bottom-0 right-0 w-24 h-24 opacity-10 bg-gradient-to-tl from-secondary to-transparent rounded-tl-full"></div>
@@ -1053,17 +1334,17 @@ function renderStatsPanel() {
                     <img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" src="${escapeHtml(nextObjective.poster)}" alt="${escapeHtml(nextObjective.title)}">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#1c1b1b] to-transparent"></div>
                     <div class="absolute top-4 left-4">
-                      <span class="kicker-label">Next Objective</span>
+                      <span class="kicker-label">Next</span>
                     </div>
                   </div>
                   <div class="p-6 flex-grow flex flex-col justify-between">
                     <div>
                       <h4 class="font-label text-xs text-secondary uppercase tracking-widest mb-1">${escapeHtml(nextObjective.era)}</h4>
                       <h2 class="font-headline text-2xl font-bold text-white uppercase leading-none mb-3">${escapeHtml(nextObjective.title)}</h2>
-                      <p class="font-body text-sm text-on-surface-variant line-clamp-2 italic">${escapeHtml(nextObjective.synopsis || "Continue deeper into the chronology.")}</p>
+                      <p class="font-body text-sm text-on-surface-variant line-clamp-2 italic">${escapeHtml(nextObjective.synopsis || "Continue through the chronology.")}</p>
                     </div>
                     <button class="mt-6 w-full py-3 bg-primary-fixed text-on-primary-fixed font-label text-xs font-bold uppercase tracking-[0.2em] rounded-full hover:bg-primary-fixed-dim transition-colors flex items-center justify-center space-x-2" type="button" data-stats-open-entry="${escapeHtml(nextObjective.id)}">
-                      <span>Initialize Protocol</span>
+                      <span>Open</span>
                       <span class="material-symbols-outlined text-sm">play_arrow</span>
                     </button>
                   </div>
@@ -1075,36 +1356,34 @@ function renderStatsPanel() {
       </div>
       <div class="md:hidden bg-background min-h-screen">
         <div class="fixed inset-0 scanline-overlay opacity-20 pointer-events-none"></div>
-        <main class="pt-24 pb-52 px-6 flex flex-col gap-10 max-w-md mx-auto relative">
+        <main class="pt-24 pb-52 px-4 flex flex-col gap-10 max-w-lg mx-auto relative">
           <section class="flex items-center justify-between">
             <div class="space-y-1">
-              <p class="font-label text-[10px] uppercase tracking-[0.22em] text-secondary/70">Operational Log</p>
-              <h1 class="font-headline uppercase tracking-[0.14em] text-xl text-[#FFE81F] font-bold">Archive Terminal</h1>
+              <h1 class="font-headline uppercase tracking-[0.14em] text-xl text-[#FFE81F] font-bold">Archive Status</h1>
             </div>
-            <div class="w-11 h-11 rounded-full border border-secondary/25 flex items-center justify-center text-secondary bg-surface-container-low/60">
+            <div class="utility-page-marker">
               <span class="material-symbols-outlined">leaderboard</span>
             </div>
           </section>
-          <section class="space-y-6 glass-panel p-6 rounded-lg">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-primary-fixed"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">OVERALL COMPLETION</h2></div>
+          <section class="utility-mobile-section">
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-primary-fixed"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">COMPLETION</h2></div>
             <div class="flex flex-col items-center justify-center text-center py-2">
             <div class="relative w-56 h-56 flex items-center justify-center">
               <div class="absolute inset-0 rounded-full bg-primary-fixed/5 blur-3xl"></div>
               <div class="w-full h-full rounded-full circular-progress relative flex items-center justify-center" style="background:conic-gradient(#fbe419 ${stats.overallProgress}%, transparent 0);">
                 <div class="w-[92%] h-[92%] rounded-full bg-surface-container-lowest flex flex-col items-center justify-center">
                   <span class="font-headline text-5xl font-bold text-primary-fixed tracking-tight">${stats.overallProgress}%</span>
-                  <span class="font-label text-[10px] uppercase tracking-[0.2em] text-secondary/60 mt-1">Efficiency</span>
+                  <span class="font-label text-[10px] uppercase tracking-[0.2em] text-secondary/60 mt-1">Complete</span>
                 </div>
               </div>
             </div>
             <div class="mt-8">
-              <h2 class="font-headline text-lg font-bold tracking-widest text-on-surface">${stats.watchedEpisodes} / ${stats.totalEpisodes} EPISODES LOGGED</h2>
-              <p class="font-label text-xs text-on-surface-variant uppercase tracking-widest mt-2 opacity-60">Global Chronicle Sync Status</p>
+              <h2 class="font-headline text-lg font-bold tracking-widest text-on-surface">${stats.watchedEpisodes} / ${stats.totalEpisodes} LOGGED</h2>
             </div>
             </div>
           </section>
-          <section class="space-y-6 glass-panel p-6 rounded-lg">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">ERA BREAKDOWN</h2></div>
+          <section class="utility-mobile-section">
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">ERA PROGRESS</h2></div>
             <div class="space-y-6">
               ${eraProgress.map((item) => `
                 <div class="space-y-2">
@@ -1119,15 +1398,15 @@ function renderStatsPanel() {
               `).join("")}
             </div>
           </section>
-          <section class="space-y-6 glass-panel p-6 rounded-lg">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-on-surface"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">MEDIA DISTRIBUTION</h2></div>
+          <section class="utility-mobile-section">
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-on-surface"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">FORMATS</h2></div>
             <div class="grid grid-cols-3 gap-4">
             ${[
               ["Movies", media.movies, "bg-primary-fixed/40"],
               ["Animated", media.animated, "bg-secondary"],
               ["Live Action", media.liveAction, "bg-primary-fixed/20"]
             ].map(([label, value, fillClass]) => `
-              <div class="bg-surface-container-high/30 aspect-[3/4] rounded-xl flex flex-col items-center justify-end p-4 border border-outline-variant/10">
+              <div class="soft-panel aspect-[3/4] rounded-xl flex flex-col items-center justify-end p-4">
                 <div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden flex-1 mb-3">
                   <div class="w-full ${fillClass} rounded-t-lg" style="height:${Math.max(18, Math.min(100, appState.entries.length ? Math.round((value / appState.entries.length) * 100) : 0))}%;"></div>
                 </div>
@@ -1137,11 +1416,10 @@ function renderStatsPanel() {
             `).join("")}
             </div>
           </section>
-          <section class="space-y-6 glass-panel p-6 rounded-lg">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-primary-fixed"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">COMPLETED SERIES</h2></div>
-            <div class="relative bg-surface-container-lowest border border-outline-variant/20 p-6 rounded-2xl flex items-center justify-between overflow-hidden">
+          <section class="utility-mobile-section">
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-primary-fixed"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">COMPLETED</h2></div>
+            <div class="soft-panel relative p-6 rounded-2xl flex items-center justify-between overflow-hidden">
               <div class="flex flex-col gap-1 z-10">
-                <span class="font-label text-[10px] uppercase tracking-[0.25em] text-secondary/70">Completed Series</span>
                 <h4 class="font-headline text-2xl font-black text-on-surface">${stats.completedShows} COMPLETED</h4>
               </div>
               <div class="z-10 bg-secondary-container/20 p-3 rounded-full text-secondary">
@@ -1150,9 +1428,9 @@ function renderStatsPanel() {
             </div>
           </section>
           ${nextObjective ? `
-            <section class="space-y-6 glass-panel p-6 rounded-lg">
-              <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">NEXT OBJECTIVE</h2></div>
-              <div class="relative rounded-2xl overflow-hidden aspect-video group cursor-pointer border border-primary-fixed/20 shadow-2xl">
+            <section class="utility-mobile-section">
+              <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">NEXT</h2></div>
+              <div class="soft-panel relative rounded-2xl overflow-hidden aspect-video group cursor-pointer shadow-2xl">
                 <img class="w-full h-full object-cover transition duration-700 group-hover:scale-110 grayscale-[0.2]" src="${escapeHtml(nextObjective.poster)}" alt="${escapeHtml(nextObjective.title)}">
                 <div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent"></div>
                 <div class="absolute inset-0 p-6 flex flex-col justify-end gap-2">
@@ -1160,8 +1438,8 @@ function renderStatsPanel() {
                     <span class="px-2 py-0.5 bg-error text-on-error font-label text-[8px] uppercase font-black rounded-sm">${escapeHtml(nextObjective.era)}</span>
                   </div>
                   <h4 class="font-headline text-2xl font-black tracking-tight text-white drop-shadow-md">${escapeHtml(nextObjective.title)}</h4>
-                  <button class="mt-4 w-full bg-primary-fixed text-on-primary-fixed py-4 rounded-full font-headline font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_20px_rgba(251,228,25,0.4)]" type="button" data-stats-open-entry="${escapeHtml(nextObjective.id)}">
-                    INITIALIZE PROTOCOL
+                  <button class="mt-4 cta-primary w-full text-sm" type="button" data-stats-open-entry="${escapeHtml(nextObjective.id)}">
+                    OPEN
                     <span class="material-symbols-outlined text-lg">play_arrow</span>
                   </button>
                 </div>
@@ -1185,49 +1463,45 @@ function renderPreferencesPanel() {
           <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(117,209,255,0.08),transparent_35%),radial-gradient(circle_at_75%_15%,rgba(251,228,25,0.04),transparent_20%)] pointer-events-none"></div>
           <header class="p-8">
             <div class="space-y-1">
-              <div class="flex items-center gap-2 text-[10px] font-label text-secondary tracking-[0.3em] uppercase">
-                <span class="material-symbols-outlined text-[12px]">security</span> Protocol: Alpha-Six
-              </div>
-              <h1 class="text-4xl font-headline font-bold text-primary-fixed tracking-tight">ARCHIVE PREFERENCES</h1>
-              <p class="text-sm text-on-surface-variant font-body max-w-2xl">Configure localized synchronization parameters and temporal visualization metrics for the Holocron network.</p>
+              <h1 class="text-4xl font-headline font-bold text-white tracking-tight">ARCHIVE SETTINGS</h1>
             </div>
           </header>
           <div class="p-8 grid grid-cols-1 xl:grid-cols-2 gap-6 z-10">
-            <section id="prefs-temporal" class="bg-surface-container rounded-none p-6 flex flex-col gap-6">
+            <section id="prefs-temporal" class="utility-section p-6 flex flex-col gap-6">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-primary-fixed">history_toggle_off</span>
-                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Temporal Protocol</h2>
+                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Timeline</h2>
               </div>
               <div class="space-y-6">
                 ${[
-                  ["displayBbyAbyDates", "Display BBY/ABY Dates", "Use standard Galactic Calendar eras."],
-                  ["standardHoursRuntime", "Standard Hours Runtime", "Toggle Coruscant-standard time units."],
-                  ["chronologicalSortLock", "Chronological Sort Lock", "Force rigid time-line sequence."]
+                  ["displayBbyAbyDates", "BBY / ABY Dates", "Use galactic calendar dating."],
+                  ["standardHoursRuntime", "Runtime Units", "Show standard runtime units."],
+                  ["chronologicalSortLock", "Chronology Lock", "Keep the timeline fixed."]
                 ].map(([key, label, sub]) => `
                   <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="${key}">
                     <div class="space-y-0.5">
                       <label class="text-sm font-headline text-on-surface">${label}</label>
                       <p class="text-[11px] text-on-surface-variant font-body">${sub}</p>
                     </div>
-                    <div class="w-10 h-5 ${prefs[key] ? "bg-primary-fixed/20 border-primary-fixed/40" : "bg-surface-container-highest border-outline-variant"} border rounded-full flex items-center px-1 justify-${prefs[key] ? "end" : "start"}">
+                    <div class="toggle-shell w-10 h-5 ${prefs[key] ? "bg-primary-fixed/20" : "bg-surface-container-highest"} flex items-center px-1 justify-${prefs[key] ? "end" : "start"}">
                       <div class="w-3 h-3 ${prefs[key] ? "bg-primary-fixed shadow-[0_0_8px_#fbe419]" : "bg-outline"} rounded-full"></div>
                     </div>
                   </button>
                 `).join("")}
               </div>
             </section>
-            <section id="prefs-content" class="bg-surface-container rounded-none p-6 flex flex-col gap-6">
+            <section id="prefs-content" class="utility-section p-6 flex flex-col gap-6">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-secondary">folder_managed</span>
-                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Archive Content</h2>
+                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Content</h2>
               </div>
               <div class="space-y-4">
                 ${[
-                  ["canonOnly", "Canon Only", "Verified Imperial Records"],
-                  ["legendsIntegration", "Legends Integration", "Apocryphal Holocron Data"]
+                  ["canonOnly", "Canon Only", "Canon records only"],
+                  ["legendsIntegration", "Legends Integration", "Include legends entries"]
                 ].map(([key, label, sub]) => `
-                  <button class="p-3 ${prefs[key] ? "bg-surface-container-high border-secondary/30 text-secondary" : "bg-surface-container-high border-outline-variant/10"} border flex items-center gap-4 cursor-pointer hover:bg-secondary/5 transition-colors text-left w-full" type="button" data-pref-toggle="${key}">
-                    <div class="w-4 h-4 rounded-full border-2 ${prefs[key] ? "border-secondary" : "border-outline-variant"} flex items-center justify-center p-0.5">
+                  <button class="soft-panel p-3 ${prefs[key] ? "text-secondary" : ""} flex items-center gap-4 cursor-pointer hover:bg-secondary/5 transition-colors text-left w-full rounded-xl" type="button" data-pref-toggle="${key}">
+                    <div class="w-4 h-4 rounded-full ${prefs[key] ? "shadow-[inset_0_0_0_2px_rgba(117,209,255,0.9)]" : "shadow-[inset_0_0_0_2px_rgba(205,199,171,0.3)]"} flex items-center justify-center p-0.5">
                       ${prefs[key] ? `<div class="w-full h-full bg-secondary rounded-full"></div>` : ""}
                     </div>
                     <div class="flex flex-col">
@@ -1236,16 +1510,16 @@ function renderPreferencesPanel() {
                     </div>
                   </button>
                 `).join("")}
-                <button class="flex items-center justify-between pt-4 border-t border-outline-variant/10 text-left w-full" type="button" data-pref-toggle="includeAnimatedShorts">
+                <button class="flex items-center justify-between pt-4 text-left w-full" type="button" data-pref-toggle="includeAnimatedShorts">
                   <span class="text-sm font-headline">Include Animated Shorts</span>
-                  <div class="w-8 h-4 ${prefs.includeAnimatedShorts ? "bg-primary-fixed/50" : "bg-surface-container-highest"} border border-outline-variant rounded-none"></div>
+                  <div class="toggle-shell w-8 h-4 ${prefs.includeAnimatedShorts ? "bg-primary-fixed/50" : "bg-surface-container-highest"} rounded-none"></div>
                 </button>
               </div>
             </section>
-            <section id="prefs-interface" class="bg-surface-container rounded-none p-6 flex flex-col gap-6">
+            <section id="prefs-interface" class="utility-section p-6 flex flex-col gap-6">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-outline">palette</span>
-                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Interface Appearance</h2>
+                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Appearance</h2>
               </div>
               <div class="space-y-6">
                 <div class="space-y-3">
@@ -1257,44 +1531,54 @@ function renderPreferencesPanel() {
                   <input class="w-full pref-range" type="range" min="0" max="100" step="1" value="${prefs.glowRadius}" data-pref-range="glowRadius">
                 </div>
                 <div class="grid grid-cols-2 gap-2 pt-2">
-                  <button class="py-3 border border-outline-variant text-[10px] font-headline tracking-[0.2em] uppercase ${prefs.interfaceTheme === "jedi-light" ? "bg-tertiary text-background" : "hover:bg-tertiary hover:text-background"} transition-all" type="button" data-pref-theme="jedi-light">Jedi Light</button>
-                  <button class="py-3 text-[10px] font-headline tracking-[0.2em] uppercase ${prefs.interfaceTheme === "sith-dark" ? "bg-primary-fixed text-on-primary-fixed font-bold shadow-[0_0_15px_rgba(251,228,25,0.3)]" : "border border-outline-variant"}" type="button" data-pref-theme="sith-dark">Sith Dark</button>
+                  <button class="control-pill py-3 text-[10px] font-headline tracking-[0.2em] uppercase ${prefs.interfaceTheme === "jedi-light" ? "is-active font-bold" : "text-on-surface hover:bg-tertiary/10 hover:text-tertiary"} transition-all" type="button" data-pref-theme="jedi-light">Jedi Light</button>
+                  <button class="control-pill py-3 text-[10px] font-headline tracking-[0.2em] uppercase ${prefs.interfaceTheme === "sith-dark" ? "is-active font-bold" : "text-on-surface"} transition-all" type="button" data-pref-theme="sith-dark">Sith Dark</button>
                 </div>
               </div>
             </section>
-            <section class="bg-surface-container rounded-none p-6 flex flex-col gap-6">
+            <section class="utility-section p-6 flex flex-col gap-6">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-secondary">music_note</span>
-                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Audio Channel</h2>
+                <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Audio</h2>
               </div>
               <div class="space-y-6">
                 <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="audioEnabled">
                   <div class="space-y-0.5">
-                    <label class="text-sm font-headline text-on-surface">Background Music</label>
-                    <p class="text-[11px] text-on-surface-variant font-body">Continuous playback across the galactic archive.</p>
+                      <label class="text-sm font-headline text-on-surface">Background Music</label>
+                      <p class="text-[11px] text-on-surface-variant font-body">Continuous playback across the archive.</p>
                   </div>
                   <label class="settings-switch" aria-label="Toggle background music">
                     <input id="settings-music-toggle" type="checkbox" ${prefs.audioEnabled ? "checked" : ""} />
                     <span class="settings-switch-track"></span>
                   </label>
                 </button>
+                <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="soundEffectsEnabled">
+                  <div class="space-y-0.5">
+                      <label class="text-sm font-headline text-on-surface">Sound Effects</label>
+                      <p class="text-[11px] text-on-surface-variant font-body">Interface tones for clicks, toggles, and playback actions.</p>
+                  </div>
+                  <label class="settings-switch" aria-label="Toggle sound effects">
+                    <input type="checkbox" ${prefs.soundEffectsEnabled ? "checked" : ""} />
+                    <span class="settings-switch-track"></span>
+                  </label>
+                </button>
                 <div class="space-y-3">
                   <div class="flex justify-between">
-                    <label class="text-[11px] font-label uppercase tracking-widest">Channel Volume</label>
+                    <label class="text-[11px] font-label uppercase tracking-widest">Volume</label>
                     <span class="text-[11px] font-headline text-secondary" id="settings-volume-icon">🔊</span>
                   </div>
                   <input id="settings-music-volume" class="w-full pref-range" type="range" min="0" max="100" step="1" value="18" aria-label="Music volume">
                 </div>
-                <div class="flex items-center justify-between border border-white/10 px-4 py-3">
+                <div class="soft-panel flex items-center justify-between px-4 py-3 rounded-xl">
                   <div>
                     <span class="block text-[10px] font-label uppercase tracking-[0.2em] text-white/40">Now Playing</span>
                     <span class="block text-sm font-headline text-white/90" id="preferences-current-track">Music Off</span>
                   </div>
-                  <button id="preferences-next-track" class="px-4 py-2 border border-secondary/20 bg-secondary/5 text-secondary font-label text-[10px] uppercase tracking-[0.2em]" type="button">Next Track</button>
+                  <button id="preferences-next-track" class="ghost-button px-4 py-2 font-label text-[10px] uppercase tracking-[0.2em]" type="button">Next Track</button>
                 </div>
               </div>
             </section>
-            <section id="prefs-system" class="xl:col-span-2 bg-surface-container-low p-8 flex flex-col md:flex-row gap-8 items-center justify-between relative">
+            <section id="prefs-system" class="utility-section xl:col-span-2 p-8 flex flex-col md:flex-row gap-8 items-center justify-between relative">
               <div class="flex items-center gap-6">
                 <div class="relative h-24 w-24 flex items-center justify-center">
                   <svg class="absolute inset-0 w-full h-full -rotate-90">
@@ -1303,20 +1587,20 @@ function renderPreferencesPanel() {
                   </svg>
                   <div class="flex flex-col items-center">
                     <span class="text-xl font-headline font-bold text-secondary">${prefs.glowRadius}%</span>
-                    <span class="text-[8px] font-label uppercase tracking-widest text-outline">Optic Load</span>
+                    <span class="text-[8px] font-label uppercase tracking-widest text-outline">Glow</span>
                   </div>
                 </div>
                 <div class="space-y-1">
                   <div class="flex items-center gap-2 text-on-surface">
                     <span class="material-symbols-outlined text-secondary text-sm">sync</span>
-                    <h3 class="font-headline font-bold tracking-widest uppercase text-sm">Last Sync with Galactic Archives</h3>
+                    <h3 class="font-headline font-bold tracking-widest uppercase text-sm">System</h3>
                   </div>
-                  <p class="text-xs text-on-surface-variant font-body">Archive Node: <span class="text-secondary">COR-ARC-092</span></p>
-                  <p class="text-xs text-on-surface-variant font-body">Preferences: <span class="text-primary-fixed">${prefs.interfaceTheme === "sith-dark" ? "Sith Dark" : "Jedi Light"}</span></p>
+                  <p class="text-xs text-on-surface-variant font-body">Theme: <span class="text-primary-fixed">${prefs.interfaceTheme === "sith-dark" ? "Sith Dark" : "Jedi Light"}</span></p>
+                  <p class="text-xs text-on-surface-variant font-body">Glow Radius: <span class="text-secondary">${prefs.glowRadius}%</span></p>
                 </div>
               </div>
               <div class="flex gap-4">
-                <button class="px-8 py-4 border border-outline-variant text-on-surface font-headline font-bold tracking-[0.2em] uppercase" type="button" data-reset-progress="true">RESET PROGRESS</button>
+                <button class="ghost-button px-8 py-4 text-on-surface font-headline font-bold tracking-[0.2em] uppercase" type="button" data-reset-progress="true">RESET PROGRESS</button>
                 <button class="px-12 py-4 bg-primary-fixed text-on-primary-fixed font-headline font-bold tracking-[0.3em] uppercase glow-yellow group" type="button" data-nav-page="timeline">
                   <div class="flex items-center gap-3"><span>CONFIRM</span><span class="material-symbols-outlined">check</span></div>
                 </button>
@@ -1326,52 +1610,51 @@ function renderPreferencesPanel() {
         </div>
       </div>
       <div class="md:hidden bg-background min-h-screen">
-        <main class="pt-24 pb-52 px-6 max-w-md mx-auto space-y-8">
+        <main class="pt-24 pb-52 px-4 max-w-lg mx-auto space-y-8">
           <section class="flex items-center justify-between">
             <div class="space-y-1">
-              <p class="font-label text-[10px] uppercase tracking-[0.22em] text-secondary/70">Preference Matrix</p>
               <h1 class="font-headline uppercase tracking-[0.14em] text-xl text-[#FFE81F] font-bold">Archive Settings</h1>
             </div>
-            <div class="w-11 h-11 rounded-full border border-primary-fixed/25 flex items-center justify-center text-primary-fixed bg-surface-container-low/60">
+            <div class="utility-page-marker text-primary-fixed">
               <span class="material-symbols-outlined">tune</span>
             </div>
           </section>
           <section class="space-y-6">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-primary-fixed"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">TEMPORAL PROTOCOLS</h2></div>
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-primary-fixed"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">TIMELINE</h2></div>
             <div class="space-y-4">
               ${[
-                ["displayBbyAbyDates", "Dating System", "BBY/ABY Dates"],
-                ["standardHoursRuntime", "Format", "Standard Hours Runtime"],
-                ["chronologicalSortLock", "Index Lock", "Chronological Sort Lock"]
+                ["displayBbyAbyDates", "Dating", "BBY / ABY Dates"],
+                ["standardHoursRuntime", "Runtime", "Runtime Units"],
+                ["chronologicalSortLock", "Order", "Chronology Lock"]
               ].map(([key, overline, label]) => `
-                <button class="glass-panel p-5 rounded-lg border-l-2 ${prefs[key] ? "border-primary-fixed" : "border-outline-variant"} flex items-center justify-between w-full text-left" type="button" data-pref-toggle="${key}">
+                <button class="utility-mobile-row text-left" type="button" data-pref-toggle="${key}">
                   <div><p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant mb-1">${overline}</p><p class="font-headline font-medium">${label}</p></div>
-                  <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-container-highest"><span class="${prefs[key] ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
+                  <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs[key] ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
                 </button>
               `).join("")}
             </div>
           </section>
           <section class="space-y-6">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">ARCHIVE CONTENT</h2></div>
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">CONTENT</h2></div>
             <div class="grid grid-cols-2 gap-3">
               ${[
                 ["canonOnly", "verified", "Canon Only"],
                 ["legendsIntegration", "auto_stories", "Legends Integration"]
               ].map(([key, icon, label]) => `
-                <button class="p-4 rounded-lg ${prefs[key] ? "bg-surface-container-high border border-primary-fixed glow-yellow text-primary-fixed" : "bg-surface-container border border-outline-variant/30 opacity-60"} flex flex-col items-center justify-center text-center gap-2" type="button" data-pref-toggle="${key}">
+                <button class="control-pill soft-panel p-4 rounded-lg ${prefs[key] ? "is-active glow-yellow text-primary-fixed opacity-100" : "opacity-60 text-on-surface"} flex flex-col items-center justify-center text-center gap-2" type="button" data-pref-toggle="${key}">
                   <span class="material-symbols-outlined ${prefs[key] ? "" : "text-on-surface-variant"}" style="font-variation-settings: 'FILL' ${prefs[key] ? 1 : 0};">${icon}</span>
                   <p class="font-label uppercase text-[10px] tracking-widest font-bold">${label}</p>
                 </button>
               `).join("")}
             </div>
-            <button class="glass-panel p-5 rounded-lg border border-outline-variant/10 flex items-center justify-between w-full text-left" type="button" data-pref-toggle="includeAnimatedShorts">
-              <div><p class="font-headline font-medium">Include Animated Shorts</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Micro-series and non-theatrical arcs</p></div>
-              <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-container-highest"><span class="${prefs.includeAnimatedShorts ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
+            <button class="utility-mobile-row text-left" type="button" data-pref-toggle="includeAnimatedShorts">
+              <div><p class="font-headline font-medium">Include Animated Shorts</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Shorts and side stories</p></div>
+              <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs.includeAnimatedShorts ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
             </button>
           </section>
           <section class="space-y-6">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-on-surface"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">INTERFACE APPEARANCE</h2></div>
-            <div class="space-y-6 glass-panel p-6 rounded-lg border border-outline-variant/10">
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-on-surface"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">APPEARANCE</h2></div>
+            <div class="utility-mobile-section">
               <div class="space-y-3">
                 <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Scanline Intensity</label><span class="font-headline text-xs text-secondary">${prefs.scanlineIntensity}%</span></div>
                 <input class="w-full pref-range" max="100" min="0" type="range" value="${prefs.scanlineIntensity}" data-pref-range="scanlineIntensity"/>
@@ -1381,38 +1664,42 @@ function renderPreferencesPanel() {
                 <input class="w-full pref-range" max="100" min="0" type="range" value="${prefs.glowRadius}" data-pref-range="glowRadius"/>
               </div>
               <div class="pt-4 flex gap-4">
-                <button class="flex-1 py-3 px-4 rounded-full border ${prefs.interfaceTheme === "jedi-light" ? "border-secondary text-secondary bg-secondary/10" : "border-secondary text-secondary"} font-label uppercase text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" type="button" data-pref-theme="jedi-light"><span class="material-symbols-outlined text-sm">light_mode</span>Jedi Light</button>
-                <button class="flex-1 py-3 px-4 rounded-full ${prefs.interfaceTheme === "sith-dark" ? "bg-surface-container-highest border border-primary-fixed text-primary-fixed glow-yellow" : "border border-outline-variant text-on-surface"} font-label uppercase text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" type="button" data-pref-theme="sith-dark"><span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">dark_mode</span>Sith Dark</button>
+                <button class="control-pill flex-1 py-3 px-4 ${prefs.interfaceTheme === "jedi-light" ? "is-active text-secondary" : "text-secondary"} font-label uppercase text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" type="button" data-pref-theme="jedi-light"><span class="material-symbols-outlined text-sm">light_mode</span>Jedi Light</button>
+                <button class="control-pill flex-1 py-3 px-4 ${prefs.interfaceTheme === "sith-dark" ? "is-active text-primary-fixed glow-yellow" : "text-on-surface"} font-label uppercase text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" type="button" data-pref-theme="sith-dark"><span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">dark_mode</span>Sith Dark</button>
               </div>
             </div>
           </section>
           <section class="space-y-6">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">AUDIO CHANNEL</h2></div>
-            <div class="space-y-5 glass-panel p-6 rounded-lg border border-outline-variant/10">
-              <button class="glass-panel p-5 rounded-lg border border-outline-variant/10 flex items-center justify-between w-full text-left" type="button" data-mobile-audio-toggle="true">
-                <div><p class="font-headline font-medium">Background Music</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Album-style playback across the archive</p></div>
-                <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-container-highest"><span class="${prefs.audioEnabled ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-secondary"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">AUDIO</h2></div>
+            <div class="utility-mobile-section !gap-5">
+              <button class="utility-mobile-row text-left" type="button" data-mobile-audio-toggle="true">
+                <div><p class="font-headline font-medium">Background Music</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Continuous playback across the archive</p></div>
+                <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs.audioEnabled ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
               </button>
-              <div class="space-y-3 glass-panel p-4 rounded-lg border border-outline-variant/10">
-                <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Channel Volume</label><span class="font-headline text-xs text-secondary" data-mobile-volume-icon="true">🔊</span></div>
+              <button class="utility-mobile-row text-left" type="button" data-pref-toggle="soundEffectsEnabled">
+                <div><p class="font-headline font-medium">Sound Effects</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Interface tones for archive actions</p></div>
+                <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs.soundEffectsEnabled ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
+              </button>
+              <div class="space-y-3 utility-mobile-subsection">
+                <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Volume</label><span class="font-headline text-xs text-secondary" data-mobile-volume-icon="true">🔊</span></div>
                 <input class="w-full pref-range" max="100" min="0" type="range" value="18" aria-label="Music volume" data-mobile-music-volume="true" />
               </div>
-              <div class="glass-panel p-4 rounded-lg border border-outline-variant/10 flex items-center justify-between gap-4">
+              <div class="utility-mobile-subsection flex items-center justify-between gap-4">
                 <div>
                   <p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Now Playing</p>
                   <p class="font-headline text-sm mt-1" data-mobile-current-track="true">Music Off</p>
                 </div>
-                <button class="px-4 py-3 rounded-full bg-primary-fixed text-on-primary-fixed font-label uppercase text-[10px] tracking-[0.2em] font-bold" type="button" data-mobile-next-track="true">Next</button>
+                <button class="cta-primary px-4 py-3 text-[10px]" type="button" data-mobile-next-track="true">Next</button>
               </div>
             </div>
           </section>
           <section class="space-y-6 pb-20">
-            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-error"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">SYSTEM STATUS</h2></div>
+            <div class="flex items-center gap-2"><div class="w-1 h-6 bg-error"></div><h2 class="font-headline text-xl font-bold tracking-tight uppercase">SYSTEM</h2></div>
             <div class="relative h-24 bg-surface-container-low rounded-lg overflow-hidden flex items-center px-6">
               <div class="absolute inset-0 bg-gradient-to-r from-primary-fixed/20 to-transparent" style="width:${prefs.glowRadius}%"></div>
               <div class="relative z-10 flex w-full justify-between items-end">
-                <div><p class="font-headline text-4xl font-bold text-primary-fixed italic tracking-tighter">${prefs.glowRadius}%</p><p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Optic Load Status</p></div>
-                <div class="text-right"><p class="font-label text-[10px] text-on-surface-variant">Active Theme</p><p class="font-headline text-xs uppercase tracking-tight">${prefs.interfaceTheme === "sith-dark" ? "Sith Dark" : "Jedi Light"}</p></div>
+                <div><p class="font-headline text-4xl font-bold text-primary-fixed italic tracking-tighter">${prefs.glowRadius}%</p><p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Glow Radius</p></div>
+                <div class="text-right"><p class="font-label text-[10px] text-on-surface-variant">Theme</p><p class="font-headline text-xs uppercase tracking-tight">${prefs.interfaceTheme === "sith-dark" ? "Sith Dark" : "Jedi Light"}</p></div>
               </div>
             </div>
             <button class="w-full py-5 rounded-lg bg-primary-fixed text-on-primary-fixed font-headline font-extrabold tracking-widest uppercase text-sm hover:opacity-90 active:scale-[0.98] transition-all glow-yellow" type="button" data-reset-progress="true">RESET PROGRESS</button>
@@ -1438,16 +1725,13 @@ function renderApp(sections) {
   app.innerHTML = `
     <nav id="top-bar" class="fixed top-0 w-full z-[120] bg-surface/80 dark:bg-[#131313]/80 backdrop-blur-xl flex justify-between items-center px-4 md:px-8 h-16 md:h-20 shadow-2xl">
       <div class="flex items-center gap-4">
-        <button class="text-[#FFE81F] active:scale-95 duration-200 md:hidden" type="button" aria-label="Open menu">
-          <span class="material-symbols-outlined" style="font-size: 28px;">menu</span>
-        </button>
         <div class="shrink-0 text-[0.82rem] sm:text-base md:text-[1.45rem] font-bold tracking-[0.1em] md:tracking-[0.03em] text-[#FFE81F] drop-shadow-[0_0_10px_rgba(251,228,25,0.45)] font-headline uppercase whitespace-nowrap">
           Star Wars: Chronicles
         </div>
       </div>
       <div class="hidden md:flex items-center gap-8 font-headline uppercase tracking-widest text-sm">
-        <button class="${currentPage === "timeline" ? "text-[#FFE81F] border-b-2 border-[#FFE81F]" : "text-white/60 hover:text-[#FFE81F]"} pb-1 transition-all duration-300" type="button" data-nav-page="timeline" aria-current="${currentPage === "timeline" ? "page" : "false"}">Timeline</button>
-        <button class="${currentPage === "stats" ? "text-[#FFE81F] border-b-2 border-[#FFE81F]" : "text-white/60 hover:text-[#FFE81F]"} pb-1 transition-all duration-300" type="button" data-nav-page="stats" aria-current="${currentPage === "stats" ? "page" : "false"}">Stats</button>
+        <button class="nav-underline-button ${currentPage === "timeline" ? "is-active text-[#FFE81F]" : "text-white/60"} pb-1" type="button" data-nav-page="timeline" aria-current="${currentPage === "timeline" ? "page" : "false"}">Timeline</button>
+        <button class="nav-underline-button ${currentPage === "stats" ? "is-active text-[#FFE81F]" : "text-white/60"} pb-1" type="button" data-nav-page="stats" aria-current="${currentPage === "stats" ? "page" : "false"}">Stats</button>
       </div>
       <div class="flex items-center gap-3 md:gap-5">
         <div class="relative group hidden lg:block ${currentPage === "timeline" ? "" : "opacity-50 pointer-events-none"}">
@@ -1456,7 +1740,6 @@ function renderApp(sections) {
         </div>
         <div id="music-pill" class="hidden xl:flex items-center gap-3 bg-white/5 px-3 py-2.5 min-w-[15rem]">
           <div class="min-w-0">
-            <span class="block text-[9px] font-label uppercase tracking-[0.22em] text-white/35">Audio Channel</span>
             <span class="block text-[11px] font-headline uppercase tracking-[0.12em] text-secondary truncate" id="music-pill-title">Music Off</span>
           </div>
           <div class="ml-auto flex items-center gap-1">
@@ -1478,10 +1761,10 @@ function renderApp(sections) {
         </div>
         <nav class="flex flex-col gap-1">
           ${[
-            ["prefs-temporal", "Temporal Protocol"],
-            ["prefs-content", "Archive Content"],
-            ["prefs-interface", "Interface Appearance"],
-            ["prefs-system", "System Status"]
+            ["prefs-temporal", "Timeline"],
+            ["prefs-content", "Content"],
+            ["prefs-interface", "Appearance"],
+            ["prefs-system", "System"]
           ].map(([target, label]) => `
             <button class="era-nav-button flex items-center gap-4 px-8 py-4 text-white/40 hover:bg-white/5 hover:text-white transition-all group text-left" type="button" data-scroll-target="${target}">
               <span class="material-symbols-outlined text-secondary text-lg">tune</span>
@@ -1492,15 +1775,15 @@ function renderApp(sections) {
       ` : `
         <div class="px-8 mt-24 mb-10">
           <h2 class="text-[#FFE81F] font-bold font-headline tracking-tighter text-xl">${currentPage === "stats" ? "ARCHIVE PANELS" : "GALACTIC ERAS"}</h2>
-          <p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">${currentPage === "stats" ? "Telemetry Sections" : "Jump to Timeline"}</p>
+          <p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">${currentPage === "stats" ? "Sections" : "Eras"}</p>
         </div>
         <nav class="flex flex-col gap-1">
           ${currentPage === "stats"
             ? [
-                ["stats-overview", "Overview", "leaderboard"],
+                ["stats-overview", "Completion", "leaderboard"],
                 ["stats-era-breakdown", "Era Progress", "query_stats"],
-                ["stats-media-distribution", "Distribution", "equalizer"],
-                ["stats-next-objective", "Next Objective", "rocket_launch"]
+                ["stats-media-distribution", "Formats", "equalizer"],
+                ["stats-next-objective", "Next", "rocket_launch"]
               ].map(([target, label, icon]) => `
                 <button class="era-nav-button flex items-center gap-4 px-8 py-4 text-white/40 hover:bg-white/5 hover:text-white transition-all group text-left" type="button" data-scroll-target="${target}">
                   <span class="material-symbols-outlined text-secondary text-lg">${icon}</span>
@@ -1529,10 +1812,8 @@ function renderApp(sections) {
         </div>
         <div class="relative z-10 h-full max-w-[1320px] mx-auto flex flex-col justify-center px-6 md:px-16">
         <div class="max-w-5xl">
-          <span class="kicker-label mb-6 w-fit">Full Chronological Log</span>
           <h1 class="hidden md:block text-5xl md:text-7xl font-headline font-bold text-white tracking-tighter mb-4 leading-none">THE DEFINITIVE<br><span class="text-primary-fixed">WATCHLIST</span></h1>
           <div class="md:hidden mb-12">
-            <p class="font-label uppercase tracking-[0.2em] text-[#75d1ff] text-[10px] mb-2 glow-b">Current Mission</p>
             <h2 class="font-headline text-4xl font-bold leading-tight">THE DEFINITIVE <br>WATCHLIST</h2>
             <div class="mt-4 flex gap-4">
               <div class="bg-surface-container-high px-4 py-2 rounded-xl flex items-center gap-2">
@@ -1548,7 +1829,7 @@ function renderApp(sections) {
               <button class="px-4 py-3 bg-primary-fixed text-on-primary-fixed font-bold uppercase text-[10px] tracking-[0.18em] rounded-full" type="button" data-open-modal="${escapeHtml(heroEntry.id)}">
                 Resume Journey
               </button>
-              <button class="px-4 py-3 border border-secondary/20 bg-secondary/5 text-secondary font-bold uppercase text-[10px] tracking-[0.18em] rounded-full" type="button" data-open-stats="true">
+              <button class="ghost-button px-4 py-3 font-bold uppercase text-[10px] tracking-[0.18em]" type="button" data-open-stats="true">
                 Stats
               </button>
             </div>
@@ -1560,7 +1841,7 @@ function renderApp(sections) {
               Resume Journey
             </button>
             <button class="cta-secondary" type="button" data-open-stats="true">
-              Watchlist Stats
+              Stats
             </button>
           </div>
         </div>
@@ -1572,10 +1853,9 @@ function renderApp(sections) {
         <div class="flex justify-between items-end mb-12 pb-6">
           <div>
             <h2 class="text-3xl font-headline font-bold text-white uppercase tracking-tighter">The Galactic Timeline</h2>
-            <p class="text-primary-fixed text-xs font-label uppercase tracking-widest mt-2">Every Film and Series in Order</p>
           </div>
           <div class="flex gap-3">
-            <button class="bg-surface-container-highest px-4 py-2 text-xs font-label ${activeFilterCount > 0 ? "text-primary-fixed" : "text-white/60"} hover:text-white transition-all flex items-center gap-2" type="button" data-open-filters="true">
+            <button class="control-pill bg-surface-container-highest px-4 py-2 text-xs font-label ${activeFilterCount > 0 ? "text-primary-fixed" : "text-white/60"} hover:text-white transition-all flex items-center gap-2" type="button" data-open-filters="true">
               <span class="material-symbols-outlined text-sm">filter_alt</span>
               ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filter"}
             </button>
@@ -1584,7 +1864,7 @@ function renderApp(sections) {
         ${filteredEntries.length === 0 ? `
           <div class="py-16 text-center bg-surface-container-low">
             <p class="font-headline text-2xl uppercase tracking-widest text-white">No Matching Entries</p>
-            <p class="mt-3 text-sm text-on-surface-variant">Try clearing or broadening the active filters.</p>
+            <p class="mt-3 text-sm text-on-surface-variant">Clear or broaden the active filters.</p>
           </div>
         ` : `
         <div class="desktop-timeline space-y-32 relative py-10">
@@ -1601,11 +1881,11 @@ function renderApp(sections) {
 
       <section id="mobile-eras" class="md:hidden pt-8 pb-52 px-4 max-w-lg mx-auto relative min-h-screen">
         <div class="mb-6 flex items-center gap-2 overflow-x-auto hide-scrollbar">
-          <button class="shrink-0 px-4 py-2 rounded-full ${activeFilterCount > 0 ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-open-filters="true">
+          <button class="control-pill shrink-0 px-4 py-2 ${activeFilterCount > 0 ? "is-active text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-open-filters="true">
             ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filters"}
           </button>
           ${normalizedSections.map((section, index) => `
-            <button class="mobile-era-chip shrink-0 px-3 py-2 rounded-full bg-surface-container-high text-white/65 text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-scroll-target="mobile-era-${index}">${escapeHtml(section.era)}</button>
+            <button class="mobile-era-chip control-pill shrink-0 px-3 py-2 bg-surface-container-high text-white/65 text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-scroll-target="mobile-era-${index}">${escapeHtml(section.era)}</button>
           `).join("")}
         </div>
         <div class="relative ml-4">
@@ -1613,7 +1893,7 @@ function renderApp(sections) {
           ${filteredEntries.length === 0
             ? `<div class="ml-4 mr-2 p-6 rounded-xl bg-surface-container-low">
                 <p class="font-headline text-xl uppercase tracking-widest text-white">No Matching Entries</p>
-                <p class="mt-2 text-sm text-on-surface-variant">Try clearing or broadening the active filters.</p>
+                <p class="mt-2 text-sm text-on-surface-variant">Clear or broaden the active filters.</p>
               </div>`
             : filteredSections.map((section) => renderMobileSection(section)).join("")}
         </div>
@@ -1622,28 +1902,30 @@ function renderApp(sections) {
         ? renderStatsPanel()
         : renderPreferencesPanel()}
     </main>
-    ${!activeEntry && !appState.isFilterPanelOpen ? `
-    <div class="md:hidden fixed ${currentPage === "timeline" ? "bottom-[4.6rem] left-4 right-4" : "bottom-[4.95rem] left-3 right-3"} z-[117]">
-      <div class="glass-panel ${currentPage === "timeline" ? "rounded-2xl px-4 py-3 gap-3" : "rounded-full px-2.5 py-1.5 gap-2 bg-black/70"} flex items-center shadow-2xl">
-        <button id="mobile-music-pill-toggle" class="${currentPage === "timeline" ? "w-11 h-11" : "w-8 h-8"} rounded-full text-primary-fixed flex items-center justify-center active:scale-95 transition-transform" type="button" aria-label="Play or pause background music">
+    ${!activeEntry && !appState.isFilterPanelOpen && currentPage !== "preferences" ? `
+    <div class="md:hidden fixed bottom-[4.6rem] left-4 right-4 z-[117]">
+      <div class="glass-panel rounded-2xl px-4 py-3 gap-3 flex items-center shadow-2xl">
+        <button id="mobile-music-pill-toggle" class="w-11 h-11 rounded-full text-primary-fixed flex items-center justify-center active:scale-95 transition-transform" type="button" aria-label="Play or pause background music">
           ▶
         </button>
         <div class="min-w-0 flex-1">
-          ${currentPage === "timeline" ? `<span class="block text-[9px] font-label uppercase tracking-[0.2em] text-white/35">Audio Channel</span>` : ""}
-          <span id="mobile-music-pill-title" class="block ${currentPage === "timeline" ? "text-xs" : "text-[9px]"} font-headline uppercase tracking-[0.12em] text-secondary truncate">Music Off</span>
+          <span class="block text-[9px] font-label uppercase tracking-[0.2em] text-white/35">Audio Channel</span>
+          <span id="mobile-music-pill-title" class="block text-xs font-headline uppercase tracking-[0.12em] text-secondary truncate">Music Off</span>
         </div>
-        <button id="mobile-music-pill-next" class="${currentPage === "timeline" ? "w-10 h-10" : "w-7 h-7"} rounded-full text-white/70 flex items-center justify-center active:scale-95 transition-transform" type="button" aria-label="Skip to next track">
+        <button id="mobile-music-pill-next" class="w-10 h-10 rounded-full text-white/70 flex items-center justify-center active:scale-95 transition-transform" type="button" aria-label="Skip to next track">
           ⏭
         </button>
       </div>
     </div>
+    ` : ""}
+    ${!activeEntry && !appState.isFilterPanelOpen ? `
     <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[118] bg-[#131313]/95 backdrop-blur-xl">
       <div class="grid grid-cols-2 max-w-md mx-auto">
-        <button class="flex flex-col items-center justify-center gap-1 py-3 ${currentPage === "timeline" ? "text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="timeline" aria-current="${currentPage === "timeline" ? "page" : "false"}">
+        <button class="nav-underline-button flex flex-col items-center justify-center gap-1 py-3 ${currentPage === "timeline" ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="timeline" aria-current="${currentPage === "timeline" ? "page" : "false"}">
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${currentPage === "timeline" ? 1 : 0};">view_timeline</span>
           <span class="font-label text-[10px] uppercase tracking-[0.2em]">Timeline</span>
         </button>
-        <button class="flex flex-col items-center justify-center gap-1 py-3 ${currentPage === "stats" ? "text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="stats" aria-current="${currentPage === "stats" ? "page" : "false"}">
+        <button class="nav-underline-button flex flex-col items-center justify-center gap-1 py-3 ${currentPage === "stats" ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="stats" aria-current="${currentPage === "stats" ? "page" : "false"}">
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${currentPage === "stats" ? 1 : 0};">leaderboard</span>
           <span class="font-label text-[10px] uppercase tracking-[0.2em]">Stats</span>
         </button>
@@ -1652,15 +1934,15 @@ function renderApp(sections) {
     ` : ""}
     <footer id="site-footer" class="w-full py-16 px-8 bg-background mt-20">
       <div class="max-w-[1320px] mx-auto flex flex-col items-center gap-8">
-      <div class="text-primary-fixed font-bold font-headline tracking-tighter text-2xl drop-shadow-[0_0_10px_rgba(251,228,25,0.3)]">STAR WARS: CHRONICLES</div>
-      <div class="flex flex-wrap justify-center gap-10">
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Privacy Policy</a>
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Terms of Use</a>
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Support</a>
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors underline decoration-primary-fixed/30 underline-offset-4" href="#">Official Galaxy Guide</a>
+      <div class="glass-surface-soft px-6 py-4 text-primary-fixed font-bold font-headline tracking-tighter text-2xl drop-shadow-[0_0_10px_rgba(251,228,25,0.3)]">STAR WARS: CHRONICLES</div>
+      <div class="footer-links flex flex-wrap justify-center gap-4">
+        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Privacy</a>
+        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Terms</a>
+        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Support</a>
+        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Guide</a>
       </div>
-      <div class="font-label uppercase tracking-[0.4em] text-[9px] text-white/20 text-center max-w-lg leading-relaxed">
-        © &amp; TM LUCASFILM LTD. ALL RIGHTS RESERVED. <br> DATA SYNCED FROM GALACTIC ARCHIVES.
+      <div class="glass-surface-soft px-6 py-5 font-label uppercase tracking-[0.4em] text-[9px] text-white/20 text-center max-w-lg leading-relaxed">
+        © &amp; TM LUCASFILM LTD. ALL RIGHTS RESERVED.
       </div>
       </div>
     </footer>
@@ -1693,6 +1975,7 @@ function wireInteractions() {
       const targetId = button.getAttribute("data-scroll-target");
       const target = document.getElementById(targetId);
       if (!target) return;
+      playUiSound("click");
       scrollToTargetElement(target);
     });
   });
@@ -1700,6 +1983,7 @@ function wireInteractions() {
   document.querySelectorAll("[data-nav-page]").forEach((button) => {
     button.addEventListener("click", () => {
       const page = button.getAttribute("data-nav-page");
+      playUiSound("click");
       if (page === "stats") {
         openStats();
         return;
@@ -1727,20 +2011,30 @@ function wireInteractions() {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      playUiSound("click");
       openModal(button.getAttribute("data-open-modal"));
     });
   });
 
   document.querySelectorAll("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", closeModal);
+    button.addEventListener("click", () => {
+      playUiSound("click");
+      closeModal();
+    });
   });
 
   document.querySelectorAll("[data-open-filters]").forEach((button) => {
-    button.addEventListener("click", openFilters);
+    button.addEventListener("click", () => {
+      playUiSound("click");
+      openFilters();
+    });
   });
 
   document.querySelectorAll("[data-close-filters]").forEach((button) => {
-    button.addEventListener("click", closeFilters);
+    button.addEventListener("click", () => {
+      playUiSound("click");
+      closeFilters();
+    });
   });
 
   document.querySelectorAll("[data-filter-era]").forEach((input) => {
@@ -1758,6 +2052,7 @@ function wireInteractions() {
   document.querySelectorAll("[data-filter-type]").forEach((button) => {
     button.addEventListener("click", () => {
       appState.filterDraft.type = button.getAttribute("data-filter-type") || "all";
+      playUiSound("toggle");
       renderApp(appState.timelineData);
     });
   });
@@ -1765,6 +2060,7 @@ function wireInteractions() {
   document.querySelectorAll("[data-filter-canon]").forEach((button) => {
     button.addEventListener("click", () => {
       appState.filterDraft.canon = button.getAttribute("data-filter-canon") || "all";
+      playUiSound("toggle");
       renderApp(appState.timelineData);
     });
   });
@@ -1772,6 +2068,15 @@ function wireInteractions() {
   document.querySelectorAll("[data-filter-progress]").forEach((button) => {
     button.addEventListener("click", () => {
       appState.filterDraft.progress = button.getAttribute("data-filter-progress") || "all";
+      playUiSound("toggle");
+      renderApp(appState.timelineData);
+    });
+  });
+
+  document.querySelectorAll("[data-filter-arc]").forEach((button) => {
+    button.addEventListener("click", () => {
+      appState.filterDraft.arc = button.getAttribute("data-filter-arc") || "all";
+      playUiSound("toggle");
       renderApp(appState.timelineData);
     });
   });
@@ -1781,6 +2086,7 @@ function wireInteractions() {
       appState.filters = createDefaultFilters();
       appState.filterDraft = cloneFilters(appState.filters);
       appState.isFilterPanelOpen = false;
+      playUiSound("toggle");
       renderApp(appState.timelineData);
     });
   });
@@ -1789,6 +2095,7 @@ function wireInteractions() {
     button.addEventListener("click", () => {
       appState.filters = cloneFilters(appState.filterDraft);
       appState.isFilterPanelOpen = false;
+      playUiSound("success");
       renderApp(appState.timelineData);
     });
   });
@@ -1797,7 +2104,15 @@ function wireInteractions() {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      playUiSound("toggle");
       toggleSingleEntry(button.getAttribute("data-toggle-entry"));
+    });
+  });
+
+  document.querySelectorAll("[data-entry-play]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.stopPropagation();
+      playUiSound("click");
     });
   });
 
@@ -1805,7 +2120,15 @@ function wireInteractions() {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      playUiSound("toggle");
       toggleEpisode(appState.activeEntryId, Number(button.getAttribute("data-episode-toggle")));
+    });
+  });
+
+  document.querySelectorAll("[data-episode-play]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.stopPropagation();
+      playUiSound("click");
     });
   });
 
@@ -1813,12 +2136,38 @@ function wireInteractions() {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      playUiSound("success");
       advanceEntryProgress(appState.activeEntryId);
     });
   });
 
+  document.querySelectorAll("[data-modal-nav]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      navigateModalEntry(button.getAttribute("data-modal-nav"));
+    });
+  });
+
+  document.querySelectorAll("[data-share-entry]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      await shareEntry(button.getAttribute("data-share-entry"));
+    });
+  });
+
+  document.querySelectorAll("[data-entry-info]").forEach((link) => {
+    link.addEventListener("click", () => {
+      playUiSound("click");
+    });
+  });
+
   document.querySelectorAll("[data-open-stats]").forEach((button) => {
-    button.addEventListener("click", openStats);
+    button.addEventListener("click", () => {
+      playUiSound("click");
+      openStats();
+    });
   });
 
   document.querySelectorAll("[data-close-stats]").forEach((button) => {
@@ -1826,7 +2175,10 @@ function wireInteractions() {
   });
 
   document.querySelectorAll("[data-open-preferences]").forEach((button) => {
-    button.addEventListener("click", openPreferences);
+    button.addEventListener("click", () => {
+      playUiSound("click");
+      openPreferences();
+    });
   });
 
   document.querySelectorAll("[data-close-preferences]").forEach((button) => {
@@ -1838,6 +2190,7 @@ function wireInteractions() {
       event.preventDefault();
       event.stopPropagation();
       const entryId = button.getAttribute("data-stats-open-entry");
+      playUiSound("click");
       closeStats(false);
       openModal(entryId);
     });
@@ -1887,13 +2240,70 @@ function openModal(entryId) {
   appState.lastFocusSelector = `[data-entry-id="${CSS.escape(String(entryId))}"]`;
   appState.activeEntryId = entryId;
   appState.pendingOverlayFocusSelector = "#entry-modal button[data-close-modal='true']";
+  const entry = appState.entryMap.get(entryId);
+  if (entry) {
+    syncEntryUrl(entry, { mode: "push" });
+  }
+  renderApp(appState.timelineData);
+}
+
+function navigateModalEntry(direction) {
+  const activeEntry = appState.entryMap.get(appState.activeEntryId);
+  if (!activeEntry) return;
+
+  const modalNav = getModalEntryNavigation(activeEntry.id);
+  const targetEntry = direction === "previous" ? modalNav.previous : modalNav.next;
+  if (!targetEntry) return;
+
+  playUiSound("click");
+  appState.activeEntryId = targetEntry.id;
+  appState.pendingOverlayFocusSelector = "#entry-modal button[data-close-modal='true']";
+  syncEntryUrl(targetEntry, { mode: "push" });
   renderApp(appState.timelineData);
 }
 
 function closeModal() {
   appState.activeEntryId = null;
+  syncEntryUrl(null, { mode: "push" });
   renderApp(appState.timelineData);
   restoreFocusOrigin();
+}
+
+async function shareEntry(entryId) {
+  const entry = appState.entryMap.get(entryId);
+  if (!entry) return;
+
+  const shareUrl = buildEntryShareUrl(entry).toString();
+  const shareData = {
+    title: entry.title,
+    text: `Continue here in Star Wars: Chronicles: ${entry.title}`,
+    url: shareUrl
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      playUiSound("success");
+      return;
+    }
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      return;
+    }
+  }
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(shareUrl);
+      playUiSound("success");
+      window.alert("Share link copied to clipboard.");
+      return;
+    }
+  } catch (error) {
+    // Fall through to prompt fallback.
+  }
+
+  window.prompt("Copy this entry link:", shareUrl);
 }
 
 function persistAndRender() {
@@ -1964,11 +2374,25 @@ function closeFilters() {
 
 function togglePreference(key) {
   if (!appState.preferences || !(key in appState.preferences)) return;
+  if (key === "canonOnly" || key === "legendsIntegration") {
+    const continuitySelection = key === "canonOnly";
+    appState.preferences.canonOnly = continuitySelection;
+    appState.preferences.legendsIntegration = !continuitySelection;
+    savePreferences();
+    playUiSound("toggle");
+    renderApp(appState.timelineData);
+    return;
+  }
   appState.preferences[key] = !appState.preferences[key];
   savePreferences();
   applyPreferencesToDocument();
   if (key === "audioEnabled") {
-    getAudioController().setMusicEnabled(Boolean(appState.preferences[key]), { withFeedback: false });
+    getAudioController().setMusicEnabled(Boolean(appState.preferences[key]), { withFeedback: true });
+  }
+  if (key === "soundEffectsEnabled") {
+    getAudioController().setSoundEnabled(Boolean(appState.preferences[key]), { withFeedback: true });
+  } else {
+    playUiSound("toggle");
   }
   renderApp(appState.timelineData);
 }
@@ -1978,12 +2402,14 @@ function setPreferenceValue(key, value) {
   appState.preferences[key] = value;
   savePreferences();
   applyPreferencesToDocument();
+  playUiSound("toggle");
   renderApp(appState.timelineData);
 }
 
 function initializeAudioUI() {
   const controller = getAudioController();
   controller.initMusicToggle();
+  controller.setSoundEnabled(Boolean(appState.preferences.soundEffectsEnabled), { withFeedback: false, persist: false });
 
   if (audioUiUnsubscribe) {
     audioUiUnsubscribe();
@@ -1991,7 +2417,9 @@ function initializeAudioUI() {
   }
 
   const storedMusicEnabled = controller.getMusicEnabled();
+  const storedSoundEnabled = controller.getSoundEnabled();
   appState.preferences.audioEnabled = storedMusicEnabled;
+  appState.preferences.soundEffectsEnabled = storedSoundEnabled;
   syncAllAudioUi({
     musicEnabled: controller.getMusicEnabled(),
     musicVolume: controller.getMusicVolume(),
@@ -2048,6 +2476,10 @@ function initializeAudioUI() {
       controller.nextTrack({ withFeedback: true });
     });
   }
+}
+
+function playUiSound(type = "click") {
+  getAudioController().playSound(type);
 }
 
 function syncMobileAudioMeta(volume = getAudioController().getMusicVolume()) {
@@ -2149,7 +2581,10 @@ function toggleSingleEntry(entryId) {
 
 function toggleEpisode(entryId, episodeIndex) {
   const entry = appState.entryMap.get(entryId);
-  if (!entry || !Array.isArray(entry._watchedArray)) return;
+  if (!entry) return;
+  if (!Array.isArray(entry._watchedArray) || entry._watchedArray.length !== entry.episodes) {
+    entry._watchedArray = new Array(entry.episodes).fill(false);
+  }
   if (episodeIndex < 0 || episodeIndex >= entry._watchedArray.length) return;
   entry._watchedArray[episodeIndex] = !Boolean(entry._watchedArray[episodeIndex]);
   saveWatchedState(entry);
@@ -2233,6 +2668,7 @@ async function bootstrap() {
     appState.filters = createDefaultFilters();
     appState.filterDraft = cloneFilters(appState.filters);
     appState.searchInputValue = "";
+    applyEntryStateFromUrl({ shouldRender: false });
     renderApp(appState.timelineData);
   } catch (error) {
     app.innerHTML = `
@@ -2244,5 +2680,10 @@ async function bootstrap() {
     console.error(error);
   }
 }
+
+window.addEventListener("popstate", () => {
+  if (!appState.timelineData.length) return;
+  applyEntryStateFromUrl();
+});
 
 bootstrap();
