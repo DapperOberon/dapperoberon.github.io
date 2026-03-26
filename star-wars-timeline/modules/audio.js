@@ -1,6 +1,6 @@
 export function createAudioController({
   triggerHaptic = () => {},
-  musicDataPath = './music-data.json',
+  musicDataPath = './data/music-data.json',
   mediaBasePath = ''
 } = {}) {
   let soundEnabled = false;
@@ -130,7 +130,7 @@ export function createAudioController({
       const normalized = normalizeMusicTracks(trackData);
       backgroundMusicTracks = normalized;
     } catch (error) {
-      console.error('Failed to load music-data.json:', error);
+      console.error('Failed to load data/music-data.json:', error);
       backgroundMusicTracks = [];
     }
   }

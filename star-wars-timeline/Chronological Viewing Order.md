@@ -212,7 +212,7 @@ E: Episode
 * [x] S4.E18 - Crisis on Naboo - 20 BBY ✅ 2024-05-17
 * [x] S4.E19 - Massacre - 20 BBY ✅ 2024-05-17
 ### Tales of the Empire - 20 BBY - between 5 and 9 ABY (2024-, Animated Show, Canon)
- * [x] S1.E1 - The Path of Fear - 20 BBY ✅ 2024-05-17
+* [x] S1.E1 - The Path of Fear - 20 BBY ✅ 2024-05-17
 ### The Clone Wars - 22-19 BBY - 22-19 BBY (2008-2020, Animated Show, Canon)
 * [x] S4.E20 - Bounty - 20 BBY ✅ 2024-05-17
 * [x] S4.E21 - Brothers - 20 BBY ✅ 2024-05-20
@@ -462,8 +462,8 @@ E: Episode
 * [ ] S4.E15 - Family Reunion - and Farewell Part 1 - 1 BBY
 * [ ] S4.E16 - Family Reunion - and Farewell Part 2 - 1 BBY (9 ABY epilogue)
 # Age of the Rebellion
-### Rogue One: A Star Wars Story 0 BBY (2016, Live Action Film, Canon)
-* [ ] Rogue One: A Star Wars Story 0 BBY
+### Rogue One: A Star Wars Story - 0 BBY (2016, Live Action Film, Canon)
+* [ ] Rogue One: A Star Wars Story - 0 BBY
 ### Star Wars: Episode IV - A New Hope - 0 ABY (1977, Live Action Film, Canon)
 * [ ] Star Wars: Episode IV - A New Hope - 0 ABY
 ### The Star Wars Holiday Special - 1 ABY (1978, Live Action TV Film, Legends)
@@ -484,28 +484,19 @@ E: Episode
 * [ ] S1.E11 - The Three Lessons - 3 ABY
 * [ ] S1.E12 - Blue Harvest - 3 ABY
 * [ ] S1.E13 - Asha - 3 ABY
-* [ ] S2.E1 - The Crystal Cloak - 3 ABY
-* [ ] S2.E2 - The Wish Plan - 3 ABY
-* [ ] S2.E3 - Home is Where the Shrieks Are - 3 ABY
-* [ ] S2.E4 - Princess Latara - 3 ABY
-* [ ] S2.E5 - The Raich - 3 ABY
-* [ ] S2.E6 - The Totem Master - 3 ABY
-* [ ] S2.E7 - A Gift for Shodu - 3 ABY
-* [ ] S2.E8 - Night of the Stranger - 3 ABY
-* [ ] S2.E9 - Gone With the Mimphs - 3 ABY
-* [ ] S2.E10 - The First Apprentice - 3 ABY
-* [ ] S2.E11 - Hard Sell - 3 ABY
-* [ ] S2.E12 - A Warrior and a Lurdo - 3 ABY
-* [ ] S2.E13 - The Season Scepter - 3 ABY
-* [ ] S2.E14 - Prow Beaten - 3 ABY
-* [ ] S2.E15 - Baga's Rival - 3 ABY
-* [ ] S2.E16 - Horville's Hut of Horrors - 3 ABY
-* [ ] S2.E17 - The Tragic Flute - 3 ABY
-* [ ] S2.E18 - Just My Luck - 3 ABY
-* [ ] S2.E19 - Bringing Up Norky - 3 ABY
-* [ ] S2.E20 - Battle for the Sunstar - 3 ABY
-* [ ] S2.E21 - Party Ewok - 3 ABY
-* [ ] S2.E22 - Malani the Warrior - 3 ABY
+* [ ] S2.E1 - The Crystal Cloak / The Wish Plant - 3 ABY
+* [ ] S2.E2 - Home Is Where the Shrieks Are / Princess Latara - 3 ABY
+* [ ] S2.E3 - The Raich - 3 ABY
+* [ ] S2.E4 - The Totem Master / A Gift for Shodu - 3 ABY
+* [ ] S2.E5 - Night of the Stranger - 3 ABY
+* [ ] S2.E6 - Gone With the Mimphs / The First Apprentice - 3 ABY
+* [ ] S2.E7 - Hard Sell / A Warrior and a Lurdo - 3 ABY
+* [ ] S2.E8 - The Season Scepter - 3 ABY
+* [ ] S2.E9 - Prow Beaten / Baga's Rival - 3 ABY
+* [ ] S2.E10 - Horville's Hut of Horrors / The Tragic Flute - 3 ABY
+* [ ] S2.E11 - Just my Luck / Bringing Up Norky - 3 ABY
+* [ ] S2.E12 - Battle for the Sunstar - 3 ABY
+* [ ] S2.E13 - Party Ewok / Malani the Warrior - 3 ABY
 ### Caravan of Courage: An Ewok Adventure - 3 ABY (1984, Live Action TV Film, Legends)
 * [ ] Caravan of Courage: An Ewok Adventure - 3 ABY
 ### Ewoks: The Battle for Endor - 3 ABY (1985, Live Action TV Film, Legends)
@@ -624,7 +615,7 @@ E: Episode
 * [ ] S1.E3 - THE TWINS
 * [ ] S1.E4 - The Village Bride
 * [ ] S1.E5 - The Ninth Jedi
-* [ ] S1.E6 - T0B1
+* [ ] S1.E6 - T0-B1
 * [ ] S1.E7 - The Elder
 * [ ] S1.E8 - Lop & Ochō
 * [ ] S1.E9 - Akakiri

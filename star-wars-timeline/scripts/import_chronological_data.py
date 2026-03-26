@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 MARKDOWN_PATH = ROOT / "Chronological Viewing Order.md"
-SOURCE_JSON_PATH = ROOT / "timeline-data.json"
+SOURCE_JSON_PATH = ROOT / "data" / "timeline-data.json"
 OUTPUT_JSON_PATH = ROOT / "timeline-data-imported.json"
 BACKUP_JSON_PATH = ROOT / "timeline-data.backup.json"
 

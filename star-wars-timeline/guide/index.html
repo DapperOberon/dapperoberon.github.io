@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide | Star Wars: Chronicles</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="../tailwind-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Manrope:wght@200;300;400;500;600;700;800&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden" data-page="guide" data-sidebar-title="Guide Sections" data-sidebar-subtitle="Jump to Section">
+  <div id="app"></div>
+
+  <template id="page-content">
+    <section class="relative z-10 pt-12 pb-20 px-4 md:px-8">
+      <div class="max-w-[1320px] mx-auto">
+        <section class="glass-panel rounded-[2rem] overflow-hidden">
+          <header id="guide-overview" data-sidebar-label="Overview" data-sidebar-icon="menu_book" class="px-6 py-8 md:px-10 md:py-10 relative scroll-mt-28">
+            <div class="absolute inset-0 opacity-70" style="background:
+              linear-gradient(135deg, rgba(255,232,31,0.12), transparent 28%),
+              radial-gradient(circle at 78% 22%, rgba(61,184,255,0.12), transparent 22%);"></div>
+            <div class="relative max-w-3xl">
+              <p class="kicker-label">Archive Guide</p>
+              <h1 class="mt-4 font-headline text-4xl md:text-6xl tracking-tight text-white leading-none">How Star Wars: Chronicles Works</h1>
+              <p class="mt-5 text-white/72 font-body leading-relaxed max-w-2xl">
+                The guide for browsing the archive, understanding chronology, tracking progress,
+                and using watch and reference tools across the site.
+              </p>
+            </div>
+          </header>
+
+          <section class="px-6 py-8 md:px-10 md:py-10 grid gap-6 md:grid-cols-[1.1fr_0.9fr]">
+            <section class="utility-section p-6 md:p-7 scroll-mt-28">
+              <p class="hud-label">Scope</p>
+              <h2 class="mt-3 font-headline text-2xl text-white tracking-tight">What This Guide Covers</h2>
+              <p class="mt-4 text-white/70 leading-relaxed">
+                This page explains the live rules of the archive: chronology, split placements,
+                watched progress, filters, preferences, watch links, and special-case entries.
+              </p>
+            </section>
+
+            <section class="utility-section p-6 md:p-7 scroll-mt-28">
+              <p class="hud-label">Quick Start</p>
+              <ul class="mt-4 space-y-3 text-white/70 leading-relaxed">
+                <li>Browse by era, then open an entry for episode-level detail.</li>
+                <li>Use watched toggles and episode checkboxes to build persistent progress.</li>
+                <li>Filter by era, format, continuity, story arc, or watch status.</li>
+                <li>Use Watch for the best destination and Info for Wookieepedia context.</li>
+              </ul>
+            </section>
+          </section>
+
+          <section class="px-6 pb-8 md:px-10 md:pb-10 grid gap-6">
+            <section id="guide-chronology" data-sidebar-label="Chronology" data-sidebar-icon="schedule" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">Chronology</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">How the Chronology Works</h2>
+              <div class="mt-5 grid gap-5 md:grid-cols-2 text-white/70 leading-relaxed">
+                <div>
+                  <p>
+                    The app follows a fixed chronological order built from <code>timeline-data.json</code>.
+                    That order is the product contract, so sorting is intentionally removed. The timeline is
+                    built to answer “what comes next in-universe?”
+                  </p>
+                  <p class="mt-4">
+                    Dates are displayed in BBY and ABY. BBY means “Before the Battle of Yavin,” and ABY means
+                    “After the Battle of Yavin.” Those labels anchor films, shows, anthology shorts,
+                    and non-timeline material into one readable archive.
+                  </p>
+                </div>
+                <div>
+                  <p>
+                    Some titles appear multiple times because the chronology slices them by where their events
+                    belong, not by how a streaming service groups them. That is especially common with anthology
+                    projects such as <em>Tales of the Jedi</em>, <em>Tales of the Empire</em>, and
+                    <em>Tales of the Underworld</em>.
+                  </p>
+                  <p class="mt-4">
+                    Split placement also shows up when a long-running series crosses era boundaries.
+                    Each slice represents the same production title at the point where those episodes
+                    belong in the larger chronology.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section id="guide-eras" data-sidebar-label="Eras & Types" data-sidebar-icon="account_tree" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">Era Structure</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">Eras and Entry Types</h2>
+              <div class="mt-5 grid gap-6 md:grid-cols-3 text-white/70 leading-relaxed">
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Galactic Eras</h3>
+                  <p class="mt-3">
+                    The main rail groups the archive into major eras such as The High Republic, Fall of the Jedi,
+                    Reign of the Empire, and Rise of the First Order.
+                    The desktop rail highlights the active era as you move through the chronology.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Entry Types</h3>
+                  <p class="mt-3">
+                    Entries can represent films, full series, chronology slices of a larger series, anthology
+                    segments, or non-timeline material.
+                    When platform packaging matters, the app treats the watchable distribution unit as primary.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Canon and Legends</h3>
+                  <p class="mt-3">
+                    The archive supports both canon and selected Legends material. Preferences and filters let you
+                    browse canon-only or with Legends integrated, but those modes are mutually exclusive.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section id="guide-progress" data-sidebar-label="Progress" data-sidebar-icon="task_alt" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">Watching</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">Watching and Progress</h2>
+              <div class="mt-5 grid gap-6 md:grid-cols-[1.1fr_0.9fr] text-white/70 leading-relaxed">
+                <div>
+                  <p>
+                    Single-entry titles can be marked watched directly. Series and anthology entries open into the
+                    modal, where each episode can be tracked individually.
+                    Progress is stored locally, so your archive state survives reloads on the same browser.
+                  </p>
+                  <p class="mt-4">
+                    The primary CTA reflects real state:
+                    <span class="text-white">Start Watching</span> for untouched films,
+                    <span class="text-white">See Details</span> for untouched series,
+                    <span class="text-white">Continue Watching</span> for partial progress,
+                    and <span class="text-white">Watched</span> for completed entries.
+                  </p>
+                  <p class="mt-4">
+                    Modal previous and next navigation follows the current filtered chronology,
+                    so modal browsing stays consistent with the timeline you are looking at.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Persistence Rules</h3>
+                  <ul class="mt-4 space-y-3">
+                    <li>Watched state is stored locally in the browser.</li>
+                    <li>Series progress is stored episode by episode, not only as a simple count.</li>
+                    <li>Reloading restores progress, stats, and preference choices.</li>
+                    <li>Deep-linked modal URLs reopen the selected entry on load.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section id="guide-filters" data-sidebar-label="Filters" data-sidebar-icon="filter_alt" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">Controls</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">Search, Filters, and Preferences</h2>
+              <div class="mt-5 grid gap-6 md:grid-cols-2 text-white/70 leading-relaxed">
+                <div>
+                  <p>
+                    Search works across titles, entry metadata, and episode titles. Filters let you narrow the
+                    archive by era, format, continuity, progress state, and major story-arc groupings such as
+                    Clone Wars, Mandoverse, Sequel Era, and George Lucas.
+                  </p>
+                  <p class="mt-4">
+                    Preferences control continuity, shorts inclusion, appearance, and audio.
+                    The archive keeps chronology fixed, but still lets you tune how the experience feels.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Useful Notes</h3>
+                  <ul class="mt-4 space-y-3">
+                    <li>Canon Only and Legends Integration are exclusive choices.</li>
+                    <li>Reduced-motion behavior follows the browser’s <code>prefers-reduced-motion</code> setting.</li>
+                    <li>Mobile and desktop filters follow the same logic, even though the surfaces differ.</li>
+                    <li>Stats and preferences are full pages on desktop.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section id="guide-links" data-sidebar-label="Watch Links" data-sidebar-icon="open_in_new" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">External Destinations</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">Watch Links and References</h2>
+              <div class="mt-5 grid gap-6 md:grid-cols-2 text-white/70 leading-relaxed">
+                <div>
+                  <p>
+                    Each watchable item can carry a <code>watchUrl</code>. That field is platform-agnostic, so it
+                    can point to Disney+, YouTube, or another supported destination.
+                    The app treats it as the best available watch link for that entry or episode row.
+                  </p>
+                  <p class="mt-4">
+                    The modal <span class="text-white">Info</span> action opens the matching Wookieepedia article
+                    for the current entry. Share links use the unique entry id plus a readable title slug,
+                    so split entries stay unambiguous even when the same production appears more than once.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">What If No Link Exists?</h3>
+                  <p class="mt-3">
+                    If a specific episode has no watch destination, the modal shows a muted
+                    <span class="text-white">Unavailable</span> state instead of a fake play control. This keeps
+                    real links clearly actionable and avoids implying that every row launches playback.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section id="guide-special-cases" data-sidebar-label="Special Cases" data-sidebar-icon="alt_route" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">Edge Cases</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">Special Cases and Data Rules</h2>
+              <div class="mt-5 grid gap-5 md:grid-cols-2 text-white/70 leading-relaxed">
+                <div>
+                  <p>
+                    Some streaming services package material differently than the chronology does. When that
+                    happens, the archive follows the watchable distribution unit where necessary. For example,
+                    <em>Ewoks</em> season 2 follows the aired paired-episode structure instead of a more granular
+                    segment split because that is how the available platform packaging works.
+                  </p>
+                  <p class="mt-4">
+                    The 2003 <em>Clone Wars</em> micro-series is another special case: Disney+ exposes it as two
+                    volumes, while the chronology tracks individual chapters.
+                    Timestamp guidance helps map chronology rows back to the best available watch destination.
+                  </p>
+                </div>
+                <div>
+                  <p>
+                    Non-timeline material like <em>Star Wars: Visions</em> is intentionally separated into its own
+                    area so it stays available without pretending it belongs inside the main canon/Legends timeline.
+                  </p>
+                  <p class="mt-4">
+                    Anthology projects may also be split across multiple eras because the episodes themselves belong
+                    in different historical windows.
+                    The archive is designed to represent that chronology honestly instead of flattening it.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section id="guide-faq" data-sidebar-label="FAQ" data-sidebar-icon="help" class="utility-section p-6 md:p-8 scroll-mt-28">
+              <p class="hud-label">FAQ</p>
+              <h2 class="mt-3 font-headline text-3xl text-white tracking-tight">Frequently Asked Questions</h2>
+              <div class="mt-5 grid gap-5 text-white/70 leading-relaxed">
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Why does the same show appear more than once?</h3>
+                  <p class="mt-3">
+                    Because the chronology is organized by when events happen, not only by release packaging.
+                    Split entries show the parts of a title where they belong in-universe.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Why can’t I sort the archive?</h3>
+                  <p class="mt-3">
+                    Sorting was intentionally removed. The archive treats chronology as the core product behavior,
+                    so the app always preserves the current in-universe order.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Why does one entry say Watch and another say Details?</h3>
+                  <p class="mt-3">
+                    Films and one-off items can often launch directly. Series usually open the modal first so you
+                    can see episode-level progress, watch links, and chronology context before picking an episode.
+                  </p>
+                </div>
+                <div class="soft-panel p-5 rounded-[1.5rem]">
+                  <h3 class="text-white font-semibold font-headline text-xl tracking-tight">Why do some watch links leave the app?</h3>
+                  <p class="mt-3">
+                    The archive does not host playback. It points to the best available external destination for
+                    that item, whether that is Disney+, YouTube, or another source carried in the data.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </section>
+        </section>
+      </div>
+    </section>
+  </template>
+
+  <script type="module" src="../content-page.js"></script>
+</body>
+</html>

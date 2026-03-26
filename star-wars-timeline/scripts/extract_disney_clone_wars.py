@@ -14,7 +14,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_PATH = ROOT / "timeline-data.json"
+DATA_PATH = ROOT / "data" / "timeline-data.json"
 PROFILE_PATH = Path.home() / ".mozilla" / "firefox" / "rNdnMdOP.Profile 3"
 CLONE_WARS_ENTITY_URL = "https://www.disneyplus.com/browse/entity-314f14b4-b70a-4ec6-b634-2559f0b1f77e"
 TARGET_ENTRY_IDS = {
@@ -166,7 +166,7 @@ def update_timeline_data(extracted_links):
                     if len(matches) == 1:
                         _, href = matches[0]
                 if href:
-                    episode["disneyPlusUrl"] = href
+                    episode["watchUrl"] = href
                     updated.append((entry["id"], key, href))
                 else:
                     missing.append((entry["id"], key))
@@ -181,7 +181,7 @@ def main():
     print(f"Discovered {len(links)} episode play URLs.", file=sys.stderr)
 
     updated, missing = update_timeline_data(links)
-    print(f"Updated {len(updated)} episode rows in timeline-data.json.", file=sys.stderr)
+    print(f"Updated {len(updated)} episode rows in data/timeline-data.json.", file=sys.stderr)
     print("Sample updated rows:")
     for entry_id, key, href in updated[:12]:
         print(f"{entry_id}\t{key}\t{href}")

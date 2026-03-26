@@ -1,6 +1,6 @@
 export async function loadTimelineData() {
   try {
-    const response = await fetch('./timeline-data.json');
+    const response = await fetch('./data/timeline-data.json');
     if (!response.ok) {
       throw new Error(`Failed to load timeline data: ${response.status}`);
     }

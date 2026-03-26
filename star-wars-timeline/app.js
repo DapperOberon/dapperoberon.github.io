@@ -2,10 +2,38 @@ import {
   initializeWatchedState,
   resetAllProgress,
   saveWatchedState
-} from "../modules/persistence.js";
-import { createAudioController } from "../modules/audio.js";
-import { calculateStats } from "../modules/stats.js";
-import { getEntrySearchText } from "../modules/data.js";
+} from "./modules/persistence.js";
+import { createAudioController } from "./modules/audio.js";
+import { calculateStats } from "./modules/stats.js";
+import { getEntrySearchText } from "./modules/data.js";
+import {
+  renderDesktopSidebar,
+  renderMobileAudioPlayer,
+  renderMobileBottomNav,
+  renderShellLayout,
+  renderStandardFooter,
+  renderStandardTopBar
+} from "./modules/shell.js";
+import {
+  buildRenderShellOptions,
+  renderAppMainContent
+} from "./modules/app-layout.js";
+import {
+  initializeAppInteractions,
+  initializeShellInteractions
+} from "./modules/app-interactions.js";
+import {
+  createAudioUiRuntime,
+  createViewActions,
+  restoreOverlayFocus,
+  restorePendingFocus,
+  restoreFocusOrigin
+} from "./modules/app-runtime.js";
+import {
+  attachGlobalKeyHandlers,
+  bootstrapApp,
+  createProgressActions
+} from "./modules/app-state.js";
 
 const PREFERENCES_STORAGE_KEY = "sw_redesign_preferences";
 const PREFERENCES_SCHEMA_VERSION = 2;
@@ -30,20 +58,20 @@ const appState = {
 };
 let audioController = null;
 let activeSectionCleanup = null;
-let audioUiUnsubscribe = null;
+const audioUiUnsubscribeRef = { current: null };
 
 const ERA_ASSETS = {
-  "The High Republic": "../images/eras/high-republic.png",
-  "Fall of the Jedi": "../images/eras/fall-of-the-jedi.png",
-  "Reign of the Empire": "../images/eras/reign-of-the-empire.png",
-  "Age of Rebellion": "../images/eras/age-of-the-rebellion.png",
-  "Age of the Rebellion": "../images/eras/age-of-the-rebellion.png",
-  "The New Republic": "../images/eras/new-republic.png",
-  "Rise of the First Order": "../images/eras/rise-of-the-first-order.png",
-  "New Jedi Order": "../images/eras/new-jedi-order.png",
-  "Dawn of the Jedi": "../images/eras/dawn-of-the-jedi.png",
-  "Old Republic": "../images/eras/old-republic.png",
-  "Non-Timeline": "../images/eras/non-timeline.svg"
+  "The High Republic": "./images/eras/high-republic.png",
+  "Fall of the Jedi": "./images/eras/fall-of-the-jedi.png",
+  "Reign of the Empire": "./images/eras/reign-of-the-empire.png",
+  "Age of Rebellion": "./images/eras/age-of-the-rebellion.png",
+  "Age of the Rebellion": "./images/eras/age-of-the-rebellion.png",
+  "The New Republic": "./images/eras/new-republic.png",
+  "Rise of the First Order": "./images/eras/rise-of-the-first-order.png",
+  "New Jedi Order": "./images/eras/new-jedi-order.png",
+  "Dawn of the Jedi": "./images/eras/dawn-of-the-jedi.png",
+  "Old Republic": "./images/eras/old-republic.png",
+  "Non-Timeline": "./images/eras/non-timeline.svg"
 };
 
 const TYPE_LABELS = [
@@ -110,7 +138,6 @@ const STORY_ARC_MATCHERS = {
 
 function normalizePosterPath(path) {
   if (!path) return "";
-  if (path.startsWith("./")) return `..${path.slice(1)}`;
   return path;
 }
 
@@ -175,8 +202,8 @@ function normalizeContinuityPreferences(preferences) {
 function getAudioController() {
   if (!audioController) {
     audioController = createAudioController({
-      musicDataPath: "../music-data.json",
-      mediaBasePath: new URL("../", window.location.href).href
+      musicDataPath: "./data/music-data.json",
+      mediaBasePath: new URL("./", window.location.href).href
     });
   }
   return audioController;
@@ -649,9 +676,9 @@ function getModalPrimaryLabel(entry) {
 
 function getEntryPlayUrl(entry) {
   if (!entry) return "";
-  if (entry.disneyPlusUrl) return entry.disneyPlusUrl;
+  if (entry.watchUrl) return entry.watchUrl;
   if (Array.isArray(entry.episodeDetails) && entry.episodeDetails.length === 1) {
-    return entry.episodeDetails[0].disneyPlusUrl || "";
+    return entry.episodeDetails[0].watchUrl || "";
   }
   return "";
 }
@@ -677,12 +704,15 @@ function renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount) {
     ? Boolean(watchedCount[index])
     : index < watchedCount;
   const isNext = nextIndex >= 0 && index === nextIndex;
-  const playAction = episode.disneyPlusUrl
+  const playAction = episode.watchUrl
     ? `
-        <a class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-400 hover:text-primary-fixed"} transition-colors" href="${escapeHtml(episode.disneyPlusUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Play ${escapeHtml(episode.title)} on Disney+">play_circle</a>
+        <a class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-400 hover:text-primary-fixed"} transition-colors" href="${escapeHtml(episode.watchUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Watch ${escapeHtml(episode.title)}">play_circle</a>
       `
     : `
-        <span class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-600"}" aria-hidden="true" style="font-variation-settings: 'FILL' ${isNext ? 1 : 0};">play_circle</span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Unavailable">
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">block</span>
+          <span>Unavailable</span>
+        </span>
       `;
   const cardClass = isNext
     ? "bg-white/[0.06] ring-1 ring-primary-fixed/45 shadow-[0_0_24px_rgba(251,228,25,0.12)]"
@@ -719,9 +749,9 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
     : index < watchedCount;
   const isNext = nextIndex >= 0 && index === nextIndex;
   const actionIcon = watched ? "check_circle" : "bookmark_add";
-  const playSurface = episode.disneyPlusUrl
+  const playSurface = episode.watchUrl
     ? `
-        <a class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest group/play" href="${escapeHtml(episode.disneyPlusUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Play ${escapeHtml(episode.title)} on Disney+">
+        <a class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest group/play" href="${escapeHtml(episode.watchUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Watch ${escapeHtml(episode.title)}">
           <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
           <div class="absolute inset-0 flex items-center justify-center">
             <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 group-hover/play:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
@@ -729,11 +759,11 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
         </a>
       `
     : `
-        <div class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
-          <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
-          </div>
+        <div class="flex-shrink-0">
+          <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Unavailable">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">block</span>
+            <span>Unavailable</span>
+          </span>
         </div>
       `;
   return `
@@ -962,7 +992,7 @@ function renderDesktopEntry(entry, index) {
           </div>
           <div class="absolute bottom-4 ${reverse ? "left-4" : "right-4"} flex items-center gap-3">
           ${playUrl && !isSeriesEntry(entry) ? `
-            <a class="ghost-button inline-flex items-center gap-2 px-4 py-2 rounded-full" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Play ${escapeHtml(entry.title)} on Disney+">
+            <a class="ghost-button inline-flex items-center gap-2 px-4 py-2 rounded-full" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Watch ${escapeHtml(entry.title)}">
               <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
               <span class="text-[10px] font-label uppercase tracking-widest">Play</span>
             </a>
@@ -1038,7 +1068,7 @@ function renderMobileEntry(entry) {
             </div>
             <div class="flex items-center gap-2">
             ${playUrl && !series ? `
-              <a class="icon-button w-10 h-10 text-primary-fixed/85 flex items-center justify-center" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Play ${escapeHtml(entry.title)} on Disney+">
+              <a class="icon-button w-10 h-10 text-primary-fixed/85 flex items-center justify-center" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Watch ${escapeHtml(entry.title)}">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
               </a>
             ` : ""}
@@ -1721,243 +1751,83 @@ function renderApp(sections) {
   const filteredSections = getFilteredSections();
   const filteredEntries = filteredSections.flatMap((section) => section.entries);
   const activeFilterCount = countActiveFilters(appState.filters);
-
-  app.innerHTML = `
-    <nav id="top-bar" class="fixed top-0 w-full z-[120] bg-surface/80 dark:bg-[#131313]/80 backdrop-blur-xl flex justify-between items-center px-4 md:px-8 h-16 md:h-20 shadow-2xl">
-      <div class="flex items-center gap-4">
-        <div class="shrink-0 text-[0.82rem] sm:text-base md:text-[1.45rem] font-bold tracking-[0.1em] md:tracking-[0.03em] text-[#FFE81F] drop-shadow-[0_0_10px_rgba(251,228,25,0.45)] font-headline uppercase whitespace-nowrap">
-          Star Wars: Chronicles
-        </div>
-      </div>
-      <div class="hidden md:flex items-center gap-8 font-headline uppercase tracking-widest text-sm">
-        <button class="nav-underline-button ${currentPage === "timeline" ? "is-active text-[#FFE81F]" : "text-white/60"} pb-1" type="button" data-nav-page="timeline" aria-current="${currentPage === "timeline" ? "page" : "false"}">Timeline</button>
-        <button class="nav-underline-button ${currentPage === "stats" ? "is-active text-[#FFE81F]" : "text-white/60"} pb-1" type="button" data-nav-page="stats" aria-current="${currentPage === "stats" ? "page" : "false"}">Stats</button>
-      </div>
-      <div class="flex items-center gap-3 md:gap-5">
-        <div class="relative group hidden lg:block ${currentPage === "timeline" ? "" : "opacity-50 pointer-events-none"}">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 text-sm">search</span>
-          <input id="timeline-search-input" class="bg-surface-container-high/70 border-none border-b border-outline-variant/30 focus:border-secondary focus:ring-0 text-xs py-2.5 pl-10 pr-4 w-64 rounded-none transition-all" placeholder="Search the galaxy..." type="text" value="${escapeHtml(appState.searchInputValue)}"/>
-        </div>
-        <div id="music-pill" class="hidden xl:flex items-center gap-3 bg-white/5 px-3 py-2.5 min-w-[15rem]">
-          <div class="min-w-0">
-            <span class="block text-[11px] font-headline uppercase tracking-[0.12em] text-secondary truncate" id="music-pill-title">Music Off</span>
-          </div>
-          <div class="ml-auto flex items-center gap-1">
-            <button id="music-pill-toggle" class="w-8 h-8 flex items-center justify-center rounded-full text-primary-fixed hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors" type="button" aria-label="Play or pause background music">▶</button>
-            <button id="music-pill-next" class="w-8 h-8 flex items-center justify-center rounded-full text-white/70 hover:text-primary-fixed transition-colors" type="button" aria-label="Skip to next track">⏭</button>
-          </div>
-        </div>
-        <button class="active:scale-95 duration-150" type="button" aria-label="Profile" data-open-preferences="true">
-          <span class="material-symbols-outlined text-primary-fixed text-2xl">account_circle</span>
-        </button>
-      </div>
-    </nav>
-
-    <aside id="desktop-eras" class="hidden lg:flex h-full w-72 fixed left-0 top-0 z-[60] bg-[#131313] flex-col py-8 bg-gradient-to-r from-white/5 to-transparent">
-      ${currentPage === "preferences" ? `
-        <div class="px-8 mt-24 mb-10">
-          <h2 class="text-[#FFE81F] font-bold font-headline tracking-tighter text-xl">SETTINGS GROUPS</h2>
-          <p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">Jump to Section</p>
-        </div>
-        <nav class="flex flex-col gap-1">
-          ${[
-            ["prefs-temporal", "Timeline"],
-            ["prefs-content", "Content"],
-            ["prefs-interface", "Appearance"],
-            ["prefs-system", "System"]
-          ].map(([target, label]) => `
-            <button class="era-nav-button flex items-center gap-4 px-8 py-4 text-white/40 hover:bg-white/5 hover:text-white transition-all group text-left" type="button" data-scroll-target="${target}">
-              <span class="material-symbols-outlined text-secondary text-lg">tune</span>
-              <span class="font-medium text-sm font-body">${label}</span>
-            </button>
-          `).join("")}
-        </nav>
-      ` : `
-        <div class="px-8 mt-24 mb-10">
-          <h2 class="text-[#FFE81F] font-bold font-headline tracking-tighter text-xl">${currentPage === "stats" ? "ARCHIVE PANELS" : "GALACTIC ERAS"}</h2>
-          <p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">${currentPage === "stats" ? "Sections" : "Eras"}</p>
-        </div>
-        <nav class="flex flex-col gap-1">
-          ${currentPage === "stats"
-            ? [
-                ["stats-overview", "Completion", "leaderboard"],
-                ["stats-era-breakdown", "Era Progress", "query_stats"],
-                ["stats-media-distribution", "Formats", "equalizer"],
-                ["stats-next-objective", "Next", "rocket_launch"]
-              ].map(([target, label, icon]) => `
-                <button class="era-nav-button flex items-center gap-4 px-8 py-4 text-white/40 hover:bg-white/5 hover:text-white transition-all group text-left" type="button" data-scroll-target="${target}">
-                  <span class="material-symbols-outlined text-secondary text-lg">${icon}</span>
-                  <span class="font-medium text-sm font-body">${label}</span>
-                </button>
-              `).join("")
-            : normalizedSections.map((section) => `
-                <button class="era-nav-button flex items-center gap-4 px-8 py-4 text-white/40 hover:bg-white/5 hover:text-white transition-all group text-left" type="button" data-scroll-target="${escapeHtml(section.anchorId)}">
-                  ${getEraAssetPath(section.era)
-                    ? `<img class="era-logo era-logo--sidebar" src="${escapeHtml(getEraAssetPath(section.era))}" alt="" aria-hidden="true">`
-                    : ""}
-                  <span class="font-medium text-sm font-body">${escapeHtml(section.era)}</span>
-                </button>
-              `).join("")}
-        </nav>
-      `}
-    </aside>
-
-    <main class="lg:ml-72 pt-16 md:pt-20">
-      ${currentPage === "timeline" ? `
-      <section id="timeline-hero" class="relative min-h-[640px] md:h-[716px] w-full overflow-hidden bg-surface-container-lowest">
-        <div class="absolute inset-0 z-0">
-          <img class="w-full h-full object-cover opacity-50 scale-105" src="${escapeHtml(heroEntry.poster)}" alt="${escapeHtml(heroEntry.title)}"/>
-          <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
-          <div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
-        </div>
-        <div class="relative z-10 h-full max-w-[1320px] mx-auto flex flex-col justify-center px-6 md:px-16">
-        <div class="max-w-5xl">
-          <h1 class="hidden md:block text-5xl md:text-7xl font-headline font-bold text-white tracking-tighter mb-4 leading-none">THE DEFINITIVE<br><span class="text-primary-fixed">WATCHLIST</span></h1>
-          <div class="md:hidden mb-12">
-            <h2 class="font-headline text-4xl font-bold leading-tight">THE DEFINITIVE <br>WATCHLIST</h2>
-            <div class="mt-4 flex gap-4">
-              <div class="bg-surface-container-high px-4 py-2 rounded-xl flex items-center gap-2">
-                <span class="text-primary-container text-lg font-bold">${flatEntries.length}</span>
-                <span class="font-label text-[10px] opacity-60 uppercase">Entries</span>
-              </div>
-              <div class="bg-surface-container-high px-4 py-2 rounded-xl flex items-center gap-2">
-                <span class="text-secondary text-lg font-bold">${stats.overallProgress}%</span>
-                <span class="font-label text-[10px] opacity-60 uppercase">Complete</span>
-              </div>
-            </div>
-            <div class="mt-5 flex gap-3">
-              <button class="px-4 py-3 bg-primary-fixed text-on-primary-fixed font-bold uppercase text-[10px] tracking-[0.18em] rounded-full" type="button" data-open-modal="${escapeHtml(heroEntry.id)}">
-                Resume Journey
-              </button>
-              <button class="ghost-button px-4 py-3 font-bold uppercase text-[10px] tracking-[0.18em]" type="button" data-open-stats="true">
-                Stats
-              </button>
-            </div>
-          </div>
-          <p class="hidden md:block text-on-surface-variant max-w-xl text-lg mb-8 font-light leading-relaxed">From the golden age of the High Republic to the final stand against the First Order, experience the galaxy's history as it happened.</p>
-          <div class="hidden md:flex gap-4">
-            <button class="cta-primary" type="button" data-open-modal="${escapeHtml(heroEntry.id)}">
-              <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-              Resume Journey
-            </button>
-            <button class="cta-secondary" type="button" data-open-stats="true">
-              Stats
-            </button>
-          </div>
-        </div>
-        </div>
-      </section>
-
-      <section id="timeline-desktop" class="hidden md:block px-8 md:px-16 py-20 relative">
-        <div class="max-w-[1320px] mx-auto">
-        <div class="flex justify-between items-end mb-12 pb-6">
-          <div>
-            <h2 class="text-3xl font-headline font-bold text-white uppercase tracking-tighter">The Galactic Timeline</h2>
-          </div>
-          <div class="flex gap-3">
-            <button class="control-pill bg-surface-container-highest px-4 py-2 text-xs font-label ${activeFilterCount > 0 ? "text-primary-fixed" : "text-white/60"} hover:text-white transition-all flex items-center gap-2" type="button" data-open-filters="true">
-              <span class="material-symbols-outlined text-sm">filter_alt</span>
-              ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filter"}
-            </button>
-          </div>
-        </div>
-        ${filteredEntries.length === 0 ? `
-          <div class="py-16 text-center bg-surface-container-low">
-            <p class="font-headline text-2xl uppercase tracking-widest text-white">No Matching Entries</p>
-            <p class="mt-3 text-sm text-on-surface-variant">Clear or broaden the active filters.</p>
-          </div>
-        ` : `
-        <div class="desktop-timeline space-y-32 relative py-10">
-          ${filteredSections.map((section, sectionIndex) => {
-            const entryOffset = filteredSections
-              .slice(0, sectionIndex)
-              .reduce((sum, current) => sum + current.entries.length, 0);
-            return renderDesktopSection(section, entryOffset);
-          }).join("")}
-        </div>
-        `}
-        </div>
-      </section>
-
-      <section id="mobile-eras" class="md:hidden pt-8 pb-52 px-4 max-w-lg mx-auto relative min-h-screen">
-        <div class="mb-6 flex items-center gap-2 overflow-x-auto hide-scrollbar">
-          <button class="control-pill shrink-0 px-4 py-2 ${activeFilterCount > 0 ? "is-active text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-open-filters="true">
-            ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filters"}
-          </button>
-          ${normalizedSections.map((section, index) => `
-            <button class="mobile-era-chip control-pill shrink-0 px-3 py-2 bg-surface-container-high text-white/65 text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-scroll-target="mobile-era-${index}">${escapeHtml(section.era)}</button>
-          `).join("")}
-        </div>
-        <div class="relative ml-4">
-          <div class="absolute left-0 top-0 bottom-0 w-[2px] timeline-line opacity-30 shadow-[0_0_15px_#fbe419]"></div>
-          ${filteredEntries.length === 0
-            ? `<div class="ml-4 mr-2 p-6 rounded-xl bg-surface-container-low">
-                <p class="font-headline text-xl uppercase tracking-widest text-white">No Matching Entries</p>
-                <p class="mt-2 text-sm text-on-surface-variant">Clear or broaden the active filters.</p>
-              </div>`
-            : filteredSections.map((section) => renderMobileSection(section)).join("")}
-        </div>
-      </section>
-      ` : currentPage === "stats"
-        ? renderStatsPanel()
-        : renderPreferencesPanel()}
-    </main>
-    ${!activeEntry && !appState.isFilterPanelOpen && currentPage !== "preferences" ? `
-    <div class="md:hidden fixed bottom-[4.6rem] left-4 right-4 z-[117]">
-      <div class="glass-panel rounded-2xl px-4 py-3 gap-3 flex items-center shadow-2xl">
-        <button id="mobile-music-pill-toggle" class="w-11 h-11 rounded-full text-primary-fixed flex items-center justify-center active:scale-95 transition-transform" type="button" aria-label="Play or pause background music">
-          ▶
-        </button>
-        <div class="min-w-0 flex-1">
-          <span class="block text-[9px] font-label uppercase tracking-[0.2em] text-white/35">Audio Channel</span>
-          <span id="mobile-music-pill-title" class="block text-xs font-headline uppercase tracking-[0.12em] text-secondary truncate">Music Off</span>
-        </div>
-        <button id="mobile-music-pill-next" class="w-10 h-10 rounded-full text-white/70 flex items-center justify-center active:scale-95 transition-transform" type="button" aria-label="Skip to next track">
-          ⏭
-        </button>
-      </div>
-    </div>
-    ` : ""}
-    ${!activeEntry && !appState.isFilterPanelOpen ? `
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[118] bg-[#131313]/95 backdrop-blur-xl">
-      <div class="grid grid-cols-2 max-w-md mx-auto">
-        <button class="nav-underline-button flex flex-col items-center justify-center gap-1 py-3 ${currentPage === "timeline" ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="timeline" aria-current="${currentPage === "timeline" ? "page" : "false"}">
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${currentPage === "timeline" ? 1 : 0};">view_timeline</span>
-          <span class="font-label text-[10px] uppercase tracking-[0.2em]">Timeline</span>
-        </button>
-        <button class="nav-underline-button flex flex-col items-center justify-center gap-1 py-3 ${currentPage === "stats" ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="stats" aria-current="${currentPage === "stats" ? "page" : "false"}">
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${currentPage === "stats" ? 1 : 0};">leaderboard</span>
-          <span class="font-label text-[10px] uppercase tracking-[0.2em]">Stats</span>
-        </button>
-      </div>
-    </nav>
-    ` : ""}
-    <footer id="site-footer" class="w-full py-16 px-8 bg-background mt-20">
-      <div class="max-w-[1320px] mx-auto flex flex-col items-center gap-8">
-      <div class="glass-surface-soft px-6 py-4 text-primary-fixed font-bold font-headline tracking-tighter text-2xl drop-shadow-[0_0_10px_rgba(251,228,25,0.3)]">STAR WARS: CHRONICLES</div>
-      <div class="footer-links flex flex-wrap justify-center gap-4">
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Privacy</a>
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Terms</a>
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Support</a>
-        <a class="font-label uppercase tracking-widest text-[10px] text-white/40 hover:text-primary-fixed transition-colors" href="#">Guide</a>
-      </div>
-      <div class="glass-surface-soft px-6 py-5 font-label uppercase tracking-[0.4em] text-[9px] text-white/20 text-center max-w-lg leading-relaxed">
-        © &amp; TM LUCASFILM LTD. ALL RIGHTS RESERVED.
-      </div>
-      </div>
-    </footer>
+  const shellOptions = buildRenderShellOptions({
+    currentPage,
+    activeEntry,
+    isFilterPanelOpen: appState.isFilterPanelOpen,
+    normalizedSections,
+    searchInputValue: appState.searchInputValue,
+    escapeHtml,
+    getEraAssetPath,
+    renderStandardTopBar,
+    renderDesktopSidebar,
+    renderMobileAudioPlayer,
+    renderMobileBottomNav,
+    renderStandardFooter
+  });
+  const overlays = `
     ${renderFilterPanel()}
     ${renderModal(activeEntry)}
   `;
+  const mainContent = renderAppMainContent({
+    currentPage,
+    heroEntry,
+    flatEntries,
+    stats,
+    activeFilterCount,
+    filteredEntries,
+    filteredSections,
+    normalizedSections,
+    escapeHtml,
+    renderDesktopSection,
+    renderMobileSection,
+    renderStatsPanel,
+    renderPreferencesPanel
+  });
+
+  app.innerHTML = renderShellLayout({
+    topBar: shellOptions.topBar,
+    desktopSidebar: shellOptions.desktopSidebar,
+    mainContent,
+    mobileAudio: shellOptions.mobileAudio,
+    mobileBottomNav: shellOptions.mobileBottomNav,
+    footer: shellOptions.footer,
+    overlays
+  });
 
   wireInteractions();
-  restorePendingFocus();
+  restorePendingFocus(appState);
 }
 
+const viewActions = createViewActions({
+  appState,
+  renderApp,
+  syncEntryUrl,
+  getModalEntryNavigation,
+  cloneFilters,
+  playUiSound,
+  restoreFocusOrigin
+});
+
+const audioUiRuntime = createAudioUiRuntime({
+  appState,
+  getAudioController,
+  savePreferences,
+  togglePreference
+});
+
+const progressActions = createProgressActions({
+  appState,
+  isSeriesEntry,
+  saveWatchedState,
+  rebuildEntryIndex,
+  renderApp
+});
+
 function wireInteractions() {
-  const searchInput = document.getElementById("timeline-search-input");
-  if (searchInput) {
-    searchInput.addEventListener("input", (event) => {
+  initializeShellInteractions({
+    searchInputValue: appState.searchInputValue,
+    onSearchInput: (event) => {
       const nextValue = event.target.value;
       appState.searchInputValue = nextValue;
       appState.filters.search = nextValue.trim().length >= 3 ? nextValue : "";
@@ -1967,306 +1837,151 @@ function wireInteractions() {
         selectionEnd: event.target.selectionEnd ?? nextValue.length
       };
       renderApp(appState.timelineData);
-    });
-  }
-
-  document.querySelectorAll("[data-scroll-target]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const targetId = button.getAttribute("data-scroll-target");
+    },
+    onScrollTarget: (targetId) => {
       const target = document.getElementById(targetId);
       if (!target) return;
       playUiSound("click");
       scrollToTargetElement(target);
-    });
-  });
-
-  document.querySelectorAll("[data-nav-page]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const page = button.getAttribute("data-nav-page");
+    },
+    onNavigatePage: (page) => {
       playUiSound("click");
       if (page === "stats") {
-        openStats();
+        viewActions.openStats();
         return;
       }
       if (page === "timeline") {
-        closeStats(false);
-        closePreferences(false);
+        viewActions.closeStats(false);
+        viewActions.closePreferences(false);
         renderApp(appState.timelineData);
       }
-    });
-  });
-
-  document.querySelectorAll("[data-entry-id]").forEach((card) => {
-    card.addEventListener("click", (event) => {
-      const modalTrigger = event.target.closest("[data-open-modal]");
-      const toggleTrigger = event.target.closest("[data-toggle-entry]");
-      if (toggleTrigger) return;
-      if (modalTrigger || !event.target.closest("button")) {
-        openModal(card.getAttribute("data-entry-id"));
-      }
-    });
-  });
-
-  document.querySelectorAll("[data-open-modal]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    },
+    onOpenStats: () => {
       playUiSound("click");
-      openModal(button.getAttribute("data-open-modal"));
-    });
-  });
-
-  document.querySelectorAll("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", () => {
+      viewActions.openStats();
+    },
+    onOpenPreferences: () => {
       playUiSound("click");
-      closeModal();
-    });
+      viewActions.openPreferences();
+    }
   });
 
-  document.querySelectorAll("[data-open-filters]").forEach((button) => {
-    button.addEventListener("click", () => {
+  initializeAppInteractions({
+    onOpenModal: (entryId) => {
       playUiSound("click");
-      openFilters();
-    });
-  });
-
-  document.querySelectorAll("[data-close-filters]").forEach((button) => {
-    button.addEventListener("click", () => {
+      viewActions.openModal(entryId);
+    },
+    onCloseModal: () => {
       playUiSound("click");
-      closeFilters();
-    });
-  });
-
-  document.querySelectorAll("[data-filter-era]").forEach((input) => {
-    input.addEventListener("change", () => {
-      const era = input.getAttribute("data-filter-era");
+      viewActions.closeModal();
+    },
+    onOpenFilters: () => {
+      playUiSound("click");
+      viewActions.openFilters();
+    },
+    onCloseFilters: () => {
+      playUiSound("click");
+      viewActions.closeFilters();
+    },
+    onToggleFilterEra: (era) => {
       if (!era) return;
-      if (input.checked) {
+      const input = document.querySelector(`[data-filter-era="${CSS.escape(String(era))}"]`);
+      if (input instanceof HTMLInputElement && input.checked) {
         appState.filterDraft.eras.add(era);
       } else {
         appState.filterDraft.eras.delete(era);
       }
-    });
-  });
-
-  document.querySelectorAll("[data-filter-type]").forEach((button) => {
-    button.addEventListener("click", () => {
-      appState.filterDraft.type = button.getAttribute("data-filter-type") || "all";
+    },
+    onSetFilterType: (type) => {
+      appState.filterDraft.type = type;
       playUiSound("toggle");
       renderApp(appState.timelineData);
-    });
-  });
-
-  document.querySelectorAll("[data-filter-canon]").forEach((button) => {
-    button.addEventListener("click", () => {
-      appState.filterDraft.canon = button.getAttribute("data-filter-canon") || "all";
+    },
+    onSetFilterCanon: (canon) => {
+      appState.filterDraft.canon = canon;
       playUiSound("toggle");
       renderApp(appState.timelineData);
-    });
-  });
-
-  document.querySelectorAll("[data-filter-progress]").forEach((button) => {
-    button.addEventListener("click", () => {
-      appState.filterDraft.progress = button.getAttribute("data-filter-progress") || "all";
+    },
+    onSetFilterProgress: (progress) => {
+      appState.filterDraft.progress = progress;
       playUiSound("toggle");
       renderApp(appState.timelineData);
-    });
-  });
-
-  document.querySelectorAll("[data-filter-arc]").forEach((button) => {
-    button.addEventListener("click", () => {
-      appState.filterDraft.arc = button.getAttribute("data-filter-arc") || "all";
+    },
+    onSetFilterArc: (arc) => {
+      appState.filterDraft.arc = arc;
       playUiSound("toggle");
       renderApp(appState.timelineData);
-    });
-  });
-
-  document.querySelectorAll("[data-clear-filters]").forEach((button) => {
-    button.addEventListener("click", () => {
+    },
+    onClearFilters: () => {
       appState.filters = createDefaultFilters();
       appState.filterDraft = cloneFilters(appState.filters);
       appState.isFilterPanelOpen = false;
       playUiSound("toggle");
       renderApp(appState.timelineData);
-    });
-  });
-
-  document.querySelectorAll("[data-apply-filters]").forEach((button) => {
-    button.addEventListener("click", () => {
+    },
+    onApplyFilters: () => {
       appState.filters = cloneFilters(appState.filterDraft);
       appState.isFilterPanelOpen = false;
       playUiSound("success");
       renderApp(appState.timelineData);
-    });
-  });
-
-  document.querySelectorAll("[data-toggle-entry]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    },
+    onToggleEntry: (entryId) => {
       playUiSound("toggle");
-      toggleSingleEntry(button.getAttribute("data-toggle-entry"));
-    });
-  });
-
-  document.querySelectorAll("[data-entry-play]").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.stopPropagation();
+      progressActions.toggleSingleEntry(entryId);
+    },
+    onEntryPlay: () => {
       playUiSound("click");
-    });
-  });
-
-  document.querySelectorAll("[data-episode-toggle]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    },
+    onToggleEpisode: (episodeIndex) => {
       playUiSound("toggle");
-      toggleEpisode(appState.activeEntryId, Number(button.getAttribute("data-episode-toggle")));
-    });
-  });
-
-  document.querySelectorAll("[data-episode-play]").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.stopPropagation();
+      progressActions.toggleEpisode(appState.activeEntryId, episodeIndex);
+    },
+    onEpisodePlay: () => {
       playUiSound("click");
-    });
-  });
-
-  document.querySelectorAll("[data-modal-primary]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    },
+    onModalPrimary: () => {
       playUiSound("success");
-      advanceEntryProgress(appState.activeEntryId);
-    });
-  });
-
-  document.querySelectorAll("[data-modal-nav]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      navigateModalEntry(button.getAttribute("data-modal-nav"));
-    });
-  });
-
-  document.querySelectorAll("[data-share-entry]").forEach((button) => {
-    button.addEventListener("click", async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      await shareEntry(button.getAttribute("data-share-entry"));
-    });
-  });
-
-  document.querySelectorAll("[data-entry-info]").forEach((link) => {
-    link.addEventListener("click", () => {
+      progressActions.advanceEntryProgress(appState.activeEntryId);
+    },
+    onModalNavigate: (direction) => {
+      viewActions.navigateModalEntry(direction);
+    },
+    onShareEntry: async (entryId) => {
+      await shareEntry(entryId);
+    },
+    onEntryInfo: () => {
       playUiSound("click");
-    });
-  });
-
-  document.querySelectorAll("[data-open-stats]").forEach((button) => {
-    button.addEventListener("click", () => {
+    },
+    onCloseStats: viewActions.closeStats,
+    onClosePreferences: viewActions.closePreferences,
+    onStatsOpenEntry: (entryId) => {
       playUiSound("click");
-      openStats();
-    });
-  });
-
-  document.querySelectorAll("[data-close-stats]").forEach((button) => {
-    button.addEventListener("click", closeStats);
-  });
-
-  document.querySelectorAll("[data-open-preferences]").forEach((button) => {
-    button.addEventListener("click", () => {
-      playUiSound("click");
-      openPreferences();
-    });
-  });
-
-  document.querySelectorAll("[data-close-preferences]").forEach((button) => {
-    button.addEventListener("click", closePreferences);
-  });
-
-  document.querySelectorAll("[data-stats-open-entry]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const entryId = button.getAttribute("data-stats-open-entry");
-      playUiSound("click");
-      closeStats(false);
-      openModal(entryId);
-    });
-  });
-
-  document.querySelectorAll("[data-pref-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      togglePreference(button.getAttribute("data-pref-toggle"));
-    });
-  });
-
-  document.querySelectorAll("[data-pref-range]").forEach((input) => {
-    input.addEventListener("input", () => {
-      setPreferenceValue(input.getAttribute("data-pref-range"), Number(input.value));
-    });
-  });
-
-  document.querySelectorAll("[data-pref-theme]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setPreferenceValue("interfaceTheme", button.getAttribute("data-pref-theme"));
-    });
-  });
-
-  document.querySelectorAll("[data-reset-progress]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const confirmed = window.confirm("Reset all watched progress in the redesign?");
+      viewActions.closeStats(false);
+      viewActions.openModal(entryId);
+    },
+    onTogglePreference: (key) => {
+      togglePreference(key);
+    },
+    onRangePreference: (key, value) => {
+      setPreferenceValue(key, value);
+    },
+    onThemePreference: (value) => {
+      setPreferenceValue("interfaceTheme", value);
+    },
+    onResetProgress: () => {
+      const confirmed = window.confirm("Reset all watched progress in Star Wars: Chronicles?");
       if (!confirmed) return;
       resetAllProgress(appState.timelineData, () => {});
       rebuildEntryIndex();
       renderApp(appState.timelineData);
-    });
+    }
   });
 
-  if (hasActiveOverlay()) {
-    document.body.classList.add("modal-open");
-  } else {
-    document.body.classList.remove("modal-open");
-  }
+  document.body.classList.toggle("modal-open", hasActiveOverlay());
 
-  initializeAudioUI();
+  audioUiRuntime.initializeAudioUI(audioUiUnsubscribeRef);
   initializeActiveSectionTracking();
-  restoreOverlayFocus();
-}
-
-function openModal(entryId) {
-  appState.lastFocusOrigin = document.activeElement;
-  appState.lastFocusSelector = `[data-entry-id="${CSS.escape(String(entryId))}"]`;
-  appState.activeEntryId = entryId;
-  appState.pendingOverlayFocusSelector = "#entry-modal button[data-close-modal='true']";
-  const entry = appState.entryMap.get(entryId);
-  if (entry) {
-    syncEntryUrl(entry, { mode: "push" });
-  }
-  renderApp(appState.timelineData);
-}
-
-function navigateModalEntry(direction) {
-  const activeEntry = appState.entryMap.get(appState.activeEntryId);
-  if (!activeEntry) return;
-
-  const modalNav = getModalEntryNavigation(activeEntry.id);
-  const targetEntry = direction === "previous" ? modalNav.previous : modalNav.next;
-  if (!targetEntry) return;
-
-  playUiSound("click");
-  appState.activeEntryId = targetEntry.id;
-  appState.pendingOverlayFocusSelector = "#entry-modal button[data-close-modal='true']";
-  syncEntryUrl(targetEntry, { mode: "push" });
-  renderApp(appState.timelineData);
-}
-
-function closeModal() {
-  appState.activeEntryId = null;
-  syncEntryUrl(null, { mode: "push" });
-  renderApp(appState.timelineData);
-  restoreFocusOrigin();
+  restoreOverlayFocus(appState);
 }
 
 async function shareEntry(entryId) {
@@ -2306,72 +2021,6 @@ async function shareEntry(entryId) {
   window.prompt("Copy this entry link:", shareUrl);
 }
 
-function persistAndRender() {
-  rebuildEntryIndex();
-  renderApp(appState.timelineData);
-}
-
-function openStats() {
-  appState.isStatsOpen = true;
-  appState.isPreferencesOpen = false;
-  renderApp(appState.timelineData);
-}
-
-function closeStats(shouldRender = true) {
-  appState.isStatsOpen = false;
-  if (shouldRender) {
-    renderApp(appState.timelineData);
-  }
-}
-
-function openPreferences() {
-  appState.isPreferencesOpen = true;
-  appState.isStatsOpen = false;
-  renderApp(appState.timelineData);
-}
-
-function closePreferences(shouldRender = true) {
-  appState.isPreferencesOpen = false;
-  appState.isStatsOpen = false;
-  if (shouldRender) {
-    renderApp(appState.timelineData);
-  }
-}
-
-function restorePendingFocus() {
-  if (!appState.pendingFocusTarget) return;
-  const target = document.getElementById(appState.pendingFocusTarget.id);
-  if (!target) {
-    appState.pendingFocusTarget = null;
-    return;
-  }
-
-  target.focus({ preventScroll: true });
-  if (typeof target.setSelectionRange === "function") {
-    target.setSelectionRange(
-      appState.pendingFocusTarget.selectionStart,
-      appState.pendingFocusTarget.selectionEnd
-    );
-  }
-  appState.pendingFocusTarget = null;
-}
-
-function openFilters() {
-  appState.lastFocusOrigin = document.activeElement;
-  appState.lastFocusSelector = '[data-open-filters="true"]';
-  appState.filterDraft = cloneFilters(appState.filters);
-  appState.isFilterPanelOpen = true;
-  appState.pendingOverlayFocusSelector = "#filter-panel button[data-close-filters='true']";
-  renderApp(appState.timelineData);
-}
-
-function closeFilters() {
-  appState.isFilterPanelOpen = false;
-  appState.filterDraft = cloneFilters(appState.filters);
-  renderApp(appState.timelineData);
-  restoreFocusOrigin();
-}
-
 function togglePreference(key) {
   if (!appState.preferences || !(key in appState.preferences)) return;
   if (key === "canonOnly" || key === "legendsIntegration") {
@@ -2406,284 +2055,34 @@ function setPreferenceValue(key, value) {
   renderApp(appState.timelineData);
 }
 
-function initializeAudioUI() {
-  const controller = getAudioController();
-  controller.initMusicToggle();
-  controller.setSoundEnabled(Boolean(appState.preferences.soundEffectsEnabled), { withFeedback: false, persist: false });
-
-  if (audioUiUnsubscribe) {
-    audioUiUnsubscribe();
-    audioUiUnsubscribe = null;
-  }
-
-  const storedMusicEnabled = controller.getMusicEnabled();
-  const storedSoundEnabled = controller.getSoundEnabled();
-  appState.preferences.audioEnabled = storedMusicEnabled;
-  appState.preferences.soundEffectsEnabled = storedSoundEnabled;
-  syncAllAudioUi({
-    musicEnabled: controller.getMusicEnabled(),
-    musicVolume: controller.getMusicVolume(),
-    currentTrackTitle: controller.getCurrentTrackTitle()
-  });
-  audioUiUnsubscribe = controller.subscribe((state) => {
-    appState.preferences.audioEnabled = state.musicEnabled;
-    syncAllAudioUi(state);
-  });
-
-  const nextTrackButton = document.getElementById("preferences-next-track");
-  if (nextTrackButton) {
-    nextTrackButton.addEventListener("click", () => {
-      controller.nextTrack({ withFeedback: true });
-    });
-  }
-
-  const mobileVolume = document.querySelector("[data-mobile-music-volume]");
-  if (mobileVolume) {
-    const volume = Math.round(Math.max(0, Math.min(1, controller.getMusicVolume())) * 100);
-    mobileVolume.value = String(volume);
-    mobileVolume.addEventListener("input", () => {
-      controller.setMusicVolume(Number(mobileVolume.value) / 100);
-    });
-  }
-
-  const mobileToggle = document.querySelector("[data-mobile-audio-toggle]");
-  if (mobileToggle) {
-    mobileToggle.addEventListener("click", () => {
-      togglePreference("audioEnabled");
-    });
-  }
-
-  const mobileNextTrack = document.querySelector("[data-mobile-next-track]");
-  if (mobileNextTrack) {
-    mobileNextTrack.addEventListener("click", () => {
-      controller.nextTrack({ withFeedback: true });
-    });
-  }
-
-  const mobileMiniToggle = document.getElementById("mobile-music-pill-toggle");
-  if (mobileMiniToggle) {
-    mobileMiniToggle.addEventListener("click", () => {
-      const enabled = controller.getMusicEnabled();
-      controller.setMusicEnabled(!enabled, { withFeedback: true });
-      appState.preferences.audioEnabled = !enabled;
-      savePreferences();
-    });
-  }
-
-  const mobileMiniNext = document.getElementById("mobile-music-pill-next");
-  if (mobileMiniNext) {
-    mobileMiniNext.addEventListener("click", () => {
-      controller.nextTrack({ withFeedback: true });
-    });
-  }
-}
-
 function playUiSound(type = "click") {
   getAudioController().playSound(type);
 }
 
-function syncMobileAudioMeta(volume = getAudioController().getMusicVolume()) {
-  const mobileVolumeIcon = document.querySelector("[data-mobile-volume-icon]");
-  if (mobileVolumeIcon) {
-    if (volume <= 0.001) {
-      mobileVolumeIcon.textContent = "🔇";
-    } else if (volume < 0.5) {
-      mobileVolumeIcon.textContent = "🔉";
-    } else {
-      mobileVolumeIcon.textContent = "🔊";
-    }
-  }
-}
-
-function syncMiniAudioUI(state = {
-  musicEnabled: getAudioController().getMusicEnabled(),
-  currentTrackTitle: getAudioController().getCurrentTrackTitle()
-}) {
-  const title = document.getElementById("mobile-music-pill-title");
-  const toggle = document.getElementById("mobile-music-pill-toggle");
-
-  if (title) {
-    title.textContent = state.currentTrackTitle;
-  }
-
-  if (toggle) {
-    toggle.textContent = state.musicEnabled ? "⏸" : "▶";
-    toggle.setAttribute("aria-pressed", String(state.musicEnabled));
-  }
-}
-
-function syncAllAudioUi(state = {
-  musicEnabled: getAudioController().getMusicEnabled(),
-  musicVolume: getAudioController().getMusicVolume(),
-  currentTrackTitle: getAudioController().getCurrentTrackTitle()
-}) {
-  const preferencesTrack = document.getElementById("preferences-current-track");
-  const mobileTrack = document.querySelector("[data-mobile-current-track]");
-  const mobileVolume = document.querySelector("[data-mobile-music-volume]");
-
-  if (preferencesTrack) {
-    preferencesTrack.textContent = state.currentTrackTitle;
-  }
-  if (mobileTrack) {
-    mobileTrack.textContent = state.currentTrackTitle;
-  }
-  if (mobileVolume) {
-    mobileVolume.value = String(Math.round(Math.max(0, Math.min(1, state.musicVolume)) * 100));
-  }
-
-  syncMiniAudioUI(state);
-  syncMobileAudioMeta(state.musicVolume);
-}
-
-function restoreOverlayFocus() {
-  if (!appState.pendingOverlayFocusSelector) return;
-  const target = document.querySelector(appState.pendingOverlayFocusSelector);
-  if (target instanceof HTMLElement) {
-    target.focus({ preventScroll: true });
-  }
-  appState.pendingOverlayFocusSelector = null;
-}
-
-function restoreFocusOrigin() {
-  const selector = appState.lastFocusSelector;
-  if (selector) {
-    const matches = Array.from(document.querySelectorAll(selector));
-    const visibleTarget = matches.find((element) => (
-      element instanceof HTMLElement &&
-      element.offsetParent !== null
-    ));
-    if (visibleTarget instanceof HTMLElement) {
-      visibleTarget.focus({ preventScroll: true });
-      appState.lastFocusOrigin = null;
-      appState.lastFocusSelector = null;
-      return;
-    }
-  }
-
-  const target = appState.lastFocusOrigin;
-  if (target instanceof HTMLElement && document.contains(target)) {
-    target.focus({ preventScroll: true });
-  }
-  appState.lastFocusOrigin = null;
-  appState.lastFocusSelector = null;
-}
-
-function toggleSingleEntry(entryId) {
-  const entry = appState.entryMap.get(entryId);
-  if (!entry) return;
-  if (!Array.isArray(entry._watchedArray) || entry._watchedArray.length !== entry.episodes) {
-    entry._watchedArray = new Array(entry.episodes).fill(false);
-  }
-  entry._watchedArray[0] = !Boolean(entry._watchedArray[0]);
-  saveWatchedState(entry);
-  persistAndRender();
-}
-
-function toggleEpisode(entryId, episodeIndex) {
-  const entry = appState.entryMap.get(entryId);
-  if (!entry) return;
-  if (!Array.isArray(entry._watchedArray) || entry._watchedArray.length !== entry.episodes) {
-    entry._watchedArray = new Array(entry.episodes).fill(false);
-  }
-  if (episodeIndex < 0 || episodeIndex >= entry._watchedArray.length) return;
-  entry._watchedArray[episodeIndex] = !Boolean(entry._watchedArray[episodeIndex]);
-  saveWatchedState(entry);
-  persistAndRender();
-}
-
-function advanceEntryProgress(entryId) {
-  const entry = appState.entryMap.get(entryId);
-  if (!entry) return;
-  if (!Array.isArray(entry._watchedArray) || entry._watchedArray.length !== entry.episodes) {
-    entry._watchedArray = new Array(entry.episodes).fill(false);
-  }
-
-  if (!isSeriesEntry(entry)) {
-    entry._watchedArray[0] = !Boolean(entry._watchedArray[0]);
-    saveWatchedState(entry);
-    persistAndRender();
-    return;
-  }
-
-  const nextIndex = entry._watchedArray.findIndex((watched) => !watched);
-  if (nextIndex >= 0) {
-    entry._watchedArray[nextIndex] = true;
-  }
-  saveWatchedState(entry);
-  persistAndRender();
-}
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Tab") {
-    const overlay = document.getElementById("entry-modal") || document.getElementById("filter-panel");
-    if (overlay) {
-      const focusable = getFocusableElements(overlay);
-      if (focusable.length > 0) {
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        const active = document.activeElement;
-
-        if (event.shiftKey && active === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && active === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }
-    }
-  }
-
-  if (event.key !== "Escape") return;
-  if (appState.activeEntryId) {
-    closeModal();
-    return;
-  }
-  if (appState.isFilterPanelOpen) {
-    closeFilters();
-    return;
-  }
-  if (appState.isPreferencesOpen) {
-    closePreferences();
-    return;
-  }
-  if (appState.isStatsOpen) {
-    closeStats();
-  }
+attachGlobalKeyHandlers({
+  appState,
+  getFocusableElements,
+  viewActions
 });
-
-async function bootstrap() {
-  app.innerHTML = '<div class="loading-shell">Initializing redesign shell</div>';
-
-  try {
-    const response = await fetch("../timeline-data.json");
-    if (!response.ok) throw new Error(`Failed to load timeline data: ${response.status}`);
-    const sections = prepareTimelineData(await response.json());
-    await getAudioController().loadMusicData();
-    appState.timelineData = sections;
-    initializeWatchedState(appState.timelineData, () => {});
-    rebuildEntryIndex();
-    appState.preferences = loadPreferences();
-    applyPreferencesToDocument();
-    appState.filters = createDefaultFilters();
-    appState.filterDraft = cloneFilters(appState.filters);
-    appState.searchInputValue = "";
-    applyEntryStateFromUrl({ shouldRender: false });
-    renderApp(appState.timelineData);
-  } catch (error) {
-    app.innerHTML = `
-      <div class="loading-shell" style="padding:2rem; text-align:center;">
-        Unable to load redesign shell.<br>
-        <span style="display:block; margin-top:0.75rem; letter-spacing:0; text-transform:none; font-size:0.9rem;">${escapeHtml(error.message)}</span>
-      </div>
-    `;
-    console.error(error);
-  }
-}
 
 window.addEventListener("popstate", () => {
   if (!appState.timelineData.length) return;
   applyEntryStateFromUrl();
 });
 
-bootstrap();
+bootstrapApp({
+  app,
+  appState,
+  fetchUrl: "./data/timeline-data.json",
+  prepareTimelineData,
+  getAudioController,
+  initializeWatchedState,
+  rebuildEntryIndex,
+  loadPreferences,
+  applyPreferencesToDocument,
+  createDefaultFilters,
+  cloneFilters,
+  applyEntryStateFromUrl,
+  renderApp,
+  escapeHtml
+});

@@ -15,7 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_PATH = ROOT / "timeline-data.json"
+DATA_PATH = ROOT / "data" / "timeline-data.json"
 PROFILE_PATH = Path.home() / ".mozilla" / "firefox" / "rNdnMdOP.Profile 3"
 
 ARIA_PATTERN = re.compile(
@@ -28,7 +28,7 @@ SEASON_OPTION_PATTERN = re.compile(r"^Season\s+(\d+)$", re.IGNORECASE)
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Import Disney+ play URLs into timeline-data.json for a series or film."
+        description="Import Disney+ play URLs into data/timeline-data.json for a series or film."
     )
     parser.add_argument("--entity-url", required=True, help="Disney+ browse/entity URL for the title")
     parser.add_argument(
@@ -231,7 +231,7 @@ def update_series_data(entry_ids, extracted_links):
                     if len(matches) == 1:
                         _, href = matches[0]
                 if href:
-                    episode["disneyPlusUrl"] = href
+                    episode["watchUrl"] = href
                     updated.append((entry["id"], key, href))
                 else:
                     missing.append((entry["id"], key))
@@ -248,9 +248,9 @@ def update_film_data(entry_ids, play_url):
         for entry in section["entries"]:
             if entry.get("id") not in entry_ids:
                 continue
-            entry["disneyPlusUrl"] = play_url
+            entry["watchUrl"] = play_url
             if entry.get("episodeDetails"):
-                entry["episodeDetails"][0]["disneyPlusUrl"] = play_url
+                entry["episodeDetails"][0]["watchUrl"] = play_url
             updated.append((entry["id"], entry.get("title", ""), play_url))
 
     DATA_PATH.write_text(json.dumps(data, indent=2) + "\n")
@@ -267,7 +267,7 @@ def main():
             if not play_url:
                 raise SystemExit("No film play URL found.")
             updated = update_film_data(set(args.entry_ids), play_url)
-            print(f"Updated {len(updated)} film entries in timeline-data.json.", file=sys.stderr)
+            print(f"Updated {len(updated)} film entries in data/timeline-data.json.", file=sys.stderr)
             for entry_id, title, href in updated:
                 print(f"{entry_id}\t{title}\t{href}")
             return
@@ -276,7 +276,7 @@ def main():
         links = extract_series_links(driver, args.entity_url)
         print(f"Discovered {len(links)} episode play URLs.", file=sys.stderr)
         updated, missing = update_series_data(set(args.entry_ids), links)
-        print(f"Updated {len(updated)} episode rows in timeline-data.json.", file=sys.stderr)
+        print(f"Updated {len(updated)} episode rows in data/timeline-data.json.", file=sys.stderr)
         print("Sample updated rows:")
         for entry_id, key, href in updated[:12]:
             print(f"{entry_id}\t{key}\t{href}")
