@@ -4,7 +4,7 @@ import {
   saveWatchedState
 } from "./modules/persistence.js";
 import { createAudioController } from "./modules/audio.js";
-import { STORY_ARC_MATCHERS, getEraAssetPath, slugifyTitle } from "./modules/constants.js";
+import { STORY_ARC_MATCHERS, getEraAssetPath } from "./modules/constants.js";
 import {
   applyPreferencesToDocument as applyPreferencesToPage,
   loadPreferences as loadStoredPreferences,
@@ -125,7 +125,6 @@ const domain = createAppDomain({
   syncHistoryEntryUrl,
   readEntryIdFromUrl,
   buildEntryIndex,
-  slugifyTitle,
   getEntrySearchText,
   getWatchedCount,
   isComplete,

@@ -15,6 +15,15 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from uid_manifest import (
+    MANIFEST_PATH,
+    load_manifest,
+    manifest_entry_map,
+    manifest_key,
+    next_uid,
+    save_manifest,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKDOWN_PATH = ROOT / "Chronological Viewing Order.md"
@@ -79,21 +88,6 @@ def build_entry_key_without_year(title: str, media_type: str, release_year: str)
             normalize_id_token(release_year),
         ]
     )
-
-
-def generate_stable_entry_id(era_name: str, title: str, media_type: str, year: str, release_year: str, used_ids: dict) -> str:
-    era_token = normalize_id_token(era_name) or "era"
-    title_token = normalize_id_token(title) or "entry"
-    type_token = media_type_token(media_type)
-    chronology_source = year if year else release_year
-    chronology_token = normalize_id_token(chronology_source) or "unknown"
-
-    base_id = f"{era_token}__{title_token}__{type_token}__{chronology_token}"
-    count = used_ids.get(base_id, 0) + 1
-    used_ids[base_id] = count
-    if count == 1:
-        return base_id
-    return f"{base_id}--{count}"
 
 
 def split_meta(meta: str):
@@ -162,6 +156,9 @@ def parse_media_header(stripped: str):
 
 
 def split_episode_body(body: str):
+    series_episode_match = re.match(r"^(S\d+\.E\d+\s*-\s*.+?)\s+-\s+(.+)$", body.strip(), flags=re.IGNORECASE)
+    if series_episode_match:
+        return series_episode_match.group(1).strip(), series_episode_match.group(2).strip()
     if " - " not in body:
         return body.strip(), ""
     title_part, time_part = body.rsplit(" - ", 1)
@@ -188,23 +185,34 @@ def normalize_episode_title_key(title: str) -> str:
     return clean_episode_text(title).lower()
 
 
+def get_episode_code(title: str) -> str:
+    match = re.match(r"^(S\d+\.E\d+)\b", clean_episode_text(title), flags=re.IGNORECASE)
+    return match.group(1).upper() if match else ""
+
+
 def build_existing_entry_metadata(entry: dict):
     episode_details = entry.get("episodeDetails", [])
     episode_map = {}
+    episode_code_map = {}
     for episode in episode_details:
         title = episode.get("title", "")
         if title:
             episode_map[normalize_episode_title_key(title)] = episode
+            episode_code = get_episode_code(title)
+            if episode_code and episode_code not in episode_code_map:
+                episode_code_map[episode_code] = episode
 
     return {
         "poster": entry.get("poster", ""),
         "synopsis": entry.get("synopsis", ""),
         "id": entry.get("id", ""),
+        "storageMigrationIds": entry.get("storageMigrationIds", []),
         "year": entry.get("year", ""),
         "watchUrl": entry.get("watchUrl", ""),
         "wookieepediaUrl": entry.get("wookieepediaUrl", ""),
         "episodeDetails": episode_details,
         "episodeMap": episode_map,
+        "episodeCodeMap": episode_code_map,
     }
 
 
@@ -267,14 +275,58 @@ def pop_existing_metadata(title_metadata, title_type_release_metadata, title_fal
     return {}
 
 
-def merge_existing_entry_data(current_entry: dict, existing: dict, used_ids: dict):
+def get_manifest_source_id(existing: dict) -> str:
+    migration_ids = existing.get("storageMigrationIds", [])
+    if isinstance(migration_ids, list) and migration_ids:
+        source_id = str(migration_ids[0] or "").strip()
+        if source_id:
+            return source_id
+    return str(existing.get("id") or "").strip()
+
+
+def resolve_manifest_uid(manifest: dict, manifest_entries: dict, key: str, existing: dict) -> str:
+    existing_manifest_entry = manifest_entries.get(key)
+    if existing_manifest_entry:
+        return existing_manifest_entry["uid"]
+
+    uid = next_uid(manifest)
+    manifest_entry = {
+        "key": key,
+        "uid": uid,
+        "sourceId": get_manifest_source_id(existing),
+    }
+    manifest.setdefault("entries", []).append(manifest_entry)
+    manifest_entries[key] = manifest_entry
+    return uid
+
+
+def get_storage_migration_ids(manifest_entries: dict, key: str, existing: dict, stable_id: str) -> list[str]:
+    candidates = []
+
+    manifest_entry = manifest_entries.get(key) or {}
+    source_id = str(manifest_entry.get("sourceId") or "").strip()
+    if source_id and source_id != stable_id:
+        candidates.append(source_id)
+
+    migration_ids = existing.get("storageMigrationIds", [])
+    if isinstance(migration_ids, list):
+        for candidate in migration_ids:
+            normalized = str(candidate or "").strip()
+            if normalized and normalized != stable_id:
+                candidates.append(normalized)
+
+    deduped = []
+    seen = set()
+    for candidate in candidates:
+        if candidate not in seen:
+            deduped.append(candidate)
+            seen.add(candidate)
+    return deduped
+
+
+def merge_existing_entry_data(current_entry: dict, existing: dict):
     if not existing:
         return current_entry
-
-    existing_id = existing.get("id", "")
-    if existing_id and used_ids.get(existing_id, 0) == 0:
-        current_entry["id"] = existing_id
-        used_ids[existing_id] = 1
 
     if not current_entry.get("year") and existing.get("year"):
         current_entry["year"] = existing["year"]
@@ -293,6 +345,9 @@ def merge_existing_episode_data(current_episode: dict, existing_entry: dict):
     episode_map = existing_entry.get("episodeMap", {})
     existing_episode = episode_map.get(normalize_episode_title_key(current_episode.get("title", "")))
     if not existing_episode:
+        episode_code_map = existing_entry.get("episodeCodeMap", {})
+        existing_episode = episode_code_map.get(get_episode_code(current_episode.get("title", "")))
+    if not existing_episode:
         return current_episode
 
     for key, value in existing_episode.items():
@@ -302,12 +357,20 @@ def merge_existing_episode_data(current_episode: dict, existing_entry: dict):
     return current_episode
 
 
-def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict, title_type_release_metadata: dict, title_fallback_metadata: dict):
+def build_import_data(
+    markdown_text: str,
+    era_colors: dict,
+    title_metadata: dict,
+    title_type_release_metadata: dict,
+    title_fallback_metadata: dict,
+    manifest: dict,
+):
     imported = []
     current_era = None
     current_entry = None
     current_existing = {}
-    used_ids = {}
+    manifest_entries = manifest_entry_map(manifest)
+    occurrence_counts: dict[tuple[str, str, str, str, str], int] = defaultdict(int)
 
     for raw_line in markdown_text.splitlines():
         line = raw_line.rstrip()
@@ -349,14 +412,22 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
 
             poster = existing.get("poster") or f"./images/posters/{title_to_slug(media_title)}-poster.jpg"
             synopsis = existing.get("synopsis", "")
-            stable_id = generate_stable_entry_id(
+            temp_entry = {
+                "title": media_title,
+                "year": media_year,
+                "type": media_type,
+                "releaseYear": release_year,
+            }
+            signature = (
                 current_era["era"],
                 media_title,
                 media_type,
-                media_year,
                 release_year,
-                used_ids,
+                media_year,
             )
+            occurrence_counts[signature] += 1
+            key = manifest_key(temp_entry, current_era["era"], occurrence_counts[signature])
+            stable_id = resolve_manifest_uid(manifest, manifest_entries, key, existing)
 
             current_entry = {
                 "id": stable_id,
@@ -366,15 +437,18 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
                 "canon": is_canon,
                 "poster": poster,
                 "episodes": 0,
-                "watched": 0,
                 "releaseYear": release_year,
                 "episodeDetails": [],
             }
 
+            storage_migration_ids = get_storage_migration_ids(manifest_entries, key, existing, stable_id)
+            if storage_migration_ids:
+                current_entry["storageMigrationIds"] = storage_migration_ids
+
             if synopsis:
                 current_entry["synopsis"] = synopsis
 
-            current_entry = merge_existing_entry_data(current_entry, existing, used_ids)
+            current_entry = merge_existing_entry_data(current_entry, existing)
             current_existing = existing
 
             current_era["entries"].append(current_entry)
@@ -395,8 +469,6 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
 
             current_entry["episodeDetails"].append(episode_entry)
             current_entry["episodes"] += 1
-            if is_watched:
-                current_entry["watched"] += 1
 
     for era in imported:
         for entry in era["entries"]:
@@ -416,13 +488,16 @@ def main():
 
     markdown_text = MARKDOWN_PATH.read_text(encoding="utf-8")
     era_colors, title_metadata, title_type_release_metadata, title_fallback_metadata = load_existing_metadata(SOURCE_JSON_PATH)
+    manifest = load_manifest(MANIFEST_PATH)
     imported = build_import_data(
         markdown_text,
         era_colors,
         title_metadata,
         title_type_release_metadata,
         title_fallback_metadata,
+        manifest,
     )
+    save_manifest(manifest, MANIFEST_PATH)
 
     OUTPUT_JSON_PATH.write_text(
         json.dumps(imported, indent=2, ensure_ascii=False) + "\n",

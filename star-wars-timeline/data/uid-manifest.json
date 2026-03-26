@@ -1,0 +1,271 @@
+{
+  "version": 1,
+  "format": "base36-3",
+  "entries": [
+    {
+      "key": "The High Republic|Young Jedi Adventures|Animated Show|2023-|232 BBY|#1",
+      "uid": "001",
+      "sourceId": "the-high-republic__young-jedi-adventures__show__232-bby"
+    },
+    {
+      "key": "Fall of the Jedi|The Acolyte|Live Action Show|2024-|132 BBY|#1",
+      "uid": "002",
+      "sourceId": "fall-of-the-jedi__the-acolyte__show__132-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Tales of the Jedi|Animated Show|2022-|68-19 BBY|#1",
+      "uid": "003",
+      "sourceId": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Tales of the Underworld|Animated Show|2025|62-18 BBY|#1",
+      "uid": "004",
+      "sourceId": "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Episode I - The Phantom Menace|Live Action Film|1999|32 BBY|#1",
+      "uid": "005",
+      "sourceId": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Tales of the Jedi|Animated Show|2022-|68-19 BBY|#2",
+      "uid": "006",
+      "sourceId": "fall-of-the-jedi__tales-of-the-jedi__show__2022"
+    },
+    {
+      "key": "Fall of the Jedi|Episode II - Attack of the Clones|Live Action Film|2002|22 BBY|#1",
+      "uid": "007",
+      "sourceId": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Clone Wars|Animated Show|2003-2005|22-19 BBY|#1",
+      "uid": "008",
+      "sourceId": "fall-of-the-jedi__clone-wars__show__22-19-bby"
+    },
+    {
+      "key": "Fall of the Jedi|The Clone Wars|Animated Show|2008-2020|22-19 BBY|#1",
+      "uid": "009",
+      "sourceId": "fall-of-the-jedi__the-clone-wars__show__22-19-bby"
+    },
+    {
+      "key": "Fall of the Jedi|The Clone Wars|Animated Film|2008|22 BBY|#1",
+      "uid": "00a",
+      "sourceId": "fall-of-the-jedi__the-clone-wars__film__22-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Tales of the Jedi - 68-19 BBY|Animated Show|2022-|68-19 BBY|#1",
+      "uid": "00b",
+      "sourceId": "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby"
+    },
+    {
+      "key": "Fall of the Jedi|The Clone Wars - 22-19 BBY|Animated Show|2008-2020|22-19 BBY|#1",
+      "uid": "00c",
+      "sourceId": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby"
+    },
+    {
+      "key": "Fall of the Jedi|Tales of the Empire - 20 BBY|Animated Show|2024-|between 5 and 9 ABY|#1",
+      "uid": "00d",
+      "sourceId": "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+    },
+    {
+      "key": "Fall of the Jedi|The Clone Wars - 22-19 BBY|Animated Show|2008-2020|22-19 BBY|#2",
+      "uid": "00e",
+      "sourceId": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2"
+    },
+    {
+      "key": "Fall of the Jedi|Clone Wars|Animated Show|2003-2005|22-19 BBY|#2",
+      "uid": "00f",
+      "sourceId": "fall-of-the-jedi__clone-wars__show__22-19-bby--2"
+    },
+    {
+      "key": "Fall of the Jedi|The Clone Wars|Animated Show|2008-2020|22-19 BBY|#2",
+      "uid": "00g",
+      "sourceId": "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2"
+    },
+    {
+      "key": "Reign of the Empire|Episode III - Revenge of the Sith|Live Action Film|2005|19 BBY|#1",
+      "uid": "00h",
+      "sourceId": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby"
+    },
+    {
+      "key": "Reign of the Empire|Tales of the Empire - 20 BBY|Animated Show|2024-|between 5 and 9 ABY|#1",
+      "uid": "00i",
+      "sourceId": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+    },
+    {
+      "key": "Reign of the Empire|The Clone Wars|Animated Show|2008-2020|22-19 BBY|#1",
+      "uid": "00j",
+      "sourceId": "reign-of-the-empire__the-clone-wars__show__22-19-bby"
+    },
+    {
+      "key": "Reign of the Empire|The Bad Batch|Animated Show|2021-|19-18 BBY|#1",
+      "uid": "00k",
+      "sourceId": "reign-of-the-empire__the-bad-batch__show__19-18-bby"
+    },
+    {
+      "key": "Reign of the Empire|Tales of the Underworld|Animated Show|2025|62-18 BBY|#1",
+      "uid": "00l",
+      "sourceId": "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby"
+    },
+    {
+      "key": "Reign of the Empire|Tales of the Jedi|Animated Show|2022-|68-19 BBY|#1",
+      "uid": "00m",
+      "sourceId": "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby"
+    },
+    {
+      "key": "Reign of the Empire|Star Wars: Droids|Animated Show|1985-1986|15 BBY|#1",
+      "uid": "00n",
+      "sourceId": "reign-of-the-empire__star-wars-droids__show__15-bby"
+    },
+    {
+      "key": "Reign of the Empire|Solo: A Star Wars Story|Live Action Film|2018|10 BBY|#1",
+      "uid": "00o",
+      "sourceId": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby"
+    },
+    {
+      "key": "Reign of the Empire|Obi-Wan Kenobi|Live Action Show|2022|9 BBY|#1",
+      "uid": "00p",
+      "sourceId": "reign-of-the-empire__obi-wan-kenobi__show__9-bby"
+    },
+    {
+      "key": "Reign of the Empire|Tales of the Empire - 20 BBY|Animated Show|2024-|between 5 and 9 ABY|#2",
+      "uid": "00q",
+      "sourceId": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2"
+    },
+    {
+      "key": "Reign of the Empire|Andor|Live Action Show|2022-2025|5-1 BBY|#1",
+      "uid": "00r",
+      "sourceId": "reign-of-the-empire__andor__show__5-1-bby"
+    },
+    {
+      "key": "Reign of the Empire|Tales of the Empire - 20 BBY|Animated Show|2024-|between 5 and 9 ABY|#3",
+      "uid": "00s",
+      "sourceId": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3"
+    },
+    {
+      "key": "Reign of the Empire|Star Wars Rebels|Animated Show|2014-2018|5-1 BBY|#1",
+      "uid": "00t",
+      "sourceId": "reign-of-the-empire__star-wars-rebels__show__5-1-bby"
+    },
+    {
+      "key": "Age of the Rebellion|Rogue One: A Star Wars Story|Live Action Film|2016|0 BBY|#1",
+      "uid": "00u",
+      "sourceId": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby"
+    },
+    {
+      "key": "Age of the Rebellion|Star Wars: Episode IV - A New Hope|Live Action Film|1977|0 ABY|#1",
+      "uid": "00v",
+      "sourceId": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby"
+    },
+    {
+      "key": "Age of the Rebellion|The Star Wars Holiday Special|Live Action TV Film|1978|1 ABY|#1",
+      "uid": "00w",
+      "sourceId": "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby"
+    },
+    {
+      "key": "Age of the Rebellion|Star Wars: Episode V - The Empire Strikes Back|Live Action Film|1980|3 ABY|#1",
+      "uid": "00x",
+      "sourceId": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby"
+    },
+    {
+      "key": "Age of the Rebellion|Ewoks|Animated Show|1985-1987|3 ABY|#1",
+      "uid": "00y",
+      "sourceId": "age-of-the-rebellion__ewoks__show__3-aby"
+    },
+    {
+      "key": "Age of the Rebellion|Caravan of Courage: An Ewok Adventure|Live Action TV Film|1984|3 ABY|#1",
+      "uid": "00z",
+      "sourceId": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby"
+    },
+    {
+      "key": "Age of the Rebellion|Ewoks: The Battle for Endor|Live Action TV Film|1985|3 ABY|#1",
+      "uid": "010",
+      "sourceId": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby"
+    },
+    {
+      "key": "Age of the Rebellion|Star Wars: Episode VI - Return of the Jedi|Live Action Film|1983|4 ABY|#1",
+      "uid": "011",
+      "sourceId": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby"
+    },
+    {
+      "key": "The New Republic|Tales of the Empire - 20 BBY|Animated Show|2024-|between 5 and 9 ABY|#1",
+      "uid": "012",
+      "sourceId": "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+    },
+    {
+      "key": "The New Republic|The Mandalorian|Live Action Show|2019-2023|9 ABY|#1",
+      "uid": "013",
+      "sourceId": "the-new-republic__the-mandalorian__show__9-aby"
+    },
+    {
+      "key": "The New Republic|The Book of Boba Fett|Live Action Show|2021-2022|9 ABY|#1",
+      "uid": "014",
+      "sourceId": "the-new-republic__the-book-of-boba-fett__show__9-aby"
+    },
+    {
+      "key": "The New Republic|The Mandalorian|Live Action Show|2019-2023|9 ABY|#2",
+      "uid": "015",
+      "sourceId": "the-new-republic__the-mandalorian__show__9-aby--2"
+    },
+    {
+      "key": "The New Republic|Ahsoka|Live Action Show|2023-|9 ABY|#1",
+      "uid": "016",
+      "sourceId": "the-new-republic__ahsoka__show__9-aby"
+    },
+    {
+      "key": "The New Republic|Skeleton Crew|Live Action Show|2025|9 ABY|#1",
+      "uid": "017",
+      "sourceId": "the-new-republic__skeleton-crew__show__9-aby"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars Resistance|Animated Show|2018-2020|34 ABY|#1",
+      "uid": "018",
+      "sourceId": "rise-of-the-first-order__star-wars-resistance__show__34-aby"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars: Episode VII - The Force Awakens|Live Action Film|2015|34 ABY|#1",
+      "uid": "019",
+      "sourceId": "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars Resistance|Animated Show|2018-2020|34 ABY|#2",
+      "uid": "01a",
+      "sourceId": "rise-of-the-first-order__star-wars-resistance__show__34-aby--2"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars: Episode VIII - The Last Jedi|Live Action Film|2017|34 ABY|#1",
+      "uid": "01b",
+      "sourceId": "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars Resistance|Animated Show|2018-2020|34 ABY|#3",
+      "uid": "01c",
+      "sourceId": "rise-of-the-first-order__star-wars-resistance__show__34-aby--3"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars: Episode IX - The Rise of Skywalker|Live Action Film|2019|35 ABY|#1",
+      "uid": "01d",
+      "sourceId": "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby"
+    },
+    {
+      "key": "Non-Timeline|Star Wars: Visions|Various Styles|2021-2023|Unknown|#1",
+      "uid": "01e",
+      "sourceId": "non-timeline__star-wars-visions__media__unknown"
+    },
+    {
+      "key": "Fall of the Jedi|Tales of the Jedi|Animated Show|2022-||#1",
+      "uid": "01f",
+      "sourceId": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby"
+    },
+    {
+      "key": "Rise of the First Order|Star Wars Resistance|Animated Show|2018-2020||#1",
+      "uid": "01g",
+      "sourceId": "rise-of-the-first-order__star-wars-resistance__show__34-aby"
+    },
+    {
+      "key": "Non-Timeline|Star Wars: Visions|Various Styles|2021-2023||#1",
+      "uid": "01h",
+      "sourceId": "non-timeline__star-wars-visions__media__unknown"
+    }
+  ]
+}

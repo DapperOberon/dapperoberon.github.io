@@ -8,7 +8,6 @@ export function createAppDomain({
   syncHistoryEntryUrl,
   readEntryIdFromUrl,
   buildEntryIndex,
-  slugifyTitle,
   getEntrySearchText,
   getWatchedCount,
   isComplete,
@@ -67,7 +66,7 @@ export function createAppDomain({
   }
 
   function buildEntryShareUrl(entry) {
-    return createEntryShareUrl(entry, slugifyTitle);
+    return createEntryShareUrl(entry);
   }
 
   function syncEntryUrl(entry, { mode = "replace" } = {}) {

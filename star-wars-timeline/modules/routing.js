@@ -1,13 +1,12 @@
-export function buildEntryShareUrl(entry, slugifyTitle, baseHref = window.location.href) {
+export function buildEntryShareUrl(entry, baseHref = window.location.href) {
   const url = new URL(baseHref);
   if (!entry || !entry.id) {
     url.searchParams.delete("entry");
-    url.searchParams.delete("title");
     return url;
   }
 
   url.searchParams.set("entry", entry.id);
-  url.searchParams.set("title", slugifyTitle(entry.title));
+  url.searchParams.delete("title");
   return url;
 }
 

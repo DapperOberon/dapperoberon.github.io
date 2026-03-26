@@ -155,7 +155,7 @@ export function getEntrySearchText(entry) {
     getEntryTypeValue(entry),
     getEntrySynopsis(entry),
     String(entry.episodes),
-    String(entry.watched),
+    String(Number(entry.watched || 0)),
     isLegendsEntry(entry) ? "legends non canon" : "canon official continuity",
     entry.releaseYear || "",
     typeof entry.seasons === "number" ? `${entry.seasons} season ${entry.seasons} seasons` : "",

@@ -4,14 +4,13 @@
     "color": "#F5C563",
     "entries": [
       {
-        "id": "the-high-republic__young-jedi-adventures__show__232-bby",
+        "id": "001",
         "title": "Young Jedi Adventures",
         "year": "232 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/young-jedi-adventures-poster.jpg",
         "episodes": 55,
-        "watched": 0,
         "releaseYear": "2023-",
         "episodeDetails": [
           {
@@ -290,6 +289,9 @@
             "watchUrl": "https://www.disneyplus.com/play/c0d62e08-6957-40e2-a82c-16e962a85c13"
           }
         ],
+        "storageMigrationIds": [
+          "the-high-republic__young-jedi-adventures__show__232-bby"
+        ],
         "synopsis": "The young Jedi take on new missions across the galaxy as they try to stop the rise of the pirates!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Young_Jedi_Adventures",
         "seasons": 3
@@ -301,14 +303,13 @@
     "color": "#E5B889",
     "entries": [
       {
-        "id": "fall-of-the-jedi__the-acolyte__show__132-bby",
+        "id": "002",
         "title": "The Acolyte",
         "year": "132 BBY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/acolyte-poster.jpg",
         "episodes": 8,
-        "watched": 8,
         "releaseYear": "2024-",
         "episodeDetails": [
           {
@@ -352,19 +353,21 @@
             "watchUrl": "https://www.disneyplus.com/play/caf219a4-1689-45c6-a02f-34c8be1fa71c"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__the-acolyte__show__132-bby"
+        ],
         "synopsis": "An investigation into a crime spree pits a Jedi Master against a dangerous warrior from his past.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Acolyte",
         "seasons": 1
       },
       {
-        "id": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby",
+        "id": "003",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-jedi-poster.jpg",
         "episodes": 3,
-        "watched": 3,
         "releaseYear": "2022-",
         "episodeDetails": [
           {
@@ -383,19 +386,21 @@
             "watchUrl": "https://www.disneyplus.com/play/95be7b36-8a05-4dff-9017-a27c2d0403fc"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby"
+        ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
         "seasons": 1
       },
       {
-        "id": "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby",
+        "id": "004",
         "title": "Tales of the Underworld",
         "year": "62-18 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-underworld-poster.jpg",
         "episodes": 3,
-        "watched": 3,
         "releaseYear": "2025",
         "episodeDetails": [
           {
@@ -414,19 +419,21 @@
             "watchUrl": "https://www.disneyplus.com/play/6062e7c9-58ad-408a-a094-f66043345405"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby"
+        ],
         "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Underworld",
         "seasons": 1
       },
       {
-        "id": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby",
+        "id": "005",
         "title": "Episode I - The Phantom Menace",
         "year": "32 BBY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/phantom-menace-poster.jpg",
         "episodes": 1,
-        "watched": 1,
         "releaseYear": "1999",
         "episodeDetails": [
           {
@@ -435,39 +442,44 @@
             "watchUrl": "https://www.disneyplus.com/play/e0a9fee4-2959-4077-ad8c-8fab4fd6e4d1"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby"
+        ],
         "synopsis": "Jedi discover Anakin Skywalker, a boy unusually strong in the force.",
         "watchUrl": "https://www.disneyplus.com/play/e0a9fee4-2959-4077-ad8c-8fab4fd6e4d1",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_I_The_Phantom_Menace"
       },
       {
-        "id": "fall-of-the-jedi__tales-of-the-jedi__show__2022",
+        "id": "01f",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-jedi-poster.jpg",
         "episodes": 1,
-        "watched": 1,
         "releaseYear": "2022-",
         "episodeDetails": [
           {
-            "title": "S1.E4 - The Sith Lord - 32 BBY (takes place parallel to \"Star Wars Ep. 1",
-            "time": "The Phantom Menace\")"
+            "title": "S1.E4 - The Sith Lord",
+            "time": "32 BBY (takes place parallel to \"Star Wars Ep. 1 - The Phantom Menace\")",
+            "watchUrl": "https://www.disneyplus.com/play/65f7de7d-9538-4363-8d6f-f8d0eff241a7"
           }
+        ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby"
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
         "seasons": 1
       },
       {
-        "id": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby",
+        "id": "007",
         "title": "Episode II - Attack of the Clones",
         "year": "22 BBY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/attack-of-the-clones-poster.jpg",
         "episodes": 1,
-        "watched": 1,
         "releaseYear": "2002",
         "episodeDetails": [
           {
@@ -476,19 +488,21 @@
             "watchUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby"
+        ],
         "synopsis": "Young Anakin and Padmé fall in love as galactic war looms.",
         "watchUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_II_Attack_of_the_Clones"
       },
       {
-        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby",
+        "id": "008",
         "title": "Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": false,
         "poster": "./images/posters/clone-wars-poster.jpg",
         "episodes": 21,
-        "watched": 21,
         "releaseYear": "2003-2005",
         "episodeDetails": [
           {
@@ -597,18 +611,20 @@
             "watchUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__clone-wars__show__22-19-bby"
+        ],
         "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Clone_Wars"
       },
       {
-        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby",
+        "id": "009",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/clone-wars-series-poster.jpg",
         "episodes": 2,
-        "watched": 2,
         "releaseYear": "2008-2020",
         "episodeDetails": [
           {
@@ -622,19 +638,21 @@
             "watchUrl": "https://www.disneyplus.com/play/f1ba7d7c-3d8e-45d3-8697-bc01d99f66cb"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__the-clone-wars__show__22-19-bby"
+        ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
         "seasons": 2
       },
       {
-        "id": "fall-of-the-jedi__the-clone-wars__film__22-bby",
+        "id": "00a",
         "title": "The Clone Wars",
         "year": "22 BBY",
         "type": "Animated Film",
         "canon": true,
         "poster": "./images/posters/clone-wars-film-poster.jpg",
         "episodes": 1,
-        "watched": 1,
         "releaseYear": "2008",
         "episodeDetails": [
           {
@@ -643,19 +661,21 @@
             "watchUrl": "https://www.disneyplus.com/play/24a03eff-e68a-4743-828d-32ba9ffc0c7f"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__the-clone-wars__film__22-bby"
+        ],
         "synopsis": "Anakin Skywalker and Ahsoka Tano rescue the son of Jabba the Hutt.",
         "watchUrl": "https://www.disneyplus.com/play/24a03eff-e68a-4743-828d-32ba9ffc0c7f",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars_(film)"
       },
       {
-        "id": "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby",
+        "id": "00b",
         "title": "Tales of the Jedi - 68-19 BBY",
         "year": "68-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-jedi-poster.jpg",
         "episodes": 1,
-        "watched": 1,
         "releaseYear": "2022-",
         "episodeDetails": [
           {
@@ -664,19 +684,21 @@
             "watchUrl": "https://www.disneyplus.com/play/f7d69be6-d68d-4b2f-b8de-fa3eaa80297c"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby"
+        ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
         "seasons": 1
       },
       {
-        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby",
+        "id": "00c",
         "title": "The Clone Wars - 22-19 BBY",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/clone-wars-series-poster.jpg",
         "episodes": 83,
-        "watched": 83,
         "releaseYear": "2008-2020",
         "episodeDetails": [
           {
@@ -1094,19 +1116,21 @@
             "watchUrl": "https://www.disneyplus.com/play/c4164823-ab65-4e83-ae02-07614953e351"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby"
+        ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
         "seasons": 4
       },
       {
-        "id": "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
+        "id": "00d",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-empire-poster.jpg",
         "episodes": 1,
-        "watched": 1,
         "releaseYear": "2024-",
         "episodeDetails": [
           {
@@ -1115,19 +1139,21 @@
             "watchUrl": "https://www.disneyplus.com/play/11d3220b-8d16-4407-b8fa-d8e8fbbd4acd"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+        ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
         "seasons": 1
       },
       {
-        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2",
+        "id": "00e",
         "title": "The Clone Wars - 22-19 BBY",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/clone-wars-series-poster.jpg",
         "episodes": 48,
-        "watched": 12,
         "releaseYear": "2008-2020",
         "episodeDetails": [
           {
@@ -1372,19 +1398,21 @@
             "watchUrl": "https://www.disneyplus.com/play/a796f087-baba-4b0d-afca-d9c01d5431c7"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2"
+        ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
         "seasons": 7
       },
       {
-        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby--2",
+        "id": "00f",
         "title": "Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": false,
         "poster": "./images/posters/clone-wars-poster.jpg",
         "episodes": 4,
-        "watched": 0,
         "releaseYear": "2003-2005",
         "episodeDetails": [
           {
@@ -1408,18 +1436,20 @@
             "watchUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           }
         ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__clone-wars__show__22-19-bby--2"
+        ],
         "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Clone_Wars"
       },
       {
-        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2",
+        "id": "00g",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/clone-wars-series-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2008-2020",
         "episodeDetails": [
           {
@@ -1427,6 +1457,9 @@
             "time": "19 BBY",
             "watchUrl": "https://www.disneyplus.com/play/a72325c6-01e3-42bb-9801-38e594db437f"
           }
+        ],
+        "storageMigrationIds": [
+          "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2"
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
@@ -1439,14 +1472,13 @@
     "color": "#fff",
     "entries": [
       {
-        "id": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby",
+        "id": "00h",
         "title": "Episode III - Revenge of the Sith",
         "year": "19 BBY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/revenge-of-the-sith-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2005",
         "episodeDetails": [
           {
@@ -1455,19 +1487,21 @@
             "watchUrl": "https://www.disneyplus.com/play/eb1e2c5f-69bf-4240-a61f-7ffc4e0311b3"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby"
+        ],
         "synopsis": "As the Republic falls, Anakin Skywalker becomes the evil Darth Vader.",
         "watchUrl": "https://www.disneyplus.com/play/eb1e2c5f-69bf-4240-a61f-7ffc4e0311b3",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_III_Revenge_of_the_Sith"
       },
       {
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
+        "id": "00i",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-empire-poster.jpg",
         "episodes": 2,
-        "watched": 0,
         "releaseYear": "2024-",
         "episodeDetails": [
           {
@@ -1481,19 +1515,21 @@
             "watchUrl": "https://www.disneyplus.com/play/61ccb731-58bd-4d24-9634-b266c8340378"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+        ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
         "seasons": 1
       },
       {
-        "id": "reign-of-the-empire__the-clone-wars__show__22-19-bby",
+        "id": "00j",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/clone-wars-series-poster.jpg",
         "episodes": 3,
-        "watched": 0,
         "releaseYear": "2008-2020",
         "episodeDetails": [
           {
@@ -1512,19 +1548,21 @@
             "watchUrl": "https://www.disneyplus.com/play/d0a32acb-b669-472a-9ad2-baf472caf0f5"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__the-clone-wars__show__22-19-bby"
+        ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
         "seasons": 7
       },
       {
-        "id": "reign-of-the-empire__the-bad-batch__show__19-18-bby",
+        "id": "00k",
         "title": "The Bad Batch",
         "year": "19-18 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/bad-batch-poster.jpg",
         "episodes": 46,
-        "watched": 0,
         "releaseYear": "2021-",
         "episodeDetails": [
           {
@@ -1758,19 +1796,21 @@
             "watchUrl": "https://www.disneyplus.com/play/00c7f243-d36b-4d0b-ba09-edc8abdb7458"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__the-bad-batch__show__19-18-bby"
+        ],
         "synopsis": "Clone Force 99's battle to survive the newly formed Empire comes to an epic conclusion.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Bad_Batch",
         "seasons": 3
       },
       {
-        "id": "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby",
+        "id": "00l",
         "title": "Tales of the Underworld",
         "year": "62-18 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-underworld-poster.jpg",
         "episodes": 3,
-        "watched": 0,
         "releaseYear": "2025",
         "episodeDetails": [
           {
@@ -1789,40 +1829,44 @@
             "watchUrl": "https://www.disneyplus.com/play/48152bdf-6b1d-44f9-b379-4b43a0d4ff50"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby"
+        ],
         "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Underworld",
         "seasons": 1
       },
       {
-        "id": "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby",
+        "id": "00m",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-jedi-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2022-",
         "episodeDetails": [
           {
             "title": "S1.E6 - Resolve",
-            "time": "between 18 and 5 BBY (the beginning takes place parallel to Star Wars Ep. 3 in 19 BBY)",
-            "watchUrl": "https://www.disneyplus.com/play/e7d825ee-a382-4b86-97ed-0d7c3787c7e9"
+            "time": "between 18 and 5 BBY (the beginning takes place parallel to Star Wars Ep. 3 in 19 BBY)"
           }
+        ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby",
+          "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby"
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
         "seasons": 1
       },
       {
-        "id": "reign-of-the-empire__star-wars-droids__show__15-bby",
+        "id": "00n",
         "title": "Star Wars: Droids",
         "year": "15 BBY",
         "type": "Animated Show",
         "canon": false,
         "poster": "./images/posters/droids-poster.jpg",
         "episodes": 14,
-        "watched": 0,
         "releaseYear": "1985-1986",
         "episodeDetails": [
           {
@@ -1896,19 +1940,21 @@
             "watchUrl": "https://www.disneyplus.com/play/568febf8-6aa8-42f6-a65e-2be952d31423"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__star-wars-droids__show__15-bby"
+        ],
         "synopsis": "Share the early adventures of R2-D2 and C-3PO in this action-packed animated series!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Droids:_The_Adventures_of_R2-D2_and_C-3PO",
         "seasons": 2
       },
       {
-        "id": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby",
+        "id": "00o",
         "title": "Solo: A Star Wars Story",
         "year": "10 BBY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/solo-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2018",
         "episodeDetails": [
           {
@@ -1917,19 +1963,21 @@
             "watchUrl": "https://www.disneyplus.com/play/791bc772-d930-40c9-83ec-5ef85923573e"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__solo-a-star-wars-story__film__10-bby"
+        ],
         "synopsis": "Witness the beginning of the Star Wars saga's most unlikely hero.",
         "watchUrl": "https://www.disneyplus.com/play/791bc772-d930-40c9-83ec-5ef85923573e",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Solo:_A_Star_Wars_Story"
       },
       {
-        "id": "reign-of-the-empire__obi-wan-kenobi__show__9-bby",
+        "id": "00p",
         "title": "Obi-Wan Kenobi",
         "year": "9 BBY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/obi-wan-kenobi-poster.jpg",
         "episodes": 6,
-        "watched": 0,
         "releaseYear": "2022",
         "episodeDetails": [
           {
@@ -1963,19 +2011,21 @@
             "watchUrl": "https://www.disneyplus.com/play/56a7920e-bfe4-4576-a7e2-6038d93d1e25"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__obi-wan-kenobi__show__9-bby"
+        ],
         "synopsis": "During the reign of the Empire, Obi-Wan Kenobi embarks on a crucial mission.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Obi-Wan_Kenobi_(television_series)",
         "seasons": 1
       },
       {
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2",
+        "id": "00q",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-empire-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2024-",
         "episodeDetails": [
           {
@@ -1984,19 +2034,21 @@
             "watchUrl": "https://www.disneyplus.com/play/553895fb-49f6-4de2-97b6-0afb06077603"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2"
+        ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
         "seasons": 1
       },
       {
-        "id": "reign-of-the-empire__andor__show__5-1-bby",
+        "id": "00r",
         "title": "Andor",
         "year": "5-1 BBY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/andor-poster.jpg",
         "episodes": 24,
-        "watched": 0,
         "releaseYear": "2022-2025",
         "episodeDetails": [
           {
@@ -2120,19 +2172,21 @@
             "watchUrl": "https://www.disneyplus.com/play/5e7dca41-e8b3-4260-b32a-309f302f68ce"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__andor__show__5-1-bby"
+        ],
         "synopsis": "Cassian Andor continues the path toward his heroic rebel desinty.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Andor",
         "seasons": 2
       },
       {
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3",
+        "id": "00s",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-empire-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2024-",
         "episodeDetails": [
           {
@@ -2141,19 +2195,21 @@
             "watchUrl": "https://www.disneyplus.com/play/6ffdbfe3-67c4-4da6-a855-06f30adc254c"
           }
         ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3"
+        ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
         "seasons": 1
       },
       {
-        "id": "reign-of-the-empire__star-wars-rebels__show__5-1-bby",
+        "id": "00t",
         "title": "Star Wars Rebels",
         "year": "5-1 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/rebels-poster.jpg",
         "episodes": 75,
-        "watched": 0,
         "releaseYear": "2014-2018",
         "episodeDetails": [
           {
@@ -2522,15 +2578,18 @@
             "watchUrl": "https://www.disneyplus.com/play/241b39f6-2726-4381-a43d-eafe6c4e2980"
           },
           {
-            "title": "S4.E15 - Family Reunion - and Farewell Part 1",
-            "time": "1 BBY",
+            "title": "S4.E15 - Family Reunion",
+            "time": "and Farewell Part 1 - 1 BBY",
             "watchUrl": "https://www.disneyplus.com/play/958d81ee-5ce8-4600-a7d5-d61fcc6d9aa0"
           },
           {
-            "title": "S4.E16 - Family Reunion - and Farewell Part 2",
-            "time": "1 BBY (9 ABY epilogue)",
+            "title": "S4.E16 - Family Reunion",
+            "time": "and Farewell Part 2 - 1 BBY (9 ABY epilogue)",
             "watchUrl": "https://www.disneyplus.com/play/958d81ee-5ce8-4600-a7d5-d61fcc6d9aa0"
           }
+        ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__star-wars-rebels__show__5-1-bby"
         ],
         "synopsis": "The Ghost crew provides a spark to ignite a rebellion.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Rebels",
@@ -2543,14 +2602,13 @@
     "color": "#ef4444",
     "entries": [
       {
-        "id": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby",
+        "id": "00u",
         "title": "Rogue One: A Star Wars Story",
         "year": "0 BBY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/rogue-one-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2016",
         "episodeDetails": [
           {
@@ -2559,19 +2617,21 @@
             "watchUrl": "https://www.disneyplus.com/play/5ec74210-f970-42b7-a39f-8653c0a9eab8"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby"
+        ],
         "synopsis": "Unlikely heroes band together to steal the plans to the Death Star.",
         "watchUrl": "https://www.disneyplus.com/play/5ec74210-f970-42b7-a39f-8653c0a9eab8",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Rogue_One:_A_Star_Wars_Story"
       },
       {
-        "id": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby",
+        "id": "00v",
         "title": "Star Wars: Episode IV - A New Hope",
         "year": "0 ABY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/new-hope-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "1977",
         "episodeDetails": [
           {
@@ -2580,19 +2640,21 @@
             "watchUrl": "https://www.disneyplus.com/play/9a280e53-fcc0-4e17-a02c-b1f40913eb0b"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby"
+        ],
         "synopsis": "A young farm boy intercepts a distress call from the captive Princess Leia.",
         "watchUrl": "https://www.disneyplus.com/play/9a280e53-fcc0-4e17-a02c-b1f40913eb0b",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IV_A_New_Hope"
       },
       {
-        "id": "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby",
+        "id": "00w",
         "title": "The Star Wars Holiday Special",
         "year": "1 ABY",
         "type": "Live Action TV Film",
         "canon": false,
         "poster": "./images/posters/holiday-special-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "1978",
         "episodeDetails": [
           {
@@ -2601,18 +2663,20 @@
             "watchUrl": "https://www.youtube.com/watch?v=KxtSX1lg8rE"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby"
+        ],
         "synopsis": "Chewbacca and Han Solo attempt to visit the Wookiee home planet of Kashyyyk to celebrate \"Life Day\".",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/The_Star_Wars_Holiday_Special"
       },
       {
-        "id": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby",
+        "id": "00x",
         "title": "Star Wars: Episode V - The Empire Strikes Back",
         "year": "3 ABY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/empire-strikes-back-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "1980",
         "episodeDetails": [
           {
@@ -2621,19 +2685,21 @@
             "watchUrl": "https://www.disneyplus.com/play/0f5c5223-f4f6-46ef-ba8a-69cb0e17d8d3"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby"
+        ],
         "synopsis": "Luke Skywalker trains as a Jedi and confronts Darth Vader.",
         "watchUrl": "https://www.disneyplus.com/play/0f5c5223-f4f6-46ef-ba8a-69cb0e17d8d3",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_V_The_Empire_Strikes_Back"
       },
       {
-        "id": "age-of-the-rebellion__ewoks__show__3-aby",
+        "id": "00y",
         "title": "Ewoks",
         "year": "3 ABY",
         "type": "Animated Show",
         "canon": false,
         "poster": "./images/posters/ewoks-poster.jpg",
         "episodes": 26,
-        "watched": 0,
         "releaseYear": "1985-1987",
         "episodeDetails": [
           {
@@ -2767,19 +2833,21 @@
             "watchUrl": "https://www.disneyplus.com/play/9d6d7c0f-0ce2-447b-94ba-f4c6058ee0a1"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__ewoks__show__3-aby"
+        ],
         "synopsis": "Join your favorite, furry Star Wars heroes, the Ewoks, in an action-packed, animated series!",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Ewoks",
         "seasons": 2
       },
       {
-        "id": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby",
+        "id": "00z",
         "title": "Caravan of Courage: An Ewok Adventure",
         "year": "3 ABY",
         "type": "Live Action TV Film",
         "canon": false,
         "poster": "./images/posters/caravan-of-courage-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "1984",
         "episodeDetails": [
           {
@@ -2788,19 +2856,21 @@
             "watchUrl": "https://www.disneyplus.com/play/de308fb3-331d-44c1-a0fa-fb90c8b1ade2"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby"
+        ],
         "synopsis": "After Cindel and Mace are separated from their parent, courageous Ewoks aid in reuiniting them.",
         "watchUrl": "https://www.disneyplus.com/play/de308fb3-331d-44c1-a0fa-fb90c8b1ade2",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Caravan_of_Courage:_An_Ewok_Adventure"
       },
       {
-        "id": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby",
+        "id": "010",
         "title": "Ewoks: The Battle for Endor",
         "year": "3 ABY",
         "type": "Live Action TV Film",
         "canon": false,
         "poster": "./images/posters/ewoks-battle-for-endor-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "1985",
         "episodeDetails": [
           {
@@ -2809,19 +2879,21 @@
             "watchUrl": "https://www.disneyplus.com/play/1a3764d6-c7f7-4b54-938b-18faf67c0a98"
           }
         ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby"
+        ],
         "synopsis": "The adventures of the Ewoks continue as Wicket and friends confront th evil Marauders.",
         "watchUrl": "https://www.disneyplus.com/play/1a3764d6-c7f7-4b54-938b-18faf67c0a98",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Ewoks:_The_Battle_for_Endor"
       },
       {
-        "id": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby",
+        "id": "011",
         "title": "Star Wars: Episode VI - Return of the Jedi",
         "year": "4 ABY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/return-of-the-jedi-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "1983",
         "episodeDetails": [
           {
@@ -2829,6 +2901,9 @@
             "time": "4 ABY",
             "watchUrl": "https://www.disneyplus.com/play/4b6e7cda-daa5-4f2d-9b61-35bbe562c69c"
           }
+        ],
+        "storageMigrationIds": [
+          "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby"
         ],
         "synopsis": "Luke Skywalker faces Darth Vader in a final duel.",
         "watchUrl": "https://www.disneyplus.com/play/4b6e7cda-daa5-4f2d-9b61-35bbe562c69c",
@@ -2841,14 +2916,13 @@
     "color": "#5B7FDB",
     "entries": [
       {
-        "id": "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
+        "id": "012",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-empire-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2024-",
         "episodeDetails": [
           {
@@ -2857,19 +2931,21 @@
             "watchUrl": "https://www.disneyplus.com/play/d02ed1f9-4caa-4eac-9b59-b45346878e35"
           }
         ],
+        "storageMigrationIds": [
+          "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby"
+        ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
         "seasons": 1
       },
       {
-        "id": "the-new-republic__the-mandalorian__show__9-aby",
+        "id": "013",
         "title": "The Mandalorian",
         "year": "9 ABY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/mandalorian-poster.jpg",
         "episodes": 16,
-        "watched": 0,
         "releaseYear": "2019-2023",
         "episodeDetails": [
           {
@@ -2953,19 +3029,21 @@
             "watchUrl": "https://www.disneyplus.com/play/c28424f6-ae05-41e4-b924-ee453e2cac08"
           }
         ],
+        "storageMigrationIds": [
+          "the-new-republic__the-mandalorian__show__9-aby"
+        ],
         "synopsis": "After the Empire's fall, a lone Mandalorian makes his way through the galaxy with his foundling.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Mandalorian",
         "seasons": 2
       },
       {
-        "id": "the-new-republic__the-book-of-boba-fett__show__9-aby",
+        "id": "014",
         "title": "The Book of Boba Fett",
         "year": "9 ABY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/book-of-boba-fett-poster.jpg",
         "episodes": 7,
-        "watched": 0,
         "releaseYear": "2021-2022",
         "episodeDetails": [
           {
@@ -3004,19 +3082,21 @@
             "watchUrl": "https://www.disneyplus.com/play/792e066f-cc3b-405d-96fe-740e8d940021"
           }
         ],
+        "storageMigrationIds": [
+          "the-new-republic__the-book-of-boba-fett__show__9-aby"
+        ],
         "synopsis": "No longer just a hired gun, Boba Fett reinvents himself on Tatooine alongside Fennec Shand.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/The_Book_of_Boba_Fett",
         "seasons": 1
       },
       {
-        "id": "the-new-republic__the-mandalorian__show__9-aby--2",
+        "id": "015",
         "title": "The Mandalorian",
         "year": "9 ABY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/mandalorian-poster.jpg",
         "episodes": 8,
-        "watched": 0,
         "releaseYear": "2019-2023",
         "episodeDetails": [
           {
@@ -3060,19 +3140,21 @@
             "watchUrl": "https://www.disneyplus.com/play/24224011-4204-4cb5-9358-cea05eb48211"
           }
         ],
+        "storageMigrationIds": [
+          "the-new-republic__the-mandalorian__show__9-aby--2"
+        ],
         "synopsis": "After the Empire's fall, a lone Mandalorian makes his way through the galaxy with his foundling.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Mandalorian",
         "seasons": 3
       },
       {
-        "id": "the-new-republic__ahsoka__show__9-aby",
+        "id": "016",
         "title": "Ahsoka",
         "year": "9 ABY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/ahsoka-poster.jpg",
         "episodes": 8,
-        "watched": 0,
         "releaseYear": "2023-",
         "episodeDetails": [
           {
@@ -3116,19 +3198,21 @@
             "watchUrl": "https://www.disneyplus.com/play/9ba9fc2b-f0dc-4ba7-a7f4-4f37d21a742e"
           }
         ],
+        "storageMigrationIds": [
+          "the-new-republic__ahsoka__show__9-aby"
+        ],
         "synopsis": "Former Jedi Knight Ahsoka Tano investigates an emerging threat to a vulnerable galaxy.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Ahsoka",
         "seasons": 1
       },
       {
-        "id": "the-new-republic__skeleton-crew__show__9-aby",
+        "id": "017",
         "title": "Skeleton Crew",
         "year": "9 ABY",
         "type": "Live Action Show",
         "canon": true,
         "poster": "./images/posters/skeleton-crew-poster.jpg",
         "episodes": 8,
-        "watched": 0,
         "releaseYear": "2025",
         "episodeDetails": [
           {
@@ -3171,6 +3255,9 @@
             "time": "The Real Good Guys"
           }
         ],
+        "storageMigrationIds": [
+          "the-new-republic__skeleton-crew__show__9-aby"
+        ],
         "synopsis": "Four ordinary kids search for their home planet after getting lost in the Star Wars galaxy.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Skeleton_Crew",
         "seasons": 1
@@ -3182,14 +3269,13 @@
     "color": "#ff0000",
     "entries": [
       {
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby",
+        "id": "018",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/resistance-poster.jpg",
         "episodes": 19,
-        "watched": 0,
         "releaseYear": "2018-2020",
         "episodeDetails": [
           {
@@ -3288,19 +3374,21 @@
             "watchUrl": "https://www.disneyplus.com/play/3c3984f5-15c8-4480-9c2f-93721dbd5d9b"
           }
         ],
+        "storageMigrationIds": [
+          "rise-of-the-first-order__star-wars-resistance__show__34-aby"
+        ],
         "synopsis": "Kaz begins his spy mission, but is in over his head.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance",
         "seasons": 1
       },
       {
-        "id": "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby",
+        "id": "019",
         "title": "Star Wars: Episode VII - The Force Awakens",
         "year": "34 ABY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/force-awakens-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2015",
         "episodeDetails": [
           {
@@ -3309,19 +3397,21 @@
             "watchUrl": "https://www.disneyplus.com/play/2854a94d-3702-40bd-97a4-12d55a809188"
           }
         ],
+        "storageMigrationIds": [
+          "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby"
+        ],
         "synopsis": "Rey, Finn, Han and Chewbacca search for the one hope of restoring peace.",
         "watchUrl": "https://www.disneyplus.com/play/2854a94d-3702-40bd-97a4-12d55a809188",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VII_The_Force_Awakens"
       },
       {
-        "id": "rise-of-the-first-order__star-wars-resistance__show__2018-2020",
+        "id": "01g",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/resistance-poster.jpg",
         "episodes": 2,
-        "watched": 0,
         "releaseYear": "2018-2020",
         "episodeDetails": [
           {
@@ -3333,19 +3423,21 @@
             "time": "34 ABY (takes place parallel to Star Wars Ep. 7)"
           }
         ],
+        "storageMigrationIds": [
+          "rise-of-the-first-order__star-wars-resistance__show__34-aby"
+        ],
         "synopsis": "Kaz begins his spy mission, but is in over his head.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance",
         "seasons": 1
       },
       {
-        "id": "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby",
+        "id": "01b",
         "title": "Star Wars: Episode VIII - The Last Jedi",
         "year": "34 ABY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/last-jedi-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2017",
         "episodeDetails": [
           {
@@ -3354,19 +3446,21 @@
             "watchUrl": "https://www.disneyplus.com/play/50c1aff5-3051-4839-9ebf-e332c635e216"
           }
         ],
+        "storageMigrationIds": [
+          "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby"
+        ],
         "synopsis": "New heroes and galactic legends join to unlock mysteries of the Force.",
         "watchUrl": "https://www.disneyplus.com/play/50c1aff5-3051-4839-9ebf-e332c635e216",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VIII_The_Last_Jedi"
       },
       {
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--2",
+        "id": "01a",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/resistance-poster.jpg",
         "episodes": 19,
-        "watched": 0,
         "releaseYear": "2018-2020",
         "episodeDetails": [
           {
@@ -3446,19 +3540,22 @@
             "time": "34 ABY"
           }
         ],
+        "storageMigrationIds": [
+          "rise-of-the-first-order__star-wars-resistance__show__34-aby--2",
+          "rise-of-the-first-order__star-wars-resistance__show__34-aby"
+        ],
         "synopsis": "Kaz begins his spy mission, but is in over his head.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance",
         "seasons": 2
       },
       {
-        "id": "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby",
+        "id": "01d",
         "title": "Star Wars: Episode IX - The Rise of Skywalker",
         "year": "35 ABY",
         "type": "Live Action Film",
         "canon": true,
         "poster": "./images/posters/rise-of-skywalker-poster.jpg",
         "episodes": 1,
-        "watched": 0,
         "releaseYear": "2019",
         "episodeDetails": [
           {
@@ -3466,6 +3563,9 @@
             "time": "35 ABY",
             "watchUrl": "https://www.disneyplus.com/play/43f9c275-e7e8-4ab3-802d-00d06a8ad841"
           }
+        ],
+        "storageMigrationIds": [
+          "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby"
         ],
         "synopsis": "The landmarkr Skywalker saga comes to a conclusion.",
         "watchUrl": "https://www.disneyplus.com/play/43f9c275-e7e8-4ab3-802d-00d06a8ad841",
@@ -3478,14 +3578,13 @@
     "color": "#64748b",
     "entries": [
       {
-        "id": "non-timeline__star-wars-visions__media__unknown",
+        "id": "01h",
         "title": "Star Wars: Visions",
         "year": "Unknown",
         "type": "Various Styles",
         "canon": true,
         "poster": "./images/posters/visions-poster.jpg",
         "episodes": 27,
-        "watched": 0,
         "releaseYear": "2021-2023",
         "episodeDetails": [
           {
@@ -3596,6 +3695,9 @@
             "title": "S3.E9",
             "time": "BLACK"
           }
+        ],
+        "storageMigrationIds": [
+          "non-timeline__star-wars-visions__media__unknown"
         ],
         "synopsis": "The anthology series returns featuring nine new anime stories from legendary Japanese studios that will celebrate the mythos of Star Wars through their unique styles.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Visions"

@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "timeline-data.json"
 HEX_COLOR_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+UID_RE = re.compile(r"^[0-9a-z]{3}$")
 ALLOWED_TYPES = {
     "Animated Film",
     "Animated Show",
@@ -90,7 +91,6 @@ def main() -> int:
             canon = entry.get("canon")
             poster = entry.get("poster")
             episodes = entry.get("episodes")
-            watched = entry.get("watched")
             release_year = entry.get("releaseYear")
             synopsis = entry.get("synopsis")
             watch_url = entry.get("watchUrl")
@@ -99,6 +99,8 @@ def main() -> int:
 
             if not isinstance(entry_id, str) or not entry_id.strip():
                 errors.append(f"{entry_label}.id must be a non-empty string")
+            elif not UID_RE.match(entry_id):
+                errors.append(f"{entry_label}.id must be a lowercase base36 UID with length 3")
             elif entry_id in seen_ids:
                 errors.append(f"Duplicate entry id: {entry_id}")
             else:
@@ -118,10 +120,14 @@ def main() -> int:
                 errors.append(f"{entry_label}.releaseYear must be a non-empty string")
             if not isinstance(episodes, int) or episodes < 1:
                 errors.append(f"{entry_label}.episodes must be an integer >= 1")
-            if not isinstance(watched, int) or watched < 0:
-                errors.append(f"{entry_label}.watched must be an integer >= 0")
-            elif isinstance(episodes, int) and watched > episodes:
-                errors.append(f"{entry_label}.watched cannot exceed episodes")
+            if "watched" in entry:
+                watched = entry.get("watched")
+                if not isinstance(watched, int) or watched < 0:
+                    errors.append(f"{entry_label}.watched must be an integer >= 0 when provided")
+                elif isinstance(episodes, int) and watched > episodes:
+                    errors.append(f"{entry_label}.watched cannot exceed episodes")
+                elif watched != 0:
+                    warnings.append(f"{entry_label}.watched is present with non-zero shared state ({watched})")
 
             if not isinstance(poster, str) or not poster.strip():
                 errors.append(f"{entry_label}.poster must be a non-empty string")
@@ -135,6 +141,23 @@ def main() -> int:
 
             if "seasons" in entry and not isinstance(entry.get("seasons"), int):
                 errors.append(f"{entry_label}.seasons must be an integer when provided")
+
+            if "storageMigrationIds" in entry:
+                storage_migration_ids = entry.get("storageMigrationIds")
+                if not isinstance(storage_migration_ids, list) or not storage_migration_ids:
+                    errors.append(f"{entry_label}.storageMigrationIds must be a non-empty list when provided")
+                else:
+                    seen_storage_migration_ids: set[str] = set()
+                    for migration_index, migration_id in enumerate(storage_migration_ids):
+                        migration_label = f"{entry_label}.storageMigrationIds[{migration_index}]"
+                        if not isinstance(migration_id, str) or not migration_id.strip():
+                            errors.append(f"{migration_label} must be a non-empty string")
+                            continue
+                        if migration_id == entry_id:
+                            errors.append(f"{migration_label} must differ from {entry_label}.id")
+                        if migration_id in seen_storage_migration_ids:
+                            errors.append(f"{entry_label}.storageMigrationIds cannot contain duplicates")
+                        seen_storage_migration_ids.add(migration_id)
 
             if episode_details is None:
                 if isinstance(episodes, int) and episodes > 1 and not watch_url:
