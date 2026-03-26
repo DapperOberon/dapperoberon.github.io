@@ -1,3 +1,5 @@
+import { getEntryLegacyFingerprintParts } from "./timeline-data.js";
+
 export function getLegacyWatchedStorageKey(entry) {
   return 'watched_' + entry.title.replace(/\s+/g, '_');
 }
@@ -6,20 +8,7 @@ const THEME_STORAGE_KEY = 'sw_theme';
 const DEFAULT_THEME_ID = 'modern-starwars';
 
 function getLegacyFingerprintStorageId(entry) {
-  const firstEpisodeTitle =
-    Array.isArray(entry.episodeDetails) && entry.episodeDetails.length > 0 && entry.episodeDetails[0].title
-      ? entry.episodeDetails[0].title
-      : '';
-
-  const fingerprint = [
-    entry.title || '',
-    entry.year || '',
-    entry.type || '',
-    String(entry.episodes || ''),
-    entry.releaseYear || '',
-    typeof entry.seasons === 'number' ? String(entry.seasons) : '',
-    firstEpisodeTitle
-  ]
+  const fingerprint = getEntryLegacyFingerprintParts(entry)
     .join('|')
     .toLowerCase();
 
