@@ -4,6 +4,7 @@
     "color": "#F5C563",
     "entries": [
       {
+        "id": "the-high-republic__young-jedi-adventures__show__232-bby",
         "title": "Young Jedi Adventures",
         "year": "232 BBY",
         "type": "Animated Show",
@@ -129,7 +130,7 @@
             "watchUrl": "https://www.disneyplus.com/play/f76ede6c-ae73-4172-82f7-04f092116633"
           },
           {
-            "title": "S1.E24 - The Starship Show / Nash\u2019s Super Busy Day",
+            "title": "S1.E24 - The Starship Show / Nash’s Super Busy Day",
             "time": "232 BBY",
             "watchUrl": "https://www.disneyplus.com/play/7cefedab-482c-49b5-9807-daab1a2c937a"
           },
@@ -290,11 +291,17 @@
           }
         ],
         "synopsis": "The young Jedi take on new missions across the galaxy as they try to stop the rise of the pirates!",
-        "seasons": 3,
-        "id": "the-high-republic__young-jedi-adventures__show__232-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Young_Jedi_Adventures"
-      },
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Young_Jedi_Adventures",
+        "seasons": 3
+      }
+    ]
+  },
+  {
+    "era": "Fall of the Jedi",
+    "color": "#E5B889",
+    "entries": [
       {
+        "id": "fall-of-the-jedi__the-acolyte__show__132-bby",
         "title": "The Acolyte",
         "year": "132 BBY",
         "type": "Live Action Show",
@@ -346,17 +353,11 @@
           }
         ],
         "synopsis": "An investigation into a crime spree pits a Jedi Master against a dangerous warrior from his past.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__the-acolyte__show__132-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Acolyte"
-      }
-    ]
-  },
-  {
-    "era": "Fall of the Jedi",
-    "color": "#E5B889",
-    "entries": [
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Acolyte",
+        "seasons": 1
+      },
       {
+        "id": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
@@ -383,11 +384,11 @@
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-jedi__show__68-19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby",
         "title": "Tales of the Underworld",
         "year": "62-18 BBY",
         "type": "Animated Show",
@@ -414,11 +415,11 @@
           }
         ],
         "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-underworld__show__62-18-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Underworld"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Underworld",
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby",
         "title": "Episode I - The Phantom Menace",
         "year": "32 BBY",
         "type": "Live Action Film",
@@ -435,13 +436,13 @@
           }
         ],
         "synopsis": "Jedi discover Anakin Skywalker, a boy unusually strong in the force.",
-        "id": "fall-of-the-jedi__episode-i-the-phantom-menace__film__32-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_I_The_Phantom_Menace",
-        "watchUrl": "https://www.disneyplus.com/play/e0a9fee4-2959-4077-ad8c-8fab4fd6e4d1"
+        "watchUrl": "https://www.disneyplus.com/play/e0a9fee4-2959-4077-ad8c-8fab4fd6e4d1",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_I_The_Phantom_Menace"
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-jedi__show__2022",
         "title": "Tales of the Jedi",
-        "year": "32 BBY",
+        "year": "68-19 BBY",
         "type": "Animated Show",
         "canon": true,
         "poster": "./images/posters/tales-of-the-jedi-poster.jpg",
@@ -450,17 +451,16 @@
         "releaseYear": "2022-",
         "episodeDetails": [
           {
-            "title": "S1.E4 - The Sith Lord",
-            "time": "32 BBY (takes place parallel to Star Wars Ep. 1 - The Phantom Menace)",
-            "watchUrl": "https://www.disneyplus.com/play/65f7de7d-9538-4363-8d6f-f8d0eff241a7"
+            "title": "S1.E4 - The Sith Lord - 32 BBY (takes place parallel to \"Star Wars Ep. 1",
+            "time": "The Phantom Menace\")"
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-jedi__show__32-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby",
         "title": "Episode II - Attack of the Clones",
         "year": "22 BBY",
         "type": "Live Action Film",
@@ -476,12 +476,12 @@
             "watchUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6"
           }
         ],
-        "synopsis": "Young Anakin and Padm\u00e9 fall in love as galactic war looms.",
-        "id": "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_II_Attack_of_the_Clones",
-        "watchUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6"
+        "synopsis": "Young Anakin and Padmé fall in love as galactic war looms.",
+        "watchUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_II_Attack_of_the_Clones"
       },
       {
+        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby",
         "title": "Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -597,11 +597,11 @@
             "watchUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           }
         ],
-        "synopsis": "Enjoy this thrilling, Emmy\u00ae Award-winning animated series that continues the Star Wars story.",
-        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby",
+        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Clone_Wars"
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -623,11 +623,11 @@
           }
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
-        "seasons": 2,
-        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
+        "seasons": 2
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars__film__22-bby",
         "title": "The Clone Wars",
         "year": "22 BBY",
         "type": "Animated Film",
@@ -644,11 +644,11 @@
           }
         ],
         "synopsis": "Anakin Skywalker and Ahsoka Tano rescue the son of Jabba the Hutt.",
-        "id": "fall-of-the-jedi__the-clone-wars__film__22-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars_(film)",
-        "watchUrl": "https://www.disneyplus.com/play/24a03eff-e68a-4743-828d-32ba9ffc0c7f"
+        "watchUrl": "https://www.disneyplus.com/play/24a03eff-e68a-4743-828d-32ba9ffc0c7f",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars_(film)"
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby",
         "title": "Tales of the Jedi - 68-19 BBY",
         "year": "68-19 BBY",
         "type": "Animated Show",
@@ -665,11 +665,11 @@
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-jedi-68-19-bby__show__68-19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby",
         "title": "The Clone Wars - 22-19 BBY",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -915,9 +915,8 @@
             "watchUrl": "https://www.disneyplus.com/play/4e715cdb-517e-45db-866f-d98b6d21fce7"
           },
           {
-            "title": "S3.E8 - Evil Plans",
-            "time": "21 BBY",
-            "watchUrl": "https://www.disneyplus.com/play/8eeaabc5-cf65-43d9-bccb-4766c07f8dd0"
+            "title": "S3.E8",
+            "time": "Evil Plans"
           },
           {
             "title": "S1.E22 - Hostage Crisis",
@@ -1096,11 +1095,11 @@
           }
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
-        "seasons": 4,
-        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
+        "seasons": 4
       },
       {
+        "id": "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -1117,11 +1116,11 @@
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
-        "seasons": 1,
-        "id": "fall-of-the-jedi__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
+        "seasons": 1
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2",
         "title": "The Clone Wars - 22-19 BBY",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -1247,9 +1246,9 @@
             "watchUrl": "https://www.disneyplus.com/play/7a9fbe45-af41-4074-9e3c-f7a5dc2227f9"
           },
           {
-            "synopsis": "The saga continues, set in a faraway galaxy!",
             "title": "S6.E1 - The Unknown",
             "time": "19 BBY",
+            "synopsis": "The saga continues, set in a faraway galaxy!",
             "watchUrl": "https://www.disneyplus.com/play/e8ec40cb-c1ae-4e97-afc4-bae2b0975d0b"
           },
           {
@@ -1374,11 +1373,11 @@
           }
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
-        "seasons": 7,
-        "id": "fall-of-the-jedi__the-clone-wars-22-19-bby__show__22-19-bby--2",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
+        "seasons": 7
       },
       {
+        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby--2",
         "title": "Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -1409,11 +1408,11 @@
             "watchUrl": "https://www.disneyplus.com/play/6ea6626f-fd83-4694-b3c3-a6d65f40c75b"
           }
         ],
-        "synopsis": "Enjoy this thrilling, Emmy\u00ae Award-winning animated series that continues the Star Wars story.",
-        "id": "fall-of-the-jedi__clone-wars__show__22-19-bby--2",
+        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Clone_Wars"
       },
       {
+        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -1430,9 +1429,8 @@
           }
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
-        "seasons": 7,
-        "id": "fall-of-the-jedi__the-clone-wars__show__22-19-bby--2",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
+        "seasons": 7
       }
     ]
   },
@@ -1441,6 +1439,7 @@
     "color": "#fff",
     "entries": [
       {
+        "id": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby",
         "title": "Episode III - Revenge of the Sith",
         "year": "19 BBY",
         "type": "Live Action Film",
@@ -1457,11 +1456,11 @@
           }
         ],
         "synopsis": "As the Republic falls, Anakin Skywalker becomes the evil Darth Vader.",
-        "id": "reign-of-the-empire__episode-iii-revenge-of-the-sith__film__19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_III_Revenge_of_the_Sith",
-        "watchUrl": "https://www.disneyplus.com/play/eb1e2c5f-69bf-4240-a61f-7ffc4e0311b3"
+        "watchUrl": "https://www.disneyplus.com/play/eb1e2c5f-69bf-4240-a61f-7ffc4e0311b3",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_III_Revenge_of_the_Sith"
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -1483,11 +1482,11 @@
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__the-clone-wars__show__22-19-bby",
         "title": "The Clone Wars",
         "year": "22-19 BBY",
         "type": "Animated Show",
@@ -1514,11 +1513,11 @@
           }
         ],
         "synopsis": "The saga continues, set in a faraway galaxy!",
-        "seasons": 7,
-        "id": "reign-of-the-empire__the-clone-wars__show__22-19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Clone_Wars",
+        "seasons": 7
       },
       {
+        "id": "reign-of-the-empire__the-bad-batch__show__19-18-bby",
         "title": "The Bad Batch",
         "year": "19-18 BBY",
         "type": "Animated Show",
@@ -1760,11 +1759,11 @@
           }
         ],
         "synopsis": "Clone Force 99's battle to survive the newly formed Empire comes to an epic conclusion.",
-        "seasons": 3,
-        "id": "reign-of-the-empire__the-bad-batch__show__19-18-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Bad_Batch"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Bad_Batch",
+        "seasons": 3
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby",
         "title": "Tales of the Underworld",
         "year": "62-18 BBY",
         "type": "Animated Show",
@@ -1791,11 +1790,11 @@
           }
         ],
         "synopsis": "Two outlaws must navigate the galaxy's dangerous underworld as they chart their destinies.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-underworld__show__62-18-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Underworld"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Underworld",
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
         "type": "Animated Show",
@@ -1812,11 +1811,11 @@
           }
         ],
         "synopsis": "Tales built around Jedi from the prequel era will feature Ahsoka Tano, Count Dooku, and others.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-jedi__show__68-19-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Jedi",
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__star-wars-droids__show__15-bby",
         "title": "Star Wars: Droids",
         "year": "15 BBY",
         "type": "Animated Show",
@@ -1898,11 +1897,11 @@
           }
         ],
         "synopsis": "Share the early adventures of R2-D2 and C-3PO in this action-packed animated series!",
-        "seasons": 2,
-        "id": "reign-of-the-empire__star-wars-droids__show__15-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Droids:_The_Adventures_of_R2-D2_and_C-3PO"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Droids:_The_Adventures_of_R2-D2_and_C-3PO",
+        "seasons": 2
       },
       {
+        "id": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby",
         "title": "Solo: A Star Wars Story",
         "year": "10 BBY",
         "type": "Live Action Film",
@@ -1919,11 +1918,11 @@
           }
         ],
         "synopsis": "Witness the beginning of the Star Wars saga's most unlikely hero.",
-        "id": "reign-of-the-empire__solo-a-star-wars-story__film__10-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Solo:_A_Star_Wars_Story",
-        "watchUrl": "https://www.disneyplus.com/play/791bc772-d930-40c9-83ec-5ef85923573e"
+        "watchUrl": "https://www.disneyplus.com/play/791bc772-d930-40c9-83ec-5ef85923573e",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Solo:_A_Star_Wars_Story"
       },
       {
+        "id": "reign-of-the-empire__obi-wan-kenobi__show__9-bby",
         "title": "Obi-Wan Kenobi",
         "year": "9 BBY",
         "type": "Live Action Show",
@@ -1965,11 +1964,11 @@
           }
         ],
         "synopsis": "During the reign of the Empire, Obi-Wan Kenobi embarks on a crucial mission.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__obi-wan-kenobi__show__9-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Obi-Wan_Kenobi_(television_series)"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Obi-Wan_Kenobi_(television_series)",
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -1986,11 +1985,11 @@
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--2",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__andor__show__5-1-bby",
         "title": "Andor",
         "year": "5-1 BBY",
         "type": "Live Action Show",
@@ -2122,11 +2121,11 @@
           }
         ],
         "synopsis": "Cassian Andor continues the path toward his heroic rebel desinty.",
-        "seasons": 2,
-        "id": "reign-of-the-empire__andor__show__5-1-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Andor"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Andor",
+        "seasons": 2
       },
       {
+        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -2143,11 +2142,11 @@
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
-        "seasons": 1,
-        "id": "reign-of-the-empire__tales-of-the-empire-20-bby__show__between-5-and-9-aby--3",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
+        "seasons": 1
       },
       {
+        "id": "reign-of-the-empire__star-wars-rebels__show__5-1-bby",
         "title": "Star Wars Rebels",
         "year": "5-1 BBY",
         "type": "Animated Show",
@@ -2534,9 +2533,8 @@
           }
         ],
         "synopsis": "The Ghost crew provides a spark to ignite a rebellion.",
-        "seasons": 4,
-        "id": "reign-of-the-empire__star-wars-rebels__show__5-1-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Rebels"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Rebels",
+        "seasons": 4
       }
     ]
   },
@@ -2545,6 +2543,7 @@
     "color": "#ef4444",
     "entries": [
       {
+        "id": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby",
         "title": "Rogue One: A Star Wars Story",
         "year": "0 BBY",
         "type": "Live Action Film",
@@ -2561,11 +2560,11 @@
           }
         ],
         "synopsis": "Unlikely heroes band together to steal the plans to the Death Star.",
-        "id": "age-of-the-rebellion__rogue-one-a-star-wars-story__film__0-bby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Rogue_One:_A_Star_Wars_Story",
-        "watchUrl": "https://www.disneyplus.com/play/5ec74210-f970-42b7-a39f-8653c0a9eab8"
+        "watchUrl": "https://www.disneyplus.com/play/5ec74210-f970-42b7-a39f-8653c0a9eab8",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Rogue_One:_A_Star_Wars_Story"
       },
       {
+        "id": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby",
         "title": "Star Wars: Episode IV - A New Hope",
         "year": "0 ABY",
         "type": "Live Action Film",
@@ -2582,11 +2581,11 @@
           }
         ],
         "synopsis": "A young farm boy intercepts a distress call from the captive Princess Leia.",
-        "id": "age-of-the-rebellion__star-wars-episode-iv-a-new-hope__film__0-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IV_A_New_Hope",
-        "watchUrl": "https://www.disneyplus.com/play/9a280e53-fcc0-4e17-a02c-b1f40913eb0b"
+        "watchUrl": "https://www.disneyplus.com/play/9a280e53-fcc0-4e17-a02c-b1f40913eb0b",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IV_A_New_Hope"
       },
       {
+        "id": "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby",
         "title": "The Star Wars Holiday Special",
         "year": "1 ABY",
         "type": "Live Action TV Film",
@@ -2603,10 +2602,10 @@
           }
         ],
         "synopsis": "Chewbacca and Han Solo attempt to visit the Wookiee home planet of Kashyyyk to celebrate \"Life Day\".",
-        "id": "age-of-the-rebellion__the-star-wars-holiday-special__film__1-aby",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/The_Star_Wars_Holiday_Special"
       },
       {
+        "id": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby",
         "title": "Star Wars: Episode V - The Empire Strikes Back",
         "year": "3 ABY",
         "type": "Live Action Film",
@@ -2623,17 +2622,17 @@
           }
         ],
         "synopsis": "Luke Skywalker trains as a Jedi and confronts Darth Vader.",
-        "id": "age-of-the-rebellion__star-wars-episode-v-the-empire-strikes-back__film__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_V_The_Empire_Strikes_Back",
-        "watchUrl": "https://www.disneyplus.com/play/0f5c5223-f4f6-46ef-ba8a-69cb0e17d8d3"
+        "watchUrl": "https://www.disneyplus.com/play/0f5c5223-f4f6-46ef-ba8a-69cb0e17d8d3",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_V_The_Empire_Strikes_Back"
       },
       {
+        "id": "age-of-the-rebellion__ewoks__show__3-aby",
         "title": "Ewoks",
         "year": "3 ABY",
         "type": "Animated Show",
         "canon": false,
         "poster": "./images/posters/ewoks-poster.jpg",
-        "episodes": 35,
+        "episodes": 26,
         "watched": 0,
         "releaseYear": "1985-1987",
         "episodeDetails": [
@@ -2769,11 +2768,11 @@
           }
         ],
         "synopsis": "Join your favorite, furry Star Wars heroes, the Ewoks, in an action-packed, animated series!",
-        "seasons": 2,
-        "id": "age-of-the-rebellion__ewoks__show__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Ewoks"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Ewoks",
+        "seasons": 2
       },
       {
+        "id": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby",
         "title": "Caravan of Courage: An Ewok Adventure",
         "year": "3 ABY",
         "type": "Live Action TV Film",
@@ -2790,11 +2789,11 @@
           }
         ],
         "synopsis": "After Cindel and Mace are separated from their parent, courageous Ewoks aid in reuiniting them.",
-        "id": "age-of-the-rebellion__caravan-of-courage-an-ewok-adventure__film__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Caravan_of_Courage:_An_Ewok_Adventure",
-        "watchUrl": "https://www.disneyplus.com/play/de308fb3-331d-44c1-a0fa-fb90c8b1ade2"
+        "watchUrl": "https://www.disneyplus.com/play/de308fb3-331d-44c1-a0fa-fb90c8b1ade2",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Caravan_of_Courage:_An_Ewok_Adventure"
       },
       {
+        "id": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby",
         "title": "Ewoks: The Battle for Endor",
         "year": "3 ABY",
         "type": "Live Action TV Film",
@@ -2811,11 +2810,11 @@
           }
         ],
         "synopsis": "The adventures of the Ewoks continue as Wicket and friends confront th evil Marauders.",
-        "id": "age-of-the-rebellion__ewoks-the-battle-for-endor__film__3-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Ewoks:_The_Battle_for_Endor",
-        "watchUrl": "https://www.disneyplus.com/play/1a3764d6-c7f7-4b54-938b-18faf67c0a98"
+        "watchUrl": "https://www.disneyplus.com/play/1a3764d6-c7f7-4b54-938b-18faf67c0a98",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Ewoks:_The_Battle_for_Endor"
       },
       {
+        "id": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby",
         "title": "Star Wars: Episode VI - Return of the Jedi",
         "year": "4 ABY",
         "type": "Live Action Film",
@@ -2832,9 +2831,8 @@
           }
         ],
         "synopsis": "Luke Skywalker faces Darth Vader in a final duel.",
-        "id": "age-of-the-rebellion__star-wars-episode-vi-return-of-the-jedi__film__4-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VI_Return_of_the_Jedi",
-        "watchUrl": "https://www.disneyplus.com/play/4b6e7cda-daa5-4f2d-9b61-35bbe562c69c"
+        "watchUrl": "https://www.disneyplus.com/play/4b6e7cda-daa5-4f2d-9b61-35bbe562c69c",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VI_Return_of_the_Jedi"
       }
     ]
   },
@@ -2843,6 +2841,7 @@
     "color": "#5B7FDB",
     "entries": [
       {
+        "id": "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
         "title": "Tales of the Empire - 20 BBY",
         "year": "between 5 and 9 ABY",
         "type": "Animated Show",
@@ -2859,11 +2858,11 @@
           }
         ],
         "synopsis": "A journey into the fearsome Galactic Empire through the eyes of two warriors on divergent paths.",
-        "seasons": 1,
-        "id": "the-new-republic__tales-of-the-empire-20-bby__show__between-5-and-9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Tales_of_the_Empire",
+        "seasons": 1
       },
       {
+        "id": "the-new-republic__the-mandalorian__show__9-aby",
         "title": "The Mandalorian",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -2955,11 +2954,11 @@
           }
         ],
         "synopsis": "After the Empire's fall, a lone Mandalorian makes his way through the galaxy with his foundling.",
-        "seasons": 2,
-        "id": "the-new-republic__the-mandalorian__show__9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Mandalorian"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Mandalorian",
+        "seasons": 2
       },
       {
+        "id": "the-new-republic__the-book-of-boba-fett__show__9-aby",
         "title": "The Book of Boba Fett",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -3006,11 +3005,11 @@
           }
         ],
         "synopsis": "No longer just a hired gun, Boba Fett reinvents himself on Tatooine alongside Fennec Shand.",
-        "seasons": 1,
-        "id": "the-new-republic__the-book-of-boba-fett__show__9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/The_Book_of_Boba_Fett"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/The_Book_of_Boba_Fett",
+        "seasons": 1
       },
       {
+        "id": "the-new-republic__the-mandalorian__show__9-aby--2",
         "title": "The Mandalorian",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -3062,11 +3061,11 @@
           }
         ],
         "synopsis": "After the Empire's fall, a lone Mandalorian makes his way through the galaxy with his foundling.",
-        "seasons": 3,
-        "id": "the-new-republic__the-mandalorian__show__9-aby--2",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Mandalorian"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_The_Mandalorian",
+        "seasons": 3
       },
       {
+        "id": "the-new-republic__ahsoka__show__9-aby",
         "title": "Ahsoka",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -3118,11 +3117,11 @@
           }
         ],
         "synopsis": "Former Jedi Knight Ahsoka Tano investigates an emerging threat to a vulnerable galaxy.",
-        "seasons": 1,
-        "id": "the-new-republic__ahsoka__show__9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Ahsoka"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Ahsoka",
+        "seasons": 1
       },
       {
+        "id": "the-new-republic__skeleton-crew__show__9-aby",
         "title": "Skeleton Crew",
         "year": "9 ABY",
         "type": "Live Action Show",
@@ -3168,15 +3167,13 @@
             "watchUrl": "https://www.disneyplus.com/play/2d840b21-59ff-4d75-afb3-b6c14effdb67"
           },
           {
-            "title": "S1.E8 - The Real Good Guys",
-            "time": "9 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/2e965642-4154-4515-9308-bf7be792de57"
+            "title": "S1.E8",
+            "time": "The Real Good Guys"
           }
         ],
         "synopsis": "Four ordinary kids search for their home planet after getting lost in the Star Wars galaxy.",
-        "seasons": 1,
-        "id": "the-new-republic__skeleton-crew__show__9-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Skeleton_Crew"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Skeleton_Crew",
+        "seasons": 1
       }
     ]
   },
@@ -3185,6 +3182,7 @@
     "color": "#ff0000",
     "entries": [
       {
+        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
@@ -3291,11 +3289,11 @@
           }
         ],
         "synopsis": "Kaz begins his spy mission, but is in over his head.",
-        "seasons": 1,
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance",
+        "seasons": 1
       },
       {
+        "id": "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby",
         "title": "Star Wars: Episode VII - The Force Awakens",
         "year": "34 ABY",
         "type": "Live Action Film",
@@ -3312,11 +3310,11 @@
           }
         ],
         "synopsis": "Rey, Finn, Han and Chewbacca search for the one hope of restoring peace.",
-        "id": "rise-of-the-first-order__star-wars-episode-vii-the-force-awakens__film__34-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VII_The_Force_Awakens",
-        "watchUrl": "https://www.disneyplus.com/play/2854a94d-3702-40bd-97a4-12d55a809188"
+        "watchUrl": "https://www.disneyplus.com/play/2854a94d-3702-40bd-97a4-12d55a809188",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VII_The_Force_Awakens"
       },
       {
+        "id": "rise-of-the-first-order__star-wars-resistance__show__2018-2020",
         "title": "Star Wars Resistance",
         "year": "34 ABY",
         "type": "Animated Show",
@@ -3328,21 +3326,19 @@
         "episodeDetails": [
           {
             "title": "S1.E20 - No Escape: Part 1",
-            "time": "34 ABY (takes place parallel to Star Wars Ep. 7)",
-            "watchUrl": "https://www.disneyplus.com/play/76903c76-8fd8-4fc5-bbf4-be6b55ff6c39"
+            "time": "34 ABY (takes place parallel to Star Wars Ep. 7)"
           },
           {
             "title": "S1.E21 - No Escape: Part 2",
-            "time": "34 ABY (takes place parallel to Star Wars Ep. 7)",
-            "watchUrl": "https://www.disneyplus.com/play/7fde7e86-4fd5-4214-abc8-919d8493695f"
+            "time": "34 ABY (takes place parallel to Star Wars Ep. 7)"
           }
         ],
         "synopsis": "Kaz begins his spy mission, but is in over his head.",
-        "seasons": 1,
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--2",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance"
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance",
+        "seasons": 1
       },
       {
+        "id": "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby",
         "title": "Star Wars: Episode VIII - The Last Jedi",
         "year": "34 ABY",
         "type": "Live Action Film",
@@ -3359,13 +3355,12 @@
           }
         ],
         "synopsis": "New heroes and galactic legends join to unlock mysteries of the Force.",
-        "id": "rise-of-the-first-order__star-wars-episode-viii-the-last-jedi__film__34-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VIII_The_Last_Jedi",
-        "watchUrl": "https://www.disneyplus.com/play/50c1aff5-3051-4839-9ebf-e332c635e216"
+        "watchUrl": "https://www.disneyplus.com/play/50c1aff5-3051-4839-9ebf-e332c635e216",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_VIII_The_Last_Jedi"
       },
       {
+        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--2",
         "title": "Star Wars Resistance",
-        "synopsis": "Kaz begins his spy mission, but is in over his head.",
         "year": "34 ABY",
         "type": "Animated Show",
         "canon": true,
@@ -3376,105 +3371,87 @@
         "episodeDetails": [
           {
             "title": "S2.E1 - Into the Unknown",
-            "time": "34 ABY (takes place parallel to Star Wars Ep. 8)",
-            "watchUrl": "https://www.disneyplus.com/play/e3283522-9086-4559-987f-866eefc06398"
+            "time": "34 ABY (takes place parallel to Star Wars Ep. 8)"
           },
           {
             "title": "S2.E2 - A quick Salvage Run",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/16f7ec39-b199-4868-a125-450a205a0eaf"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E3 - Live Fire",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/6ab16222-a772-4f00-a1e5-bbf6dc3b2565"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E4 - Hunt on Celsor 3",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/8e87a031-3be3-4d4e-9e08-326c3a305f0b"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E5 - The Engineer",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/2e592529-5557-4c3b-8ce3-677b032e96a3"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E6 - From Beneath",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/cd27b08c-b818-49e9-999c-7b1c75198709"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E7 - The Relic Raiders",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/0085e265-3558-4776-906e-49e4ef84d598"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E8 - Rendezvous Point",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/e9667394-0eda-4037-8049-29548c83ab56"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E9 - The Voxx Vortex 5000",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/473b8743-e530-469d-b81a-2559d10b346f"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E10 - Kaz's Curse",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/c8f1c014-174d-44da-8968-c40bb76560bc"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E11 - Station to Station",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/7561bd34-1306-4bf4-bbf2-abc6e68a04ab"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E12 - The Missing Agent",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/0cdbaad3-ffff-4a6b-88e7-c1e698771a7b"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E13 - Breakout",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/2748c7bd-4924-4db0-91d5-34695b51aa28"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E14 - The Mutiny",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/fee90d6f-2836-41e3-b5a1-f036a74bbfd0"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E15 - The New World",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/28f778e2-7fa9-4c65-ae92-634292509ebd"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E16 - No Place Safe",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/05b91fae-8d9d-4eaf-8656-678162b61b80"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E17 - Rebuilding the Resistance",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/3eb7905f-7d3d-4c85-8717-1989d7eb30fc"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E18 - The Escape Part 1",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/b4afa531-a03c-4c21-b9e9-d927270ee28b"
+            "time": "34 ABY"
           },
           {
             "title": "S2.E19 - The Escape Part 2",
-            "time": "34 ABY",
-            "watchUrl": "https://www.disneyplus.com/play/b4bd4dec-7ae8-451b-8c05-27ca0b6d3cc0"
+            "time": "34 ABY"
           }
         ],
-        "seasons": 2,
-        "id": "rise-of-the-first-order__star-wars-resistance__show__34-aby--3",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance"
+        "synopsis": "Kaz begins his spy mission, but is in over his head.",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars_Resistance",
+        "seasons": 2
       },
       {
+        "id": "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby",
         "title": "Star Wars: Episode IX - The Rise of Skywalker",
         "year": "35 ABY",
         "type": "Live Action Film",
@@ -3491,9 +3468,8 @@
           }
         ],
         "synopsis": "The landmarkr Skywalker saga comes to a conclusion.",
-        "id": "rise-of-the-first-order__star-wars-episode-ix-the-rise-of-skywalker__film__35-aby",
-        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IX_The_Rise_of_Skywalker",
-        "watchUrl": "https://www.disneyplus.com/play/43f9c275-e7e8-4ab3-802d-00d06a8ad841"
+        "watchUrl": "https://www.disneyplus.com/play/43f9c275-e7e8-4ab3-802d-00d06a8ad841",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_IX_The_Rise_of_Skywalker"
       }
     ]
   },
@@ -3502,6 +3478,7 @@
     "color": "#64748b",
     "entries": [
       {
+        "id": "non-timeline__star-wars-visions__media__unknown",
         "title": "Star Wars: Visions",
         "year": "Unknown",
         "type": "Various Styles",
@@ -3512,143 +3489,115 @@
         "releaseYear": "2021-2023",
         "episodeDetails": [
           {
-            "title": "S1.E1 - The Duel",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/96342486-d67b-453a-a994-b0426cd390bc"
+            "title": "S1.E1",
+            "time": "The Duel"
           },
           {
-            "title": "S1.E2 - Tatooine Rhapsody",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/86b4f165-3eed-44b4-9173-06c0307140fa"
+            "title": "S1.E2",
+            "time": "Tatooine Rhapsody"
           },
           {
-            "title": "S1.E3 - The Twins",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/61a9d886-4abf-4d83-bbae-47714cf0fbd3"
+            "title": "S1.E3",
+            "time": "THE TWINS"
           },
           {
-            "title": "S1.E4 - The Village Bride",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/8a775e8f-0885-415a-9386-31a461acdd30"
+            "title": "S1.E4",
+            "time": "The Village Bride"
           },
           {
-            "title": "S1.E5 - The Ninth Jedi",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/4982b1db-79ea-48d4-8a30-15486918ba01"
+            "title": "S1.E5",
+            "time": "The Ninth Jedi"
           },
           {
-            "title": "S1.E6 - T0-B1",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/85d746e3-a119-42a3-af3d-866bbcd10cf4"
+            "title": "S1.E6",
+            "time": "T0-B1"
           },
           {
-            "title": "S1.E7 - The Elder",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/3dad65f3-576d-4198-9d58-229bc632abc0"
+            "title": "S1.E7",
+            "time": "The Elder"
           },
           {
-            "title": "S1.E8 - Lop & Och\u014d",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/f3260cb9-8afe-4d86-81f3-bf5d42cb94e7"
+            "title": "S1.E8",
+            "time": "Lop & Ochō"
           },
           {
-            "title": "S1.E9 - Akakiri",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/3947f528-8144-4cb6-b4af-98ba77dab9dd"
+            "title": "S1.E9",
+            "time": "Akakiri"
           },
           {
-            "title": "S2.E1 - Sith",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/b2134660-bb9e-434b-8d34-cfb4bf6a5722"
+            "title": "S2.E1",
+            "time": "Sith"
           },
           {
-            "title": "S2.E2 - Screecher's Reach",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/70fcb9da-8f57-4141-b13d-b8c3bc2f6e27"
+            "title": "S2.E2",
+            "time": "Screecher's Reach"
           },
           {
-            "title": "S2.E3 - In the Stars",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/354a4138-cfd5-446f-8481-5176e0f1fd54"
+            "title": "S2.E3",
+            "time": "In the Stars"
           },
           {
-            "title": "S2.E4 - I Am Your Mother",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/8139007b-6a1b-4a2d-a34e-1c103558ef86"
+            "title": "S2.E4",
+            "time": "I Am Your Mother"
           },
           {
-            "title": "S2.E5 - Journey to the Dark Head",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/9308a48b-078e-4725-a61a-47aa5465b0b6"
+            "title": "S2.E5",
+            "time": "Journey to the Dark Head"
           },
           {
-            "title": "S2.E6 - The Spy Dancer",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/44490397-7c8a-4940-b430-ce7b439d1b9d"
+            "title": "S2.E6",
+            "time": "The Spy Dancer"
           },
           {
-            "title": "S2.E7 - The Bandits of Golak",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/5ed5f73b-e5ea-49da-8ad1-9a0e74a508e1"
+            "title": "S2.E7",
+            "time": "The Bandits of Golak"
           },
           {
-            "title": "S2.E8 - The Pit",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/bdef89b2-faf2-41cc-b3b2-69c3e4c55ac6"
+            "title": "S2.E8",
+            "time": "The Pit"
           },
           {
-            "title": "S2.E9 - Aau's Song",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/cc7415c3-6373-491f-8d26-d73c3b9eebce"
+            "title": "S2.E9",
+            "time": "Aau's Song"
           },
           {
-            "title": "S3.E1 - The Duel: Payback",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/1e09d07d-733e-4fcb-bcd9-d0e376656bae"
+            "title": "S3.E1",
+            "time": "The Duel: Payback"
           },
           {
-            "title": "S3.E2 - The Song of Four Wings",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/8700a18e-1025-44a4-9124-35c074134500"
+            "title": "S3.E2",
+            "time": "The Song of Four Wings"
           },
           {
-            "title": "S3.E3 - The Ninth Jedi: Child of Hope",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/e64f493e-7e7c-4258-83d1-933482088bf1"
+            "title": "S3.E3",
+            "time": "The Ninth Jedi: Child of Hope"
           },
           {
-            "title": "S3.E4 - The Bounty Hunters",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/4e757864-2288-4791-93d8-ed9c6c5fa533"
+            "title": "S3.E4",
+            "time": "The Bounty Hunters"
           },
           {
-            "title": "S3.E5 - Yuko's Treasure",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/a0032e54-760f-4393-9a63-cb0b1269413b"
+            "title": "S3.E5",
+            "time": "Yuko's Treasure"
           },
           {
-            "title": "S3.E6 - The Lost Ones",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/fe7ca33f-dce9-4de7-86c1-ff2221edf08a"
+            "title": "S3.E6",
+            "time": "The Lost Ones"
           },
           {
-            "title": "S3.E7 - The Smuggler",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/98f79f62-1e42-4f4e-aeca-852f0ba881ed"
+            "title": "S3.E7",
+            "time": "The Smuggler"
           },
           {
-            "title": "S3.E8 - The Bird of Paradise",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/290c2c32-b151-4b3d-81b4-c5b29bd5c54c"
+            "title": "S3.E8",
+            "time": "The Bird of Paradise"
           },
           {
-            "title": "S3.E9 - BLACK",
-            "time": "Unknown",
-            "watchUrl": "https://www.disneyplus.com/play/8b74f0a3-361d-45d7-8fd1-df4bef63ad38"
+            "title": "S3.E9",
+            "time": "BLACK"
           }
         ],
         "synopsis": "The anthology series returns featuring nine new anime stories from legendary Japanese studios that will celebrate the mythos of Star Wars through their unique styles.",
-        "id": "non-timeline__star-wars-visions__media__unknown",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Visions"
       }
     ]

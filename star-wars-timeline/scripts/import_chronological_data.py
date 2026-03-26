@@ -1,13 +1,26 @@
+#!/usr/bin/env python3
+"""Import chronology markdown into a generated timeline JSON snapshot.
+
+Inputs:
+- Chronological Viewing Order.md at the project root
+- data/timeline-data.json for existing metadata such as posters, ids, and synopsis
+
+Outputs:
+- archive/timeline-data-imported.json
+- archive/timeline-data.backup.json (created once from the live data file)
+"""
+
 import json
 import re
+from collections import defaultdict
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 MARKDOWN_PATH = ROOT / "Chronological Viewing Order.md"
 SOURCE_JSON_PATH = ROOT / "data" / "timeline-data.json"
-OUTPUT_JSON_PATH = ROOT / "timeline-data-imported.json"
-BACKUP_JSON_PATH = ROOT / "timeline-data.backup.json"
+OUTPUT_JSON_PATH = ROOT / "archive" / "timeline-data-imported.json"
+BACKUP_JSON_PATH = ROOT / "archive" / "timeline-data.backup.json"
 
 
 EPISODE_RE = re.compile(r"^\*\s+\[(?P<checked>[xX\s])\]\s+(?P<body>.+)$")
@@ -58,6 +71,16 @@ def build_entry_key(title: str, year: str, media_type: str, release_year: str) -
     )
 
 
+def build_entry_key_without_year(title: str, media_type: str, release_year: str) -> str:
+    return "|".join(
+        [
+            normalize_title(title),
+            normalize_id_token(media_type),
+            normalize_id_token(release_year),
+        ]
+    )
+
+
 def generate_stable_entry_id(era_name: str, title: str, media_type: str, year: str, release_year: str, used_ids: dict) -> str:
     era_token = normalize_id_token(era_name) or "era"
     title_token = normalize_id_token(title) or "entry"
@@ -87,6 +110,8 @@ def looks_like_year(text: str) -> bool:
     if not value:
         return False
     if "bby" in value or "aby" in value:
+        return True
+    if value == "unknown":
         return True
     if value == "various":
         return True
@@ -120,7 +145,11 @@ def parse_media_header(stripped: str):
             chunks.pop(-2)
             title = " - ".join(chunks).strip()
     else:
-        year_match = re.match(r"^(?P<title>.+?)\s+(?P<year>(?:\d+(?:-\d+)?\s*(?:BBY|ABY)|between\s+.+|approx\.?.+|Various))$", head, flags=re.IGNORECASE)
+        year_match = re.match(
+            r"^(?P<title>.+?)\s+(?P<year>(?:\d+(?:-\d+)?\s*(?:BBY|ABY)|between\s+.+|approx\.?.+|Various|Unknown))$",
+            head,
+            flags=re.IGNORECASE,
+        )
         if year_match:
             title = year_match.group("title").strip()
             year = year_match.group("year").strip()
@@ -155,16 +184,41 @@ def derive_seasons(episode_titles):
     return None
 
 
+def normalize_episode_title_key(title: str) -> str:
+    return clean_episode_text(title).lower()
+
+
+def build_existing_entry_metadata(entry: dict):
+    episode_details = entry.get("episodeDetails", [])
+    episode_map = {}
+    for episode in episode_details:
+        title = episode.get("title", "")
+        if title:
+            episode_map[normalize_episode_title_key(title)] = episode
+
+    return {
+        "poster": entry.get("poster", ""),
+        "synopsis": entry.get("synopsis", ""),
+        "id": entry.get("id", ""),
+        "year": entry.get("year", ""),
+        "watchUrl": entry.get("watchUrl", ""),
+        "wookieepediaUrl": entry.get("wookieepediaUrl", ""),
+        "episodeDetails": episode_details,
+        "episodeMap": episode_map,
+    }
+
+
 def load_existing_metadata(path: Path):
     if not path.exists():
-        return {}, {}
+        return {}, {}, {}
 
     with path.open("r", encoding="utf-8") as f:
         data = json.load(f)
 
     era_colors = {}
-    title_metadata = {}
-    title_fallback_metadata = {}
+    title_metadata = defaultdict(list)
+    title_type_release_metadata = defaultdict(list)
+    title_fallback_metadata = defaultdict(list)
 
     for era in data:
         era_name = era.get("era", "").strip()
@@ -182,21 +236,77 @@ def load_existing_metadata(path: Path):
                 entry.get("type", ""),
                 entry.get("releaseYear", ""),
             )
-            metadata = {
-                "poster": entry.get("poster", ""),
-                "synopsis": entry.get("synopsis", ""),
-                "id": entry.get("id", ""),
-            }
-            title_metadata[key] = metadata
-            title_fallback_metadata[norm] = metadata
+            title_type_release_key = build_entry_key_without_year(
+                entry.get("title", ""),
+                entry.get("type", ""),
+                entry.get("releaseYear", ""),
+            )
+            metadata = build_existing_entry_metadata(entry)
+            title_metadata[key].append(metadata)
+            title_type_release_metadata[title_type_release_key].append(metadata)
+            title_fallback_metadata[norm].append(metadata)
 
-    return era_colors, title_metadata, title_fallback_metadata
+    return era_colors, title_metadata, title_type_release_metadata, title_fallback_metadata
 
 
-def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict, title_fallback_metadata: dict):
+def pop_existing_metadata(title_metadata, title_type_release_metadata, title_fallback_metadata, title, year, media_type, release_year):
+    exact_key = build_entry_key(title, year, media_type, release_year)
+    exact_matches = title_metadata.get(exact_key)
+    if exact_matches:
+        return exact_matches.pop(0)
+
+    type_release_key = build_entry_key_without_year(title, media_type, release_year)
+    type_release_matches = title_type_release_metadata.get(type_release_key)
+    if type_release_matches:
+        return type_release_matches.pop(0)
+
+    fallback_matches = title_fallback_metadata.get(normalize_title(title))
+    if fallback_matches and len(fallback_matches) == 1:
+        return fallback_matches.pop(0)
+
+    return {}
+
+
+def merge_existing_entry_data(current_entry: dict, existing: dict, used_ids: dict):
+    if not existing:
+        return current_entry
+
+    existing_id = existing.get("id", "")
+    if existing_id and used_ids.get(existing_id, 0) == 0:
+        current_entry["id"] = existing_id
+        used_ids[existing_id] = 1
+
+    if not current_entry.get("year") and existing.get("year"):
+        current_entry["year"] = existing["year"]
+
+    for key in ("poster", "synopsis", "watchUrl", "wookieepediaUrl"):
+        if existing.get(key):
+            current_entry[key] = existing[key]
+
+    return current_entry
+
+
+def merge_existing_episode_data(current_episode: dict, existing_entry: dict):
+    if not existing_entry:
+        return current_episode
+
+    episode_map = existing_entry.get("episodeMap", {})
+    existing_episode = episode_map.get(normalize_episode_title_key(current_episode.get("title", "")))
+    if not existing_episode:
+        return current_episode
+
+    for key, value in existing_episode.items():
+        if key not in current_episode and value not in (None, ""):
+            current_episode[key] = value
+
+    return current_episode
+
+
+def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict, title_type_release_metadata: dict, title_fallback_metadata: dict):
     imported = []
     current_era = None
     current_entry = None
+    current_existing = {}
     used_ids = {}
 
     for raw_line in markdown_text.splitlines():
@@ -218,6 +328,7 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
             }
             imported.append(current_era)
             current_entry = None
+            current_existing = {}
             continue
 
         media_header = parse_media_header(stripped)
@@ -226,15 +337,19 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
             media_year = media_header["year"]
             release_year, media_type, is_canon = split_meta(media_header["meta"])
 
-            metadata_key = build_entry_key(media_title, media_year, media_type, release_year)
-            existing = title_metadata.get(metadata_key, {})
-            if not existing:
-                normalized = normalize_title(media_title)
-                existing = title_fallback_metadata.get(normalized, {})
+            existing = pop_existing_metadata(
+                title_metadata,
+                title_type_release_metadata,
+                title_fallback_metadata,
+                media_title,
+                media_year,
+                media_type,
+                release_year,
+            )
 
             poster = existing.get("poster") or f"./images/posters/{title_to_slug(media_title)}-poster.jpg"
             synopsis = existing.get("synopsis", "")
-            stable_id = existing.get("id") or generate_stable_entry_id(
+            stable_id = generate_stable_entry_id(
                 current_era["era"],
                 media_title,
                 media_type,
@@ -259,6 +374,9 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
             if synopsis:
                 current_entry["synopsis"] = synopsis
 
+            current_entry = merge_existing_entry_data(current_entry, existing, used_ids)
+            current_existing = existing
+
             current_era["entries"].append(current_entry)
             continue
 
@@ -269,12 +387,13 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
             episode_title = clean_episode_text(episode_title)
             episode_time = clean_episode_text(episode_time)
 
-            current_entry["episodeDetails"].append(
-                {
-                    "title": episode_title,
-                    "time": episode_time,
-                }
-            )
+            episode_entry = {
+                "title": episode_title,
+                "time": episode_time,
+            }
+            episode_entry = merge_existing_episode_data(episode_entry, current_existing)
+
+            current_entry["episodeDetails"].append(episode_entry)
             current_entry["episodes"] += 1
             if is_watched:
                 current_entry["watched"] += 1
@@ -292,19 +411,32 @@ def build_import_data(markdown_text: str, era_colors: dict, title_metadata: dict
 
 
 def main():
-    if SOURCE_JSON_PATH.exists() and not BACKUP_JSON_PATH.exists():
+    if SOURCE_JSON_PATH.exists():
         BACKUP_JSON_PATH.write_text(SOURCE_JSON_PATH.read_text(encoding="utf-8"), encoding="utf-8")
 
     markdown_text = MARKDOWN_PATH.read_text(encoding="utf-8")
-    era_colors, title_metadata, title_fallback_metadata = load_existing_metadata(SOURCE_JSON_PATH)
-    imported = build_import_data(markdown_text, era_colors, title_metadata, title_fallback_metadata)
+    era_colors, title_metadata, title_type_release_metadata, title_fallback_metadata = load_existing_metadata(SOURCE_JSON_PATH)
+    imported = build_import_data(
+        markdown_text,
+        era_colors,
+        title_metadata,
+        title_type_release_metadata,
+        title_fallback_metadata,
+    )
 
     OUTPUT_JSON_PATH.write_text(
         json.dumps(imported, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    SOURCE_JSON_PATH.write_text(
+        json.dumps(imported, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
-    print(f"Imported {len(imported)} eras into {OUTPUT_JSON_PATH.name}")
+    print(
+        f"Imported {len(imported)} eras into {OUTPUT_JSON_PATH.name} "
+        f"and updated {SOURCE_JSON_PATH.name} (backup: {BACKUP_JSON_PATH.name})"
+    )
 
 
 if __name__ == "__main__":

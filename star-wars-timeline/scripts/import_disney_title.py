@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""Import Disney+ play URLs into data/timeline-data.json.
+
+Inputs:
+- --entity-url for the Disney+ title page
+- one or more --entry-id values from timeline-data.json
+- optional --film for single-play titles
+
+Prerequisites:
+- selenium + Firefox webdriver available locally
+- a logged-in Firefox profile with Disney+ access
+"""
 
 import argparse
 import json
