@@ -6,9 +6,7 @@ export function hasActiveOverlay(appState) {
 }
 
 export function getCurrentPage(appState) {
-  if (appState.isPreferencesOpen) return "preferences";
-  if (appState.isStatsOpen) return "stats";
-  return "timeline";
+  return appState.currentPage || "timeline";
 }
 
 export function prefersReducedMotion() {
@@ -52,6 +50,10 @@ export function initializeActiveSectionTracking({
     targetIds = ["prefs-temporal", "prefs-content", "prefs-interface", "prefs-system"];
   } else if (currentPage === "stats") {
     targetIds = ["stats-overview", "stats-era-breakdown", "stats-media-distribution", "stats-next-objective"];
+  } else if (currentPage === "guide" || currentPage === "privacy" || currentPage === "terms") {
+    targetIds = Array.from(document.querySelectorAll("[data-scroll-target]"))
+      .map((button) => button.getAttribute("data-scroll-target"))
+      .filter(Boolean);
   } else {
     targetIds = Array.from(document.querySelectorAll("[data-scroll-target]"))
       .map((button) => button.getAttribute("data-scroll-target"))

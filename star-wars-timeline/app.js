@@ -19,7 +19,10 @@ import {
 } from "./modules/filters.js";
 import {
   buildEntryShareUrl as createEntryShareUrl,
+  buildPageUrl as createPageUrl,
   getEntryIdFromUrl as readEntryIdFromUrl,
+  getPageFromUrl as readPageFromUrl,
+  syncPageUrl as syncHistoryPageUrl,
   syncEntryUrl as syncHistoryEntryUrl
 } from "./modules/routing.js";
 import {
@@ -36,9 +39,7 @@ import {
   renderModal
 } from "./modules/timeline-renderers.js";
 import {
-  renderFilterPanel as buildFilterPanel,
-  renderPreferencesPanel as buildPreferencesPanel,
-  renderStatsPanel as buildStatsPanel
+  renderFilterPanel as buildFilterPanel
 } from "./modules/utility-renderers.js";
 import {
   renderDesktopSidebar,
@@ -73,9 +74,9 @@ const appState = {
   entries: [],
   entryMap: new Map(),
   activeEntryId: null,
+  currentPage: "timeline",
   isFilterPanelOpen: false,
-  isStatsOpen: false,
-  isPreferencesOpen: false,
+  filterPanelScrollTop: 0,
   filters: null,
   filterDraft: null,
   searchInputValue: "",
@@ -123,7 +124,10 @@ const domain = createAppDomain({
   buildFilteredSections,
   createEntryShareUrl,
   syncHistoryEntryUrl,
+  createPageUrl,
+  syncHistoryPageUrl,
   readEntryIdFromUrl,
+  readPageFromUrl,
   buildEntryIndex,
   getEntrySearchText,
   getWatchedCount,
@@ -135,19 +139,6 @@ const renderFilterPanel = () => buildFilterPanel({
   isOpen: appState.isFilterPanelOpen,
   filters: appState.filterDraft,
   eras: domain.getAllEraNames(),
-  escapeHtml
-});
-
-const renderStatsPanel = () => buildStatsPanel({
-  isOpen: appState.isStatsOpen,
-  timelineData: appState.timelineData,
-  entries: appState.entries,
-  escapeHtml
-});
-
-const renderPreferencesPanel = () => buildPreferencesPanel({
-  isOpen: appState.isPreferencesOpen,
-  preferences: appState.preferences,
   escapeHtml
 });
 
@@ -163,8 +154,6 @@ const { renderApp } = createAppRenderer({
   renderModal,
   renderDesktopSection,
   renderMobileSection,
-  renderStatsPanel,
-  renderPreferencesPanel,
   buildRenderShellOptions,
   renderAppMainContent,
   renderShellLayout,
@@ -186,6 +175,7 @@ const viewActions = createViewActions({
   appState,
   renderApp,
   syncEntryUrl: domain.syncEntryUrl,
+  syncPageUrl: domain.syncPageUrl,
   getModalEntryNavigation: domain.getModalEntryNavigation,
   cloneFilters,
   playUiSound: (...args) => appActions.playUiSound(...args),
@@ -247,6 +237,7 @@ attachGlobalKeyHandlers({
 
 window.addEventListener("popstate", () => {
   if (!appState.timelineData.length) return;
+  domain.applyPageStateFromUrl(renderApp, { shouldRender: false });
   domain.applyEntryStateFromUrl(renderApp);
 });
 
@@ -262,6 +253,7 @@ bootstrapApp({
   applyPreferencesToDocument,
   createDefaultFilters: domain.createDefaultFilters,
   cloneFilters,
+  applyPageStateFromUrl: (options) => domain.applyPageStateFromUrl(renderApp, options),
   applyEntryStateFromUrl: (options) => domain.applyEntryStateFromUrl(renderApp, options),
   renderApp,
   escapeHtml

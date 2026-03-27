@@ -6,7 +6,10 @@ export function createAppDomain({
   buildFilteredSections,
   createEntryShareUrl,
   syncHistoryEntryUrl,
+  createPageUrl,
+  syncHistoryPageUrl,
   readEntryIdFromUrl,
+  readPageFromUrl,
   buildEntryIndex,
   getEntrySearchText,
   getWatchedCount,
@@ -73,11 +76,44 @@ export function createAppDomain({
     syncHistoryEntryUrl(entry, buildEntryShareUrl, { mode });
   }
 
+  function buildAppPageUrl(page) {
+    return createPageUrl(page);
+  }
+
+  function syncPageUrl(page, { mode = "replace" } = {}) {
+    syncHistoryPageUrl(page, buildAppPageUrl, { mode });
+  }
+
   function getEntryIdFromUrl() {
     return readEntryIdFromUrl();
   }
 
+  function getPageFromUrl() {
+    return readPageFromUrl();
+  }
+
+  function applyPageStateFromUrl(renderApp, { shouldRender = true } = {}) {
+    const page = getPageFromUrl();
+    appState.currentPage = page;
+    if (page !== "timeline") {
+      appState.activeEntryId = null;
+      appState.isFilterPanelOpen = false;
+      appState.pendingOverlayFocusSelector = null;
+    }
+    if (shouldRender) {
+      renderApp(appState.timelineData);
+    }
+  }
+
   function applyEntryStateFromUrl(renderApp, { shouldRender = true } = {}) {
+    if (appState.currentPage !== "timeline") {
+      appState.activeEntryId = null;
+      syncEntryUrl(null, { mode: "replace" });
+      if (shouldRender) {
+        renderApp(appState.timelineData);
+      }
+      return;
+    }
     const entryId = getEntryIdFromUrl();
     const nextEntryId = entryId && appState.entryMap.has(entryId) ? entryId : null;
     if (entryId && !nextEntryId) {
@@ -106,6 +142,9 @@ export function createAppDomain({
     getModalEntryNavigation,
     buildEntryShareUrl,
     syncEntryUrl,
+    buildAppPageUrl,
+    syncPageUrl,
+    applyPageStateFromUrl,
     applyEntryStateFromUrl,
     rebuildEntryIndex
   };

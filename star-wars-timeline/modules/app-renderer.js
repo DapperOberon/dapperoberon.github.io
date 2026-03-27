@@ -1,4 +1,5 @@
 import { calculateStats } from "./stats.js";
+import { getNextObjective } from "./timeline-data.js";
 import { getCurrentPage } from "./app-ui-helpers.js";
 
 export function escapeHtml(value) {
@@ -20,8 +21,6 @@ export function createAppRenderer({
   renderModal,
   renderDesktopSection,
   renderMobileSection,
-  renderStatsPanel,
-  renderPreferencesPanel,
   buildRenderShellOptions,
   renderAppMainContent,
   renderShellLayout,
@@ -42,7 +41,7 @@ export function createAppRenderer({
     const flatEntries = appState.entries;
     const stats = calculateStats(normalizedSections);
     const currentPage = getCurrentPage(appState);
-    const heroEntry = flatEntries.find((entry) => !entry.watched || entry.watched < entry.episodes) || flatEntries[0];
+    const heroEntry = getNextObjective(flatEntries) || flatEntries[0];
     const activeEntry = appState.entryMap.get(appState.activeEntryId) || null;
     const filteredSections = getFilteredSections();
     const filteredEntries = filteredSections.flatMap((section) => section.entries);
@@ -74,11 +73,12 @@ export function createAppRenderer({
       filteredEntries,
       filteredSections,
       normalizedSections,
+      timelineData: normalizedSections,
+      preferences: appState.preferences,
+      searchInputValue: appState.searchInputValue,
       escapeHtml: escapeHtmlFn,
       renderDesktopSection: (section, startIndex) => renderDesktopSection(section, startIndex, { escapeHtml: escapeHtmlFn }),
-      renderMobileSection: (section) => renderMobileSection(section, { escapeHtml: escapeHtmlFn }),
-      renderStatsPanel,
-      renderPreferencesPanel
+      renderMobileSection: (section) => renderMobileSection(section, { escapeHtml: escapeHtmlFn })
     });
 
     app.innerHTML = renderShellLayout({
@@ -90,6 +90,14 @@ export function createAppRenderer({
       footer: shellOptions.footer,
       overlays
     });
+
+    if (appState.isFilterPanelOpen) {
+      const scrollRegion = Array.from(document.querySelectorAll("[data-filter-scroll-region]"))
+        .find((element) => element instanceof HTMLElement && element.offsetParent !== null);
+      if (scrollRegion instanceof HTMLElement) {
+        scrollRegion.scrollTop = appState.filterPanelScrollTop || 0;
+      }
+    }
 
     wireInteractions();
     restorePendingFocus(appState);

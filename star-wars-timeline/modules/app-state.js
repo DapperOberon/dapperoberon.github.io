@@ -97,13 +97,6 @@ export function attachGlobalKeyHandlers({
       viewActions.closeFilters();
       return;
     }
-    if (appState.isPreferencesOpen) {
-      viewActions.closePreferences();
-      return;
-    }
-    if (appState.isStatsOpen) {
-      viewActions.closeStats();
-    }
   });
 }
 
@@ -120,6 +113,7 @@ export async function bootstrapApp({
   applyPreferencesToDocument,
   createDefaultFilters,
   cloneFilters,
+  applyPageStateFromUrl,
   applyEntryStateFromUrl,
   renderApp,
   escapeHtml
@@ -139,6 +133,7 @@ export async function bootstrapApp({
     appState.filters = createDefaultFilters();
     appState.filterDraft = cloneFilters(appState.filters);
     appState.searchInputValue = "";
+    applyPageStateFromUrl({ shouldRender: false });
     applyEntryStateFromUrl({ shouldRender: false });
     renderApp(appState.timelineData);
   } catch (error) {

@@ -53,6 +53,7 @@ export function createViewActions({
   appState,
   renderApp,
   syncEntryUrl,
+  syncPageUrl,
   getModalEntryNavigation,
   cloneFilters,
   playUiSound,
@@ -62,7 +63,7 @@ export function createViewActions({
     appState.activeEntryId = null;
     appState.isFilterPanelOpen = false;
     appState.pendingOverlayFocusSelector = null;
-    syncEntryUrl(null, { mode: "push" });
+    syncEntryUrl(null, { mode: "replace" });
   }
 
   function openModal(entryId) {
@@ -101,13 +102,14 @@ export function createViewActions({
 
   function openStats() {
     clearOverlaysForPageChange();
-    appState.isStatsOpen = true;
-    appState.isPreferencesOpen = false;
+    appState.currentPage = "stats";
+    syncPageUrl("stats", { mode: "push" });
     renderApp(appState.timelineData);
   }
 
   function closeStats(shouldRender = true) {
-    appState.isStatsOpen = false;
+    appState.currentPage = "timeline";
+    syncPageUrl("timeline", { mode: shouldRender ? "push" : "replace" });
     if (shouldRender) {
       renderApp(appState.timelineData);
     }
@@ -115,17 +117,24 @@ export function createViewActions({
 
   function openPreferences() {
     clearOverlaysForPageChange();
-    appState.isPreferencesOpen = true;
-    appState.isStatsOpen = false;
+    appState.currentPage = "preferences";
+    syncPageUrl("preferences", { mode: "push" });
     renderApp(appState.timelineData);
   }
 
   function closePreferences(shouldRender = true) {
-    appState.isPreferencesOpen = false;
-    appState.isStatsOpen = false;
+    appState.currentPage = "timeline";
+    syncPageUrl("timeline", { mode: shouldRender ? "push" : "replace" });
     if (shouldRender) {
       renderApp(appState.timelineData);
     }
+  }
+
+  function openPage(page) {
+    clearOverlaysForPageChange();
+    appState.currentPage = page;
+    syncPageUrl(page, { mode: "push" });
+    renderApp(appState.timelineData);
   }
 
   function openFilters() {
@@ -152,6 +161,7 @@ export function createViewActions({
     closeStats,
     openPreferences,
     closePreferences,
+    openPage,
     openFilters,
     closeFilters
   };

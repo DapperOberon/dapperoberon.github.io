@@ -1,17 +1,16 @@
 export function initializeShellInteractions({
-  searchInputValue,
   onSearchInput,
   onScrollTarget,
   onNavigatePage,
   onOpenStats,
   onOpenPreferences
 }) {
-  const searchInput = document.getElementById("timeline-search-input");
-  if (searchInput && typeof onSearchInput === "function") {
+  document.querySelectorAll("[data-search-input]").forEach((searchInput) => {
+    if (!(searchInput instanceof HTMLInputElement) || typeof onSearchInput !== "function") return;
     searchInput.addEventListener("input", (event) => {
-      onSearchInput(event, searchInputValue);
+      onSearchInput(event);
     });
-  }
+  });
 
   document.querySelectorAll("[data-scroll-target]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -118,6 +117,12 @@ export function initializeAppInteractions(callbacks) {
   });
 
   document.querySelectorAll("[data-filter-era]").forEach((button) => {
+    if (button instanceof HTMLInputElement) {
+      button.addEventListener("change", () => {
+        onToggleFilterEra?.(button.getAttribute("data-filter-era"), button.checked);
+      });
+      return;
+    }
     button.addEventListener("click", () => {
       onToggleFilterEra?.(button.getAttribute("data-filter-era"));
     });
