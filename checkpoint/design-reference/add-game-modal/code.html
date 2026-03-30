@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-surface": "#e4e2e3",
+            "on-error-container": "#ffdad6",
+            "on-secondary-container": "#8dc0d2",
+            "tertiary-fixed-dim": "#ffba3d",
+            "surface-tint": "#3cd7ff",
+            "on-tertiary-fixed-variant": "#604100",
+            "secondary": "#9bcee1",
+            "outline-variant": "#3c494e",
+            "outline": "#859398",
+            "tertiary-fixed": "#ffdeae",
+            "on-primary-fixed-variant": "#004e5f",
+            "error": "#ffb4ab",
+            "on-background": "#e4e2e3",
+            "surface-container": "#1f2021",
+            "inverse-primary": "#00677e",
+            "on-secondary-fixed": "#001f27",
+            "surface-container-lowest": "#0d0e0f",
+            "tertiary-container": "#feb528",
+            "on-primary": "#003642",
+            "surface-variant": "#343536",
+            "primary": "#a8e8ff",
+            "secondary-fixed-dim": "#9bcee1",
+            "on-primary-fixed": "#001f27",
+            "error-container": "#93000a",
+            "on-primary-container": "#00586b",
+            "on-surface": "#e4e2e3",
+            "surface-bright": "#39393a",
+            "surface-container-highest": "#343536",
+            "inverse-on-surface": "#303031",
+            "surface": "#121314",
+            "secondary-container": "#174f5f",
+            "primary-container": "#00d4ff",
+            "surface-container-high": "#292a2b",
+            "primary-fixed-dim": "#3cd7ff",
+            "on-tertiary-fixed": "#281900",
+            "on-tertiary-container": "#6c4900",
+            "surface-container-low": "#1b1c1d",
+            "on-surface-variant": "#bbc9cf",
+            "surface-dim": "#121314",
+            "on-secondary": "#003642",
+            "tertiary": "#ffd9a1",
+            "on-error": "#690005",
+            "background": "#121314",
+            "primary-fixed": "#b4ebff",
+            "on-tertiary": "#432c00",
+            "secondary-fixed": "#b7ebfd",
+            "on-secondary-fixed-variant": "#144d5c"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Manrope"],
+            "label": ["Space Grotesk"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-panel {
+      background: rgba(27, 28, 29, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .hud-line {
+      border-bottom: 1px solid rgba(60, 73, 78, 0.3);
+    }
+    .hud-line:focus-within {
+      border-bottom-color: #a8e8ff;
+      box-shadow: 0 4px 12px -4px rgba(0, 212, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen selection:bg-primary/30 selection:text-primary">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full flex flex-col justify-between py-10 bg-zinc-950 dark:bg-[#1b1c1d] shadow-2xl shadow-black/50 w-64 z-10">
+<div>
+<div class="px-8 mb-12">
+<h2 class="font-headline font-black tracking-tighter text-2xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-500">The Curator</h2>
+<p class="font-label uppercase tracking-widest text-[10px] text-zinc-500 mt-1">Master Collector</p>
+</div>
+<nav class="flex flex-col">
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">library_books</span>
+<span class="font-label uppercase tracking-widest text-xs font-semibold">Library</span>
+</a>
+<a class="bg-gradient-to-r from-cyan-500/10 to-transparent text-cyan-400 border-l-4 border-cyan-400 py-4 px-6 flex items-center gap-4 group" href="#">
+<span class="material-symbols-outlined scale-110 transition-transform">add_circle</span>
+<span class="font-label uppercase tracking-widest text-xs font-semibold">Add Game</span>
+</a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">sync</span>
+<span class="font-label uppercase tracking-widest text-xs font-semibold">Sync</span>
+</a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+<span class="font-label uppercase tracking-widest text-xs font-semibold">Settings</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col">
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">help</span>
+<span class="font-label uppercase tracking-widest text-xs font-semibold">Support</span>
+</a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">logout</span>
+<span class="font-label uppercase tracking-widest text-xs font-semibold">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 p-12 min-h-screen relative overflow-hidden">
+<!-- Background Decor -->
+<div class="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -mr-96 -mt-96 pointer-events-none"></div>
+<!-- Dashboard Mockup Content -->
+<header class="mb-12">
+<h1 class="font-headline text-5xl font-extrabold tracking-tight mb-2">Central Archive</h1>
+<p class="font-label text-secondary uppercase tracking-[0.3em] text-xs">System Version 4.0.2 // Status: Ready</p>
+</header>
+<div class="grid grid-cols-4 gap-6">
+<!-- Mock Game Cards -->
+<div class="aspect-[3/4] bg-surface-container-high rounded-md overflow-hidden relative group cursor-pointer transition-transform hover:scale-[1.02] shadow-black/40 shadow-xl">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Dark fantasy landscape with glowing orange embers and a lone warrior overlooking a ruined kingdom in cinematic style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgSCedbz5F5Zvf7_FA0gs1ZA7_J1KOxkgqh8kpJZqpKHAWag-hdNgeufU7_EimHHcaNSAmNcZfAXpwW0J0B2ya8LdJ_FK0lCZx1osDmjegGNeoVoaWl7AiqmcYMKmPKWcKQwoCxnSub64lu1XEMYnO6OBkdEvjWYaNMFkaSYjPSomtGzcgcjJlC9QEAGOsJzVMRrOGHBaqO-OigIxSkv5C4gyNUCf-n84rW6GMX74bgDgHsJB2zRlvou_nDy_rJSHmeYNgif-TKdk"/>
+<div class="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black to-transparent">
+<p class="font-label text-[10px] text-primary uppercase tracking-widest mb-1">Elden Ring</p>
+<p class="font-headline font-bold text-sm">Shadow of the Erdtree</p>
+</div>
+</div>
+<div class="aspect-[3/4] bg-surface-container-high rounded-md overflow-hidden relative group cursor-pointer transition-transform hover:scale-[1.02] shadow-black/40 shadow-xl">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Futuristic neon city skyline at night with cybernetic elements and high contrast blue and pink lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1_v77yJx4vdWdY72rjsYLb7JwRbRnXfZSV1acXkWxRyT3ae9650o4j7BvAGDDJMKjutUmpQBi69Top576O2O1GHH_5gZuJEPknviw0zUMwzlNqWQrCjNJkV0XM9WBwlLBbt2QxNo3e23aIZi-VdH9_aojt5j6j5XiC8J8fL_Xbwe4RsbblgxiSBTfwaonb2aBw1iiLPPT_Uip6HWGEhzWc2Q3lMQKCuL96SE5AacLi2cnksv-U7T7_bcSOF6KFHegTFelPhrAnqk"/>
+<div class="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black to-transparent">
+<p class="font-label text-[10px] text-primary uppercase tracking-widest mb-1">Cyberpunk 2077</p>
+<p class="font-headline font-bold text-sm">Phantom Liberty</p>
+</div>
+</div>
+<div class="aspect-[3/4] bg-surface-container-high rounded-md overflow-hidden relative group cursor-pointer transition-transform hover:scale-[1.02] shadow-black/40 shadow-xl">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Close up of a futuristic gaming controller with soft blue light reflections on dark matte surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzk91wrX8diSTPU-O-NQL3YJSlyTEcfXltoAt_rIyKtyhWlYm8yJNi56pZ-mjbjwSwjeDTPIeDY1YL6Ohq2-UqV5SY9EPZBPciIfDGI5az_blGrEiaf580pluY1zacswIJkUYIXYddhB4c2f-G_0RLl7oNziDJ07CEz9CVuHr_UN61FLZ-zUAcJBfJNKRWcC__ddkbtMY1BTOWtCMs-jZDNE2ZUdvIfVFjXMO72Vau7pCmzwLFgqVC8dfJAl4lTlkIuEIFUqPjLAY"/>
+<div class="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black to-transparent">
+<p class="font-label text-[10px] text-primary uppercase tracking-widest mb-1">System Hub</p>
+<p class="font-headline font-bold text-sm">Pending Entry...</p>
+</div>
+</div>
+</div>
+<!-- MODAL OVERLAY -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+<div class="glass-panel w-full max-w-3xl rounded-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] border border-outline-variant/10 overflow-hidden">
+<!-- Modal Header -->
+<div class="p-8 pb-4 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_#00d4ff]"></span>
+<span class="font-label uppercase tracking-[0.4em] text-[10px] text-primary">Entry Upload Protocol</span>
+</div>
+<h2 class="font-headline text-3xl font-bold tracking-tight text-on-surface">The Cinematic Archive</h2>
+</div>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="px-8 py-4 grid grid-cols-12 gap-8">
+<!-- Left Column: Search & Suggestions -->
+<div class="col-span-7 space-y-6">
+<div class="space-y-2">
+<label class="font-label text-[10px] uppercase tracking-widest text-outline ml-1">Archive Search</label>
+<div class="hud-line flex items-center px-2 py-3 bg-surface-container-low/40">
+<span class="material-symbols-outlined text-outline mr-3">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-label text-sm tracking-wider placeholder:text-outline/40" placeholder="QUERY TITLE..." type="text"/>
+</div>
+</div>
+<div class="space-y-3">
+<label class="font-label text-[10px] uppercase tracking-widest text-outline ml-1">Suggested Matches</label>
+<div class="space-y-2">
+<!-- Suggestion Item -->
+<div class="flex items-center p-3 bg-surface-container-high/50 hover:bg-primary/5 cursor-pointer rounded transition-all group">
+<div class="w-12 h-16 bg-zinc-800 rounded mr-4 overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Cinematic landscape for Elden Ring expansion" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgZDyCjr5KfHWz9qDVj4MWU0RZf3MFVYJzfZBWVE8ll3Oy1Ry2Oa3w5e3diVENr8gV2ccR-25MnGzuWyIdXx9_dtyUkX4tOVTdcxcw26oWVi7h8oXIfbf0tdlPKOwWPFxSJkJKKoLA4su6CaPtWrivZ1a2YqqfCegYLjhVfTspEl-NrsCdPBUfEXjsiEFfmpi2HnRatZnHtDRxutOVdxr_ow9BVJvspaKKQKygdCsB2fTb83Cg4VSaw-3iAyJTwkf8Dg6mJiV5UtQ"/>
+</div>
+<div class="flex-grow">
+<p class="font-headline font-bold text-sm">Elden Ring: Shadow of the Erdtree</p>
+<p class="font-label text-[10px] text-outline uppercase tracking-tight">Bandai Namco // 2024</p>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity">check_circle</span>
+</div>
+<!-- Suggestion Item -->
+<div class="flex items-center p-3 bg-surface-container-high/50 hover:bg-primary/5 cursor-pointer rounded transition-all group">
+<div class="w-12 h-16 bg-zinc-800 rounded mr-4 overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Cyberpunk night city visual match" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD71qWdbD4tG53vxsed3NIz42qDMIzSlPC5R4b-gXMvWncAGJe5lWbIhBLyRDW0WPM_ldW1yEkNOhYmxMdggAMhdXv40H5nPTYzQHqBIg08ORs7QeHVzpzbFqlkWXcIxcqt-JijeoVgNhu00A7_AhbF4iDdOFXJGN-62TX35bTOVga1hixU1-VviWHF__hu_F377lSC1_b3-mJSpmTMRcTdfu73a0O8V847rpbRA7sHKLIHbL2LKXG5POGM2yy9XbvwJ_OXCK3zWqg"/>
+</div>
+<div class="flex-grow">
+<p class="font-headline font-bold text-sm">Cyberpunk 2077</p>
+<p class="font-label text-[10px] text-outline uppercase tracking-tight">CD Projekt Red // 2020</p>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Metadata -->
+<div class="col-span-5 space-y-6">
+<div class="space-y-2">
+<label class="font-label text-[10px] uppercase tracking-widest text-outline ml-1">Portal Source</label>
+<div class="hud-line bg-surface-container-low/40">
+<select class="bg-transparent border-none focus:ring-0 w-full font-label text-sm tracking-wider text-on-surface py-3 appearance-none">
+<option class="bg-surface">STEAM_NET</option>
+<option class="bg-surface">EPIC_GAMES_VAULT</option>
+<option class="bg-surface">GOG_GALAXY</option>
+<option class="bg-surface">PLAYSTATION_NETWORK</option>
+</select>
+</div>
+</div>
+<div class="space-y-4">
+<label class="font-label text-[10px] uppercase tracking-widest text-outline ml-1">System Status</label>
+<div class="grid grid-cols-1 gap-2">
+<button class="flex items-center justify-between p-3 rounded bg-surface-container-high hover:bg-surface-container-highest transition-colors group">
+<span class="font-label text-xs tracking-widest uppercase">Playing</span>
+<div class="w-4 h-4 rounded-full border border-primary flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#a8e8ff]"></div>
+</div>
+</button>
+<button class="flex items-center justify-between p-3 rounded bg-surface-container-low/40 hover:bg-surface-container-high transition-colors group">
+<span class="font-label text-xs tracking-widest uppercase text-outline">Finished</span>
+<div class="w-4 h-4 rounded-full border border-outline-variant"></div>
+</button>
+<button class="flex items-center justify-between p-3 rounded bg-surface-container-low/40 hover:bg-surface-container-high transition-colors group">
+<span class="font-label text-xs tracking-widest uppercase text-outline">Archived</span>
+<div class="w-4 h-4 rounded-full border border-outline-variant"></div>
+</button>
+</div>
+</div>
+<!-- Integrity Indicators -->
+<div class="bg-black/20 p-4 border-l-2 border-primary-container">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface">Integrity Check: Passed</span>
+</div>
+<p class="font-label text-[9px] text-outline leading-relaxed">METADATA SYNCED WITH GLOBAL REPOSITORY. ASSETS READY FOR INDEXING.</p>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="p-8 bg-black/40 flex items-center justify-between border-t border-outline-variant/10">
+<div class="flex items-center gap-6">
+<div class="flex flex-col">
+<span class="font-label text-[9px] text-outline uppercase tracking-widest">Target ID</span>
+<span class="font-label text-xs text-primary-fixed-dim">#FF-0429-ARC</span>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex flex-col">
+<span class="font-label text-[9px] text-outline uppercase tracking-widest">Entry Size</span>
+<span class="font-label text-xs text-on-surface">84.2 GB</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-3 font-label text-xs uppercase tracking-widest text-outline hover:text-on-surface transition-colors">Abort</button>
+<button class="px-8 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary font-label text-xs font-bold uppercase tracking-[0.2em] rounded shadow-[0_0_20px_-5px_#00d4ff] hover:shadow-[0_0_30px_-5px_#00d4ff] active:scale-95 transition-all">
+              Commit Data
+            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- TopNavBar Anchor -->
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-8 h-20 bg-transparent backdrop-blur-xl dark:bg-black/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] z-20">
+<div class="flex items-center gap-8">
+<div class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-500">The Cinematic Archive</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-headline tracking-tight font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1" href="#">Library</a>
+<a class="font-headline tracking-tight font-bold text-zinc-400 hover:text-zinc-100 transition-colors" href="#">Discover</a>
+<a class="font-headline tracking-tight font-bold text-zinc-400 hover:text-zinc-100 transition-colors" href="#">Stats</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-zinc-800/50 p-2 rounded-full hover:bg-zinc-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-on-surface">notifications</span>
+</div>
+<div class="bg-zinc-800/50 p-2 rounded-full hover:bg-zinc-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-on-surface">person</span>
+</div>
+</div>
+</header>
+</body></html>

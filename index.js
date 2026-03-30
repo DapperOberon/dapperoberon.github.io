@@ -12,6 +12,16 @@ const PROJECTS = [
     category: 'Tool'
   },
   {
+    id: 'checkpoint',
+    title: 'Checkpoint',
+    description: 'A simple tool to track and log your progress in games, projects, or any ongoing activities. Create custom checkpoints, add notes, and visualize your journey with an intuitive interface.',
+    link: './checkpoint',
+    linkText: 'Explore Games',
+    tags: ['Log', 'Game', 'Interactive', 'Track'],
+    image: 'https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?auto=format&fit=crop&q=80&w=800',
+    category: 'Tool'
+  },
+  {
     id: 'star-wars-timeline',
     title: 'Star Wars Timeline',
     description: 'An interactive chronological explorer spanning millennia of Star Wars lore. Navigate key events from the Old Republic through the Skywalker Saga with rich details and cross-era connections.',

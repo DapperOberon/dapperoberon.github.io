@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 3,
+  "library": [
+    {
+      "entryId": "entry-dead-space",
+      "gameId": "dead-space-remake",
+      "title": "Dead Space",
+      "storefront": "steam",
+      "status": "archived",
+      "runLabel": "Main Save",
+      "addedAt": "2025-10-30T22:00:00.000Z",
+      "updatedAt": "2026-03-29T00:44:45.689Z",
+      "playtimeHours": 14,
+      "completionPercent": 38,
+      "personalRating": 8.2,
+      "notes": "Excellent mood, but I parked it after chapter six and want the tracker to remember exactly where I left off.",
+      "spotlight": "Paused run",
+      "syncState": "offline"
+    },
+    {
+      "entryId": "entry-fq4mfc7f",
+      "gameId": "custom-sable",
+      "title": "Sable",
+      "storefront": "epic",
+      "status": "playing",
+      "runLabel": "Main Save",
+      "addedAt": "2026-03-27T22:05:22.145Z",
+      "updatedAt": "2026-03-27T22:05:22.145Z",
+      "playtimeHours": 0,
+      "completionPercent": 0,
+      "personalRating": null,
+      "notes": "Freshly added to Checkpoint. Ready for notes, milestones, and sync metadata.",
+      "spotlight": "New intake",
+      "syncState": "offline"
+    },
+    {
+      "entryId": "entry-balatro",
+      "gameId": "balatro",
+      "title": "Balatro",
+      "storefront": "steam",
+      "status": "finished",
+      "runLabel": "Main Save",
+      "addedAt": "2026-01-08T15:45:00.000Z",
+      "updatedAt": "2026-03-18T08:10:00.000Z",
+      "playtimeHours": 61,
+      "completionPercent": 100,
+      "personalRating": 9.4,
+      "notes": "This is the exact kind of compact system sandbox I want to keep installed forever.",
+      "spotlight": "Finished recently",
+      "syncState": "offline"
+    }
+  ],
+  "catalog": [
+    {
+      "id": "custom-sable",
+      "title": "Sable",
+      "storefront": "epic",
+      "developer": "Unknown developer",
+      "publisher": "Manual entry",
+      "releaseDate": "2026-03-27",
+      "genres": [
+        "Unclassified"
+      ],
+      "platforms": [
+        "Unknown"
+      ],
+      "criticSummary": "Sable was added as a manual entry and is ready for metadata enrichment.",
+      "description": "This manual epic entry is in Checkpoint. Replace this mock metadata by wiring real storefront APIs into services/storefronts.js.",
+      "heroArt": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
+      "capsuleArt": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
+      "screenshots": [
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80"
+      ],
+      "steamGridSlug": "sable"
+    },
+    {
+      "id": "balatro",
+      "title": "Balatro",
+      "storefront": "steam",
+      "developer": "LocalThunk",
+      "publisher": "Playstack",
+      "releaseDate": "2024-02-20",
+      "genres": [
+        "Deckbuilder",
+        "Strategy"
+      ],
+      "platforms": [
+        "PC",
+        "Switch",
+        "PlayStation",
+        "Xbox"
+      ],
+      "criticSummary": "Small inputs, huge combo ceiling, and dangerously replayable runs.",
+      "description": "Build absurd poker hands with Jokers, blinds, and economy manipulation.",
+      "heroArt": "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=900&q=80",
+      "capsuleArt": "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=900&q=80",
+      "screenshots": [
+        "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=900&q=80"
+      ],
+      "steamGridSlug": "balatro"
+    },
+    {
+      "id": "dead-space-remake",
+      "title": "Dead Space",
+      "storefront": "steam",
+      "developer": "Motive Studio",
+      "publisher": "Electronic Arts",
+      "releaseDate": "2023-01-27",
+      "genres": [
+        "Survival Horror",
+        "Sci-Fi"
+      ],
+      "platforms": [
+        "PC",
+        "PlayStation 5",
+        "Xbox Series X|S"
+      ],
+      "criticSummary": "Claustrophobic pacing, heavy atmosphere, and some of the strongest corridor dread around.",
+      "description": "Repair the Ishimura and survive the necromorph outbreak in a faithful modern remake.",
+      "heroArt": "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+      "capsuleArt": "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+      "screenshots": [
+        "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80"
+      ],
+      "steamGridSlug": "dead-space"
+    }
+  ],
+  "syncPreferences": {
+    "autoBackup": true,
+    "includeArtwork": true,
+    "includeNotes": true
+  },
+  "uiPreferences": {
+    "lastView": "settings",
+    "lastStatusFilter": "all",
+    "librarySort": "updated_desc"
+  }
+}

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Cinematic Archive - Library Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-surface": "#e4e2e3",
+              "on-error-container": "#ffdad6",
+              "on-secondary-container": "#8dc0d2",
+              "tertiary-fixed-dim": "#ffba3d",
+              "surface-tint": "#3cd7ff",
+              "on-tertiary-fixed-variant": "#604100",
+              "secondary": "#9bcee1",
+              "outline-variant": "#3c494e",
+              "outline": "#859398",
+              "tertiary-fixed": "#ffdeae",
+              "on-primary-fixed-variant": "#004e5f",
+              "error": "#ffb4ab",
+              "on-background": "#e4e2e3",
+              "surface-container": "#1f2021",
+              "inverse-primary": "#00677e",
+              "on-secondary-fixed": "#001f27",
+              "surface-container-lowest": "#0d0e0f",
+              "tertiary-container": "#feb528",
+              "on-primary": "#003642",
+              "surface-variant": "#343536",
+              "primary": "#a8e8ff",
+              "secondary-fixed-dim": "#9bcee1",
+              "on-primary-fixed": "#001f27",
+              "error-container": "#93000a",
+              "on-primary-container": "#00586b",
+              "on-surface": "#e4e2e3",
+              "surface-bright": "#39393a",
+              "surface-container-highest": "#343536",
+              "inverse-on-surface": "#303031",
+              "surface": "#121314",
+              "secondary-container": "#174f5f",
+              "primary-container": "#00d4ff",
+              "surface-container-high": "#292a2b",
+              "primary-fixed-dim": "#3cd7ff",
+              "on-tertiary-fixed": "#281900",
+              "on-tertiary-container": "#6c4900",
+              "surface-container-low": "#1b1c1d",
+              "on-surface-variant": "#bbc9cf",
+              "surface-dim": "#121314",
+              "on-secondary": "#003642",
+              "tertiary": "#ffd9a1",
+              "on-error": "#690005",
+              "background": "#121314",
+              "primary-fixed": "#b4ebff",
+              "on-tertiary": "#432c00",
+              "secondary-fixed": "#b7ebfd",
+              "on-secondary-fixed-variant": "#144d5c"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        background: rgba(52, 53, 54, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        background-color: #121314;
+        color: #e4e2e3;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #121314;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #3c494e;
+        border-radius: 10px;
+      }
+    </style>
+</head>
+<body class="font-body selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full flex flex-col justify-between py-10 w-64 bg-zinc-950 dark:bg-[#1b1c1d] shadow-2xl shadow-black/50 z-50">
+<div class="px-8 mb-10">
+<div class="flex items-center gap-3 mb-10">
+<div class="w-10 h-10 rounded bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary">grid_view</span>
+</div>
+<div>
+<h2 class="font-headline font-extrabold text-sm tracking-tighter text-on-surface">THE CURATOR</h2>
+<p class="font-label uppercase tracking-widest text-[10px] text-zinc-500">Master Collector</p>
+</div>
+</div>
+<nav class="space-y-2">
+<a class="bg-gradient-to-r from-cyan-500/10 to-transparent text-cyan-400 border-l-4 border-cyan-400 py-4 px-6 flex items-center gap-4 font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200 transition-all" href="#">
+<span class="material-symbols-outlined">library_books</span>
+                    Library
+                </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+                    Add Game
+                </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">sync</span>
+                    Sync
+                </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</nav>
+</div>
+<div class="px-8 space-y-2">
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Stage -->
+<main class="ml-64 h-screen flex flex-col overflow-hidden bg-background">
+<!-- Top Bar -->
+<header class="fixed top-0 left-64 right-0 flex justify-between items-center px-8 h-20 bg-transparent backdrop-blur-xl dark:bg-black/60 z-40">
+<div class="flex items-center gap-8">
+<h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-500 font-headline">The Cinematic Archive</h1>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<nav class="hidden md:flex gap-6 text-sm font-label uppercase tracking-widest">
+<a class="text-cyan-400 border-b-2 border-cyan-400 pb-1" href="#">All Games</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors" href="#">Recent</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors" href="#">Favorites</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<input class="bg-surface-container-low border-none focus:ring-1 focus:ring-primary text-sm font-label uppercase tracking-tighter px-4 py-2 w-64 rounded-lg transition-all" placeholder="Search Archive..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2 text-zinc-500 text-sm">search</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-zinc-800/50 hover:text-cyan-300 transition-all duration-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full border border-primary/20 overflow-hidden">
+<img alt="User Profile" data-alt="professional headshot of a person with a clean-cut look and neutral expression in a high-tech studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBjOE7f5edkFDdOVOesRl3Js8NATugrNnOwVoVn93KIZ8WxS-iSJflwAe7oFI1kSt4vrp0jCVHWy2WhgNYL_pHnvU4TNf8En57bN0zuX_E220eX2ltyfyqxWhMYdGVsxw04bo2vCd0rhZpX3fcOi6ucjdlwzgg873MBUTGi2sN90jdK8dsjAWTBKvyVP_knROWGQAJ-o3odbS1SNOWdyIjvgELIN58V4A_w5ObEXUhitcOyIoOdxaew_EhxJ2cT4jH9uZCD1AMw-U"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="mt-20 flex-1 overflow-y-auto custom-scrollbar p-10 space-y-16">
+<!-- Hero Section: Currently Playing -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<span class="w-2 h-8 bg-primary shadow-[0_0_15px_rgba(168,232,255,0.5)]"></span>
+<h2 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Currently Playing</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label text-xs uppercase tracking-widest text-zinc-500">Live Status</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+<!-- Card 1 -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="high-tech cyberpunk city street at night with neon blue and cyan lights reflecting on wet pavement" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl0jS3xB2MRTzu5gmwTSnqoAJamSQyhCwDMWgyFHGbWphiG5zWE3CvKzKiQ8TEm6N7yz8pusvTCyy9e7de6QAp6C5OwgH4bJBPTqoBpAnMYwFBzcxUyhFMijfnt-eHekKIeW6X8gBRPAmFuK9vxL-Y5K--OinHwcqzkD__E4i-bFkrb1ng4zgJn8Uj2JDIIivOoR5EDkLOUDiaNV3pFKQn_GbU_vsumGfDXS3jCZHtLUesAjSMuD1EJ6v7lGQ7_yitOiahsrc0oiw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+<div class="absolute inset-0 border border-cyan-400/0 group-hover:border-cyan-400/40 transition-all duration-500"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-label uppercase tracking-widest backdrop-blur-md">PC / Neural Link</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-1">Cyber-Protocol 2099</h3>
+<div class="flex justify-between items-center mt-4 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-label text-[10px] uppercase tracking-tighter text-zinc-400">Time: 42h 12m</span>
+<span class="material-symbols-outlined text-primary text-sm">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="majestic medieval dragon silhouette flying over a volcanic mountain peak at sunset with glowing lava" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQPSwXcBcQbJVdnhvK8UcEh9-cKWa2F5HBwl3se-SLLZ0U-BFZvvCsyV2IrhqiOSrrppKDcmOQfpdG6hxlSm42q9D2PHPI4j6lEwIweQEDPOoVPKVYFuIaFTsrfg5tct-vO8zNHvzOFnoO_POb7NVyAjLm1-IhgEv3GOTCmmAgVtzhOXHFQW5UAMW9icS0THswuyHR8i0VaL5PBUc5oPgPH25uJrDUkpEXfOCHdB4umzb2RLBTwTx2STVlke9j8dsBsxilKtaSi7Q"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+<div class="absolute inset-0 border border-cyan-400/0 group-hover:border-cyan-400/40 transition-all duration-500"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-label uppercase tracking-widest backdrop-blur-md">Console X</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-1">Dragon's Fall</h3>
+<div class="flex justify-between items-center mt-4 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-label text-[10px] uppercase tracking-tighter text-zinc-400">Time: 18h 45m</span>
+<span class="material-symbols-outlined text-primary text-sm">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="ethereal deep sea abyss with bioluminescent jellyfish and glowing blue coral formations" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD65IoXaaahOsGtttiDzlyJZ-qEwWx3JFALFpSsYentSj1p3SPh_fVHnFUQuL6a4XphuZBBT-e9H1NW963fUq71PpqMUoyw6YpDrRai3ojOwfBFuMa25cnTqou3X6FStWbBBQ5rO971X6dBUPa3B9vSEkJtAZZkNeYQeSTRrOE51aI6R-VDQ29_NF3ldWH27ufnUpX2z-VHfsP1E9LnPnLdnFI5XWwH2msmXzlSF3HxUkw4mXhfppqh2-VYc5CtHvR5EDoL0yrqA4g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+<div class="absolute inset-0 border border-cyan-400/0 group-hover:border-cyan-400/40 transition-all duration-500"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-label uppercase tracking-widest backdrop-blur-md">PC</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-1">Neon Tides</h3>
+<div class="flex justify-between items-center mt-4 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-label text-[10px] uppercase tracking-tighter text-zinc-400">Time: 05h 22m</span>
+<span class="material-symbols-outlined text-primary text-sm">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- HUD-style Data Card -->
+<div class="glass-card rounded border border-outline-variant/20 p-8 flex flex-col justify-center gap-6">
+<div>
+<p class="font-label uppercase text-[10px] tracking-widest text-primary mb-2">Weekly Engagement</p>
+<h4 class="text-3xl font-headline font-extrabold">+12.4 hrs</h4>
+</div>
+<div class="space-y-4">
+<div class="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[70%]"></div>
+</div>
+<p class="font-label text-[10px] uppercase tracking-widest text-zinc-500">Library Saturation: 84%</p>
+</div>
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 font-label font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all">
+                            View All Stats
+                        </button>
+</div>
+</div>
+</section>
+<!-- Grid Section: Terminated Ops (Finished) -->
+<section>
+<div class="flex items-center justify-between mb-8 border-b border-outline-variant/20 pb-4">
+<div class="flex items-center gap-4">
+<h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">Terminated Ops</h2>
+<span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mt-1">Status: Archive Locked</span>
+</div>
+<button class="text-zinc-500 hover:text-primary flex items-center gap-2 transition-colors">
+<span class="font-label text-xs uppercase tracking-widest">Filter by Year</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+<!-- Finished Game 1 -->
+<div class="group space-y-3">
+<div class="relative aspect-[2/3] bg-surface-container rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="dramatic cinematic shot of a snowy gothic castle gate at night with blue moonlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6mXVnOfgoH_M4q5zLNr5TjqRDdBpD_PZyS74QWHKTROITgMunpuznsxd34C-gyK3WVLlOykMEUu6PIJpqKlQEyMhSW1pKrHaB2TYYzgByfHawzyN_9ulJN0o-8Oo3TvnK8UKdt6sxrlL5dtLT9nO4cJwc6c44ex0XqmvDWdT1tBlh85Ekd23jn6qxs6ZpR-_shmhUfUNEcGM9y0AW_X04iJkiaxJ54EHwyQK0PxA1hD__gBGOyAspyZpej372kCmBWWUHdRg_b8M"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs text-on-surface truncate">Shadow of Omen</h4>
+<p class="font-label text-[9px] uppercase tracking-tighter text-zinc-500">100% Completion</p>
+</div>
+</div>
+<!-- Finished Game 2 -->
+<div class="group space-y-3">
+<div class="relative aspect-[2/3] bg-surface-container rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="retro futuristic control panel with glowing red and orange buttons and mechanical switches" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb2RLdapzAD-eQ5BkF3f9iArqc1IDaVXblxDUANSyqRGa26oq9oNG5MW_aghEjNT_p1-s9EKFwIRDvOFNVyIjvjYsho9LX1o4iGIpdCADcH_Tq9weC9UvTA5KzBWX7RnpimBpOUBjT4dR-HSNKmiAuapQdrPFDma129X9KsioUcsMigH_4WftKrt9IUGxtcyygddpKqdnWrJY-dmc0Bm0_GaqFiEOER5yctkf8YS4Cw9YmOPL151qChyNjR69j9tpU6nO16duXb7k"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs text-on-surface truncate">Analog Drift</h4>
+<p class="font-label text-[9px] uppercase tracking-tighter text-zinc-500">Mastery Achieved</p>
+</div>
+</div>
+<!-- Finished Game 3 -->
+<div class="group space-y-3">
+<div class="relative aspect-[2/3] bg-surface-container rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="view of earth from orbit with dark space background and sun flare on the horizon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3IRQK8ijYz3XltDEyOec1BKqdLGqYQE1ff2P_DNYU_Xxg-gWbAun5RXT0lfFG0hnvxef7Z7puQCFjPUW75XlMjZmm1xoPv-e4SNTH9NrrM4FFI154zWlGdZ1rOPv2RCu6iEDcYzT58TbX-xIBBIcsVhr3hUBTi63DHX4zreF0um-ddmywhtHI5ioAY6CRBQG2Jz69RYbz9F40wcbvgTCCeh6N3A850f6kYliaF262NoU4gm_el3ACyuYPll7jkPbXtbYVWEbhEP4"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs text-on-surface truncate">Starward Bound</h4>
+<p class="font-label text-[9px] uppercase tracking-tighter text-zinc-500">Platinum Trophy</p>
+</div>
+</div>
+<!-- Finished Game 4 -->
+<div class="group space-y-3">
+<div class="relative aspect-[2/3] bg-surface-container rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="intricate close-up of high-end computer hardware components with purple lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBi6ypImvoVKdmK9xaMkkGtHK1qAjlIFfZiBwf039JChR5mSVpDXm_gEQHX-Cxwl7HqIGeAtRx-bRizt-Naa-41VrUIDPli2TdaG6_F3i0pMTBf1V7FfJqI87iay0lz9wLJi6IR88gY1Id3283CCEkQRlIgaYh65ewsoQ-hhaFRq-9Tx_SvfN-6TDanzkzW6KViW-sFaU2UjKn02X7DSHorsizhjUTgnkzycGSEaJDzUG2RQsbsvCUOhMoJmcUTjhjtvgS6ZeXRKy4"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs text-on-surface truncate">Core Matrix</h4>
+<p class="font-label text-[9px] uppercase tracking-tighter text-zinc-500">System Clear</p>
+</div>
+</div>
+<!-- Finished Game 5 -->
+<div class="group space-y-3">
+<div class="relative aspect-[2/3] bg-surface-container rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="misty morning in a redwood forest with sunbeams piercing through the fog" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhFVD5OO-ovw9ZXUpiyVICejOiYTX3r8A2XVwzA5NSbWua2YzlaD9zZuTBSdxx1tfejeQs7C7iM-vNCeUGWBKOyPXPJUz_qfFaQmGw1gLZgyAKjOpNsgjzCuHPXxDoGF-US82ZQV6XoblWUiaczO7VGKCVDumjw_EivG4LxqQhgewGYZzgwvI0bpHQgOOQLx8K_NhPs32DpIJJ7ZXWXPqlod9XgWGfTAfNc0txiETUgtylEONRtP9w3KXKOXeqCojtdjwNS1w1SQ0"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs text-on-surface truncate">Redwood Exile</h4>
+<p class="font-label text-[9px] uppercase tracking-tighter text-zinc-500">Story Complete</p>
+</div>
+</div>
+<!-- Finished Game 6 -->
+<div class="group space-y-3">
+<div class="relative aspect-[2/3] bg-surface-container rounded overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="abstract sharp minimalist architectural lines in monochrome with harsh shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2q-5pt3sLBtRUg5-oG_ogarNeufjh0zZtiX_FEWcOlqOynpMWyJHn7Vr2izTyKuRq4JTNxu5wJwHSkuKKoLVMWonhcCO316Mi54w0h2vYhWaDPWYwdPoH5Gd1tMSn63_kzNi1XkkdkCgYMgbBYvTqn9CEGIYbNPEjkKCKFRCClApp_xqTuOJ8lRMmm_AV9-51fSRKr1xdV4P_H3ndMeQD0DzT4fbZL8BoCJcww6_ZDPSU0obIl2JMUCcpYmYgdRf93cjWAlL9cnU"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs text-on-surface truncate">Zenith Point</h4>
+<p class="font-label text-[9px] uppercase tracking-tighter text-zinc-500">Finalized</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Grid Section: The Vault (Archived) -->
+<section class="pb-20">
+<div class="flex items-center gap-4 mb-8">
+<h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">The Vault</h2>
+<div class="h-px flex-1 bg-outline-variant/10"></div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 opacity-60 hover:opacity-100 transition-opacity duration-500">
+<!-- Archived Card 1 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="minimalist desert landscape with deep shadows and orange glowing horizon at dusk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYJf8guYoLnph8cTZVWw3FKjBMnMW9fzNv4J40KL6kDHQSQniuwHlgRFyIT2KXR4VC-5lL5qiscTQK2tAwCo4xHFerF3peWwGK489-XKGinjC2-v6ER6vLL5-fx_0KeHxCfRfqRClozqTx7K6Rv4qfOWUChAOCm9E4Nj2b95A9Bfu2F1Xb0gV2dmjdVpUmDSYNfY_A-3j3hd0Ap4UShrZg63saYcQZ4HKcqW9qL6P7lL_uEoYpSr7Fh24M5eFUVOrNFcTXVjtmxXU"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 2 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="digital representation of data flowing through a network with blue neon streams and particles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-XXHpR1yg2mq3v6PPCJBMtil4cevyjlaHV62Obpn1hehzYEhb6SyEd_Zj52Qgl4pWNkaV9hte9joF4VpjDEMsuwrqAUB0PjvaB4HBfM4CS9Zzc9Ry-b1WpHl_t4GcoctpVt528z8CGAuX8mQIcug1Neq-GoZ19hwrDL-D0cW9jZ6KuP6hmfd4qyP6J55ELk0eAPAtHwjE74_Tz1Aq5pyb8meDK2m3ikLfZN54WJxoT0tk3gQ5lWXylyFxE77BFnZtI7KVlSnYfH8"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 3 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="abstract 3D fluid shapes in vibrant violet and teal gradients with smooth lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWwj2NH9n3eDEe2gzyDEwG__0wKT7JGPqlfUm1t6LTXsfvI_FpeVeNzv8teo3mk_REOgXoK275ylcIiTljocuqHilwCMG_FuYcAHTWe2Ppceb74sP2MpoBHJjzXbIUk73t4qE4k5LwlvoqqfqiVBkPWzwkc9x07Ht3uSFQvlMbk4IXscv42DN4mJ7ykZaaZQhONradqZ9pQbEPpBnmMt2KmhqoxXTLNl2glGBEAxLt_GGoAeImGDswj4ZWIDP3rpN-w6b6gV-OL2g"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 4 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="misty mountain peak with a pink and purple nebula sky background in a fantasy setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBghjZsOnZSr7Y1oLczAAin-afF63EGUS2vV0kVqQlwWiEl9YLgHQ3UV-ly7b6z-EonU_Y9vbo7FhU7qA3zwQUNrY3lyNZi3DaydmA5ecfjX9eMVOsdXAkiSb-kolgGBEvReow9mrP-rO5l2sOYwwCFzO4-AQ2_FWwFqKrvP_IraRlkGuq6ij65r2wdwNw11n2wxjJn3RVEg4qJARYYmLYWtDUhRhAkzSdk5MAi_drOTx8XLpdhN_NSvRZQewZSpnI3-pni44Z3VzI"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 5 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="monochrome abstract close-up of paper folds creating geometric shadows and light patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBx_ASGgMhFQCGl7LNbdqIZBWZm1hXeV-pPrVtBT6AQsdtowpqRgU2ESiSQtRB16eQMB1NIAuR1KgE51ufmki1OLOu4vB9Wen_X_xHOcD7NjlaXo8UVnSj7L81VR2mx2HNC3CTp1JtJxEK3mDcAQljOBUzzPJJqTpNZ8EJIy2H4WzHmxbggDR-19cGP1rh9NBi9VNtmFyaVIrY0QXMsAPz7N1B43IhJeT4J3de4kfstsIebR3jrZoLRtSZ7IRUa6d3IBKX_MBRcxQ"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 6 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="vibrant galaxy cluster with swirling nebulae in shades of magenta and deep blue" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfm7TWlZUrDNHuhdK5x_D9TEtw8B7RvtzNKjL0INku5SYtetx3nSZj3P0sJEO0Q0DCt_12jYZ6SqGKDBExsc81SQQ11-WKTxdX1XbBe6wdBs4_xjufggV85TiFvybCvy70fSMACqzWT3q_QQPS9v55jQyyifN0VmZk6b2HEwD521Z-1_sheFL5HZ9ktumAWXDrCiMDDkmbC9gX1sdEs-oftoc9LZtkL3zMrSnD6INz3AwZgJjb42W-mmh6QhL5pzwR0N-JF67tBII"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 7 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="digital matrix code rain in green falling against a deep black computer screen background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCicjEIDS3vV-YbBNOpbgWP5cZyXwVzocbKzk9Vc5tx2DcMz7zphQ4Sr3O7_8p2FdMPsbPSqmRRPllOxPNQhpBRS9pNL5gjaL1g0NXNx0KAOCwnfTGO_ZFypGzom9AuvOujxeLIZFkRdVCF5XIVJpbn-B1sLndDYv485pvwhosS9RJ9BnrelVrfPXDbgLjxKtt4CZ9IvqDcy1F8-FBoh5t9qjupvLaVXZVmEcIb-Hv1POictZ1mQXSgdFJ9Wa5MfLLBtyIrJaFB8II"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+<!-- Archived Card 8 -->
+<div class="relative aspect-[3/4] bg-surface-container-low rounded group overflow-hidden">
+<img class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500" data-alt="dramatic dark sea waves crashing against jagged black volcanic rocks under a storm sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD52cjDhGkZd2LtGwnvIhvTG_G0epZUcpqBgnmW6J2DAtgV3pJ0NkpPJJ3XLMLC8fTS8g4tKN02XCROUapJYMY0jIQw9q3goLVycL8TGhJ6CTMK6OfWRaqj_YAev5JzYH-EYDzXKGTawVwFE2xPNVyvbf1X-l_Ky8Z4NrupEfMp-GiPfHGLtQK6MF_bwveGYKYOYGIxxSMmJAqWwTWkbwIROqhd88JXnf3fQwNjlV9WSI697sxYDf1wTG9Y_huKMhyXkuBUBa9W5rE"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">inventory_2</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Floating Action Element -->
+<div class="fixed bottom-10 right-10 flex flex-col items-end gap-4 z-50">
+<button class="bg-surface-container-high border border-outline-variant/30 text-zinc-400 p-4 rounded-full shadow-2xl hover:text-primary hover:border-primary/50 transition-all group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">filter_list</span>
+</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary font-label px-6 py-4 rounded-full flex items-center gap-3 shadow-[0_0_30px_rgba(168,232,255,0.3)] hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined">rocket_launch</span>
+<span class="uppercase font-bold tracking-widest text-xs">Quick Launch</span>
+</button>
+</div>
+</body></html>

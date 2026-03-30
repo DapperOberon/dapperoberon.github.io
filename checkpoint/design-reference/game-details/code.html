@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-surface": "#e4e2e3",
+            "on-error-container": "#ffdad6",
+            "on-secondary-container": "#8dc0d2",
+            "tertiary-fixed-dim": "#ffba3d",
+            "surface-tint": "#3cd7ff",
+            "on-tertiary-fixed-variant": "#604100",
+            "secondary": "#9bcee1",
+            "outline-variant": "#3c494e",
+            "outline": "#859398",
+            "tertiary-fixed": "#ffdeae",
+            "on-primary-fixed-variant": "#004e5f",
+            "error": "#ffb4ab",
+            "on-background": "#e4e2e3",
+            "surface-container": "#1f2021",
+            "inverse-primary": "#00677e",
+            "on-secondary-fixed": "#001f27",
+            "surface-container-lowest": "#0d0e0f",
+            "tertiary-container": "#feb528",
+            "on-primary": "#003642",
+            "surface-variant": "#343536",
+            "primary": "#a8e8ff",
+            "secondary-fixed-dim": "#9bcee1",
+            "on-primary-fixed": "#001f27",
+            "error-container": "#93000a",
+            "on-primary-container": "#00586b",
+            "on-surface": "#e4e2e3",
+            "surface-bright": "#39393a",
+            "surface-container-highest": "#343536",
+            "inverse-on-surface": "#303031",
+            "surface": "#121314",
+            "secondary-container": "#174f5f",
+            "primary-container": "#00d4ff",
+            "surface-container-high": "#292a2b",
+            "primary-fixed-dim": "#3cd7ff",
+            "on-tertiary-fixed": "#281900",
+            "on-tertiary-container": "#6c4900",
+            "surface-container-low": "#1b1c1d",
+            "on-surface-variant": "#bbc9cf",
+            "surface-dim": "#121314",
+            "on-secondary": "#003642",
+            "tertiary": "#ffd9a1",
+            "on-error": "#690005",
+            "background": "#121314",
+            "primary-fixed": "#b4ebff",
+            "on-tertiary": "#432c00",
+            "secondary-fixed": "#b7ebfd",
+            "on-secondary-fixed-variant": "#144d5c"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Manrope"],
+            "label": ["Space Grotesk"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-panel {
+      background: rgba(52, 53, 54, 0.6);
+      backdrop-filter: blur(20px);
+    }
+    .hero-gradient {
+      background: linear-gradient(to bottom, rgba(18, 19, 20, 0) 0%, rgba(18, 19, 20, 0.8) 70%, rgba(18, 19, 20, 1) 100%);
+    }
+    .text-glow {
+      text-shadow: 0 0 20px rgba(168, 232, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar (The Anchor) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-zinc-950 dark:bg-[#1b1c1d] flex flex-col justify-between py-10 shadow-2xl shadow-black/50 z-50">
+<div class="flex flex-col gap-8">
+<!-- SideNav Profile Section -->
+<div class="px-6 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+<img alt="User Avatar" data-alt="close-up portrait of a professional man with a clean beard and focused expression in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAadwbIsKMx1cPk1xtpdBGYvZYCgSz6BLe2EqBvzPNSqc9yoOB91T_8n-skhjUxkEGIxKLl629ba2mEf4o4bYoSPbr5j2U4dnNXidupd2jH62pGy89-KxZkW198bixay1Z_o560cIV_-mz6I1UVT-U3rDFz9M8fA1ovnx2rZxe7iJ7pov72x9e7ykTzsFpWDvqVVk4LubvkAeXZnC-_TuE6lW23Ye_ZPPlWBPWcxmHSwgqR0NFoOUw5FzYdhk-RZieZsUBN_OnXL9o"/>
+</div>
+<div>
+<p class="font-label uppercase tracking-widest text-[10px] font-semibold text-cyan-400 dark:text-[#a8e8ff]">The Curator</p>
+<p class="text-xs text-zinc-500">Master Collector</p>
+</div>
+</div>
+<!-- SideNav Tabs -->
+<nav class="flex flex-col">
+<a class="bg-gradient-to-r from-cyan-500/10 to-transparent text-cyan-400 border-l-4 border-cyan-400 py-4 px-6 flex items-center gap-4 font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">library_books</span>
+          Library
+        </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">add_circle</span>
+          Add Game
+        </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">sync</span>
+          Sync
+        </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold hover:text-cyan-200 hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+          Settings
+        </a>
+</nav>
+</div>
+<div class="flex flex-col gap-2">
+<div class="px-6 mb-4">
+<button class="w-full py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label uppercase tracking-widest text-xs font-bold rounded-sm hover:brightness-110 transition-all active:scale-95">
+          Quick Launch
+        </button>
+</div>
+<a class="text-zinc-500 py-3 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">help</span>
+        Support
+      </a>
+<a class="text-zinc-500 py-3 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all font-label uppercase tracking-widest text-xs font-semibold group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">logout</span>
+        Logout
+      </a>
+</div>
+</aside>
+<!-- TopNavBar (The Shell) -->
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-8 h-20 bg-transparent backdrop-blur-xl dark:bg-black/60 z-[60] ml-0">
+<div class="flex items-center gap-12 pl-64">
+<span class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-500">The Cinematic Archive</span>
+<nav class="hidden md:flex gap-8">
+<a class="text-cyan-400 border-b-2 border-cyan-400 pb-1 font-body font-bold text-sm tracking-tight" href="#">Overview</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors font-body font-bold text-sm tracking-tight" href="#">Media</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors font-body font-bold text-sm tracking-tight" href="#">Achievements</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">person</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-0 min-h-screen">
+<!-- Hero Section -->
+<section class="relative h-[870px] w-full overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="epic high fantasy landscape with glowing golden tree and ruined architecture in a vast dark atmosphere cinematic lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBifcQXj9O9l_mqHvofyF6gkXm4FiyYhPy5I-RrRyBwFiPzxJ9WnEEXDXYMK3wjxfXj5PdjY2DAB0nCy5oSWo44Lrw6_RP8j352AYm1jhOydH9FPY4j0zOoTuDakvM2tnaxvzzvFial1irK8qPwlJG3z1qrM6EkV6wYWrWcUFQ4CkUsKr0j2AE-Kk9JgujgU2cbapuxfJaTyN3uESWk3s6mfE53uY6jJJmI2qjgBhvp1hSYk7df_I-gprKfL2shKPSKGqK9OOI5Hsw')"></div>
+<div class="absolute inset-0 hero-gradient"></div>
+<!-- Hero Content HUD Overlay -->
+<div class="absolute bottom-0 left-0 w-full p-12 flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 bg-primary/20 text-primary font-label text-[10px] uppercase tracking-[0.2em] rounded-full border border-primary/30">Masterpiece</span>
+<span class="flex items-center gap-1 text-tertiary font-label text-xs">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+              9.5/10
+            </span>
+</div>
+<h1 class="text-7xl font-extrabold font-headline tracking-tighter text-on-surface text-glow">ELDEN RING</h1>
+<p class="max-w-2xl text-on-surface-variant text-lg leading-relaxed font-body">
+            Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.
+          </p>
+</div>
+<div class="flex items-center gap-4 mt-4">
+<button class="px-10 py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-label font-bold tracking-widest uppercase rounded-sm hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20">
+            Play Now
+          </button>
+<button class="px-6 py-4 border border-outline-variant/30 hover:bg-surface-container-highest transition-all rounded-sm flex items-center gap-2 font-label font-bold tracking-widest uppercase text-xs">
+<span class="material-symbols-outlined text-lg">favorite</span>
+            Add to Favorites
+          </button>
+</div>
+</div>
+</section>
+<!-- Content Grid -->
+<div class="px-12 py-16 grid grid-cols-12 gap-12">
+<!-- Left Column: Primary Details -->
+<div class="col-span-8 flex flex-col gap-16">
+<!-- High Fidelity Metadata Bento -->
+<div class="grid grid-cols-4 gap-6">
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col gap-1">
+<p class="font-label text-[10px] uppercase tracking-widest text-zinc-500">Release Date</p>
+<p class="font-headline font-bold text-on-surface">Feb 25, 2022</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col gap-1">
+<p class="font-label text-[10px] uppercase tracking-widest text-zinc-500">Platform</p>
+<p class="font-headline font-bold text-on-surface">PC / Steam</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col gap-1">
+<p class="font-label text-[10px] uppercase tracking-widest text-zinc-500">Playtime</p>
+<p class="font-headline font-bold text-on-surface">142.5 Hours</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col gap-1">
+<p class="font-label text-[10px] uppercase tracking-widest text-zinc-500">Rating</p>
+<p class="font-headline font-bold text-on-surface">M (Mature)</p>
+</div>
+</div>
+<!-- Current Progress HUD -->
+<div class="bg-surface-container-low p-8 rounded-lg flex flex-col gap-6 relative overflow-hidden">
+<div class="flex justify-between items-end">
+<div class="flex flex-col gap-1">
+<h3 class="font-label text-xs uppercase tracking-[0.3em] text-primary">Current Progress</h3>
+<p class="text-3xl font-headline font-extrabold tracking-tighter">84% COMPLETE</p>
+</div>
+<div class="text-right">
+<p class="font-label text-xs text-zinc-500 uppercase">Next Milestone</p>
+<p class="font-body font-bold text-on-surface">Defeat Malenia, Blade of Miquella</p>
+</div>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-cyan-500 to-primary-container w-[84%] shadow-[0_0_15px_rgba(168,232,255,0.5)]"></div>
+</div>
+</div>
+<!-- Media Highlights (Screenshots) -->
+<div class="flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<h3 class="font-label text-xs uppercase tracking-[0.4em] text-zinc-400">Media Highlights</h3>
+<button class="text-primary font-label text-xs uppercase tracking-widest hover:underline">View All Gallery</button>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="aspect-video bg-surface-container overflow-hidden rounded-md group cursor-pointer">
+<img alt="Game Screenshot 1" class="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" data-alt="cinematic third person view of a knight standing on a cliff overlooking a foggy valley with a glowing tree in the distance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIvpzGU_gRtczONBbwoZOa9yz80EL5q6s49ZdmRtvf4yLES53sM26zwzBgN1UVc88CV7s1cpod8LSYTvfdSWldC9JRcBdZeBY0ygDdySl4nlZEKmeEIuPTcVgahKitkfpgkAX_17nV0PPziFZz5w1X2G3pqEbzmg4nkhqNZTD_hVFT54fDIrXX18uCy63Oz7SkwYaDhnqRFzKBcIUntCOi-pmGiNGeQGGxie8iZR65f_Maf-klo_a2AkrGzlWDHGlMD2WcNcaZyiI"/>
+</div>
+<div class="aspect-video bg-surface-container overflow-hidden rounded-md group cursor-pointer">
+<img alt="Game Screenshot 2" class="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" data-alt="dramatic close up of an ornate sword glowing with blue magic energy in a dark stone dungeon environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXTpvA4Se0yDIRwprRJUf8l2v2kC4zxL5h2WEmWB7AigdqbAzgNU8ce6-kzYol3gnml1_SKvh5gdrl2rxu1V1iyz9qcT53tbyj-oB2VturozXZ6DFe1fKW9mmfvpZUTaCEX1dPYMMXgNaxpP-8N5ItuIQ5znF2IPIdN0J14dIRtlPMQm-DV-76pTV67CuJojAJzQvWnLHX81EFH9Te03W62Gr3F6-26e-OYrXVdU9Yzhve3Djo4FMm0G2F_zbUHVx4MtCw-pqPTF0"/>
+</div>
+<div class="aspect-video bg-surface-container overflow-hidden rounded-md group cursor-pointer">
+<img alt="Game Screenshot 3" class="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" data-alt="ethereal landscape with floating rocks and cosmic dust in a deep purple and navy color palette high fantasy style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgGRBbl8IVaI2gb-Il6cEkp907HJw1ftuzazqXkCqx8QVhfzYOhhzStumOFJ85SE7Wv93JtTmTrtE_dD1Ya_m7RvInpPGweEU_VfV0Cf6IrNyOz91mry9UDlePJ1AIYHk76WMXKQycdTGqAgifCCtIV9A6CLUJifuvCJ0GdKURy2q3hKoWT2ZQI9uLuYnNxfgKfvNavGw5-zzXQMrQfS8n69cLnXbiZFJ1K1mGwQdOJDTfeIU3YsgF0WgcMI-J_Rv6-v1jea_Ti8s"/>
+</div>
+</div>
+</div>
+<!-- Personal Archive Notes -->
+<div class="flex flex-col gap-6">
+<h3 class="font-label text-xs uppercase tracking-[0.4em] text-zinc-400">Personal Archive Notes</h3>
+<div class="bg-surface-container-low p-8 rounded-lg border-l-2 border-primary/20 italic font-body text-on-surface-variant leading-relaxed">
+            "The level design in Leyndell, Royal Capital is unparalleled. Every corner tells a story of a fallen empire. Currently focusing on a Faith/Strength build using the Blasphemous Blade. Need to revisit the Consecrated Snowfield to finish the Millicent questline."
+          </div>
+</div>
+</div>
+<!-- Right Column: Sidebar Metadata -->
+<aside class="col-span-4 flex flex-col gap-8">
+<div class="glass-panel p-8 rounded-xl flex flex-col gap-10 sticky top-28">
+<div class="flex flex-col gap-6">
+<h4 class="font-label text-xs uppercase tracking-[0.2em] text-primary border-b border-outline-variant/20 pb-4">Library Metadata</h4>
+<div class="flex justify-between items-center">
+<span class="font-label text-xs text-zinc-500">Storefront</span>
+<span class="font-body font-bold text-on-surface">Steam Desktop</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-xs text-zinc-500">Price Paid</span>
+<span class="font-body font-bold text-on-surface">$59.99</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-xs text-zinc-500">Latest Version</span>
+<span class="font-label font-bold text-on-surface">v1.10.1 (Shadow)</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-xs text-zinc-500">Last Played</span>
+<span class="font-body font-bold text-on-surface">2 hours ago</span>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<h4 class="font-label text-xs uppercase tracking-[0.2em] text-primary border-b border-outline-variant/20 pb-4">Technical Specs</h4>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between">
+<span class="font-label text-xs text-zinc-500">Avg. Performance</span>
+<span class="font-label text-xs text-secondary">60 FPS</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded-full">
+<div class="h-full bg-secondary w-full"></div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-xs text-zinc-500">Installation Size</span>
+<span class="font-label font-bold text-on-surface">48.2 GB</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<button class="w-full py-4 border border-primary/20 text-primary font-label font-bold tracking-widest uppercase text-xs hover:bg-primary/5 transition-all">
+              Verify Integrity
+            </button>
+<button class="w-full py-4 text-error font-label font-bold tracking-widest uppercase text-xs hover:bg-error/5 transition-all">
+              Uninstall Archive
+            </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<footer class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-low/90 backdrop-blur-xl flex justify-around items-center h-20 px-4 z-50">
+<div class="flex flex-col items-center gap-1 text-cyan-400">
+<span class="material-symbols-outlined">library_books</span>
+<span class="text-[10px] font-label font-semibold uppercase tracking-widest">Library</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-zinc-500">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-[10px] font-label font-semibold uppercase tracking-widest">Add</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-zinc-500">
+<span class="material-symbols-outlined">sync</span>
+<span class="text-[10px] font-label font-semibold uppercase tracking-widest">Sync</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-zinc-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-label font-semibold uppercase tracking-widest">Profile</span>
+</div>
+</footer>
+</body></html>

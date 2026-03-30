@@ -1,0 +1,157 @@
+body {
+  background:
+    radial-gradient(circle at top, rgba(23, 64, 89, 0.22), transparent 34%),
+    linear-gradient(180deg, #121314 0%, #0e0f10 100%);
+  color: #e4e2e3;
+}
+
+button,
+input,
+select,
+textarea {
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[data-action]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px rgba(168, 232, 255, 0.42),
+    0 0 0 4px rgba(168, 232, 255, 0.14);
+}
+
+button[data-action]:hover,
+[data-action][role="button"]:hover {
+  filter: brightness(1.04);
+}
+
+.checkpoint-topbar button[data-action]:focus-visible,
+.checkpoint-topbar input:focus-visible,
+.checkpoint-topbar select:focus-visible {
+  box-shadow:
+    0 0 0 1px rgba(168, 232, 255, 0.55),
+    0 0 0 4px rgba(168, 232, 255, 0.12);
+}
+
+.glass-card,
+.glass-panel {
+  background: rgba(27, 29, 31, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.checkpoint-panel {
+  background: rgba(22, 24, 26, 0.96);
+  border: 1px solid rgba(110, 122, 128, 0.16);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.checkpoint-topbar {
+  background: rgba(15, 16, 18, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(110, 122, 128, 0.14);
+}
+
+.cover-shadow {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
+}
+
+.cover-shadow:hover {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.46);
+}
+
+button[data-action="select-entry"]:focus-visible .cover-shadow,
+button[data-action="select-entry"]:hover .cover-shadow {
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(168, 232, 255, 0.24);
+}
+
+button[data-action="select-entry"]:focus-visible {
+  border-radius: 0.5rem;
+}
+
+button[data-action="filter-status"]:hover,
+button[data-action="set-view"]:hover,
+button[data-action="clear-library-view"]:hover {
+  color: #e4e2e3;
+}
+
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  border-color: rgba(168, 232, 255, 0.34);
+  background-color: rgba(13, 18, 22, 0.92);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #121314;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3c494e;
+  border-radius: 10px;
+}
+
+.hero-gradient {
+  background: linear-gradient(to bottom, rgba(18, 19, 20, 0) 0%, rgba(18, 19, 20, 0.8) 70%, rgba(18, 19, 20, 1) 100%);
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(168, 232, 255, 0.3);
+}
+
+.hud-line {
+  border-bottom: 1px solid rgba(60, 73, 78, 0.3);
+}
+
+.hud-line:focus-within {
+  border-bottom-color: #a8e8ff;
+  box-shadow: 0 4px 12px -4px rgba(0, 212, 255, 0.2);
+}
+
+.metadata-rule {
+  border-top: 1px solid rgba(110, 122, 128, 0.14);
+}
+
+.checkpoint-panel:hover {
+  border-color: rgba(110, 122, 128, 0.22);
+}
+
+.checkpoint-panel .text-zinc-500,
+.checkpoint-topbar .text-zinc-500,
+.glass-panel .text-zinc-500 {
+  color: rgb(161 161 170);
+}
+
+.checkpoint-panel .text-zinc-400,
+.glass-panel .text-zinc-400 {
+  color: rgb(212 212 216);
+}
+
+.checkpoint-panel .text-outline,
+.glass-panel .text-outline {
+  color: rgba(214, 219, 223, 0.72);
+}
+
+.checkpoint-panel .text-on-surface-variant,
+.glass-panel .text-on-surface-variant {
+  color: rgba(228, 226, 227, 0.8);
+}

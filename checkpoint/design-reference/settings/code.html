@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-surface": "#e4e2e3",
+            "on-error-container": "#ffdad6",
+            "on-secondary-container": "#8dc0d2",
+            "tertiary-fixed-dim": "#ffba3d",
+            "surface-tint": "#3cd7ff",
+            "on-tertiary-fixed-variant": "#604100",
+            "secondary": "#9bcee1",
+            "outline-variant": "#3c494e",
+            "outline": "#859398",
+            "tertiary-fixed": "#ffdeae",
+            "on-primary-fixed-variant": "#004e5f",
+            "error": "#ffb4ab",
+            "on-background": "#e4e2e3",
+            "surface-container": "#1f2021",
+            "inverse-primary": "#00677e",
+            "on-secondary-fixed": "#001f27",
+            "surface-container-lowest": "#0d0e0f",
+            "tertiary-container": "#feb528",
+            "on-primary": "#003642",
+            "surface-variant": "#343536",
+            "primary": "#a8e8ff",
+            "secondary-fixed-dim": "#9bcee1",
+            "on-primary-fixed": "#001f27",
+            "error-container": "#93000a",
+            "on-primary-container": "#00586b",
+            "on-surface": "#e4e2e3",
+            "surface-bright": "#39393a",
+            "surface-container-highest": "#343536",
+            "inverse-on-surface": "#303031",
+            "surface": "#121314",
+            "secondary-container": "#174f5f",
+            "primary-container": "#00d4ff",
+            "surface-container-high": "#292a2b",
+            "primary-fixed-dim": "#3cd7ff",
+            "on-tertiary-fixed": "#281900",
+            "on-tertiary-container": "#6c4900",
+            "surface-container-low": "#1b1c1d",
+            "on-surface-variant": "#bbc9cf",
+            "surface-dim": "#121314",
+            "on-secondary": "#003642",
+            "tertiary": "#ffd9a1",
+            "on-error": "#690005",
+            "background": "#121314",
+            "primary-fixed": "#b4ebff",
+            "on-tertiary": "#432c00",
+            "secondary-fixed": "#b7ebfd",
+            "on-secondary-fixed-variant": "#144d5c"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Manrope"],
+            "label": ["Space Grotesk"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-panel {
+      background: rgba(52, 53, 54, 0.6);
+      backdrop-filter: blur(20px);
+    }
+    .hud-line {
+      border-bottom: 1px solid rgba(60, 73, 78, 0.3);
+    }
+    .primary-gradient {
+      background: linear-gradient(135deg, #a8e8ff 0%, #00d4ff 100%);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body overflow-x-hidden selection:bg-primary/30">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-zinc-950 dark:bg-[#1b1c1d] shadow-2xl shadow-black/50 z-[60] flex flex-col justify-between py-10">
+<div class="flex flex-col gap-8">
+<!-- Profile Branding Section -->
+<div class="px-6 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Cyberpunk style character portrait with blue neon lighting and high-tech visor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0wzNyqGMz-iwjjbLdlnZnBIperddskhg15HqpUzt0K4VDWdS3tsiTpyCH-VmycWf2V5LuMeL5ITf1f46cz04obH6mCun4IWGRfNbO9eZOddOLlCYOGrvHt4ZSSI98hvHEAAws4l1k5x-nMTYyGzd_8ZQ2KBEc9gopRefOKgPfJ37VQhgNwgqtbSMVylx2tRCq7Rf9KQrym96BwdWxhcnksKfu4XaBpZaHdpe-GA3EhQSpb931yvOOYaUEdaYNB70-O745bYZVpE4"/>
+</div>
+<div>
+<h2 class="font-headline font-bold text-sm tracking-tight text-on-surface">The Curator</h2>
+<p class="font-label text-[10px] uppercase tracking-widest text-primary/70">Master Collector</p>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col">
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all group font-label uppercase tracking-widest text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">library_books</span>
+          Library
+        </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all group font-label uppercase tracking-widest text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">add_circle</span>
+          Add Game
+        </a>
+<a class="text-zinc-500 py-4 px-6 flex items-center gap-4 hover:bg-zinc-800/30 transition-all group font-label uppercase tracking-widest text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">sync</span>
+          Sync
+        </a>
+<a class="bg-gradient-to-r from-cyan-500/10 to-transparent text-cyan-400 border-l-4 border-cyan-400 py-4 px-6 flex items-center gap-4 font-label uppercase tracking-widest text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">settings</span>
+          Settings
+        </a>
+</nav>
+</div>
+<!-- Quick Launch CTA & Footer -->
+<div class="px-6 space-y-6">
+<button class="w-full py-3 primary-gradient text-on-primary font-label font-bold text-xs uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
+        Quick Launch
+      </button>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 text-zinc-500 hover:text-cyan-200 text-xs font-label uppercase tracking-widest transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+          Support
+        </a>
+<a class="flex items-center gap-3 text-zinc-500 hover:text-cyan-200 text-xs font-label uppercase tracking-widest transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">logout</span>
+          Logout
+        </a>
+</div>
+</div>
+</aside>
+<!-- Top AppBar Shell -->
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-8 h-20 pl-72 bg-transparent backdrop-blur-xl dark:bg-black/60 z-50">
+<div class="flex items-center gap-2">
+<h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-500 font-headline">
+        System Preferences
+      </h1>
+<span class="text-[10px] font-label text-primary/40 bg-primary/10 px-2 py-0.5 rounded ml-2 uppercase tracking-tighter">Terminal 01-A</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end">
+<span class="font-label text-[10px] text-zinc-500 uppercase">Uptime</span>
+<span class="font-label text-xs text-primary">14D : 02H : 44M</span>
+</div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-zinc-800/50 text-zinc-400 transition-all active:scale-90">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-zinc-800/50 text-zinc-400 transition-all active:scale-90">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-12 min-h-screen">
+<!-- System Metrics HUD Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+<div class="bg-surface-container-low p-6 flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-all"></div>
+<span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Network Latency</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-3xl font-extrabold text-on-surface">24</span>
+<span class="font-label text-xs text-primary">MS</span>
+</div>
+<div class="w-full h-1 bg-zinc-900 mt-2">
+<div class="h-full bg-primary w-1/4"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 flex flex-col gap-1 relative overflow-hidden group">
+<span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Cache Integrity</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-3xl font-extrabold text-on-surface">99.8</span>
+<span class="font-label text-xs text-primary">%</span>
+</div>
+<div class="w-full h-1 bg-zinc-900 mt-2">
+<div class="h-full bg-primary w-full opacity-80"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 flex flex-col gap-1 relative overflow-hidden group">
+<span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Sync Priority</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-3xl font-extrabold text-on-surface">High</span>
+</div>
+<div class="w-full h-1 bg-zinc-900 mt-2">
+<div class="h-full bg-primary w-2/3"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 flex flex-col gap-1 relative overflow-hidden group">
+<span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Core Engine</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-3xl font-extrabold text-on-surface">V4.2</span>
+</div>
+<div class="w-full h-1 bg-zinc-900 mt-2">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+</div>
+</div>
+<!-- Main Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Profile Identity Column -->
+<section class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+<div class="bg-surface-container-high p-8 flex flex-col gap-6 relative">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary">Profile Identity</h3>
+<span class="material-symbols-outlined text-primary/40 text-sm">verified_user</span>
+</div>
+<div class="space-y-4">
+<div>
+<label class="font-label text-[10px] text-zinc-500 uppercase mb-1 block">Operator Handle</label>
+<div class="hud-line py-2 flex items-center justify-between">
+<span class="font-headline font-bold text-on-surface">NEO_ARCHIVIST_01</span>
+<button class="text-[10px] font-label text-primary uppercase hover:underline">Edit</button>
+</div>
+</div>
+<div>
+<label class="font-label text-[10px] text-zinc-500 uppercase mb-1 block">Curator Class</label>
+<div class="hud-line py-2 flex items-center justify-between">
+<span class="font-headline font-bold text-on-surface">Elite Overseer</span>
+<span class="text-[10px] font-label text-zinc-500">Lvl 44</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-6">
+<div class="aspect-video w-full rounded-md bg-zinc-900/50 overflow-hidden relative group">
+<img alt="System Visualization" class="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" data-alt="High-tech glowing server room with blue data lines and floating holographic interfaces" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPZEw3O2kKVB3pqs85NvAP8MblQajlrVFnPfJCWj9LH7qcdBYTX6Gop0HA4C8hD7UTgeGDdaDc2jLt0RTz3dmbNINRtRR0BRwu4guTusCdYwNcpt4LX7TjLziROB-YuttMibHWd-B_wNW6t8u3CadWWQQ3BPTiw-lGOLFWhl-2MbJ1Bj7nrziwVQuBTSRI8XDIo7yJRRnJSgXP4oe4iVDD2La0-7dB4aCwznPhGsIvjfO5hkdn3WqjfmFGZTlDhnTln9AtsQ9UIJQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="font-label text-[10px] text-primary uppercase">Identity Verification Active</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 border-l-2 border-primary/20">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">cloud_sync</span>
+<h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-on-surface">Network Link</h3>
+</div>
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-900">
+<img alt="G-Drive" class="w-6 h-6 object-contain" data-alt="Official Google Drive logo on a clean white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ_Hp7zKUm1mxsXrohJMyJilnfK-864Cpn4SYZU4GeMSfCXpvgd_ksiE6ugDQ0rEj9kDNdUFBsoTMG-XquNlNNQizgb544CVzwMhMhFYuclHxvzov2Jzx7GKT7ug-wcKTuRmEqRK_UivB0zgrtZ_2FBFYvTmIi1oG7Wk1sAGo4q9y7phswQk1gKcnmqD7vYQ6kdYc7S3ilT1Rp8XdzwdqecszfuRKom0aUiCkqKjNnBEdAPnypRztRPq9yWR9mBQGJL8HoGmNg-sU"/>
+</div>
+<div>
+<p class="text-sm font-headline font-bold">Google Drive Sync</p>
+<p class="text-[10px] font-label text-zinc-500">Last sync: 2m ago</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-zinc-800 rounded-full relative p-1 cursor-pointer">
+<div class="w-4 h-4 bg-primary rounded-full absolute right-1"></div>
+</div>
+</div>
+<button class="w-full py-3 bg-zinc-900 text-primary font-label font-bold text-[10px] uppercase tracking-widest hover:bg-zinc-800 transition-colors">
+            Relink Cloud Storage
+          </button>
+</div>
+</section>
+<!-- Database & Core Parameters Column -->
+<section class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+<!-- Database Optimization -->
+<div class="bg-surface-container p-8">
+<div class="flex items-center justify-between mb-10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">database</span>
+<h3 class="font-headline font-extrabold text-xl tracking-tight text-on-surface">Database Optimization</h3>
+</div>
+<span class="font-label text-[10px] text-zinc-500 px-3 py-1 bg-zinc-900 rounded">Auto-Clean: Enabled</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="p-6 bg-surface-container-high relative group hover:bg-surface-container-highest transition-colors cursor-pointer">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary/60">refresh</span>
+<span class="text-[10px] font-label text-primary">0.4s</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-sm text-on-surface">Refresh Metadata</h4>
+<p class="font-body text-xs text-zinc-500 mt-1 leading-relaxed">Scan game directories for missing covers, patch notes, and playtime data.</p>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 h-1 bg-primary w-0 group-hover:w-full transition-all duration-500"></div>
+</div>
+<div class="p-6 bg-surface-container-high relative group hover:bg-surface-container-highest transition-colors cursor-pointer">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-error/60">delete_sweep</span>
+<span class="text-[10px] font-label text-error">1.2GB</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-sm text-on-surface">Purge Cache</h4>
+<p class="font-body text-xs text-zinc-500 mt-1 leading-relaxed">Remove temporary thumbnails and outdated log files to free local storage.</p>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 h-1 bg-error w-0 group-hover:w-full transition-all duration-500"></div>
+</div>
+</div>
+</div>
+<!-- Core Parameters Bento -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Privacy & Security -->
+<div class="bg-surface-container-low p-8">
+<h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-on-surface mb-8 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">lock</span> Core Parameters
+            </h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-sm font-headline font-bold">Privacy Mode</p>
+<p class="text-[10px] font-label text-zinc-500">Hide library from public API</p>
+</div>
+<div class="w-10 h-5 bg-primary/20 rounded-full relative p-1 cursor-pointer">
+<div class="w-3 h-3 bg-primary rounded-full absolute right-1"></div>
+</div>
+</div>
+<div class="hud-line"></div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-sm font-headline font-bold">Visual Engine</p>
+<p class="text-[10px] font-label text-zinc-500">Enhanced bloom &amp; shaders</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-label text-primary px-2 py-0.5 border border-primary/30">ULTRA</span>
+</div>
+</div>
+<div class="hud-line"></div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-sm font-headline font-bold">Notifications</p>
+<p class="text-[10px] font-label text-zinc-500">Update &amp; Sync alerts</p>
+</div>
+<div class="w-10 h-5 bg-zinc-800 rounded-full relative p-1 cursor-pointer">
+<div class="w-3 h-3 bg-zinc-600 rounded-full absolute left-1"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick System Actions -->
+<div class="bg-zinc-900 p-8 flex flex-col justify-between">
+<div>
+<h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-on-surface mb-4">Diagnostics</h3>
+<p class="text-xs font-body text-zinc-400 mb-6">Run a full system integrity check to verify archive file structures.</p>
+<div class="space-y-3">
+<div class="flex justify-between font-label text-[10px] uppercase">
+<span class="text-zinc-500">Verification</span>
+<span class="text-primary">Complete</span>
+</div>
+<div class="w-full h-1 bg-zinc-800">
+<div class="w-full h-full bg-primary/40"></div>
+</div>
+<div class="flex justify-between font-label text-[10px] uppercase">
+<span class="text-zinc-500">Sub-routine 09</span>
+<span class="text-primary/50">Idle</span>
+</div>
+<div class="w-full h-1 bg-zinc-800">
+<div class="w-1/3 h-full bg-zinc-700"></div>
+</div>
+</div>
+</div>
+<button class="mt-8 py-3 border border-outline-variant/30 text-on-surface font-label font-bold text-[10px] uppercase tracking-widest hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform">autorenew</span>
+              Restart Archive Engine
+            </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Status Bar -->
+<footer class="mt-12 pt-8 hud-line flex flex-wrap gap-10 items-center justify-between opacity-60">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+<span class="font-label text-[10px] uppercase tracking-widest">Global Node Status: Optimal</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">database</span>
+<span class="font-label text-[10px] uppercase tracking-widest">Total Archive: 14.2 TB</span>
+</div>
+</div>
+<div class="flex items-center gap-4 font-label text-[10px] uppercase tracking-[0.3em]">
+<span>Encryption: AES-256</span>
+<span class="text-zinc-700">|</span>
+<span>Version: Build_8820.X</span>
+</div>
+</footer>
+</main>
+</body></html>
