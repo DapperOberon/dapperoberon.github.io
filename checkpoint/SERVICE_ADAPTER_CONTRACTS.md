@@ -23,7 +23,7 @@ The app expects `createIntegrations()` to return:
 ```js
 {
   steamGrid: SteamGridService,
-  storefronts: StorefrontMetadataService,
+  metadataResolver: MetadataResolverService,
   googleDrive: GoogleDriveService
 }
 ```
@@ -68,12 +68,15 @@ Output:
 Behavior notes:
 
 - if `catalogGame` already contains art, the adapter may reuse it
+- the browser runtime may provide a Worker URL through `window.CHECKPOINT_CONFIG.steamGridWorkerUrl` or `localStorage["checkpoint.steamGridWorkerUrl"]`
+- the Worker stores the real SteamGridDB API key as a server-side secret
+- the settings screen is allowed to manage the per-browser Worker URL directly during Phase 2
 - production implementations may return empty strings/arrays when art is unavailable
 - callers should not assume screenshots exist
 
 ---
 
-## StorefrontMetadataService
+## MetadataResolverService
 
 Purpose:
 
@@ -84,7 +87,7 @@ Required methods:
 ```js
 {
   isConfigured(): boolean,
-  lookupGame(input): Promise<StorefrontMetadataResult>
+  resolveGameMetadata(input): Promise<MetadataResolverResult>
 }
 ```
 
@@ -116,6 +119,8 @@ Output:
 Behavior notes:
 
 - if `catalogGame` exists, the adapter may echo normalized catalog data instead of fetching
+- the browser runtime should call the same Cloudflare Worker proxy used for SteamGrid artwork
+- the Worker should keep IGDB/Twitch credentials server-side and rotate Twitch access tokens internally
 - production implementations should return normalized strings/arrays, not raw provider payloads
 - unknown values may be returned as empty strings or explicit pending placeholders
 
@@ -132,7 +137,19 @@ Required methods:
 ```js
 {
   isConfigured(): boolean,
-  syncLibrary(input?): Promise<GoogleDriveSyncResult>
+  getStatus?(): {
+    available: boolean,
+    connected: boolean,
+    clientConfigured: boolean
+  },
+  connect?(): Promise<GoogleDriveSyncResult>,
+  disconnect?(): GoogleDriveSyncResult,
+  syncAppState(input?): Promise<GoogleDriveSyncResult>,
+  restoreAppState?(): Promise<{
+    filename: string,
+    content: string,
+    fileId?: string
+  }>
 }
 ```
 
@@ -157,8 +174,9 @@ Output:
 
 Behavior notes:
 
-- the current scaffold does not yet call `syncLibrary()` with full backup payloads
-- Phase 2 should make the sync input explicit and versioned
+- the browser implementation may use Google Identity Services token auth
+- production sync should operate on the normalized exported app-state payload
+- restore flows may return raw JSON content for the store to validate and merge/replace
 
 ---
 
@@ -190,9 +208,9 @@ They may change:
 
 The store currently depends on these guarantees:
 
-- `lookupGame()` always resolves to a metadata object
+- `resolveGameMetadata()` always resolves to a metadata object
 - `resolveArtwork()` always resolves to an artwork object
-- `syncLibrary()` always resolves to an object with `ok` and `message`
+- `syncAppState()` always resolves to an object with `ok` and `message`
 - `isConfigured()` is cheap and synchronous
 
 If production implementations can reject, the store/UI should treat that as a recoverable service error and surface feedback instead of crashing.

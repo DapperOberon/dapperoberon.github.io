@@ -65,6 +65,48 @@ function renderOptionalText(value, fallbackLabel) {
     : `<span class="font-headline font-bold">${escapeHtml(value)}</span>`;
 }
 
+function renderPrimaryAction(label, dataAction, extraClasses = "", extraAttributes = "") {
+  return `
+    <button class="bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold uppercase hover:brightness-110 transition-all shadow-lg shadow-cyan-500/15 ${extraClasses}" data-action="${dataAction}" ${extraAttributes}>
+      ${escapeHtml(label)}
+    </button>
+  `;
+}
+
+function renderSecondaryAction(label, dataAction, extraClasses = "", extraAttributes = "") {
+  return `
+    <button class="border border-primary/20 bg-primary/5 text-primary font-label font-bold uppercase hover:bg-primary/12 transition-all ${extraClasses}" data-action="${dataAction}" ${extraAttributes}>
+      ${escapeHtml(label)}
+    </button>
+  `;
+}
+
+function renderMetaChip(label, tone = "neutral") {
+  const toneClasses = {
+    primary: "bg-primary/10 text-primary border border-primary/20",
+    neutral: "bg-black/20 text-zinc-300 border border-outline-variant/20"
+  };
+
+  return `
+    <span class="px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-[0.18em] ${toneClasses[tone] ?? toneClasses.neutral}">
+      ${escapeHtml(label)}
+    </span>
+  `;
+}
+
+function renderSettingsStatCard(label, value, accent, widthClass) {
+  return `
+    <div class="checkpoint-panel p-6 flex flex-col gap-1 relative overflow-hidden group rounded-xl">
+      <span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">${escapeHtml(label)}</span>
+      <div class="flex items-baseline gap-2">
+        <span class="font-headline text-3xl font-extrabold text-on-surface">${escapeHtml(value)}</span>
+        ${accent ? `<span class="font-label text-xs text-primary">${escapeHtml(accent)}</span>` : ""}
+      </div>
+      <div class="w-full h-1 bg-zinc-900 mt-2"><div class="h-full bg-primary ${widthClass}"></div></div>
+    </div>
+  `;
+}
+
 function renderSidebar(snapshot) {
   const items = [
     { id: "dashboard", label: "Library", icon: "library_books" },
@@ -104,7 +146,7 @@ function renderSidebar(snapshot) {
         </div>
         <div class="hidden lg:flex items-center gap-6 text-[10px] font-label uppercase tracking-[0.18em] text-zinc-500">
           <span>${snapshot.dashboardMetrics.totalEntries} tracked</span>
-          <span>${snapshot.syncStatus.driveConnected ? "Drive Ready" : "Local Only"}</span>
+          <span>${snapshot.syncStatus.driveConnected ? "Drive Ready" : snapshot.syncStatus.driveClientConfigured ? "Drive Available" : "Local Only"}</span>
           <span>SteamGrid ${snapshot.syncStatus.steamGridReady ? "Live" : "Stub"}</span>
         </div>
       </div>
@@ -163,7 +205,7 @@ function renderTopbar(snapshot) {
             >
             <span class="material-symbols-outlined absolute left-3 top-2.5 text-zinc-500 text-sm">search</span>
           </label>
-          <button class="h-10 px-5 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary hover:brightness-110 transition-all font-label uppercase tracking-[0.18em] text-[10px] shadow-lg shadow-cyan-500/15 w-full sm:w-auto" data-action="open-add-modal">
+          <button class="h-10 px-5 flex items-center justify-center gap-2 rounded-full w-full sm:w-auto bg-gradient-to-r from-primary to-primary-container text-on-primary hover:brightness-110 transition-all font-label uppercase tracking-[0.18em] text-[10px] shadow-lg shadow-cyan-500/15" data-action="open-add-modal">
             <span class="material-symbols-outlined text-sm">add</span>
             Add Game
           </button>
@@ -221,9 +263,7 @@ function renderMetricPanel(snapshot) {
           <span>${snapshot.dashboardMetrics.averageCompletion}%</span>
         </div>
       </div>
-      <button class="w-full bg-primary/12 text-primary py-3 font-label font-bold text-xs uppercase tracking-[0.18em] rounded-full hover:bg-primary/20 transition-all" data-action="set-view" data-view="settings">
-        Open Settings
-      </button>
+      ${renderSecondaryAction("Open Settings", "set-view", "w-full py-3 text-xs tracking-[0.18em] rounded-full", 'data-view="settings"')}
     </div>
   `;
 }
@@ -272,9 +312,7 @@ function renderLibraryStateBar(snapshot) {
         <p class="text-xs text-zinc-500 leading-relaxed">Search looks through titles, run labels, storefronts, notes, and stored metadata.</p>
       </div>
       ${hasScopedView ? `
-        <button class="px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/12 transition-colors font-label text-[10px] uppercase tracking-[0.2em]" data-action="clear-library-view">
-          Reset To All Games
-        </button>
+        ${renderSecondaryAction("Reset To All Games", "clear-library-view", "px-4 py-2 rounded-full text-[10px] tracking-[0.2em]")}
       ` : `
         <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Minimal library focus</p>
       `}
@@ -301,9 +339,7 @@ function renderLibraryEmptyState(snapshot) {
         <p class="text-on-surface-variant leading-relaxed">${escapeHtml(body)}</p>
       </div>
       <div class="flex items-center gap-4 pt-2">
-        <button class="px-6 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold text-xs uppercase tracking-[0.2em] rounded-sm hover:brightness-110 transition-all" data-action="open-add-modal">
-          Add Game
-        </button>
+        ${renderPrimaryAction("Add Game", "open-add-modal", "px-6 py-3 text-xs tracking-[0.2em] rounded-sm")}
         ${(snapshot.activeStatus !== "all" || hasSearch) ? `
           <button class="px-6 py-3 border border-outline-variant/30 font-label font-bold text-xs uppercase tracking-[0.2em] rounded-sm hover:bg-surface-container-high transition-all" data-action="clear-library-view">
             Reset View
@@ -326,6 +362,54 @@ function renderLibraryFocusSection(snapshot, storefrontDefinitions, statusDefini
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8">
         ${snapshot.visibleLibrary.map((entry) => renderCard(entry, getGameForEntry(snapshot, entry), storefrontDefinitions, statusDefinitions, "min-h-[16rem]")).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderDashboardHero(snapshot) {
+  return `
+    <section class="grid grid-cols-1 xl:grid-cols-[1.5fr_320px] gap-6 lg:gap-8">
+      <div class="checkpoint-panel rounded-xl p-8">
+        <div class="flex flex-col gap-3">
+          <p class="font-label uppercase text-[10px] tracking-[0.22em] text-zinc-500">Home / Library</p>
+          <p class="font-label uppercase text-[10px] tracking-[0.28em] text-primary">Your Library</p>
+          <h1 class="text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Track what you are playing, what you finished, and what you parked.</h1>
+          <p class="max-w-3xl text-on-surface-variant leading-relaxed">Checkpoint now leans into a cleaner, cover-first library. The current view always matches the data that will export and sync.</p>
+        </div>
+        <div class="metadata-rule mt-8 pt-5 flex flex-wrap gap-6 text-[10px] font-label uppercase tracking-[0.18em] text-zinc-500">
+          <span>${snapshot.dashboardMetrics.playingCount} playing</span>
+          <span>${snapshot.dashboardMetrics.finishedCount} finished</span>
+          <span>${snapshot.dashboardMetrics.archivedCount} archived</span>
+          <span>${snapshot.dashboardMetrics.totalEntries} total entries</span>
+        </div>
+      </div>
+      ${renderMetricPanel(snapshot)}
+    </section>
+  `;
+}
+
+function renderDashboardShelf({ title, eyebrow, filterStatus, entries, emptyMessage, snapshot, storefrontDefinitions, statusDefinitions }) {
+  const headingSize = filterStatus === "playing" ? "text-3xl" : "text-2xl";
+  const sectionClasses = filterStatus === "playing"
+    ? "flex items-end justify-between mb-6"
+    : "flex items-end justify-between mb-6 border-b border-outline-variant/20 pb-4";
+  const cardClass = filterStatus === "playing" ? "" : "min-h-[16rem]";
+  const actionLabel = filterStatus === "playing" ? "View Only Playing" : `View ${title}`;
+
+  return `
+    <section>
+      <div class="${sectionClasses}">
+        <div>
+          <p class="font-label uppercase text-[10px] tracking-[0.24em] text-primary mb-2">${escapeHtml(eyebrow)}</p>
+          <h2 class="${headingSize} font-headline font-extrabold tracking-tight text-on-surface">${escapeHtml(title)}</h2>
+        </div>
+        <button class="text-zinc-500 hover:text-primary transition-colors font-label text-[10px] uppercase tracking-[0.18em]" data-action="filter-status" data-status="${filterStatus}">${escapeHtml(actionLabel)}</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8">
+        ${entries.length
+          ? entries.map((entry) => renderCard(entry, getGameForEntry(snapshot, entry), storefrontDefinitions, statusDefinitions, cardClass)).join("")
+          : `<div class="col-span-full text-zinc-500 font-label uppercase tracking-widest text-xs">${escapeHtml(emptyMessage)}</div>`}
       </div>
     </section>
   `;
@@ -369,67 +453,220 @@ function renderDashboardView(snapshot, storefrontDefinitions, statusDefinitions)
     <div class="pt-44 md:pt-36 pb-12 flex-1 overflow-y-auto custom-scrollbar">
       <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-10">
         ${renderLibraryStateBar(snapshot)}
-        <section class="grid grid-cols-1 xl:grid-cols-[1.5fr_320px] gap-6 lg:gap-8">
-          <div class="checkpoint-panel rounded-xl p-8">
-            <div class="flex flex-col gap-3">
-              <p class="font-label uppercase text-[10px] tracking-[0.22em] text-zinc-500">Home / Library</p>
-              <p class="font-label uppercase text-[10px] tracking-[0.28em] text-primary">Your Library</p>
-              <h1 class="text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Track what you are playing, what you finished, and what you parked.</h1>
-              <p class="max-w-3xl text-on-surface-variant leading-relaxed">Checkpoint now leans into a cleaner, cover-first library. The current view always matches the data that will export and sync.</p>
-            </div>
-            <div class="metadata-rule mt-8 pt-5 flex flex-wrap gap-6 text-[10px] font-label uppercase tracking-[0.18em] text-zinc-500">
-              <span>${snapshot.dashboardMetrics.playingCount} playing</span>
-              <span>${snapshot.dashboardMetrics.finishedCount} finished</span>
-              <span>${snapshot.dashboardMetrics.archivedCount} archived</span>
-              <span>${snapshot.dashboardMetrics.totalEntries} total entries</span>
-            </div>
-          </div>
-          ${renderMetricPanel(snapshot)}
-        </section>
-        <section>
-          <div class="flex items-end justify-between mb-6">
-            <div>
-              <p class="font-label uppercase text-[10px] tracking-[0.24em] text-primary mb-2">Now Playing</p>
-              <h2 class="text-3xl font-headline font-extrabold tracking-tight text-on-surface">Currently Playing</h2>
-            </div>
-            <button class="text-zinc-500 hover:text-primary transition-colors font-label text-[10px] uppercase tracking-[0.18em]" data-action="filter-status" data-status="playing">View Only Playing</button>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8">
-            ${playing.length ? playing.map((entry) => renderCard(entry, getGameForEntry(snapshot, entry), storefrontDefinitions, statusDefinitions)).join("") : `
-              <div class="col-span-full text-zinc-500 font-label uppercase tracking-widest text-xs">No active playing entries in the current view.</div>
-            `}
-          </div>
-        </section>
-        <section>
-          <div class="flex items-end justify-between mb-6 border-b border-outline-variant/20 pb-4">
-            <div>
-              <p class="font-label uppercase text-[10px] tracking-[0.24em] text-primary mb-2">Finished Shelf</p>
-              <h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">Finished Runs</h2>
-            </div>
-            <button class="text-zinc-500 hover:text-primary transition-colors font-label text-[10px] uppercase tracking-[0.18em]" data-action="filter-status" data-status="finished">View Finished</button>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8">
-            ${finished.length ? finished.map((entry) => renderCard(entry, getGameForEntry(snapshot, entry), storefrontDefinitions, statusDefinitions, "min-h-[16rem]")).join("") : `
-              <div class="col-span-full text-zinc-500 font-label uppercase tracking-widest text-xs">No finished entries in the current filter.</div>
-            `}
-          </div>
-        </section>
-        <section>
-          <div class="flex items-end justify-between mb-6 border-b border-outline-variant/20 pb-4">
-            <div>
-              <p class="font-label uppercase text-[10px] tracking-[0.24em] text-primary mb-2">Archived Shelf</p>
-              <h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">Archive</h2>
-            </div>
-            <button class="text-zinc-500 hover:text-primary transition-colors font-label text-[10px] uppercase tracking-[0.18em]" data-action="filter-status" data-status="archived">View Archived</button>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8">
-            ${archived.length ? archived.map((entry) => renderCard(entry, getGameForEntry(snapshot, entry), storefrontDefinitions, statusDefinitions, "min-h-[16rem]")).join("") : `
-              <div class="col-span-full text-zinc-500 font-label uppercase tracking-widest text-xs">No archived entries in the current filter.</div>
-            `}
-          </div>
-        </section>
+        ${renderDashboardHero(snapshot)}
+        ${renderDashboardShelf({
+          title: "Currently Playing",
+          eyebrow: "Now Playing",
+          filterStatus: "playing",
+          entries: playing,
+          emptyMessage: "No active playing entries in the current view.",
+          snapshot,
+          storefrontDefinitions,
+          statusDefinitions
+        })}
+        ${renderDashboardShelf({
+          title: "Finished Runs",
+          eyebrow: "Finished Shelf",
+          filterStatus: "finished",
+          entries: finished,
+          emptyMessage: "No finished entries in the current filter.",
+          snapshot,
+          storefrontDefinitions,
+          statusDefinitions
+        })}
+        ${renderDashboardShelf({
+          title: "Archive",
+          eyebrow: "Archived Shelf",
+          filterStatus: "archived",
+          entries: archived,
+          emptyMessage: "No archived entries in the current filter.",
+          snapshot,
+          storefrontDefinitions,
+          statusDefinitions
+        })}
       </div>
     </div>
+  `;
+}
+
+function renderDetailHeroSection(activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions) {
+  return `
+    <section class="checkpoint-panel rounded-xl p-8 lg:p-10 overflow-hidden relative">
+      ${hasUsableAsset(heroBackdropArt) ? `
+        <div class="absolute inset-0 pointer-events-none">
+          <img class="w-full h-full object-cover scale-105 opacity-50 blur-[1px]" src="${escapeHtml(heroBackdropArt)}" alt="${escapeHtml(activeEntry.title)} hero backdrop">
+          <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,12,0.08)_0%,rgba(10,12,14,0.38)_24%,rgba(16,18,20,0.72)_56%,rgba(22,24,26,0.92)_100%)]"></div>
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.12),transparent_38%)]"></div>
+        </div>
+      ` : ""}
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-[220px_1fr] xl:grid-cols-[260px_1fr_220px] gap-6 lg:gap-8 items-start">
+        <div class="overflow-hidden rounded-md bg-zinc-900 cover-shadow aspect-[3/4] max-w-[260px] mx-auto lg:mx-0">
+          ${hasUsableAsset(coverArt)
+            ? `<img class="w-full h-full object-cover" src="${escapeHtml(coverArt)}" alt="${escapeHtml(activeEntry.title)} cover art">`
+            : renderFallbackArt(activeEntry.title, "Artwork pending", "rounded-md")}
+        </div>
+        <div class="space-y-5">
+          <p class="font-label uppercase text-[10px] tracking-[0.22em] text-zinc-500">Library / Details</p>
+          <div class="flex flex-wrap items-center gap-3">
+            ${renderMetaChip(getStorefrontLabel(storefrontDefinitions, activeEntry.storefront), "primary")}
+            ${renderMetaChip(getStatusMeta(statusDefinitions, activeEntry.status).label)}
+            ${renderMetaChip(`${activeEntry.playtimeHours}h logged`)}
+          </div>
+          <div>
+            <h1 class="text-4xl lg:text-5xl font-extrabold font-headline tracking-tight text-on-surface">${escapeHtml(activeEntry.title)}</h1>
+            <p class="mt-2 font-label text-[11px] uppercase tracking-[0.22em] text-zinc-500">${escapeHtml(activeEntry.runLabel || "Main Save")}</p>
+          </div>
+          <p class="max-w-3xl text-on-surface-variant text-base leading-relaxed">
+            ${escapeHtml(description || "This entry was added manually and is waiting on fuller metadata.")}
+          </p>
+          <div class="metadata-rule pt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 text-sm">
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Release Date</p>
+              <p class="font-headline font-bold text-on-surface">${hasUsableAsset(game?.releaseDate) ? escapeHtml(formatDate(game?.releaseDate)) : "Metadata pending"}</p>
+            </div>
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Platform</p>
+              <p class="font-headline font-bold text-on-surface">${game?.platforms?.length ? escapeHtml(game.platforms.join(", ")) : "Platform pending"}</p>
+            </div>
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Developer</p>
+              <p class="font-headline font-bold text-on-surface">${!isPendingMetadata(game?.developer) ? escapeHtml(game.developer) : "Metadata pending"}</p>
+            </div>
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Publisher</p>
+              <p class="font-headline font-bold text-on-surface">${!isPendingMetadata(game?.publisher) ? escapeHtml(game.publisher) : "Metadata pending"}</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row xl:flex-col gap-3 lg:col-span-2 xl:col-auto">
+          <p class="font-label uppercase text-[10px] tracking-[0.22em] text-zinc-500 mb-1">Quick Actions</p>
+          ${renderPrimaryAction("Back to Library", "set-view", "w-full px-5 py-3 tracking-[0.18em] rounded-full text-[10px]", 'data-view="dashboard"')}
+          <button class="w-full px-5 py-3 border border-primary/20 bg-primary/5 text-primary hover:bg-primary/12 transition-all rounded-full flex items-center justify-center gap-2 font-label font-bold tracking-[0.18em] uppercase text-[10px]" data-action="open-edit-modal" data-entry-id="${activeEntry.entryId}">
+            <span class="material-symbols-outlined text-base">edit</span>
+            Edit Entry
+          </button>
+          ${activeEntry.status === "archived" ? `
+            <button class="w-full px-5 py-3 border border-emerald-300/20 text-emerald-100 hover:bg-emerald-400/10 transition-all rounded-full flex items-center justify-center gap-2 font-label font-bold tracking-[0.18em] uppercase text-[10px]" data-action="update-entry-status" data-entry-id="${activeEntry.entryId}" data-status="playing">
+              <span class="material-symbols-outlined text-base">restore</span>
+              Restore
+            </button>
+          ` : ""}
+          <button class="w-full px-5 py-3 border border-red-400/20 text-red-200 hover:bg-red-400/10 transition-all rounded-full flex items-center justify-center gap-2 font-label font-bold tracking-[0.18em] uppercase text-[10px]" data-action="open-delete-confirm" data-entry-id="${activeEntry.entryId}">
+            <span class="material-symbols-outlined text-base">delete</span>
+            Delete Entry
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderDetailProgressPanel(snapshot, activeEntry, statusDefinitions) {
+  return `
+    <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-6 relative overflow-hidden">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-6">
+        <div class="flex flex-col gap-1">
+          <h3 class="font-label text-xs uppercase tracking-[0.3em] text-primary">Current Progress</h3>
+          <p class="font-label text-[10px] uppercase tracking-[0.18em] text-zinc-500">Edit tracked run values directly here.</p>
+          <p class="text-3xl font-headline font-extrabold tracking-tighter">${activeEntry.completionPercent}% COMPLETE</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="font-label text-xs text-zinc-500 uppercase">Last Updated</p>
+          <p class="font-body font-bold text-on-surface">${escapeHtml(formatRelative(activeEntry.updatedAt))}</p>
+        </div>
+      </div>
+      <div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-cyan-500 to-primary-container shadow-[0_0_15px_rgba(168,232,255,0.5)]" style="width:${activeEntry.completionPercent}%"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <label class="space-y-2">
+          <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Playtime</span>
+          <input id="detail-playtime" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="number" min="0" step="0.5" value="${escapeHtml(snapshot.detailForm.playtimeHours)}">
+        </label>
+        <label class="space-y-2">
+          <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Completion</span>
+          <input id="detail-completion" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="number" min="0" max="100" step="1" value="${escapeHtml(snapshot.detailForm.completionPercent)}">
+        </label>
+        <label class="space-y-2">
+          <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Status</span>
+          <select id="detail-status" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary appearance-none">
+            ${statusDefinitions.map((status) => `
+              <option class="bg-surface" value="${status.id}" ${snapshot.detailForm.status === status.id ? "selected" : ""}>${escapeHtml(status.label)}</option>
+            `).join("")}
+          </select>
+        </label>
+      </div>
+      <div class="flex justify-end">
+        <p class="mr-auto text-xs text-zinc-500 self-center">Saves playtime, completion, and status for this run only.</p>
+        ${renderPrimaryAction("Save Progress", "save-detail-progress", "px-6 py-3 text-xs tracking-[0.2em] rounded-full")}
+      </div>
+    </div>
+  `;
+}
+
+function renderDetailMediaPanel(activeEntry, screenshots) {
+  return `
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <h3 class="font-label text-xs uppercase tracking-[0.4em] text-zinc-400">Media Highlights</h3>
+        <div class="flex flex-wrap items-center gap-3">
+          <button class="text-zinc-300 font-label text-xs uppercase tracking-widest hover:text-primary transition-colors" data-action="refresh-entry-metadata" data-entry-id="${activeEntry.entryId}">Refresh Metadata</button>
+          <button class="text-primary font-label text-xs uppercase tracking-widest hover:underline" data-action="refresh-entry-artwork" data-entry-id="${activeEntry.entryId}">Refresh Assets</button>
+        </div>
+      </div>
+      ${screenshots.length ? `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        ${screenshots.map((shot) => `
+            <div class="aspect-video bg-surface-container overflow-hidden rounded-md group cursor-pointer checkpoint-panel">
+              <img class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" src="${escapeHtml(shot)}" alt="${escapeHtml(activeEntry.title)} screenshot">
+          </div>
+        `).join("")}
+        </div>
+      ` : `
+        <div class="checkpoint-panel rounded-lg px-6 py-8 text-center">
+          <p class="font-label text-[10px] uppercase tracking-[0.25em] text-primary mb-2">Media Pending</p>
+          <p class="text-on-surface-variant">No screenshots are stored for this entry yet. Manual records can be enriched later without changing the run data.</p>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function renderDetailNotesPanel(snapshot) {
+  return `
+    <div class="flex flex-col gap-6 checkpoint-panel rounded-xl p-6 md:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-label text-xs uppercase tracking-[0.4em] text-zinc-400">Archive Notes</h3>
+          <p class="font-label text-[10px] uppercase tracking-[0.18em] text-zinc-500 mt-1">Save reminders, goals, and run-specific context.</p>
+        </div>
+        ${renderPrimaryAction("Save Notes", "save-detail-notes", "px-5 py-2.5 text-xs tracking-[0.2em] rounded-full")}
+      </div>
+      <textarea id="detail-notes" class="w-full min-h-40 bg-transparent border-none focus:ring-0 resize-y font-body italic text-on-surface-variant leading-relaxed" placeholder="Track what happened in this run, where you stopped, or what to revisit next.">${escapeHtml(snapshot.detailForm.notes)}</textarea>
+    </div>
+  `;
+}
+
+function renderDetailSidebar(activeEntry, game, heroArt, screenshots, storefrontDefinitions) {
+  return `
+    <aside class="flex flex-col gap-8">
+      <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-8 sticky top-36">
+        <div class="flex flex-col gap-5">
+          <h4 class="font-label text-xs uppercase tracking-[0.2em] text-primary border-b border-outline-variant/20 pb-4">Library Metadata</h4>
+          <div class="flex justify-between items-center"><span class="font-label text-xs text-zinc-500">Storefront</span><span class="font-headline font-bold">${escapeHtml(getStorefrontLabel(storefrontDefinitions, activeEntry.storefront))}</span></div>
+          <div class="flex justify-between items-center gap-4"><span class="font-label text-xs text-zinc-500">Developer</span>${renderOptionalText(game?.developer, "Metadata pending")}</div>
+          <div class="flex justify-between items-center gap-4"><span class="font-label text-xs text-zinc-500">Publisher</span>${renderOptionalText(game?.publisher, "Metadata pending")}</div>
+          <div class="flex justify-between items-center gap-4"><span class="font-label text-xs text-zinc-500">SteamGrid Slug</span>${renderOptionalText(game?.steamGridSlug, "Artwork pending")}</div>
+        </div>
+        <div class="bg-black/20 p-4 border-l-2 border-primary-container">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface">Roadmap Status</span>
+          </div>
+          <p class="font-label text-[9px] text-outline leading-relaxed">${hasUsableAsset(heroArt) || screenshots.length || !isPendingMetadata(game?.developer) ? "METADATA, ARTWORK, AND SYNC FIELDS ARE ALREADY WIRED THROUGH THE APP STATE AND SERVICE ADAPTERS." : "THIS ENTRY IS RUN-READY NOW AND CAN BE ENRICHED WITH ARTWORK OR STORE METADATA LATER."}</p>
+        </div>
+      </div>
+    </aside>
   `;
 }
 
@@ -440,168 +677,24 @@ function renderDetailsView(snapshot, storefrontDefinitions, statusDefinitions) {
   }
 
   const game = getGameForEntry(snapshot, activeEntry);
-  const heroArt = game?.heroArt ?? game?.capsuleArt ?? "";
+  const coverArt = game?.capsuleArt ?? game?.heroArt ?? "";
+  const heroBackdropArt = game?.heroArt ?? game?.capsuleArt ?? "";
   const screenshots = Array.isArray(game?.screenshots) ? game.screenshots.filter(hasUsableAsset) : [];
   const description = !isPendingMetadata(game?.description) ? game.description : activeEntry.notes;
 
   return `
     <div class="pt-44 md:pt-36 pb-12 flex-1 overflow-y-auto custom-scrollbar">
       <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-10">
-        <section class="checkpoint-panel rounded-xl p-8 lg:p-10">
-          <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] xl:grid-cols-[260px_1fr_220px] gap-6 lg:gap-8 items-start">
-            <div class="overflow-hidden rounded-md bg-zinc-900 cover-shadow aspect-[3/4] max-w-[260px] mx-auto lg:mx-0">
-              ${hasUsableAsset(heroArt)
-                ? `<img class="w-full h-full object-cover" src="${escapeHtml(heroArt)}" alt="${escapeHtml(activeEntry.title)} cover art">`
-                : renderFallbackArt(activeEntry.title, "Artwork pending", "rounded-md")}
-            </div>
-            <div class="space-y-5">
-              <p class="font-label uppercase text-[10px] tracking-[0.22em] text-zinc-500">Library / Details</p>
-              <div class="flex flex-wrap items-center gap-3">
-                <span class="px-3 py-1 bg-primary/10 text-primary font-label text-[10px] uppercase tracking-[0.18em] rounded-full border border-primary/20">${escapeHtml(getStorefrontLabel(storefrontDefinitions, activeEntry.storefront))}</span>
-                <span class="px-3 py-1 bg-black/20 text-zinc-300 font-label text-[10px] uppercase tracking-[0.18em] rounded-full border border-outline-variant/20">${escapeHtml(getStatusMeta(statusDefinitions, activeEntry.status).label)}</span>
-                <span class="px-3 py-1 bg-black/20 text-zinc-300 font-label text-[10px] uppercase tracking-[0.18em] rounded-full border border-outline-variant/20">${activeEntry.playtimeHours}h logged</span>
-              </div>
-              <div>
-                <h1 class="text-4xl lg:text-5xl font-extrabold font-headline tracking-tight text-on-surface">${escapeHtml(activeEntry.title)}</h1>
-                <p class="mt-2 font-label text-[11px] uppercase tracking-[0.22em] text-zinc-500">${escapeHtml(activeEntry.runLabel || "Main Save")}</p>
-              </div>
-              <p class="max-w-3xl text-on-surface-variant text-base leading-relaxed">
-                ${escapeHtml(description || "This entry was added manually and is waiting on fuller metadata.")}
-              </p>
-              <div class="metadata-rule pt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 text-sm">
-                <div>
-                  <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Release Date</p>
-                  <p class="font-headline font-bold text-on-surface">${hasUsableAsset(game?.releaseDate) ? escapeHtml(formatDate(game?.releaseDate)) : "Metadata pending"}</p>
-                </div>
-                <div>
-                  <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Platform</p>
-                  <p class="font-headline font-bold text-on-surface">${game?.platforms?.length ? escapeHtml(game.platforms.join(", ")) : "Platform pending"}</p>
-                </div>
-                <div>
-                  <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Developer</p>
-                  <p class="font-headline font-bold text-on-surface">${!isPendingMetadata(game?.developer) ? escapeHtml(game.developer) : "Metadata pending"}</p>
-                </div>
-                <div>
-                  <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Publisher</p>
-                  <p class="font-headline font-bold text-on-surface">${!isPendingMetadata(game?.publisher) ? escapeHtml(game.publisher) : "Metadata pending"}</p>
-                </div>
-              </div>
-            </div>
-            <div class="flex flex-col sm:flex-row xl:flex-col gap-3 lg:col-span-2 xl:col-auto">
-              <p class="font-label uppercase text-[10px] tracking-[0.22em] text-zinc-500 mb-1">Quick Actions</p>
-              <button class="w-full px-5 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold tracking-[0.18em] uppercase rounded-full hover:brightness-110 transition-all text-[10px] shadow-lg shadow-cyan-500/15" data-action="set-view" data-view="dashboard">
-                Back to Library
-              </button>
-              <button class="w-full px-5 py-3 border border-primary/20 bg-primary/5 text-primary hover:bg-primary/12 transition-all rounded-full flex items-center justify-center gap-2 font-label font-bold tracking-[0.18em] uppercase text-[10px]" data-action="open-edit-modal" data-entry-id="${activeEntry.entryId}">
-                <span class="material-symbols-outlined text-base">edit</span>
-                Edit Entry
-              </button>
-              ${activeEntry.status === "archived" ? `
-                <button class="w-full px-5 py-3 border border-emerald-300/20 text-emerald-100 hover:bg-emerald-400/10 transition-all rounded-full flex items-center justify-center gap-2 font-label font-bold tracking-[0.18em] uppercase text-[10px]" data-action="update-entry-status" data-entry-id="${activeEntry.entryId}" data-status="playing">
-                  <span class="material-symbols-outlined text-base">restore</span>
-                  Restore
-                </button>
-              ` : ""}
-              <button class="w-full px-5 py-3 border border-red-400/20 text-red-200 hover:bg-red-400/10 transition-all rounded-full flex items-center justify-center gap-2 font-label font-bold tracking-[0.18em] uppercase text-[10px]" data-action="open-delete-confirm" data-entry-id="${activeEntry.entryId}">
-                <span class="material-symbols-outlined text-base">delete</span>
-                Delete Entry
-              </button>
-            </div>
-          </div>
-        </section>
+        ${renderDetailHeroSection(activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions)}
         <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 lg:gap-8">
           <div class="flex flex-col gap-8">
-            <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-6 relative overflow-hidden">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-6">
-              <div class="flex flex-col gap-1">
-                  <h3 class="font-label text-xs uppercase tracking-[0.3em] text-primary">Current Progress</h3>
-                  <p class="font-label text-[10px] uppercase tracking-[0.18em] text-zinc-500">Edit tracked run values directly here.</p>
-                  <p class="text-3xl font-headline font-extrabold tracking-tighter">${activeEntry.completionPercent}% COMPLETE</p>
-              </div>
-              <div class="text-right shrink-0">
-                <p class="font-label text-xs text-zinc-500 uppercase">Last Updated</p>
-                <p class="font-body font-bold text-on-surface">${escapeHtml(formatRelative(activeEntry.updatedAt))}</p>
-              </div>
-            </div>
-            <div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-cyan-500 to-primary-container shadow-[0_0_15px_rgba(168,232,255,0.5)]" style="width:${activeEntry.completionPercent}%"></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-              <label class="space-y-2">
-                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Playtime</span>
-                <input id="detail-playtime" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="number" min="0" step="0.5" value="${escapeHtml(snapshot.detailForm.playtimeHours)}">
-              </label>
-              <label class="space-y-2">
-                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Completion</span>
-                <input id="detail-completion" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="number" min="0" max="100" step="1" value="${escapeHtml(snapshot.detailForm.completionPercent)}">
-              </label>
-              <label class="space-y-2">
-                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Status</span>
-                <select id="detail-status" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary appearance-none">
-                  ${statusDefinitions.map((status) => `
-                    <option class="bg-surface" value="${status.id}" ${snapshot.detailForm.status === status.id ? "selected" : ""}>${escapeHtml(status.label)}</option>
-                  `).join("")}
-                </select>
-              </label>
-            </div>
-              <div class="flex justify-end">
-                <p class="mr-auto text-xs text-zinc-500 self-center">Saves playtime, completion, and status for this run only.</p>
-                <button class="px-6 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold text-xs uppercase tracking-[0.2em] rounded-full hover:brightness-110 transition-all shadow-lg shadow-cyan-500/15" data-action="save-detail-progress">
-                  Save Progress
-                </button>
-              </div>
-            </div>
-            <div class="flex flex-col gap-6">
-              <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                <h3 class="font-label text-xs uppercase tracking-[0.4em] text-zinc-400">Media Highlights</h3>
-                <button class="text-primary font-label text-xs uppercase tracking-widest hover:underline" data-action="open-add-modal">Refresh Assets</button>
-              </div>
-              ${screenshots.length ? `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                ${screenshots.map((shot) => `
-                    <div class="aspect-video bg-surface-container overflow-hidden rounded-md group cursor-pointer checkpoint-panel">
-                      <img class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" src="${escapeHtml(shot)}" alt="${escapeHtml(activeEntry.title)} screenshot">
-                  </div>
-                `).join("")}
-                </div>
-              ` : `
-                <div class="checkpoint-panel rounded-lg px-6 py-8 text-center">
-                  <p class="font-label text-[10px] uppercase tracking-[0.25em] text-primary mb-2">Media Pending</p>
-                  <p class="text-on-surface-variant">No screenshots are stored for this entry yet. Manual records can be enriched later without changing the run data.</p>
-                </div>
-              `}
-            </div>
-            <div class="flex flex-col gap-6 checkpoint-panel rounded-xl p-6 md:p-8">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 class="font-label text-xs uppercase tracking-[0.4em] text-zinc-400">Archive Notes</h3>
-                  <p class="font-label text-[10px] uppercase tracking-[0.18em] text-zinc-500 mt-1">Save reminders, goals, and run-specific context.</p>
-                </div>
-                <button class="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label text-xs uppercase tracking-[0.2em] rounded-full hover:brightness-110 transition-all shadow-lg shadow-cyan-500/15" data-action="save-detail-notes">
-                  Save Notes
-                </button>
-              </div>
-              <textarea id="detail-notes" class="w-full min-h-40 bg-transparent border-none focus:ring-0 resize-y font-body italic text-on-surface-variant leading-relaxed" placeholder="Track what happened in this run, where you stopped, or what to revisit next.">${escapeHtml(snapshot.detailForm.notes)}</textarea>
-            </div>
+            ${renderDetailProgressPanel(snapshot, activeEntry, statusDefinitions)}
+            ${renderActionMessage(snapshot.actionState.metadata)}
+            ${renderDetailMediaPanel(activeEntry, screenshots)}
+            ${renderActionMessage(snapshot.actionState.artwork)}
+            ${renderDetailNotesPanel(snapshot)}
           </div>
-          <aside class="flex flex-col gap-8">
-            <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-8 sticky top-36">
-              <div class="flex flex-col gap-5">
-                <h4 class="font-label text-xs uppercase tracking-[0.2em] text-primary border-b border-outline-variant/20 pb-4">Library Metadata</h4>
-                <div class="flex justify-between items-center"><span class="font-label text-xs text-zinc-500">Storefront</span><span class="font-headline font-bold">${escapeHtml(getStorefrontLabel(storefrontDefinitions, activeEntry.storefront))}</span></div>
-                <div class="flex justify-between items-center gap-4"><span class="font-label text-xs text-zinc-500">Developer</span>${renderOptionalText(game?.developer, "Metadata pending")}</div>
-                <div class="flex justify-between items-center gap-4"><span class="font-label text-xs text-zinc-500">Publisher</span>${renderOptionalText(game?.publisher, "Metadata pending")}</div>
-                <div class="flex justify-between items-center gap-4"><span class="font-label text-xs text-zinc-500">SteamGrid Slug</span>${renderOptionalText(game?.steamGridSlug, "Artwork pending")}</div>
-              </div>
-              <div class="bg-black/20 p-4 border-l-2 border-primary-container">
-              <div class="flex items-center gap-3 mb-2">
-                <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
-                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface">Roadmap Status</span>
-              </div>
-              <p class="font-label text-[9px] text-outline leading-relaxed">${hasUsableAsset(heroArt) || screenshots.length || !isPendingMetadata(game?.developer) ? "METADATA, ARTWORK, AND SYNC FIELDS ARE ALREADY WIRED THROUGH THE APP STATE AND SERVICE ADAPTERS." : "THIS ENTRY IS RUN-READY NOW AND CAN BE ENRICHED WITH ARTWORK OR STORE METADATA LATER."}</p>
-            </div>
-            </div>
-          </aside>
+          ${renderDetailSidebar(activeEntry, game, coverArt, screenshots, storefrontDefinitions)}
         </div>
       </div>
     </div>
@@ -618,36 +711,10 @@ function renderSettingsView(snapshot) {
         <h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Backup, import, and sync configuration.</h1>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
-        <div class="checkpoint-panel p-6 flex flex-col gap-1 relative overflow-hidden group rounded-xl">
-          <span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Ready To Sync</span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-headline text-3xl font-extrabold text-on-surface">${snapshot.syncStatus.ready}</span>
-            <span class="font-label text-xs text-primary">ENTRIES</span>
-          </div>
-          <div class="w-full h-1 bg-zinc-900 mt-2"><div class="h-full bg-primary w-full opacity-80"></div></div>
-        </div>
-        <div class="checkpoint-panel p-6 flex flex-col gap-1 relative overflow-hidden group rounded-xl">
-          <span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Pending Queue</span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-headline text-3xl font-extrabold text-on-surface">${snapshot.syncStatus.pending}</span>
-            <span class="font-label text-xs text-primary">ITEMS</span>
-          </div>
-          <div class="w-full h-1 bg-zinc-900 mt-2"><div class="h-full bg-primary w-2/3"></div></div>
-        </div>
-        <div class="checkpoint-panel p-6 flex flex-col gap-1 relative overflow-hidden group rounded-xl">
-          <span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">SteamGrid Adapter</span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-headline text-3xl font-extrabold text-on-surface">${snapshot.syncStatus.steamGridReady ? "Live" : "Stub"}</span>
-          </div>
-          <div class="w-full h-1 bg-zinc-900 mt-2"><div class="h-full bg-primary w-1/2"></div></div>
-        </div>
-        <div class="checkpoint-panel p-6 flex flex-col gap-1 relative overflow-hidden group rounded-xl">
-          <span class="font-label text-[10px] text-zinc-500 uppercase tracking-widest">Drive Link</span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-headline text-3xl font-extrabold text-on-surface">${snapshot.syncStatus.driveConnected ? "Ready" : "Pending"}</span>
-          </div>
-          <div class="w-full h-1 bg-zinc-900 mt-2"><div class="h-full bg-primary w-1/3"></div></div>
-        </div>
+        ${renderSettingsStatCard("Ready To Sync", String(snapshot.syncStatus.ready), "ENTRIES", "w-full opacity-80")}
+        ${renderSettingsStatCard("Pending Queue", String(snapshot.syncStatus.pending), "ITEMS", "w-2/3")}
+        ${renderSettingsStatCard("SteamGrid Adapter", snapshot.syncStatus.steamGridReady ? "Live" : "Stub", "", "w-1/2")}
+        ${renderSettingsStatCard("Drive Link", snapshot.syncStatus.driveConnected ? "Connected" : snapshot.syncStatus.driveClientConfigured ? "Ready" : "Setup", "", "w-1/3")}
       </div>
       <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
         <section class="xl:col-span-7 flex flex-col gap-8">
@@ -669,17 +736,38 @@ function renderSettingsView(snapshot) {
                 <span class="text-[10px] font-label text-zinc-500 uppercase">services/steamgrid.js</span>
               </div>
               <div class="hud-line py-3 flex items-center justify-between">
-                <span class="font-headline font-bold text-on-surface">Store metadata normalization</span>
+                <span class="font-headline font-bold text-on-surface">Metadata resolver pipeline</span>
                 <span class="text-[10px] font-label text-zinc-500 uppercase">services/storefronts.js</span>
               </div>
             </div>
           </div>
+          <div class="checkpoint-panel rounded-xl p-8 flex flex-col gap-5">
+            <div class="flex flex-col gap-2">
+              <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary">SteamGrid Proxy</h3>
+              <p class="text-on-surface-variant leading-relaxed text-sm">Checkpoint uses a built-in Cloudflare Worker proxy between GitHub Pages and SteamGridDB. The endpoint is configured in the app and shown here as read-only deployment status.</p>
+            </div>
+            <div class="space-y-2">
+              <span class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Worker URL</span>
+              <div class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface break-all">
+                ${snapshot.serviceConfig.steamGridWorkerUrl
+                  ? escapeHtml(snapshot.serviceConfig.steamGridWorkerUrl)
+                  : "Not configured"}
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500 leading-relaxed">
+              <span>Deploy the free Cloudflare Worker once, then keep its public URL in checkpoint/config.js.</span>
+              <a class="text-primary hover:underline" href="https://developers.cloudflare.com/workers/get-started/guide/" target="_blank" rel="noreferrer">Workers guide</a>
+              <span>/</span>
+              <a class="text-primary hover:underline" href="https://www.steamgriddb.com/api" target="_blank" rel="noreferrer">SteamGrid docs</a>
+            </div>
+            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">${snapshot.syncStatus.steamGridReady ? "SteamGrid proxy is connected." : "SteamGrid proxy is not configured."}</p>
+          </div>
           <div class="checkpoint-panel rounded-xl p-8 border-l-2 border-primary/20">
             <div class="flex items-center gap-3 mb-6">
               <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
-              <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-on-surface">Scaffold Notes</h3>
+              <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-on-surface">Implementation Notes</h3>
             </div>
-            <p class="text-on-surface-variant leading-relaxed">This settings surface now follows the design reference directly. The roadmap stays visible here so the next implementation pass can wire real API keys, authentication, and remote backup without redesigning the UI shell.</p>
+            <p class="text-on-surface-variant leading-relaxed">This settings surface is ready for real service adapters, backup automation, and future sync work without needing a fresh UI rewrite.</p>
           </div>
         </section>
         <section class="xl:col-span-5 flex flex-col gap-8">
@@ -689,13 +777,31 @@ function renderSettingsView(snapshot) {
           <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary">Backup Rules</h3>
-                <p class="font-label text-[10px] uppercase tracking-[0.18em] text-zinc-500 mt-1">Control local sync behavior before cloud sync lands.</p>
+                <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary">Drive Sync</h3>
+                <p class="font-label text-[10px] uppercase tracking-[0.18em] text-zinc-500 mt-1">Connect your Google account, then sync the full Checkpoint app state.</p>
               </div>
-              <button class="w-full sm:w-auto sm:max-w-[10rem] py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold text-xs uppercase tracking-widest rounded-full shadow-lg shadow-primary/20 hover:brightness-110 transition-transform" data-action="mark-all-synced">
-                Simulate Sync
-              </button>
+              ${snapshot.syncStatus.driveConnected
+                ? renderPrimaryAction("Sync Now", "mark-all-synced", "w-full sm:w-auto sm:max-w-[10rem] py-3 text-xs tracking-widest rounded-full")
+                : renderPrimaryAction("Connect Drive", "connect-google-drive", "w-full sm:w-auto sm:max-w-[11rem] py-3 text-xs tracking-widest rounded-full")}
             </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500 leading-relaxed">
+              <span>${snapshot.syncStatus.driveConnected ? "Connected with browser-based Google OAuth." : snapshot.syncStatus.driveClientConfigured ? "OAuth client is configured. Connect when you are ready to sync." : "Add googleDriveClientId to checkpoint/config.js to enable Drive sync."}</span>
+              ${snapshot.syncStatus.driveConnected ? `
+                ${renderSecondaryAction("Restore From Drive", "restore-google-drive", "px-4 py-2 rounded-full text-[10px] tracking-[0.2em]")}
+                ${renderSecondaryAction("Disconnect", "disconnect-google-drive", "px-4 py-2 rounded-full text-[10px] tracking-[0.2em]")}
+              ` : ""}
+            </div>
+            ${snapshot.restorePointMeta ? `
+              <div class="rounded-lg border border-primary/15 bg-primary/5 px-4 py-3">
+                <p class="font-label text-[10px] uppercase tracking-[0.2em] text-primary mb-2">Local Restore Safety Snapshot</p>
+                <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-400">
+                  <span>Saved ${escapeHtml(formatRelative(snapshot.restorePointMeta.timestamp))} from ${escapeHtml(snapshot.restorePointMeta.source)}</span>
+                  ${renderSecondaryAction("Restore Local Snapshot", "restore-local-snapshot", "px-4 py-2 rounded-full text-[10px] tracking-[0.2em]")}
+                </div>
+              </div>
+            ` : `
+              <p class="text-xs text-zinc-500 leading-relaxed">Before a Drive restore runs, Checkpoint saves a local restore safety snapshot in this browser so you can roll back quickly.</p>
+            `}
             <div class="space-y-3">
               ${renderPreference("Auto-backup on state change", "autoBackup", snapshot.syncPreferences.autoBackup)}
               ${renderPreference("Include artwork payloads", "includeArtwork", snapshot.syncPreferences.includeArtwork)}
@@ -706,12 +812,32 @@ function renderSettingsView(snapshot) {
           <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
+                <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary mb-2">Metadata Refresh</h3>
+                <p class="text-on-surface-variant leading-relaxed text-sm">Re-run the IGDB resolver across the current library without touching your run-specific notes or progress.</p>
+              </div>
+              ${renderPrimaryAction("Refresh Library Metadata", "refresh-library-metadata", "px-5 py-3 text-xs tracking-[0.2em] rounded-full whitespace-nowrap")}
+            </div>
+            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Uses the configured Cloudflare Worker proxy and keeps per-run entry data intact while updating catalog metadata.</p>
+            ${renderActionMessage(snapshot.actionState.metadata)}
+          </div>
+          <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary mb-2">Artwork Refresh</h3>
+                <p class="text-on-surface-variant leading-relaxed text-sm">Pull SteamGrid capsule art, hero art, and gallery assets again for the current library.</p>
+              </div>
+              ${renderPrimaryAction("Refresh Library Art", "refresh-library-artwork", "px-5 py-3 text-xs tracking-[0.2em] rounded-full whitespace-nowrap")}
+            </div>
+            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Uses the configured Cloudflare Worker proxy to reach SteamGridDB without exposing secrets in the browser.</p>
+            ${renderActionMessage(snapshot.actionState.artwork)}
+          </div>
+          <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
                 <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary mb-2">Local Backup</h3>
                 <p class="text-on-surface-variant leading-relaxed text-sm">Download the full persisted Checkpoint state as JSON before import and sync work lands.</p>
               </div>
-              <button class="px-5 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold text-xs uppercase tracking-[0.2em] rounded-full shadow-lg shadow-primary/20 hover:brightness-110 transition-all whitespace-nowrap" data-action="export-json">
-                Export JSON
-              </button>
+              ${renderPrimaryAction("Export JSON", "export-json", "px-5 py-3 text-xs tracking-[0.2em] rounded-full whitespace-nowrap")}
             </div>
             <p class="font-label text-[10px] uppercase tracking-[0.2em] text-zinc-500">Includes library, catalog, sync preferences, and persisted UI preferences.</p>
             <p class="text-xs text-zinc-500 leading-relaxed">Use this before large edits or imports so you can roll your local state back quickly.</p>
@@ -723,9 +849,7 @@ function renderSettingsView(snapshot) {
                 <h3 class="font-label uppercase tracking-[0.2em] text-xs font-bold text-primary mb-2">Restore Backup</h3>
                 <p class="text-on-surface-variant leading-relaxed text-sm">Import a Checkpoint JSON backup and validate it before restoring it into local storage.</p>
               </div>
-              <button class="px-5 py-3 border border-primary/20 bg-primary/5 text-primary font-label font-bold text-xs uppercase tracking-[0.2em] rounded-full hover:bg-primary/12 transition-all whitespace-nowrap" data-action="trigger-import-json">
-                Import JSON
-              </button>
+              ${renderSecondaryAction("Import JSON", "trigger-import-json", "px-5 py-3 text-xs tracking-[0.2em] rounded-full whitespace-nowrap")}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button class="flex items-center justify-between p-3 rounded ${snapshot.importMode === "replace" ? "bg-surface-container-high border border-primary/20" : "bg-surface-container-low/40 hover:bg-surface-container-high"} transition-colors group" data-action="set-import-mode" data-import-mode="replace">
@@ -797,7 +921,7 @@ function renderDeleteConfirmModal(snapshot, storefrontDefinitions, statusDefinit
           </div>
         </div>
         <div class="p-8 bg-black/40 flex items-center justify-between border-t border-outline-variant/10 gap-6 shrink-0">
-          <p class="font-label text-[10px] uppercase tracking-[0.2em] text-outline">Catalog metadata is retained for now even if this run is removed.</p>
+          <p class="font-label text-[10px] uppercase tracking-[0.2em] text-outline">If this is the final run for this title, its catalog metadata is cleaned up too.</p>
           <div class="flex items-center gap-4">
             <button class="font-label text-xs uppercase tracking-widest text-outline hover:text-on-surface transition-colors" data-action="close-delete-confirm">Cancel</button>
             <button class="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-400 text-white font-label font-bold text-xs uppercase tracking-[0.24em] rounded-sm hover:brightness-110 transition-all" data-action="confirm-delete-entry">
@@ -1227,6 +1351,54 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
     app.querySelectorAll("[data-action='mark-all-synced']").forEach((element) => {
       element.addEventListener("click", async () => {
         await store.markAllSynced();
+      });
+    });
+
+    app.querySelectorAll("[data-action='connect-google-drive']").forEach((element) => {
+      element.addEventListener("click", async () => {
+        await store.connectGoogleDrive();
+      });
+    });
+
+    app.querySelectorAll("[data-action='disconnect-google-drive']").forEach((element) => {
+      element.addEventListener("click", () => {
+        store.disconnectGoogleDrive();
+      });
+    });
+
+    app.querySelectorAll("[data-action='restore-google-drive']").forEach((element) => {
+      element.addEventListener("click", async () => {
+        await store.restoreFromGoogleDrive();
+      });
+    });
+
+    app.querySelectorAll("[data-action='restore-local-snapshot']").forEach((element) => {
+      element.addEventListener("click", () => {
+        store.restoreLocalSafetySnapshot();
+      });
+    });
+
+    app.querySelectorAll("[data-action='refresh-library-artwork']").forEach((element) => {
+      element.addEventListener("click", async () => {
+        await store.refreshLibraryArtwork();
+      });
+    });
+
+    app.querySelectorAll("[data-action='refresh-library-metadata']").forEach((element) => {
+      element.addEventListener("click", async () => {
+        await store.refreshLibraryMetadata();
+      });
+    });
+
+    app.querySelectorAll("[data-action='refresh-entry-artwork']").forEach((element) => {
+      element.addEventListener("click", async () => {
+        await store.refreshArtworkForEntry(element.dataset.entryId);
+      });
+    });
+
+    app.querySelectorAll("[data-action='refresh-entry-metadata']").forEach((element) => {
+      element.addEventListener("click", async () => {
+        await store.refreshMetadataForEntry(element.dataset.entryId);
       });
     });
 

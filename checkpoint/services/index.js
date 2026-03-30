@@ -1,11 +1,13 @@
 import { createSteamGridService } from "./steamgrid.js";
-import { createStorefrontMetadataService } from "./storefronts.js";
+import { createMetadataResolverService } from "./storefronts.js";
 import { createGoogleDriveService } from "./google-drive.js";
+export { getServiceConfig } from "./config.js";
+export { saveSteamGridWorkerUrl, clearSteamGridWorkerUrl } from "./config.js";
 
 export function createIntegrations() {
   return {
     steamGrid: createSteamGridService(),
-    storefronts: createStorefrontMetadataService(),
+    metadataResolver: createMetadataResolverService(),
     googleDrive: createGoogleDriveService()
   };
 }

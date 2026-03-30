@@ -1,0 +1,5 @@
+checkpoint/cloudflare-worker/node_modules/
+checkpoint/cloudflare-worker/.dev.vars*
+checkpoint/cloudflare-worker/.env*
+checkpoint/checkpoint-backup-*.json
+*.log

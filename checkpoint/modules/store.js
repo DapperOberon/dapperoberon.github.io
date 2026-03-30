@@ -1,5 +1,6 @@
 import { APP_STATE_SCHEMA_VERSION, normalizePersistedState, pruneCatalogToLibrary } from "./schema.js";
 import { normalizeCatalogGame, normalizeLibraryEntry } from "./normalization.js";
+import { getServiceConfig } from "../services/index.js";
 
 function createEntryId() {
   return `entry-${Math.random().toString(36).slice(2, 10)}`;
@@ -58,7 +59,10 @@ function mergeById(currentItems, incomingItems, getId, normalizeItem) {
 function createActionState() {
   return {
     backup: null,
-    sync: null
+    sync: null,
+    artwork: null,
+    metadata: null,
+    integrations: null
   };
 }
 
@@ -72,15 +76,45 @@ function createSyncHistoryEntry({ ok = true, mode = "manual", message = "" }) {
   };
 }
 
+const LOCAL_RESTORE_POINT_KEY = "checkpoint.restorePoint";
+
+function readLocalRestorePoint() {
+  try {
+    const raw = globalThis.localStorage?.getItem(LOCAL_RESTORE_POINT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || typeof parsed.content !== "string") {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeLocalRestorePoint(payload) {
+  try {
+    globalThis.localStorage?.setItem(LOCAL_RESTORE_POINT_KEY, JSON.stringify(payload));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 export function createStore({ initialLibrary, catalog, persistence, integrations, statusDefinitions, storefrontDefinitions }) {
   const listeners = new Set();
   const validStatusIds = new Set(statusDefinitions.map((item) => item.id));
   const validStorefrontIds = new Set(storefrontDefinitions.map((item) => item.id));
+  let autoBackupTimer = null;
+  let queuedAutoBackupSignature = "";
+  let lastAutoBackupSignature = "";
+  let suppressAutoBackup = false;
   const persistedState = persistence.load({
     initialLibrary,
     initialCatalog: catalog
   });
   const hydratedLibrary = persistedState.library.slice().sort(sortByUpdatedAtDesc);
+  const initialRestorePoint = readLocalRestorePoint();
 
   const state = {
     currentView: persistedState.uiPreferences.lastView,
@@ -102,7 +136,13 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     syncHistory: [],
     notice: null,
     syncPreferences: persistedState.syncPreferences,
-    uiPreferences: persistedState.uiPreferences
+    uiPreferences: persistedState.uiPreferences,
+    restorePointMeta: initialRestorePoint
+      ? {
+          timestamp: initialRestorePoint.timestamp ?? "",
+          source: initialRestorePoint.source ?? "local snapshot"
+        }
+      : null
   };
 
   function getPersistedState() {
@@ -143,7 +183,61 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
   function emit() {
     persistence.save(getPersistedState());
+    scheduleAutoBackupIfNeeded();
     listeners.forEach((listener) => listener(getSnapshot()));
+  }
+
+  function scheduleAutoBackupIfNeeded() {
+    if (suppressAutoBackup || !state.syncPreferences.autoBackup || !integrations.googleDrive.isConfigured()) {
+      return;
+    }
+
+    const signature = JSON.stringify(buildExportState());
+    if (signature === lastAutoBackupSignature || signature === queuedAutoBackupSignature) {
+      return;
+    }
+
+    queuedAutoBackupSignature = signature;
+    globalThis.clearTimeout?.(autoBackupTimer);
+    autoBackupTimer = globalThis.setTimeout?.(async () => {
+      setActionState("sync", {
+        tone: "info",
+        message: "Auto-backup syncing to Google Drive..."
+      });
+      listeners.forEach((listener) => listener(getSnapshot()));
+
+      const syncResult = await integrations.googleDrive.syncAppState({
+        state: JSON.parse(signature),
+        mode: "auto"
+      });
+
+      queuedAutoBackupSignature = "";
+      if (syncResult?.ok) {
+        suppressAutoBackup = true;
+        state.library = state.library.map((entry) => ({
+          ...entry,
+          syncState: "ready"
+        }));
+        suppressAutoBackup = false;
+        lastAutoBackupSignature = JSON.stringify(buildExportState());
+      }
+
+      setActionState("sync", {
+        tone: syncResult?.ok === false ? "error" : "success",
+        message: syncResult?.message ?? "Auto-backup complete."
+      });
+      state.syncHistory = [
+        createSyncHistoryEntry({
+          ok: syncResult?.ok !== false,
+          mode: syncResult?.mode ?? "auto",
+          message: syncResult?.message ?? "Auto-backup complete."
+        }),
+        ...state.syncHistory
+      ].slice(0, 6);
+      suppressAutoBackup = true;
+      emit();
+      suppressAutoBackup = false;
+    }, 1200);
   }
 
   function getCatalogGame(gameId) {
@@ -218,6 +312,13 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   }
 
   function getSyncStatus() {
+    const driveStatus = typeof integrations.googleDrive.getStatus === "function"
+      ? integrations.googleDrive.getStatus()
+      : {
+          available: integrations.googleDrive.isConfigured(),
+          connected: integrations.googleDrive.isConfigured(),
+          clientConfigured: integrations.googleDrive.isConfigured()
+        };
     const ready = state.library.filter((entry) => entry.syncState === "ready").length;
     const pending = state.library.filter((entry) => entry.syncState === "pending").length;
     const offline = state.library.filter((entry) => entry.syncState === "offline").length;
@@ -226,9 +327,11 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       ready,
       pending,
       offline,
-      driveConnected: integrations.googleDrive.isConfigured(),
+      driveConnected: driveStatus.connected,
+      driveAvailable: driveStatus.available,
+      driveClientConfigured: driveStatus.clientConfigured,
       steamGridReady: integrations.steamGrid.isConfigured(),
-      metadataReady: integrations.storefronts.isConfigured()
+      metadataReady: integrations.metadataResolver.isConfigured()
     };
   }
 
@@ -271,8 +374,11 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   }
 
   function getSnapshot() {
+    const serviceConfig = getServiceConfig();
+
     return {
       ...state,
+      serviceConfig,
       visibleLibrary: getVisibleLibrary(),
       activeEntry: getEntryWithGame(),
       dashboardMetrics: getDashboardMetrics(),
@@ -433,7 +539,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     try {
       const existingEntry = state.editingEntryId ? getEntry(state.editingEntryId) : null;
       const selectedCatalog = state.catalog.find((item) => item.id === state.addForm.selectedCatalogId);
-      const metadata = await integrations.storefronts.lookupGame({
+      const metadata = await integrations.metadataResolver.resolveGameMetadata({
         title,
         storefront,
         catalogGame: selectedCatalog
@@ -444,27 +550,13 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         catalogGame: selectedCatalog
       });
 
-      const catalogGame = normalizeCatalogGame(selectedCatalog ?? {
-        id: `custom-${normalizeTerm(title).replace(/\s+/g, "-")}`,
-        title,
-        storefront,
-        developer: metadata.developer,
-        publisher: metadata.publisher,
-        releaseDate: metadata.releaseDate,
-        genres: metadata.genres,
-        platforms: metadata.platforms,
-        criticSummary: metadata.criticSummary,
-        description: metadata.description,
-        heroArt: artwork.heroArt,
-        capsuleArt: artwork.capsuleArt,
-        screenshots: artwork.screenshots,
-        steamGridSlug: metadata.steamGridSlug
-      });
+      const metadataGame = mergeMetadataIntoCatalogGame(selectedCatalog, metadata, { title, storefront });
+      const catalogGame = mergeArtworkIntoCatalogGame(metadataGame, artwork);
 
       const catalogGameExists = state.catalog.some((item) => item.id === catalogGame.id);
-      if (!catalogGameExists) {
-        state.catalog = [catalogGame, ...state.catalog];
-      }
+      state.catalog = catalogGameExists
+        ? state.catalog.map((item) => (item.id === catalogGame.id ? catalogGame : item))
+        : [catalogGame, ...state.catalog];
 
       const now = new Date().toISOString();
       const entry = normalizeLibraryEntry({
@@ -494,18 +586,20 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       state.currentView = "details";
       state.uiPreferences.lastView = "details";
       state.detailForm = createDetailForm(entry);
+      const saveFeedback = buildEntrySaveFeedback({
+        title: entry.title,
+        metadata,
+        artwork,
+        isEditing: Boolean(existingEntry)
+      });
       state.notice = {
-        tone: "success",
-        message: existingEntry
-          ? `${entry.title} was updated successfully.`
-          : `${entry.title} was added to your library.`
+        tone: saveFeedback.tone,
+        message: saveFeedback.notice
       };
-      if (!integrations.storefronts.isConfigured() || !integrations.steamGrid.isConfigured()) {
-        state.addFormFeedback = {
-          tone: "info",
-          message: "Saved with placeholder metadata or artwork. You can enrich this later."
-        };
-      }
+      state.addFormFeedback = {
+        tone: saveFeedback.tone,
+        message: saveFeedback.form
+      };
       closeAddModal();
     } catch (error) {
       state.isAddFormSubmitting = false;
@@ -568,6 +662,391 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       ...state.actionState,
       [key]: value
     };
+  }
+
+  function mergeArtworkIntoCatalogGame(game, artwork) {
+    return normalizeCatalogGame({
+      ...game,
+      heroArt: artwork.heroArt || game.heroArt,
+      capsuleArt: artwork.capsuleArt || game.capsuleArt,
+      screenshots: artwork.screenshots?.length ? artwork.screenshots : game.screenshots
+    });
+  }
+
+  function mergeMetadataIntoCatalogGame(game, metadata, entryLike = {}) {
+    const baseGame = game ?? {
+      id: `custom-${normalizeTerm(entryLike.title ?? "").replace(/\s+/g, "-")}`,
+      title: entryLike.title ?? "",
+      storefront: entryLike.storefront ?? "steam"
+    };
+
+    return normalizeCatalogGame({
+      ...baseGame,
+      title: entryLike.title ?? baseGame.title,
+      storefront: entryLike.storefront ?? baseGame.storefront,
+      developer: metadata.developer || baseGame.developer,
+      publisher: metadata.publisher || baseGame.publisher,
+      releaseDate: metadata.releaseDate || baseGame.releaseDate,
+      genres: metadata.genres?.length ? metadata.genres : (baseGame.genres ?? []),
+      platforms: metadata.platforms?.length ? metadata.platforms : (baseGame.platforms ?? []),
+      criticSummary: metadata.criticSummary || baseGame.criticSummary,
+      description: metadata.description || baseGame.description,
+      steamGridSlug: metadata.steamGridSlug || baseGame.steamGridSlug
+    });
+  }
+
+  function didArtworkChange(previousGame, nextGame) {
+    return (
+      (nextGame?.heroArt ?? "") !== (previousGame?.heroArt ?? "")
+      || (nextGame?.capsuleArt ?? "") !== (previousGame?.capsuleArt ?? "")
+      || JSON.stringify(nextGame?.screenshots ?? []) !== JSON.stringify(previousGame?.screenshots ?? [])
+    );
+  }
+
+  function didMetadataChange(previousGame, nextGame) {
+    return (
+      (nextGame?.developer ?? "") !== (previousGame?.developer ?? "")
+      || (nextGame?.publisher ?? "") !== (previousGame?.publisher ?? "")
+      || (nextGame?.releaseDate ?? "") !== (previousGame?.releaseDate ?? "")
+      || JSON.stringify(nextGame?.genres ?? []) !== JSON.stringify(previousGame?.genres ?? [])
+      || JSON.stringify(nextGame?.platforms ?? []) !== JSON.stringify(previousGame?.platforms ?? [])
+      || (nextGame?.criticSummary ?? "") !== (previousGame?.criticSummary ?? "")
+      || (nextGame?.description ?? "") !== (previousGame?.description ?? "")
+      || (nextGame?.steamGridSlug ?? "") !== (previousGame?.steamGridSlug ?? "")
+    );
+  }
+
+  function getArtworkRefreshMessage(entryTitle, artwork, changed) {
+    if (changed) {
+      return {
+        tone: "success",
+        actionMessage: `${entryTitle} artwork refreshed.`,
+        noticeMessage: `${entryTitle} artwork updated.`
+      };
+    }
+
+    const reason = artwork?.meta?.reason;
+    if (reason === "missing_worker_url") {
+      return {
+        tone: "error",
+        actionMessage: "Add the deployed Cloudflare Worker URL in checkpoint/config.js before refreshing artwork.",
+        noticeMessage: "A SteamGrid proxy URL is required to refresh artwork."
+      };
+    }
+    if (reason === "no_match") {
+      return {
+        tone: "info",
+        actionMessage: `No SteamGridDB match was found for ${entryTitle}. Existing artwork was kept.`,
+        noticeMessage: `${entryTitle} had no SteamGridDB match, so the current artwork stayed in place.`
+      };
+    }
+    if (reason === "worker_request_failed") {
+      return {
+        tone: "error",
+        actionMessage: `Checkpoint couldn't reach the SteamGrid proxy for ${entryTitle}. Existing artwork was kept.`,
+        noticeMessage: `${entryTitle} artwork could not be refreshed because the SteamGrid proxy request failed.`
+      };
+    }
+
+    return {
+      tone: "info",
+      actionMessage: `No new artwork was applied for ${entryTitle}.`,
+      noticeMessage: `${entryTitle} artwork was unchanged.`
+    };
+  }
+
+  function getMetadataRefreshMessage(entryTitle, metadata, changed) {
+    if (changed) {
+      return {
+        tone: "success",
+        actionMessage: `${entryTitle} metadata refreshed.`,
+        noticeMessage: `${entryTitle} metadata updated.`
+      };
+    }
+
+    const reason = metadata?.meta?.reason;
+    if (reason === "missing_worker_url") {
+      return {
+        tone: "error",
+        actionMessage: "Add the deployed Cloudflare Worker URL in checkpoint/config.js before refreshing metadata.",
+        noticeMessage: "A metadata proxy URL is required to refresh metadata."
+      };
+    }
+    if (reason === "no_match") {
+      return {
+        tone: "info",
+        actionMessage: `No IGDB match was found for ${entryTitle}. Existing metadata was kept.`,
+        noticeMessage: `${entryTitle} had no IGDB match, so the current metadata stayed in place.`
+      };
+    }
+    if (reason === "worker_request_failed") {
+      return {
+        tone: "error",
+        actionMessage: `Checkpoint couldn't reach the metadata proxy for ${entryTitle}. Existing metadata was kept.`,
+        noticeMessage: `${entryTitle} metadata could not be refreshed because the metadata proxy request failed.`
+      };
+    }
+
+    return {
+      tone: "info",
+      actionMessage: `No new metadata was applied for ${entryTitle}.`,
+      noticeMessage: `${entryTitle} metadata was unchanged.`
+    };
+  }
+
+  function buildEntrySaveFeedback({ title, metadata, artwork, isEditing }) {
+    const metadataResolved = Boolean(metadata?.meta?.resolved);
+    const artworkResolved = Boolean(artwork?.meta?.resolved);
+
+    if (metadataResolved && artworkResolved) {
+      return {
+        tone: "success",
+        notice: isEditing
+          ? `${title} was updated with live metadata and artwork.`
+          : `${title} was added with live metadata and artwork.`,
+        form: "Metadata and artwork resolved successfully."
+      };
+    }
+
+    if (metadataResolved || artworkResolved) {
+      return {
+        tone: "info",
+        notice: isEditing
+          ? `${title} was updated with partial enrichment.`
+          : `${title} was added with partial enrichment.`,
+        form: metadataResolved
+          ? "Metadata resolved, but artwork stayed on the current asset set."
+          : "Artwork resolved, but metadata stayed on the current values."
+      };
+    }
+
+    return {
+      tone: "info",
+      notice: isEditing
+        ? `${title} was updated as a manual or fallback entry.`
+        : `${title} was added as a manual or fallback entry.`,
+      form: "Saved without live metadata or artwork. You can refresh enrichment later."
+    };
+  }
+
+  async function refreshArtworkForEntry(entryId = state.activeEntryId) {
+    const entry = getEntry(entryId);
+    if (!entry) return false;
+
+    const game = getCatalogGame(entry.gameId);
+    setActionState("artwork", {
+      tone: "info",
+      message: `Refreshing artwork for ${entry.title}...`
+    });
+    emit();
+
+    try {
+      const artwork = await integrations.steamGrid.resolveArtwork({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: game
+      });
+      const nextGame = mergeArtworkIntoCatalogGame(game, artwork);
+      const changed = didArtworkChange(game, nextGame);
+
+      state.catalog = state.catalog.map((item) => (
+        item.id === entry.gameId ? nextGame : item
+      ));
+      const refreshMessage = getArtworkRefreshMessage(entry.title, artwork, changed);
+      setActionState("artwork", {
+        tone: refreshMessage.tone,
+        message: refreshMessage.actionMessage
+      });
+      state.notice = {
+        tone: refreshMessage.tone,
+        message: refreshMessage.noticeMessage
+      };
+      emit();
+      return changed;
+    } catch (error) {
+      setActionState("artwork", {
+        tone: "error",
+        message: `Checkpoint couldn't refresh artwork for ${entry.title}.`
+      });
+      state.notice = {
+        tone: "error",
+        message: `${entry.title} artwork refresh failed.`
+      };
+      emit();
+      return false;
+    }
+  }
+
+  async function refreshMetadataForEntry(entryId = state.activeEntryId) {
+    const entry = getEntry(entryId);
+    if (!entry) return false;
+
+    const game = getCatalogGame(entry.gameId);
+    setActionState("metadata", {
+      tone: "info",
+      message: `Refreshing metadata for ${entry.title}...`
+    });
+    emit();
+
+    try {
+      const metadata = await integrations.metadataResolver.resolveGameMetadata({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: game
+      });
+      const nextGame = mergeMetadataIntoCatalogGame(game, metadata, {
+        title: entry.title,
+        storefront: entry.storefront
+      });
+      const changed = didMetadataChange(game, nextGame);
+
+      state.catalog = state.catalog.map((item) => (
+        item.id === entry.gameId ? nextGame : item
+      ));
+      const refreshMessage = getMetadataRefreshMessage(entry.title, metadata, changed);
+      setActionState("metadata", {
+        tone: refreshMessage.tone,
+        message: refreshMessage.actionMessage
+      });
+      state.notice = {
+        tone: refreshMessage.tone,
+        message: refreshMessage.noticeMessage
+      };
+      emit();
+      return changed;
+    } catch (error) {
+      setActionState("metadata", {
+        tone: "error",
+        message: `Checkpoint couldn't refresh metadata for ${entry.title}.`
+      });
+      state.notice = {
+        tone: "error",
+        message: `${entry.title} metadata refresh failed.`
+      };
+      emit();
+      return false;
+    }
+  }
+
+  async function refreshLibraryArtwork() {
+    const referencedGames = state.catalog.filter((game) => state.library.some((entry) => entry.gameId === game.id));
+
+    if (!referencedGames.length) {
+      setActionState("artwork", {
+        tone: "info",
+        message: "No tracked games are available for artwork refresh."
+      });
+      emit();
+      return false;
+    }
+
+    setActionState("artwork", {
+      tone: "info",
+      message: `Refreshing artwork for ${referencedGames.length} ${referencedGames.length === 1 ? "game" : "games"}...`
+    });
+    emit();
+
+    let refreshedCount = 0;
+
+    for (const game of referencedGames) {
+      const linkedEntry = state.library.find((entry) => entry.gameId === game.id);
+      if (!linkedEntry) continue;
+
+      try {
+        const artwork = await integrations.steamGrid.resolveArtwork({
+          title: linkedEntry.title,
+          storefront: linkedEntry.storefront,
+          catalogGame: game
+        });
+
+        const nextGame = mergeArtworkIntoCatalogGame(game, artwork);
+        const artworkChanged = didArtworkChange(game, nextGame);
+
+        state.catalog = state.catalog.map((item) => (item.id === game.id ? nextGame : item));
+        if (artworkChanged) {
+          refreshedCount += 1;
+        }
+      } catch (error) {
+        // Keep best-effort refresh behavior for the rest of the library.
+      }
+    }
+
+    setActionState("artwork", {
+      tone: refreshedCount > 0 ? "success" : "info",
+      message: refreshedCount > 0
+        ? `Artwork refreshed for ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"}.`
+        : "Artwork refresh finished with no new assets found."
+    });
+    state.notice = {
+      tone: refreshedCount > 0 ? "success" : "info",
+      message: refreshedCount > 0
+        ? `Checkpoint refreshed artwork for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
+        : "Artwork refresh finished. Existing artwork was retained."
+    };
+    emit();
+    return true;
+  }
+
+  async function refreshLibraryMetadata() {
+    const referencedGames = state.catalog.filter((game) => state.library.some((entry) => entry.gameId === game.id));
+
+    if (!referencedGames.length) {
+      setActionState("metadata", {
+        tone: "info",
+        message: "No tracked games are available for metadata refresh."
+      });
+      emit();
+      return false;
+    }
+
+    setActionState("metadata", {
+      tone: "info",
+      message: `Refreshing metadata for ${referencedGames.length} ${referencedGames.length === 1 ? "game" : "games"}...`
+    });
+    emit();
+
+    let refreshedCount = 0;
+
+    for (const game of referencedGames) {
+      const linkedEntry = state.library.find((entry) => entry.gameId === game.id);
+      if (!linkedEntry) continue;
+
+      try {
+        const metadata = await integrations.metadataResolver.resolveGameMetadata({
+          title: linkedEntry.title,
+          storefront: linkedEntry.storefront,
+          catalogGame: game
+        });
+
+        const nextGame = mergeMetadataIntoCatalogGame(game, metadata, {
+          title: linkedEntry.title,
+          storefront: linkedEntry.storefront
+        });
+        const metadataChanged = didMetadataChange(game, nextGame);
+
+        state.catalog = state.catalog.map((item) => (item.id === game.id ? nextGame : item));
+        if (metadataChanged) {
+          refreshedCount += 1;
+        }
+      } catch (error) {
+        // Keep best-effort refresh behavior for the rest of the library.
+      }
+    }
+
+    setActionState("metadata", {
+      tone: refreshedCount > 0 ? "success" : "info",
+      message: refreshedCount > 0
+        ? `Metadata refreshed for ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"}.`
+        : "Metadata refresh finished with no new values found."
+    });
+    state.notice = {
+      tone: refreshedCount > 0 ? "success" : "info",
+      message: refreshedCount > 0
+        ? `Checkpoint refreshed metadata for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
+        : "Metadata refresh finished. Existing metadata was retained."
+    };
+    emit();
+    return true;
   }
 
   function setImportMode(mode) {
@@ -779,18 +1258,145 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     emit();
   }
 
+  async function connectGoogleDrive() {
+    setActionState("sync", {
+      tone: "info",
+      message: "Connecting to Google Drive..."
+    });
+    emit();
+
+    const result = await integrations.googleDrive.connect();
+    setActionState("sync", {
+      tone: result.ok ? "success" : "error",
+      message: result.message
+    });
+    state.notice = {
+      tone: result.ok ? "success" : "error",
+      message: result.message
+    };
+    emit();
+  }
+
+  function disconnectGoogleDrive() {
+    const result = integrations.googleDrive.disconnect();
+    globalThis.clearTimeout?.(autoBackupTimer);
+    queuedAutoBackupSignature = "";
+    state.library = state.library.map((entry) => ({
+      ...entry,
+      syncState: "offline"
+    }));
+    setActionState("sync", {
+      tone: result.ok ? "success" : "error",
+      message: result.message
+    });
+    state.notice = {
+      tone: result.ok ? "success" : "error",
+      message: result.message
+    };
+    emit();
+  }
+
+  function saveLocalRestorePoint(source) {
+    const payload = {
+      timestamp: new Date().toISOString(),
+      source,
+      content: JSON.stringify(buildExportState(), null, 2)
+    };
+    const saved = writeLocalRestorePoint(payload);
+    if (saved) {
+      state.restorePointMeta = {
+        timestamp: payload.timestamp,
+        source: payload.source
+      };
+    }
+    return saved;
+  }
+
+  function restoreLocalSafetySnapshot() {
+    const restorePoint = readLocalRestorePoint();
+    if (!restorePoint?.content) {
+      setActionState("backup", {
+        tone: "error",
+        message: "No local restore safety snapshot is available."
+      });
+      state.notice = {
+        tone: "error",
+        message: "No local restore safety snapshot is available."
+      };
+      emit();
+      return false;
+    }
+
+    const restored = importLibraryBackup(restorePoint.content, "local restore snapshot");
+    if (restored) {
+      setActionState("backup", {
+        tone: "success",
+        message: "Local restore safety snapshot applied."
+      });
+    }
+    return restored;
+  }
+
+  async function restoreFromGoogleDrive() {
+    setActionState("sync", {
+      tone: "info",
+      message: "Fetching Checkpoint backup from Google Drive..."
+    });
+    emit();
+
+    try {
+      const backup = await integrations.googleDrive.restoreAppState();
+      saveLocalRestorePoint("before Google Drive restore");
+      const imported = importLibraryBackup(backup.content, "Google Drive backup");
+      if (!imported) {
+        setActionState("sync", {
+          tone: "error",
+          message: "Drive backup was found, but it could not be restored."
+        });
+        emit();
+        return false;
+      }
+
+      setActionState("sync", {
+        tone: "success",
+        message: "Google Drive backup restored into local Checkpoint state. A local safety snapshot was saved first."
+      });
+      emit();
+      return true;
+    } catch (error) {
+      setActionState("sync", {
+        tone: "error",
+        message: error instanceof Error ? error.message : "Google Drive restore failed."
+      });
+      state.notice = {
+        tone: "error",
+        message: error instanceof Error ? error.message : "Google Drive restore failed."
+      };
+      emit();
+      return false;
+    }
+  }
+
   async function markAllSynced() {
     setActionState("sync", {
       tone: "info",
       message: integrations.googleDrive.isConfigured()
         ? "Syncing library to Google Drive..."
-        : "Running mock sync flow..."
+        : "Connect Google Drive before syncing."
     });
+    if (!integrations.googleDrive.isConfigured()) {
+      state.notice = {
+        tone: "error",
+        message: "Google Drive must be connected before sync can run."
+      };
+      emit();
+      return;
+    }
     emit();
 
     let syncResult;
     try {
-      syncResult = await integrations.googleDrive.syncLibrary({
+      syncResult = await integrations.googleDrive.syncAppState({
         state: buildExportState(),
         mode: "manual"
       });
@@ -820,6 +1426,8 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       syncState: integrations.googleDrive.isConfigured() ? "ready" : "offline",
       updatedAt: entry.updatedAt
     }));
+    lastAutoBackupSignature = JSON.stringify(buildExportState());
+    queuedAutoBackupSignature = "";
     setActionState("sync", {
       tone: syncResult?.ok === false ? "error" : "success",
       message: syncResult?.message ?? "Sync complete."
@@ -866,7 +1474,15 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     updateDetailForm,
     saveDetailNotes,
     saveDetailProgress,
+    refreshMetadataForEntry,
+    refreshArtworkForEntry,
+    refreshLibraryMetadata,
+    refreshLibraryArtwork,
     togglePreference,
+    connectGoogleDrive,
+    disconnectGoogleDrive,
+    restoreFromGoogleDrive,
+    restoreLocalSafetySnapshot,
     markAllSynced
   };
 }
