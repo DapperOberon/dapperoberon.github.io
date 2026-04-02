@@ -41,7 +41,7 @@ You can keep `ALLOWED_ORIGIN` as a fallback single-origin value, but `ALLOWED_OR
 3. From `checkpoint/cloudflare-worker`, deploy the Worker.
 4. Set the `STEAMGRID_API_KEY` secret.
 5. Copy the deployed Worker URL.
-6. Paste that URL into Checkpoint Settings under `SteamGrid Proxy`.
+6. Set that URL in `checkpoint/config.js`.
 
 ## Frontend flow
 

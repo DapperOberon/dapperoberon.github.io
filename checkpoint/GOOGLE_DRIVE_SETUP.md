@@ -69,7 +69,7 @@ For the planned REST-based implementation, `CLIENT_ID` is enough.
 
 ## Frontend Config
 
-`checkpoint/config.js` should eventually expose:
+`checkpoint/config.js` should expose:
 
 ```js
 window.CHECKPOINT_CONFIG = {
@@ -123,7 +123,7 @@ Optional later enhancement:
 
 ## UI Model
 
-The settings screen should eventually support:
+The settings screen should support:
 
 - `Connect Google Drive`
 - `Disconnect`
@@ -164,11 +164,11 @@ Checkpoint should not:
 
 ## Implementation Order
 
-Recommended order for Phase 2E:
+Recommended implementation order was:
 
 1. Add Google Drive client ID config support.
 2. Load Google Identity Services in the app shell.
-3. Replace the mock drive service with a real browser token-client service.
+3. Replace the placeholder drive service with a real browser token-client service.
 4. Implement `connect`, `disconnect`, and token lifecycle handling.
 5. Implement `syncAppState()` to `appDataFolder`.
 6. Implement `restoreFromDrive()`.
@@ -176,7 +176,7 @@ Recommended order for Phase 2E:
 
 ## Manual Setup Steps
 
-When implementation begins, the setup sequence should be:
+The setup sequence is:
 
 1. Create a Google Cloud project.
 2. Enable the Google Drive API.

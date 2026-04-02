@@ -4,7 +4,44 @@ function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-export const APP_STATE_SCHEMA_VERSION = 3;
+function createDeviceId() {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `device-${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+}
+
+function normalizeDeviceIdentity(deviceIdentity) {
+  const source = isRecord(deviceIdentity) ? deviceIdentity : {};
+  const deviceId = typeof source.deviceId === "string" && source.deviceId.trim()
+    ? source.deviceId.trim()
+    : createDeviceId();
+
+  return {
+    deviceId,
+    deviceLabel: typeof source.deviceLabel === "string" && source.deviceLabel.trim()
+      ? source.deviceLabel.trim()
+      : "This Device"
+  };
+}
+
+function normalizeSyncMeta(syncMeta) {
+  const source = isRecord(syncMeta) ? syncMeta : {};
+  return {
+    lastLocalMutationAt: typeof source.lastLocalMutationAt === "string" ? source.lastLocalMutationAt : "",
+    lastLocalMutationByDeviceId: typeof source.lastLocalMutationByDeviceId === "string" ? source.lastLocalMutationByDeviceId : "",
+    lastLocalMutationByDeviceLabel: typeof source.lastLocalMutationByDeviceLabel === "string" ? source.lastLocalMutationByDeviceLabel : "",
+    lastRemoteSyncAt: typeof source.lastRemoteSyncAt === "string" ? source.lastRemoteSyncAt : "",
+    lastRemoteFileId: typeof source.lastRemoteFileId === "string" ? source.lastRemoteFileId : "",
+    lastRemoteModifiedTime: typeof source.lastRemoteModifiedTime === "string" ? source.lastRemoteModifiedTime : "",
+    lastRemoteVersion: typeof source.lastRemoteVersion === "string" ? source.lastRemoteVersion : "",
+    lastSyncedByDeviceId: typeof source.lastSyncedByDeviceId === "string" ? source.lastSyncedByDeviceId : "",
+    lastSyncedByDeviceLabel: typeof source.lastSyncedByDeviceLabel === "string" ? source.lastSyncedByDeviceLabel : ""
+  };
+}
+
+export const APP_STATE_SCHEMA_VERSION = 4;
 
 export function pruneCatalogToLibrary(library, catalog) {
   const referencedGameIds = new Set(
@@ -30,6 +67,8 @@ export function createInitialPersistedState({ initialLibrary, initialCatalog }) 
       includeArtwork: true,
       includeNotes: true
     },
+    deviceIdentity: normalizeDeviceIdentity(null),
+    syncMeta: normalizeSyncMeta(null),
     uiPreferences: {
       lastView: "dashboard",
       lastStatusFilter: "all",
@@ -49,9 +88,12 @@ function normalizeSyncPreferences(syncPreferences) {
 
 function normalizeUiPreferences(uiPreferences) {
   const source = isRecord(uiPreferences) ? uiPreferences : {};
+  const lastStatusFilter = typeof source.lastStatusFilter === "string"
+    ? (source.lastStatusFilter === "archived" ? "backlog" : source.lastStatusFilter)
+    : "all";
   return {
     lastView: typeof source.lastView === "string" ? source.lastView : "dashboard",
-    lastStatusFilter: typeof source.lastStatusFilter === "string" ? source.lastStatusFilter : "all",
+    lastStatusFilter,
     librarySort: typeof source.librarySort === "string" ? source.librarySort : "updated_desc"
   };
 }
@@ -93,6 +135,20 @@ export function normalizePersistedState(rawState, { initialLibrary, initialCatal
     };
   }
 
+  if (rawState.schemaVersion === 3 && Array.isArray(rawState.library)) {
+    const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
+    const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
+    return {
+      ...initialState,
+      library,
+      catalog: pruneCatalogToLibrary(library, catalog),
+      syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
+      deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+      syncMeta: normalizeSyncMeta(rawState.syncMeta)
+    };
+  }
+
   if (rawState.schemaVersion !== APP_STATE_SCHEMA_VERSION) {
     return initialState;
   }
@@ -105,6 +161,8 @@ export function normalizePersistedState(rawState, { initialLibrary, initialCatal
     library,
     catalog: pruneCatalogToLibrary(library, catalog),
     syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+    deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+    syncMeta: normalizeSyncMeta(rawState.syncMeta),
     uiPreferences: normalizeUiPreferences(rawState.uiPreferences)
   };
 }

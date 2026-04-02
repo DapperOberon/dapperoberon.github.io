@@ -1,6 +1,6 @@
 # Checkpoint Data Schema
 
-This document defines the current canonical data model for Checkpoint Phase 1.
+This document defines the current canonical data model for Checkpoint.
 
 It describes:
 
@@ -26,16 +26,18 @@ This schema reflects the app as implemented today and should be updated whenever
 
 ## Persisted App State
 
-Current schema version: `3`
+Current schema version: `4`
 
 Persisted state shape:
 
 ```js
 {
-  schemaVersion: 3,
+  schemaVersion: 4,
   library: LibraryEntry[],
   catalog: CatalogGame[],
   syncPreferences: SyncPreferences,
+  deviceIdentity: DeviceIdentity,
+  syncMeta: SyncMeta,
   uiPreferences: UiPreferences
 }
 ```
@@ -50,6 +52,10 @@ Persisted state shape:
   Purpose: metadata and artwork records referenced by library entries.
 - `syncPreferences`: `SyncPreferences`
   Purpose: persisted backup/export-related preferences.
+- `deviceIdentity`: `DeviceIdentity`
+  Purpose: identifies this browser install when syncing through Google Drive.
+- `syncMeta`: `SyncMeta`
+  Purpose: tracks the latest known local and remote sync markers for multi-device safety.
 - `uiPreferences`: `UiPreferences`
   Purpose: stores a small set of last-used library UI preferences.
 
@@ -60,6 +66,8 @@ Persisted:
 - `library`
 - `catalog`
 - `syncPreferences`
+- `deviceIdentity`
+- `syncMeta`
 - `uiPreferences`
 - `schemaVersion`
 
@@ -71,7 +79,86 @@ Derived at runtime:
 - selected/active game via join on `gameId`
 - suggestion results in the add-game flow
 - sync readiness counts
+- sync comparison status
 - modal open state and other transient UI state
+
+### DeviceIdentity
+
+Shape:
+
+```js
+{
+  deviceId: string,
+  deviceLabel: string
+}
+```
+
+Field definitions:
+
+- `deviceId`: string
+  A persistent locally generated identifier for this browser install.
+
+- `deviceLabel`: string
+  A user-editable name for the current device.
+  Example: `Main Desktop`
+
+Notes:
+
+- `deviceId` is persisted locally but intentionally omitted from export/import payloads
+- exported and synced state should carry `syncMeta`, not another device's local identity
+
+### SyncMeta
+
+Shape:
+
+```js
+{
+  lastLocalMutationAt: ISODateTimeString | "",
+  lastLocalMutationByDeviceId: string,
+  lastLocalMutationByDeviceLabel: string,
+  lastRemoteSyncAt: ISODateTimeString | "",
+  lastRemoteFileId: string,
+  lastRemoteModifiedTime: ISODateTimeString | "",
+  lastRemoteVersion: string,
+  lastSyncedByDeviceId: string,
+  lastSyncedByDeviceLabel: string
+}
+```
+
+Field definitions:
+
+- `lastLocalMutationAt`: ISO date-time string or empty string
+  Most recent local content mutation time on this device.
+
+- `lastLocalMutationByDeviceId`: string
+  Device ID that last changed the local state.
+
+- `lastLocalMutationByDeviceLabel`: string
+  Human-readable label for the device that last changed the local state.
+
+- `lastRemoteSyncAt`: ISO date-time string or empty string
+  Time the current device last completed a successful Drive sync.
+
+- `lastRemoteFileId`: string
+  Current Google Drive `appDataFolder` backup file ID when known.
+
+- `lastRemoteModifiedTime`: ISO date-time string or empty string
+  Last known remote modified time reported by Drive.
+
+- `lastRemoteVersion`: string
+  Last known remote revision/version marker reported by Drive.
+
+- `lastSyncedByDeviceId`: string
+  Device ID that last wrote the remote state.
+
+- `lastSyncedByDeviceLabel`: string
+  Human-readable label for the device that last wrote the remote state.
+
+Notes:
+
+- `syncMeta` is part of exports and Drive sync payloads
+- conflict detection compares local mutation markers against remote sync markers
+- auto-backup should pause when divergence is detected and a user decision is required
 
 ---
 
@@ -217,7 +304,9 @@ Shape:
   heroArt: string,
   capsuleArt: string,
   screenshots: string[],
-  steamGridSlug: string
+  steamGridSlug: string,
+  providerValues: CatalogProviderValues,
+  lockedFields: string[]
 }
 ```
 
@@ -266,6 +355,40 @@ Shape:
 - `steamGridSlug`: string
   Future lookup identifier for SteamGrid-backed assets.
 
+- `providerValues`: `CatalogProviderValues`
+  Last known provider-managed values for fields that can be manually overridden.
+
+- `lockedFields`: `string[]`
+  Catalog field names that should stay user-managed during refresh actions until cleared.
+
+### CatalogProviderValues
+
+Shape:
+
+```js
+{
+  developer: string,
+  publisher: string,
+  releaseDate: ISODateString,
+  genres: string[],
+  platforms: string[],
+  criticSummary: string,
+  description: string,
+  heroArt: string,
+  capsuleArt: string,
+  screenshots: string[],
+  steamGridSlug: string
+}
+```
+
+Notes:
+
+- `providerValues` stores the last provider-managed snapshot separately from the currently rendered top-level values
+- top-level catalog fields remain the effective values used throughout the app
+- when a user saves an override, the effective top-level field is updated and that field is added to `lockedFields`
+- when a provider refresh runs, locked fields keep the user-managed value while `providerValues` still update underneath
+- clearing an override restores the top-level field from `providerValues` and removes the lock
+
 ### Required Fields
 
 Required for a valid Phase 1 catalog record:
@@ -284,6 +407,8 @@ Required for a valid Phase 1 catalog record:
 - `capsuleArt`
 - `screenshots`
 - `steamGridSlug`
+- `providerValues`
+- `lockedFields`
 
 ### Invariants
 
@@ -291,6 +416,7 @@ Required for a valid Phase 1 catalog record:
 - `screenshots` should be an array, even if empty
 - URLs may be local or remote strings
 - custom/manual catalog entries should still follow the same shape
+- `lockedFields` should only reference recognized overrideable catalog fields
 
 ---
 

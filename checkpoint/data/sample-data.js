@@ -21,10 +21,16 @@ export const statusDefinitions = [
     className: "status-tag-finished"
   },
   {
-    id: "archived",
-    label: "Archived",
-    description: "Dormant, paused, or parked.",
-    className: "status-tag-archived"
+    id: "backlog",
+    label: "Backlog",
+    description: "Queued up for later runs.",
+    className: "status-tag-backlog"
+  },
+  {
+    id: "wishlist",
+    label: "Wishlist",
+    description: "Target titles to grab next.",
+    className: "status-tag-wishlist"
   }
 ];
 
@@ -244,7 +250,7 @@ export const sampleLibrary = [
     gameId: "dead-space-remake",
     title: "Dead Space",
     storefront: "steam",
-    status: "archived",
+    status: "backlog",
     runLabel: "Replay Run",
     addedAt: "2025-10-30T22:00:00.000Z",
     updatedAt: "2026-01-20T11:00:00.000Z",
@@ -260,7 +266,7 @@ export const sampleLibrary = [
     gameId: "cocoon",
     title: "Cocoon",
     storefront: "xbox",
-    status: "archived",
+    status: "backlog",
     runLabel: "Main Save",
     addedAt: "2025-09-16T19:00:00.000Z",
     updatedAt: "2025-10-10T19:00:00.000Z",
@@ -372,7 +378,7 @@ export const sampleLibrary = [
     gameId: "final-fantasy-vii-rebirth",
     title: "Final Fantasy VII Rebirth",
     storefront: "psn",
-    status: "archived",
+    status: "backlog",
     runLabel: "Hard Mode Start",
     addedAt: "2026-03-01T10:25:00.000Z",
     updatedAt: "2026-03-09T20:45:00.000Z",
@@ -388,7 +394,7 @@ export const sampleLibrary = [
     gameId: "disco-elysium",
     title: "Disco Elysium",
     storefront: "switch",
-    status: "archived",
+    status: "backlog",
     runLabel: "Controller Replay",
     addedAt: "2025-11-02T16:50:00.000Z",
     updatedAt: "2026-01-04T18:10:00.000Z",
@@ -404,7 +410,7 @@ export const sampleLibrary = [
     gameId: "outer-wilds",
     title: "Outer Wilds",
     storefront: "switch",
-    status: "archived",
+    status: "wishlist",
     runLabel: "Portable Notes Run",
     addedAt: "2025-07-29T09:30:00.000Z",
     updatedAt: "2025-08-16T17:20:00.000Z",

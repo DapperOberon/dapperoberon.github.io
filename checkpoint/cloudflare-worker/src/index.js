@@ -338,8 +338,41 @@ function normalizeIgdbMetadata(game) {
   };
 }
 
+function normalizeIgdbCoverUrl(url) {
+  const value = String(url ?? "").trim();
+  if (!value) return "";
+  const withProtocol = value.startsWith("//") ? `https:${value}` : value;
+  return withProtocol.replace("/t_thumb/", "/t_cover_big/");
+}
+
+function normalizeIgdbSearchResult(game) {
+  return {
+    id: `igdb-${game?.id ?? Math.random().toString(36).slice(2, 10)}`,
+    igdbId: game?.id ?? null,
+    title: game?.name ?? "",
+    releaseDate: toIsoDate(game?.first_release_date),
+    platforms: (game?.platforms ?? []).map((platform) => platform?.name).filter(Boolean).slice(0, 4),
+    coverArt: normalizeIgdbCoverUrl(game?.cover?.url),
+    description: getIgdbDescription(game),
+    storefront: "manual",
+    meta: {
+      resolved: Boolean(game?.id),
+      usedFallback: false,
+      reason: "igdb_search"
+    }
+  };
+}
+
+function normalizeIgdbSearchResults(games) {
+  if (!Array.isArray(games)) return [];
+  return games
+    .filter((game) => game?.name)
+    .map(normalizeIgdbSearchResult)
+    .slice(0, 12);
+}
+
 function buildIgdbGameFields() {
-  return "fields name,slug,summary,storyline,aggregated_rating,first_release_date,genres.name,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;";
+  return "fields name,slug,summary,storyline,aggregated_rating,first_release_date,cover.url,genres.name,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;";
 }
 
 async function queryIgdbGamesBySearch(env, title, { strict = true } = {}) {
@@ -432,6 +465,37 @@ async function handleMetadataRequest(request, env) {
   return json(normalizeIgdbMetadata(match));
 }
 
+async function handleIgdbSearchRequest(request, env) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("query") ?? "";
+
+  if (!query.trim()) {
+    return json({
+      results: [],
+      meta: {
+        resolved: false,
+        usedFallback: true,
+        reason: "missing_query"
+      }
+    }, { status: 400 });
+  }
+
+  const strictGames = await queryIgdbGamesBySearch(env, query, { strict: true });
+  const looseGames = strictGames.length
+    ? strictGames
+    : await queryIgdbGamesBySearch(env, query, { strict: false });
+
+  return json({
+    results: normalizeIgdbSearchResults(looseGames),
+    meta: {
+      resolved: true,
+      usedFallback: false,
+      reason: "igdb_search",
+      query
+    }
+  });
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("origin") ?? "";
@@ -451,6 +515,11 @@ export default {
 
       if (request.method === "GET" && url.pathname === "/api/igdb/metadata") {
         const response = await handleMetadataRequest(request, env);
+        return withCors(response, origin, allowedOrigins);
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/igdb/search") {
+        const response = await handleIgdbSearchRequest(request, env);
         return withCors(response, origin, allowedOrigins);
       }
 

@@ -142,7 +142,7 @@ function buildMultipartBody(metadata, content) {
 
 async function findBackupFile() {
   const query = encodeURIComponent(`name='${BACKUP_FILENAME}' and 'appDataFolder' in parents and trashed=false`);
-  const fields = encodeURIComponent("files(id,name,modifiedTime)");
+  const fields = encodeURIComponent("files(id,name,modifiedTime,version)");
   const url = `${DRIVE_API_BASE}/files?q=${query}&spaces=appDataFolder&fields=${fields}&pageSize=1`;
   const payload = await driveJson(url);
   return Array.isArray(payload.files) ? payload.files[0] ?? null : null;
@@ -157,8 +157,8 @@ async function uploadBackupContent(state) {
   const { body, boundary } = buildMultipartBody(metadata, content);
 
   const baseUrl = existingFile
-    ? `${DRIVE_UPLOAD_BASE}/files/${existingFile.id}?uploadType=multipart`
-    : `${DRIVE_UPLOAD_BASE}/files?uploadType=multipart`;
+    ? `${DRIVE_UPLOAD_BASE}/files/${existingFile.id}?uploadType=multipart&fields=id,modifiedTime,version`
+    : `${DRIVE_UPLOAD_BASE}/files?uploadType=multipart&fields=id,modifiedTime,version`;
 
   const payload = await driveJson(baseUrl, {
     method: existingFile ? "PATCH" : "POST",
@@ -170,6 +170,8 @@ async function uploadBackupContent(state) {
 
   return {
     fileId: payload.id ?? existingFile?.id ?? "",
+    modifiedTime: payload.modifiedTime ?? existingFile?.modifiedTime ?? "",
+    version: payload.version ? String(payload.version) : "",
     created: !existingFile
   };
 }
@@ -185,7 +187,9 @@ async function restoreAppState() {
   return {
     filename: BACKUP_FILENAME,
     content,
-    fileId: existingFile.id
+    fileId: existingFile.id,
+    modifiedTime: existingFile.modifiedTime ?? "",
+    version: existingFile.version ? String(existingFile.version) : ""
   };
 }
 
@@ -236,7 +240,13 @@ export function createGoogleDriveService() {
           mode: input.mode ?? "manual",
           message: uploadResult.created
             ? "Checkpoint backup created in Google Drive."
-            : "Checkpoint backup updated in Google Drive."
+            : "Checkpoint backup updated in Google Drive.",
+          remote: {
+            fileId: uploadResult.fileId,
+            modifiedTime: uploadResult.modifiedTime,
+            version: uploadResult.version,
+            syncedAt: new Date().toISOString()
+          }
         };
       } catch (error) {
         return {

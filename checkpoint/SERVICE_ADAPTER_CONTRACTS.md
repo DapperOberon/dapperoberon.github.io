@@ -1,15 +1,15 @@
 # Checkpoint Service Adapter Contracts
 
-This document defines the Phase 1 adapter contracts for the external services Checkpoint plans to use.
+This document defines the stable adapter contracts for the external services Checkpoint uses.
 
-The goal is to keep the app store and renderer dependent on stable adapter interfaces even while the implementation is still mock-backed.
+The goal is to keep the app store and renderer dependent on stable adapter interfaces while allowing transport, auth, and provider details to evolve behind those seams.
 
 ---
 
 ## Design Rules
 
 - adapters expose a small, stable surface area
-- adapters may be mock or production-backed without changing caller code
+- adapters may use live providers or local fallback responses without changing caller code
 - callers should assume adapters can fail
 - adapter responses should already be normalized into app-friendly shapes
 - production adapters may enrich data, but should not require the UI to understand provider-specific payloads
@@ -68,9 +68,8 @@ Output:
 Behavior notes:
 
 - if `catalogGame` already contains art, the adapter may reuse it
-- the browser runtime may provide a Worker URL through `window.CHECKPOINT_CONFIG.steamGridWorkerUrl` or `localStorage["checkpoint.steamGridWorkerUrl"]`
+- the browser runtime provides the Worker URL through `window.CHECKPOINT_CONFIG.steamGridWorkerUrl`
 - the Worker stores the real SteamGridDB API key as a server-side secret
-- the settings screen is allowed to manage the per-browser Worker URL directly during Phase 2
 - production implementations may return empty strings/arrays when art is unavailable
 - callers should not assume screenshots exist
 
@@ -180,21 +179,22 @@ Behavior notes:
 
 ---
 
-## Mock vs Production
+## Live Integrations and Fallbacks
 
 Current state:
 
-- service interfaces are already stable enough for Phase 1
-- current implementations are mock-backed
-- mock response data is intentionally separated from adapter code in `services/mock-data.js`
+- SteamGrid artwork resolves through the Cloudflare Worker proxy
+- metadata resolves through the same Worker using IGDB
+- Google Drive sync runs through browser OAuth and the Drive `appDataFolder`
+- local fallback response builders remain separated in `services/mock-data.js` for graceful degradation when a live request cannot resolve
 
-Production adapters should preserve:
+Adapters should preserve:
 
 - method names
 - input shapes
 - return shapes
 
-They may change:
+Implementations may change:
 
 - internal transport
 - auth flow

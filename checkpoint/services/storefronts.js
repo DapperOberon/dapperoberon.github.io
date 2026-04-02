@@ -51,6 +51,23 @@ export function createMetadataResolverService() {
       } catch (error) {
         return createMockStorefrontMetadata({ title, storefront, catalogGame, meta: { reason: "worker_request_failed" } });
       }
+    },
+
+    async searchGames({ query }) {
+      const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
+      const normalizedQuery = String(query ?? "").trim();
+      if (!workerUrl || !normalizedQuery) {
+        return [];
+      }
+
+      try {
+        const payload = await requestJson(
+          `${workerUrl}/api/igdb/search?query=${encodeURIComponent(normalizedQuery)}`
+        );
+        return Array.isArray(payload?.results) ? payload.results : [];
+      } catch (error) {
+        return [];
+      }
     }
   };
 }

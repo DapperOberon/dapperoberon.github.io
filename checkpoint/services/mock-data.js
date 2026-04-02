@@ -55,16 +55,8 @@ export function createMockStorefrontMetadata({ title, storefront, catalogGame, m
     genres: ["Unclassified"],
     platforms: [],
     criticSummary: `${title} was added as a manual entry and is ready for metadata enrichment.`,
-    description: `This manual ${storefront} entry is in Checkpoint. Replace this mock metadata by wiring the real metadata resolver into services/storefronts.js.`,
+    description: `This manual ${storefront} entry is in Checkpoint. Live metadata was not available for this lookup, so fallback values were kept.`,
     steamGridSlug: "",
     meta: fallbackMeta
-  };
-}
-
-export function createMockDriveSyncResult() {
-  return {
-    ok: true,
-    mode: "mock",
-    message: "Google Drive sync placeholder executed."
   };
 }
