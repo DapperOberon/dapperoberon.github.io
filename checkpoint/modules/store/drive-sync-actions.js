@@ -5,6 +5,7 @@ export function createDriveSyncActions(ctx) {
     integrations,
     setActionState,
     buildExportState,
+    buildSyncExportState,
     buildComparableStateSignature,
     getDeviceIdentity,
     getSyncConflict,
@@ -12,7 +13,8 @@ export function createDriveSyncActions(ctx) {
     updateSyncMeta,
     importLibraryBackup,
     normalizePersistedState,
-    createSyncHistoryEntry
+    createSyncHistoryEntry,
+    recordActivity
   } = ctx;
 
   function buildSyncPayload() {
@@ -22,7 +24,7 @@ export function createDriveSyncActions(ctx) {
     return {
       syncAt,
       state: {
-        ...buildExportState(),
+        ...buildSyncExportState(),
         syncMeta: {
           ...state.syncMeta,
           lastRemoteSyncAt: syncAt,
@@ -54,6 +56,13 @@ export function createDriveSyncActions(ctx) {
         tone: result.ok ? "success" : "error",
         message: result.message
       };
+      recordActivity({
+        category: "sync",
+        action: "connect",
+        scope: "device",
+        message: result.message,
+        tone: result.ok ? "success" : "error"
+      });
       emit();
     })();
   }
@@ -74,6 +83,13 @@ export function createDriveSyncActions(ctx) {
       tone: result.ok ? "success" : "error",
       message: result.message
     };
+    recordActivity({
+      category: "sync",
+      action: "disconnect",
+      scope: "device",
+      message: result.message,
+      tone: result.ok ? "success" : "error"
+    });
     emit();
   }
 
@@ -135,6 +151,13 @@ export function createDriveSyncActions(ctx) {
         mode: "local-restore",
         message: "Local restore safety snapshot applied."
       }));
+      recordActivity({
+        category: "sync",
+        action: "restore-local-snapshot",
+        scope: "device",
+        message: "Local restore safety snapshot applied.",
+        tone: "success"
+      });
     }
     return restored;
   }
@@ -144,7 +167,7 @@ export function createDriveSyncActions(ctx) {
     const imported = JSON.parse(backup.content);
     const normalized = normalizePersistedState(imported, { initialLibrary: [], initialCatalog: [] });
     const remoteComparableSignature = buildComparableStateSignature(normalized);
-    const localComparableSignature = buildComparableStateSignature(buildExportState());
+    const localComparableSignature = buildComparableStateSignature(buildSyncExportState());
     const localKnownRemoteAt = state.syncMeta.lastRemoteSyncAt ? new Date(state.syncMeta.lastRemoteSyncAt).getTime() : 0;
     const localMutationAt = state.syncMeta.lastLocalMutationAt ? new Date(state.syncMeta.lastLocalMutationAt).getTime() : 0;
     const remoteSyncAt = normalized?.syncMeta?.lastRemoteSyncAt
@@ -253,6 +276,13 @@ export function createDriveSyncActions(ctx) {
         mode: "restore-remote",
         message: "Google Drive backup restored after saving a local safety snapshot."
       }));
+      recordActivity({
+        category: "sync",
+        action: "restore-remote",
+        scope: "device",
+        message: "Google Drive backup restored after saving a local safety snapshot.",
+        tone: "success"
+      });
       emit();
       return true;
     } catch (error) {
@@ -264,12 +294,19 @@ export function createDriveSyncActions(ctx) {
         tone: "error",
         message: error instanceof Error ? error.message : "Google Drive restore failed."
       };
+      recordActivity({
+        category: "sync",
+        action: "restore-remote",
+        scope: "device",
+        message: error instanceof Error ? error.message : "Google Drive restore failed.",
+        tone: "error"
+      });
       emit();
       return false;
     }
   }
 
-  async function markAllSynced(options = {}) {
+  async function syncNow(options = {}) {
     setActionState("sync", {
       tone: "info",
       message: integrations.googleDrive.isConfigured()
@@ -281,6 +318,13 @@ export function createDriveSyncActions(ctx) {
         tone: "error",
         message: "Google Drive must be connected before sync can run."
       };
+      recordActivity({
+        category: "sync",
+        action: "sync-now",
+        scope: "device",
+        message: "Sync requested while Drive was disconnected.",
+        tone: "error"
+      });
       emit();
       return;
     }
@@ -307,6 +351,15 @@ export function createDriveSyncActions(ctx) {
           ? "Drive has a newer backup from another device."
           : "Checkpoint found a sync conflict between this device and Drive."
       };
+      recordActivity({
+        category: "sync",
+        action: "conflict",
+        scope: "device",
+        message: conflict.mode === "remote-newer"
+          ? "Sync blocked because Drive has a newer backup."
+          : "Sync blocked because local and Drive state diverged.",
+        tone: "warning"
+      });
       emit();
       return;
     }
@@ -332,6 +385,13 @@ export function createDriveSyncActions(ctx) {
         tone: "error",
         message: "Checkpoint could not complete the sync."
       };
+      recordActivity({
+        category: "sync",
+        action: "sync-now",
+        scope: "device",
+        message: "Sync failed before completion.",
+        tone: "error"
+      });
       emit();
       return;
     }
@@ -352,7 +412,7 @@ export function createDriveSyncActions(ctx) {
       lastSyncedByDeviceId: getDeviceIdentity().deviceId,
       lastSyncedByDeviceLabel: getDeviceIdentity().deviceLabel
     });
-    ctx.driveRuntime.setLastAutoBackupSignature(JSON.stringify(buildExportState()));
+    ctx.driveRuntime.setLastAutoBackupSignature(JSON.stringify(buildSyncExportState()));
     ctx.driveRuntime.clearQueuedAutoBackupSignature();
     setActionState("sync", {
       tone: syncResult?.ok === false ? "error" : "success",
@@ -367,6 +427,13 @@ export function createDriveSyncActions(ctx) {
       tone: syncResult?.ok === false ? "error" : "success",
       message: syncResult?.message ?? "Checkpoint sync finished."
     };
+    recordActivity({
+      category: "sync",
+      action: "sync-now",
+      scope: "device",
+      message: syncResult?.message ?? "Checkpoint sync finished.",
+      tone: syncResult?.ok === false ? "error" : "success"
+    });
     setSyncConflict(null);
     emit();
   }
@@ -374,7 +441,7 @@ export function createDriveSyncActions(ctx) {
   async function keepLocalDuringConflict() {
     saveLocalRestorePoint("before keeping local over Drive conflict");
     setSyncConflict(null);
-    await markAllSynced({ force: true });
+    await syncNow({ force: true });
   }
 
   return {
@@ -384,7 +451,7 @@ export function createDriveSyncActions(ctx) {
     saveLocalRestorePoint,
     restoreLocalSafetySnapshot,
     restoreFromGoogleDrive,
-    markAllSynced,
+    syncNow,
     keepLocalDuringConflict
   };
 }

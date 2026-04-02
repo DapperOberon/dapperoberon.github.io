@@ -41,7 +41,38 @@ function normalizeSyncMeta(syncMeta) {
   };
 }
 
-export const APP_STATE_SCHEMA_VERSION = 4;
+function normalizeActivityHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      id: typeof item.id === "string" ? item.id : `activity-${Math.random().toString(36).slice(2, 10)}`,
+      category: typeof item.category === "string" ? item.category : "system",
+      action: typeof item.action === "string" ? item.action : "updated",
+      scope: typeof item.scope === "string" ? item.scope : "library",
+      title: typeof item.title === "string" ? item.title : "",
+      message: typeof item.message === "string" ? item.message : "",
+      tone: typeof item.tone === "string" ? item.tone : "info",
+      timestamp: typeof item.timestamp === "string" ? item.timestamp : new Date().toISOString()
+    }))
+    .slice(0, 24);
+}
+
+function normalizeSyncHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      id: typeof item.id === "string" ? item.id : `sync-${Math.random().toString(36).slice(2, 10)}`,
+      ok: item.ok !== false,
+      mode: typeof item.mode === "string" ? item.mode : "manual",
+      message: typeof item.message === "string" ? item.message : "",
+      timestamp: typeof item.timestamp === "string" ? item.timestamp : new Date().toISOString()
+    }))
+    .slice(0, 12);
+}
+
+export const APP_STATE_SCHEMA_VERSION = 5;
 
 export function pruneCatalogToLibrary(library, catalog) {
   const referencedGameIds = new Set(
@@ -65,14 +96,18 @@ export function createInitialPersistedState({ initialLibrary, initialCatalog }) 
     syncPreferences: {
       autoBackup: true,
       includeArtwork: true,
-      includeNotes: true
+      includeNotes: true,
+      includeActivityHistory: true
     },
+    activityHistory: [],
+    syncHistory: [],
     deviceIdentity: normalizeDeviceIdentity(null),
     syncMeta: normalizeSyncMeta(null),
     uiPreferences: {
       lastView: "dashboard",
       lastStatusFilter: "all",
-      librarySort: "updated_desc"
+      librarySort: "updated_desc",
+      settingsSection: "settings-sync-account"
     }
   };
 }
@@ -82,7 +117,8 @@ function normalizeSyncPreferences(syncPreferences) {
   return {
     autoBackup: source.autoBackup !== false,
     includeArtwork: source.includeArtwork !== false,
-    includeNotes: source.includeNotes !== false
+    includeNotes: source.includeNotes !== false,
+    includeActivityHistory: source.includeActivityHistory !== false
   };
 }
 
@@ -94,7 +130,8 @@ function normalizeUiPreferences(uiPreferences) {
   return {
     lastView: typeof source.lastView === "string" ? source.lastView : "dashboard",
     lastStatusFilter,
-    librarySort: typeof source.librarySort === "string" ? source.librarySort : "updated_desc"
+    librarySort: typeof source.librarySort === "string" ? source.librarySort : "updated_desc",
+    settingsSection: typeof source.settingsSection === "string" ? source.settingsSection : "settings-sync-account"
   };
 }
 
@@ -143,6 +180,24 @@ export function normalizePersistedState(rawState, { initialLibrary, initialCatal
       library,
       catalog: pruneCatalogToLibrary(library, catalog),
       syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      activityHistory: normalizeActivityHistory(rawState.activityHistory),
+      syncHistory: normalizeSyncHistory(rawState.syncHistory),
+      uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
+      deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+      syncMeta: normalizeSyncMeta(rawState.syncMeta)
+    };
+  }
+
+  if (rawState.schemaVersion === 4 && Array.isArray(rawState.library)) {
+    const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
+    const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
+    return {
+      ...initialState,
+      library,
+      catalog: pruneCatalogToLibrary(library, catalog),
+      syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      activityHistory: normalizeActivityHistory(rawState.activityHistory),
+      syncHistory: normalizeSyncHistory(rawState.syncHistory),
       uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
       deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
       syncMeta: normalizeSyncMeta(rawState.syncMeta)
@@ -161,6 +216,8 @@ export function normalizePersistedState(rawState, { initialLibrary, initialCatal
     library,
     catalog: pruneCatalogToLibrary(library, catalog),
     syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+    activityHistory: normalizeActivityHistory(rawState.activityHistory),
+    syncHistory: normalizeSyncHistory(rawState.syncHistory),
     deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
     syncMeta: normalizeSyncMeta(rawState.syncMeta),
     uiPreferences: normalizeUiPreferences(rawState.uiPreferences)

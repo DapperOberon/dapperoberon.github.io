@@ -14,7 +14,7 @@ import {
   renderSecondaryAction
 } from "./shared.js";
 
-function renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions) {
+function renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions, isNonRunEntry) {
   return `
     <section class="checkpoint-panel rounded-xl p-8 lg:p-10 overflow-hidden relative">
           ${hasUsableAsset(heroBackdropArt) ? `
@@ -38,7 +38,7 @@ function renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBack
           </div>
           <div>
             <h1 class="text-4xl lg:text-5xl font-extrabold font-headline tracking-tight text-on-surface">${escapeHtml(activeEntry.title)}</h1>
-            <p class="mt-2 text-sm text-zinc-500">${escapeHtml(activeEntry.runLabel || "Main Save")} • ${activeEntry.playtimeHours}h logged</p>
+            <p class="mt-2 text-sm text-zinc-500">${isNonRunEntry ? `${activeEntry.status === "wishlist" ? "Wishlist" : "Backlog"} entry` : `${escapeHtml(activeEntry.runLabel || "Main Save")} • ${activeEntry.playtimeHours}h logged`}</p>
           </div>
           <p class="max-w-3xl text-on-surface-variant text-base leading-relaxed">${escapeHtml(description || "This entry was added manually and is waiting on fuller metadata.")}</p>
           <div class="metadata-rule pt-5 grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
@@ -62,7 +62,7 @@ function renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBack
   `;
 }
 
-function renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions) {
+function renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions, isNonRunEntry) {
   if (!snapshot.isDetailEditMode) {
     return `
       <div id="detail-run-details" class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-5">
@@ -73,7 +73,9 @@ function renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Title</p><p class="font-headline font-bold text-on-surface">${escapeHtml(activeEntry.title)}</p></div>
           <div><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Storefront</p><p class="font-headline font-bold text-on-surface">${escapeHtml(getStorefrontLabel(storefrontDefinitions, activeEntry.storefront))}</p></div>
-          <div><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Run Label</p><p class="font-headline font-bold text-on-surface">${escapeHtml(activeEntry.runLabel || "Main Save")}</p></div>
+          ${isNonRunEntry
+            ? `<div><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Run Label</p><p class="font-body text-sm text-zinc-500">Not tracked for backlog or wishlist entries</p></div>`
+            : `<div><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Run Label</p><p class="font-headline font-bold text-on-surface">${escapeHtml(activeEntry.runLabel || "Main Save")}</p></div>`}
         </div>
       </div>
     `;
@@ -90,7 +92,9 @@ function renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Title</p><p class="font-headline font-bold text-on-surface">${escapeHtml(activeEntry.title)}</p></div>
         <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Storefront</span><select id="detail-storefront" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary appearance-none">${storefrontDefinitions.map((item) => `<option class="bg-surface" value="${item.id}" ${activeEntry.storefront === item.id ? "selected" : ""}>${escapeHtml(item.label)}</option>`).join("")}</select></label>
-        <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Run Label</span><input id="detail-run-label" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(activeEntry.runLabel || "Main Save")}"></label>
+        ${isNonRunEntry
+          ? `<div class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Run Label</span><p class="w-full bg-black/20 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-zinc-500">Not tracked for backlog or wishlist entries</p></div>`
+          : `<label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Run Label</span><input id="detail-run-label" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(activeEntry.runLabel || "Main Save")}"></label>`}
       </div>
     </div>
   `;
@@ -206,12 +210,12 @@ function renderDetailSidebar(snapshot, activeEntry, game, storefrontDefinitions)
           <div class="mt-4 flex flex-col gap-5">
             <p class="text-xs text-zinc-500 leading-relaxed">Save Details commits these values and keeps them through metadata refreshes until you clear them.</p>
             ${renderOverrideChips(game, ["developer", "publisher", "releaseDate", "criticSummary", "description", "steamGridSlug"])}
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Developer</span><input id="override-developer" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.developer ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Publisher</span><input id="override-publisher" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.publisher ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Release Date</span><input id="override-release-date" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="date" value="${escapeHtml(game?.releaseDate ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Critic Summary</span><input id="override-critic-summary" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.criticSummary ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">SteamGrid Slug</span><input id="override-steamgrid-slug" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.steamGridSlug ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Description</span><textarea id="override-description" class="w-full min-h-28 bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary resize-y">${escapeHtml(game?.description ?? "")}</textarea></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Developer</span><input id="override-developer" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.developer ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Publisher</span><input id="override-publisher" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.publisher ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Release Date</span><input id="override-release-date" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="date" value="${escapeHtml(game?.releaseDate ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Critic Summary</span><input id="override-critic-summary" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.criticSummary ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">SteamGrid Slug</span><input id="override-steamgrid-slug" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${escapeHtml(game?.steamGridSlug ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Description</span><textarea id="override-description" class="w-full min-h-28 bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary resize-y">${escapeHtml(game?.description ?? "")}</textarea></label>
             <div class="flex flex-wrap gap-3">
               ${renderSecondaryAction("Clear Game Details (This Entry)", "clear-metadata-overrides", "px-4 py-3 text-[11px] tracking-[0.08em]", `data-entry-id="${activeEntry.entryId}"`)}
             </div>
@@ -225,9 +229,9 @@ function renderDetailSidebar(snapshot, activeEntry, game, storefrontDefinitions)
           <div class="mt-4 flex flex-col gap-5">
             <p class="text-xs text-zinc-500 leading-relaxed">Save Details commits these values and keeps them through artwork refreshes until you clear them.</p>
             ${renderOverrideChips(game, ["heroArt", "capsuleArt", "screenshots"])}
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Hero Art URL</span><input id="override-hero-art" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="url" value="${escapeHtml(game?.heroArt ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Capsule Art URL</span><input id="override-capsule-art" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="url" value="${escapeHtml(game?.capsuleArt ?? "")}"></label>
-            <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Screenshot URLs</span><textarea id="override-screenshots" class="w-full min-h-28 bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary resize-y" placeholder="One URL per line">${escapeHtml((game?.screenshots ?? []).join("\n"))}</textarea></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Hero Art URL</span><input id="override-hero-art" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="url" value="${escapeHtml(game?.heroArt ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Capsule Art URL</span><input id="override-capsule-art" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary" type="url" value="${escapeHtml(game?.capsuleArt ?? "")}"></label>
+            <label class="space-y-2"><span class="font-body text-sm text-zinc-400">Screenshot URLs</span><textarea id="override-screenshots" class="w-full min-h-28 bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary resize-y" placeholder="One URL per line">${escapeHtml((game?.screenshots ?? []).join("\n"))}</textarea></label>
             <div class="flex flex-wrap gap-3">
               ${renderSecondaryAction("Clear Artwork (This Entry)", "clear-artwork-overrides", "px-4 py-3 text-[11px] tracking-[0.08em]", `data-entry-id="${activeEntry.entryId}"`)}
             </div>
@@ -238,15 +242,17 @@ function renderDetailSidebar(snapshot, activeEntry, game, storefrontDefinitions)
   `;
 }
 
-function renderDetailSectionRail() {
+function renderDetailSectionRail(isNonRunEntry) {
   const items = [
     { id: "detail-game-details", label: "Game Details" },
     { id: "detail-run-details", label: "Run Details" },
     { id: "detail-notes-section", label: "Notes" },
-    { id: "detail-progress", label: "Progress" },
     { id: "detail-screenshots", label: "Screenshots" },
     { id: "detail-maintenance", label: "Maintenance" }
   ];
+  if (!isNonRunEntry) {
+    items.splice(3, 0, { id: "detail-progress", label: "Progress" });
+  }
 
   return `
     <section data-surface-region="details-local-nav" class="checkpoint-panel rounded-xl px-4 py-3">
@@ -281,6 +287,7 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
   }
 
   const game = getGameForEntry(snapshot, activeEntry);
+  const isNonRunEntry = activeEntry.status === "wishlist" || activeEntry.status === "backlog";
   const coverArt = game?.capsuleArt ?? game?.heroArt ?? "";
   const heroBackdropArt = game?.heroArt ?? game?.capsuleArt ?? "";
   const screenshots = Array.isArray(game?.screenshots) ? game.screenshots.filter(hasUsableAsset) : [];
@@ -290,17 +297,17 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
     <div data-scroll-root="details" data-surface="details" class="pt-[8.75rem] md:pt-24 pb-12 flex-1 overflow-y-auto custom-scrollbar">
       <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-10">
         <section data-surface-region="details-hero">
-          ${renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions)}
+          ${renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions, isNonRunEntry)}
         </section>
-        ${renderDetailSectionRail()}
+        ${renderDetailSectionRail(isNonRunEntry)}
         <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 lg:gap-8">
           <div data-surface-region="details-secondary" class="xl:order-2">
             ${renderDetailSidebar(snapshot, activeEntry, game, storefrontDefinitions)}
           </div>
           <div data-surface-region="details-core" class="flex flex-col gap-8 xl:order-1">
-            ${renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions)}
+            ${renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions, isNonRunEntry)}
             ${renderDetailNotesPanel(snapshot)}
-            ${renderDetailProgressPanel(snapshot, activeEntry, statusDefinitions)}
+            ${isNonRunEntry ? "" : renderDetailProgressPanel(snapshot, activeEntry, statusDefinitions)}
             ${renderDetailMediaPanel(activeEntry, screenshots)}
             ${renderDetailMaintenancePanel(activeEntry)}
           </div>

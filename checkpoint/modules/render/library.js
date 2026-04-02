@@ -29,11 +29,15 @@ function renderCard(entry, game, storefrontDefinitions, statusDefinitions, cardC
         </div>
       </div>
       <div class="pt-3 px-1">
-        <p class="font-body text-xs text-zinc-400 truncate">${escapeHtml(entry.runLabel || "Main Save")}</p>
-        <div class="mt-1 flex items-center justify-between gap-3 text-xs font-body text-zinc-500">
-          <span>${entry.playtimeHours}h</span>
-          <span>${entry.completionPercent}%</span>
-        </div>
+        ${(entry.status === "wishlist" || entry.status === "backlog")
+          ? `<p class="font-body text-xs text-zinc-500 truncate">${entry.status === "wishlist" ? "Wishlist item" : "Backlog item"}</p>`
+          : `
+            <p class="font-body text-xs text-zinc-400 truncate">${escapeHtml(entry.runLabel || "Main Save")}</p>
+            <div class="mt-1 flex items-center justify-between gap-3 text-xs font-body text-zinc-500">
+              <span>${entry.playtimeHours}h</span>
+              <span>${entry.completionPercent}%</span>
+            </div>
+          `}
       </div>
     </button>
   `;
@@ -94,12 +98,8 @@ function renderLibraryStateBar(snapshot, statusDefinitions) {
 
   return `
     <section class="checkpoint-panel rounded-xl px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-wrap items-center gap-2 text-[11px]">
-          <span class="font-label tracking-[0.08em] text-primary">Library</span>
-          <span class="text-zinc-600">/</span>
-          <span class="font-body text-zinc-300">${escapeHtml(getStatusLabel(snapshot.activeStatus))}</span>
-        </div>
+      <div class="flex flex-col gap-1">
+        <p class="font-headline text-base font-bold text-on-surface">${escapeHtml(getStatusLabel(snapshot.activeStatus))}</p>
         <p class="text-sm text-on-surface-variant leading-relaxed">${escapeHtml(stateSummary)}</p>
       </div>
       <div class="flex items-center gap-3 self-start md:self-auto">

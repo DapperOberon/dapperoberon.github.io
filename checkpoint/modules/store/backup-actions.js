@@ -17,6 +17,18 @@ export function createBackupActions(ctx) {
     pruneCatalogToLibrary
   } = ctx;
 
+  function mergeHistoryById(currentItems, incomingItems, limit) {
+    const map = new Map();
+    [...(Array.isArray(incomingItems) ? incomingItems : []), ...(Array.isArray(currentItems) ? currentItems : [])]
+      .forEach((item) => {
+        if (!item || typeof item !== "object" || typeof item.id !== "string") return;
+        if (!map.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+    return Array.from(map.values()).slice(0, limit);
+  }
+
   function setImportMode(mode) {
     state.importMode = mode === "merge" ? "merge" : "replace";
     emit();
@@ -98,6 +110,12 @@ export function createBackupActions(ctx) {
     state.library = nextLibrary;
     state.catalog = pruneCatalogToLibrary(state.library, mergedCatalog);
     state.syncPreferences = state.importMode === "merge" ? state.syncPreferences : importedState.syncPreferences;
+    state.activityHistory = state.importMode === "merge"
+      ? mergeHistoryById(state.activityHistory, importedState.activityHistory, 24)
+      : (Array.isArray(importedState.activityHistory) ? importedState.activityHistory.slice(0, 24) : []);
+    state.syncHistory = state.importMode === "merge"
+      ? mergeHistoryById(state.syncHistory, importedState.syncHistory, 12)
+      : (Array.isArray(importedState.syncHistory) ? importedState.syncHistory.slice(0, 12) : []);
     state.syncMeta = importedState.syncMeta;
     state.uiPreferences = state.importMode === "merge"
       ? state.uiPreferences

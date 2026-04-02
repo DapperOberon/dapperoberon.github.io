@@ -20,7 +20,8 @@ export function createEnrichmentActions(ctx) {
     integrations,
     setActionState,
     getEntry,
-    getCatalogGame
+    getCatalogGame,
+    recordActivity
   } = ctx;
 
   function mergeProviderField(game, field, nextValue) {
@@ -267,6 +268,14 @@ export function createEnrichmentActions(ctx) {
         tone: refreshMessage.tone,
         message: refreshMessage.noticeMessage
       };
+      recordActivity({
+        category: "refresh",
+        action: "artwork",
+        scope: "entry",
+        title: entry.title,
+        message: refreshMessage.noticeMessage,
+        tone: refreshMessage.tone
+      });
       emit();
       return changed;
     } catch (error) {
@@ -278,6 +287,14 @@ export function createEnrichmentActions(ctx) {
         tone: "error",
         message: `${entry.title} artwork refresh failed.`
       };
+      recordActivity({
+        category: "refresh",
+        action: "artwork",
+        scope: "entry",
+        title: entry.title,
+        message: `${entry.title} artwork refresh failed.`,
+        tone: "error"
+      });
       emit();
       return false;
     }
@@ -318,6 +335,14 @@ export function createEnrichmentActions(ctx) {
         tone: refreshMessage.tone,
         message: refreshMessage.noticeMessage
       };
+      recordActivity({
+        category: "refresh",
+        action: "metadata",
+        scope: "entry",
+        title: entry.title,
+        message: refreshMessage.noticeMessage,
+        tone: refreshMessage.tone
+      });
       emit();
       return changed;
     } catch (error) {
@@ -329,6 +354,14 @@ export function createEnrichmentActions(ctx) {
         tone: "error",
         message: `${entry.title} metadata refresh failed.`
       };
+      recordActivity({
+        category: "refresh",
+        action: "metadata",
+        scope: "entry",
+        title: entry.title,
+        message: `${entry.title} metadata refresh failed.`,
+        tone: "error"
+      });
       emit();
       return false;
     }
@@ -389,6 +422,16 @@ export function createEnrichmentActions(ctx) {
         ? `Checkpoint refreshed artwork for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
         : "Artwork refresh finished. Existing artwork was retained."
     };
+    recordActivity({
+      category: "refresh",
+      action: "artwork",
+      scope: "library",
+      title: "",
+      message: refreshedCount > 0
+        ? `Library artwork refreshed for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
+        : "Library artwork refresh finished with no changes.",
+      tone: refreshedCount > 0 ? "success" : "info"
+    });
     emit();
     return true;
   }
@@ -451,6 +494,16 @@ export function createEnrichmentActions(ctx) {
         ? `Checkpoint refreshed metadata for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
         : "Metadata refresh finished. Existing metadata was retained."
     };
+    recordActivity({
+      category: "refresh",
+      action: "metadata",
+      scope: "library",
+      title: "",
+      message: refreshedCount > 0
+        ? `Library metadata refreshed for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
+        : "Library metadata refresh finished with no changes.",
+      tone: refreshedCount > 0 ? "success" : "info"
+    });
     emit();
     return true;
   }
@@ -470,11 +523,24 @@ export function createEnrichmentActions(ctx) {
       const hasOverride = Object.prototype.hasOwnProperty.call(overrides, field);
       if (!hasOverride) continue;
       const normalizedValue = normalizeOverrideValue(field, overrides[field]);
+      const providerSnapshot = field in providerValues ? providerValues[field] : game[field];
       if (!(field in providerValues)) {
-        providerValues[field] = game[field];
+        providerValues[field] = providerSnapshot;
       }
-      nextGame[field] = normalizedValue || providerValues[field] || game[field];
-      nextLockedFields.add(field);
+
+      if (!normalizedValue) {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+        continue;
+      }
+
+      if (nextLockedFields.has(field) || normalizedValue !== String(providerSnapshot ?? "")) {
+        nextGame[field] = normalizedValue;
+        nextLockedFields.add(field);
+      } else {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+      }
     }
 
     state.catalog = state.catalog.map((item) => (
@@ -509,11 +575,24 @@ export function createEnrichmentActions(ctx) {
       const hasOverride = Object.prototype.hasOwnProperty.call(overrides, field);
       if (!hasOverride) continue;
       const normalizedValue = normalizeOverrideValue(field, overrides[field]);
+      const providerSnapshot = field in providerValues ? providerValues[field] : game[field];
       if (!(field in providerValues)) {
-        providerValues[field] = game[field];
+        providerValues[field] = providerSnapshot;
       }
-      nextGame[field] = normalizedValue || providerValues[field] || game[field];
-      nextLockedFields.add(field);
+
+      if (!normalizedValue) {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+        continue;
+      }
+
+      if (nextLockedFields.has(field) || normalizedValue !== String(providerSnapshot ?? "")) {
+        nextGame[field] = normalizedValue;
+        nextLockedFields.add(field);
+      } else {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+      }
     }
 
     return normalizeCatalogGame({
@@ -523,7 +602,7 @@ export function createEnrichmentActions(ctx) {
     });
   }
 
-  function clearMetadataOverrides(entryId) {
+  async function clearMetadataOverrides(entryId) {
     const entry = getEntry(entryId);
     if (!entry) return false;
 
@@ -539,22 +618,47 @@ export function createEnrichmentActions(ctx) {
       }
     }
 
+    const unlockedGame = normalizeCatalogGame({
+      ...nextGame,
+      lockedFields: nextLockedFields
+    });
+
+    let finalGame = unlockedGame;
+    try {
+      const metadata = await integrations.metadataResolver.resolveGameMetadata({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: unlockedGame
+      });
+      finalGame = mergeMetadataIntoCatalogGame(unlockedGame, metadata, {
+        title: entry.title,
+        storefront: entry.storefront
+      });
+    } catch (error) {
+      // Keep unlocked provider snapshot if a refresh call fails.
+    }
+
     state.catalog = state.catalog.map((item) => (
       item.id === game.id
-        ? normalizeCatalogGame({
-            ...nextGame,
-            lockedFields: nextLockedFields
-          })
+        ? finalGame
         : item
     ));
     setActionState("metadata", {
       tone: "success",
-      message: `${entry.title} metadata overrides cleared.`
+      message: `${entry.title} metadata overrides cleared and refreshed.`
     });
     state.notice = {
       tone: "success",
-      message: `${entry.title} metadata overrides cleared.`
+      message: `${entry.title} metadata overrides cleared and metadata re-fetched.`
     };
+    recordActivity({
+      category: "refresh",
+      action: "metadata",
+      scope: "entry",
+      title: entry.title,
+      message: `${entry.title} metadata overrides were cleared and metadata was refreshed.`,
+      tone: "success"
+    });
     emit();
     return true;
   }
@@ -574,13 +678,43 @@ export function createEnrichmentActions(ctx) {
       const hasOverride = Object.prototype.hasOwnProperty.call(overrides, field);
       if (!hasOverride) continue;
       const normalizedValue = normalizeOverrideValue(field, overrides[field]);
+      const providerSnapshot = field in providerValues ? providerValues[field] : game[field];
       if (!(field in providerValues)) {
-        providerValues[field] = game[field];
+        providerValues[field] = providerSnapshot;
       }
-      nextGame[field] = field === "screenshots"
-        ? (normalizedValue.length ? normalizedValue : (providerValues[field] ?? game[field] ?? []))
-        : (normalizedValue || providerValues[field] || game[field]);
-      nextLockedFields.add(field);
+
+      if (field === "screenshots") {
+        const normalizedScreens = Array.isArray(normalizedValue) ? normalizedValue : [];
+        const providerScreens = Array.isArray(providerSnapshot) ? providerSnapshot : [];
+        if (!normalizedScreens.length) {
+          nextGame[field] = providerScreens;
+          nextLockedFields.delete(field);
+          continue;
+        }
+
+        if (nextLockedFields.has(field) || JSON.stringify(normalizedScreens) !== JSON.stringify(providerScreens)) {
+          nextGame[field] = normalizedScreens;
+          nextLockedFields.add(field);
+        } else {
+          nextGame[field] = providerScreens;
+          nextLockedFields.delete(field);
+        }
+        continue;
+      }
+
+      if (!normalizedValue) {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+        continue;
+      }
+
+      if (nextLockedFields.has(field) || normalizedValue !== String(providerSnapshot ?? "")) {
+        nextGame[field] = normalizedValue;
+        nextLockedFields.add(field);
+      } else {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+      }
     }
 
     state.catalog = state.catalog.map((item) => (
@@ -615,13 +749,43 @@ export function createEnrichmentActions(ctx) {
       const hasOverride = Object.prototype.hasOwnProperty.call(overrides, field);
       if (!hasOverride) continue;
       const normalizedValue = normalizeOverrideValue(field, overrides[field]);
+      const providerSnapshot = field in providerValues ? providerValues[field] : game[field];
       if (!(field in providerValues)) {
-        providerValues[field] = game[field];
+        providerValues[field] = providerSnapshot;
       }
-      nextGame[field] = field === "screenshots"
-        ? (normalizedValue.length ? normalizedValue : (providerValues[field] ?? game[field] ?? []))
-        : (normalizedValue || providerValues[field] || game[field]);
-      nextLockedFields.add(field);
+
+      if (field === "screenshots") {
+        const normalizedScreens = Array.isArray(normalizedValue) ? normalizedValue : [];
+        const providerScreens = Array.isArray(providerSnapshot) ? providerSnapshot : [];
+        if (!normalizedScreens.length) {
+          nextGame[field] = providerScreens;
+          nextLockedFields.delete(field);
+          continue;
+        }
+
+        if (nextLockedFields.has(field) || JSON.stringify(normalizedScreens) !== JSON.stringify(providerScreens)) {
+          nextGame[field] = normalizedScreens;
+          nextLockedFields.add(field);
+        } else {
+          nextGame[field] = providerScreens;
+          nextLockedFields.delete(field);
+        }
+        continue;
+      }
+
+      if (!normalizedValue) {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+        continue;
+      }
+
+      if (nextLockedFields.has(field) || normalizedValue !== String(providerSnapshot ?? "")) {
+        nextGame[field] = normalizedValue;
+        nextLockedFields.add(field);
+      } else {
+        nextGame[field] = providerSnapshot ?? game[field];
+        nextLockedFields.delete(field);
+      }
     }
 
     return normalizeCatalogGame({
@@ -631,7 +795,7 @@ export function createEnrichmentActions(ctx) {
     });
   }
 
-  function clearArtworkOverrides(entryId) {
+  async function clearArtworkOverrides(entryId) {
     const entry = getEntry(entryId);
     if (!entry) return false;
 
@@ -647,22 +811,44 @@ export function createEnrichmentActions(ctx) {
       }
     }
 
+    const unlockedGame = normalizeCatalogGame({
+      ...nextGame,
+      lockedFields: nextLockedFields
+    });
+
+    let finalGame = unlockedGame;
+    try {
+      const artwork = await integrations.steamGrid.resolveArtwork({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: unlockedGame
+      });
+      finalGame = mergeArtworkIntoCatalogGame(unlockedGame, artwork);
+    } catch (error) {
+      // Keep unlocked provider snapshot if a refresh call fails.
+    }
+
     state.catalog = state.catalog.map((item) => (
       item.id === game.id
-        ? normalizeCatalogGame({
-            ...nextGame,
-            lockedFields: nextLockedFields
-          })
+        ? finalGame
         : item
     ));
     setActionState("artwork", {
       tone: "success",
-      message: `${entry.title} artwork overrides cleared.`
+      message: `${entry.title} artwork overrides cleared and refreshed.`
     });
     state.notice = {
       tone: "success",
-      message: `${entry.title} artwork overrides cleared.`
+      message: `${entry.title} artwork overrides cleared and artwork re-fetched.`
     };
+    recordActivity({
+      category: "refresh",
+      action: "artwork",
+      scope: "entry",
+      title: entry.title,
+      message: `${entry.title} artwork overrides were cleared and artwork was refreshed.`,
+      tone: "success"
+    });
     emit();
     return true;
   }

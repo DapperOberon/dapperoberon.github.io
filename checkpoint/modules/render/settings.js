@@ -1,4 +1,5 @@
 import {
+  escapeHtml,
   formatRelative,
   renderActionMessage,
   renderPreference,
@@ -22,23 +23,143 @@ function renderScopedPrimaryAction(action, scope, dataAction) {
   `;
 }
 
-function renderSettingsSectionRail() {
-  const items = [
+function getSettingsRailItems() {
+  return [
     { id: "settings-sync-account", label: "Sync & Device" },
     { id: "settings-backup-restore", label: "Backup & Restore" },
-    { id: "settings-maintenance", label: "Maintenance" }
+    { id: "settings-maintenance", label: "Maintenance" },
+    { id: "settings-activity", label: "Activity" }
   ];
+}
+
+function renderSettingsSectionRail(items, activeSection, mode = "mobile") {
+  if (mode === "desktop") {
+    return `
+      <aside data-surface-region="settings-local-nav" class="hidden xl:block">
+        <div class="checkpoint-panel rounded-xl p-5 sticky top-36">
+          <p class="font-label text-[11px] tracking-[0.08em] text-primary mb-4">Settings Pages</p>
+          <nav class="flex flex-col gap-1">
+            ${items.map((item) => `
+              <button class="px-3 py-2 rounded-md font-label tracking-[0.08em] text-[11px] text-left transition-colors ${item.id === activeSection ? "bg-primary/10 text-primary" : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.03]"}" data-action="set-settings-section" data-section="${item.id}">
+                ${item.label}
+              </button>
+            `).join("")}
+          </nav>
+        </div>
+      </aside>
+    `;
+  }
 
   return `
-    <section data-surface-region="settings-local-nav" class="checkpoint-panel rounded-xl px-4 py-3 mb-8">
+    <section data-surface-region="settings-local-nav" class="checkpoint-panel rounded-xl px-4 py-3 mb-8 xl:hidden">
       <nav class="flex items-center gap-1 overflow-x-auto custom-scrollbar">
-        ${items.map((item) => `<a href="#${item.id}" class="px-3 py-2 whitespace-nowrap rounded-md font-label tracking-[0.08em] text-[11px] text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.03] transition-colors">${item.label}</a>`).join("")}
+        ${items.map((item) => `
+          <button class="px-3 py-2 whitespace-nowrap rounded-md font-label tracking-[0.08em] text-[11px] transition-colors ${item.id === activeSection ? "bg-primary/10 text-primary" : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.03]"}" data-action="set-settings-section" data-section="${item.id}">
+            ${item.label}
+          </button>
+        `).join("")}
       </nav>
     </section>
   `;
 }
 
+function renderSyncHistoryPanel(syncHistory) {
+  const entries = Array.isArray(syncHistory) ? syncHistory.slice(0, 6) : [];
+  if (!entries.length) {
+    return `
+      <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-3 xl:col-span-2">
+        <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary">Recent Sync Activity</h3>
+        <p class="text-sm text-zinc-500">No sync activity yet. Run Sync Now after connecting Drive to populate this history.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-4 xl:col-span-2">
+      <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary">Recent Sync Activity</h3>
+      <div class="space-y-2">
+        ${entries.map((entry) => `
+          <div class="rounded-lg bg-black/20 px-4 py-3 flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <p class="text-sm ${entry.ok ? "text-zinc-200" : "text-red-200"}">${escapeHtml(entry.message || "Sync event")}</p>
+              <p class="text-xs text-zinc-500 mt-1">${escapeHtml(entry.mode || "manual")}</p>
+            </div>
+            <p class="text-xs text-zinc-500 whitespace-nowrap">${escapeHtml(formatRelative(entry.timestamp))}</p>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderActivityPanel(activityHistory) {
+  const entries = Array.isArray(activityHistory) ? activityHistory.slice(0, 10) : [];
+  if (!entries.length) {
+    return `
+      <section id="settings-activity" data-surface-region="settings-activity" class="space-y-8 mt-10">
+        <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-3">
+          <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary">Recent Activity</h3>
+          <p class="text-sm text-zinc-500">No activity yet. Entry updates, refreshes, and sync actions will appear here.</p>
+        </div>
+      </section>
+    `;
+  }
+
+  const toneClasses = {
+    success: "text-emerald-100",
+    warning: "text-amber-100",
+    error: "text-red-200",
+    info: "text-zinc-200"
+  };
+
+  const actionLabels = {
+    added: "Added",
+    updated: "Updated",
+    deleted: "Deleted",
+    status: "Status Updated",
+    details: "Details Saved",
+    notes: "Notes Saved",
+    progress: "Progress Saved",
+    metadata: "Metadata Refresh",
+    artwork: "Artwork Refresh",
+    connect: "Drive Connected",
+    disconnect: "Drive Disconnected",
+    "sync-now": "Sync Now",
+    conflict: "Sync Conflict",
+    "restore-remote": "Restored from Drive",
+    "restore-local-snapshot": "Local Snapshot Restored"
+  };
+
+  return `
+    <section id="settings-activity" data-surface-region="settings-activity" class="space-y-8 mt-10">
+      <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-4">
+        <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary">Recent Activity</h3>
+        <div class="space-y-2">
+          ${entries.map((entry) => `
+            <div class="rounded-lg bg-black/20 px-4 py-3 flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-sm ${toneClasses[entry.tone] ?? toneClasses.info}">
+                  ${escapeHtml(entry.title ? `${entry.title}: ${entry.message || "Activity event"}` : (entry.message || "Activity event"))}
+                </p>
+                <p class="text-xs text-zinc-500 mt-1">
+                  ${escapeHtml(actionLabels[entry.action] || entry.action || "Updated")} • ${escapeHtml(entry.scope || "library")}
+                </p>
+              </div>
+              <p class="text-xs text-zinc-500 whitespace-nowrap">${escapeHtml(formatRelative(entry.timestamp))}</p>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 export function renderSettingsView(snapshot) {
+  const settingsRailItems = getSettingsRailItems();
+  const sectionIds = new Set(settingsRailItems.map((item) => item.id));
+  const activeSection = sectionIds.has(snapshot.uiPreferences?.settingsSection)
+    ? snapshot.uiPreferences.settingsSection
+    : settingsRailItems[0].id;
   const conflict = snapshot.syncStatus.syncConflict;
   const conflictPrefersRemote = conflict?.preferredResolution === "restore-remote";
   const conflictPrimaryAction = conflictPrefersRemote ? "restore-google-drive" : "keep-local-during-conflict";
@@ -53,10 +174,13 @@ export function renderSettingsView(snapshot) {
           <h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Sync, backup, and library maintenance.</h1>
           <p class="mt-3 text-on-surface-variant leading-relaxed">Manage Drive sync, backups, and refresh actions while keeping run tracking local-first.</p>
         </div>
-        ${renderSettingsSectionRail()}
+        <div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-8">
+          <div class="space-y-10">
+            ${renderSettingsSectionRail(settingsRailItems, activeSection, "mobile")}
+        ${activeSection === "settings-sync-account" ? `
         <section id="settings-sync-account" data-surface-region="settings-sync-account" class="space-y-8">
           <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div class="xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div class="xl:col-span-12 grid grid-cols-1 gap-8">
             <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-6">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -64,7 +188,7 @@ export function renderSettingsView(snapshot) {
                   <p class="text-sm text-zinc-500 mt-1">Connect your Google account and sync your full Checkpoint state.</p>
                 </div>
                 ${snapshot.syncStatus.driveConnected
-                  ? renderScopedPrimaryAction("Sync Now", "This Device", "mark-all-synced")
+                  ? renderScopedPrimaryAction("Sync Now", "This Device", "sync-now")
                   : renderScopedPrimaryAction("Connect Drive", "This Device", "connect-google-drive")}
               </div>
               <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500 leading-relaxed">
@@ -83,6 +207,7 @@ export function renderSettingsView(snapshot) {
                   ${renderPreference("Auto-backup on state change", "autoBackup", snapshot.syncPreferences.autoBackup)}
                   ${renderPreference("Include artwork payloads", "includeArtwork", snapshot.syncPreferences.includeArtwork)}
                   ${renderPreference("Include archive notes", "includeNotes", snapshot.syncPreferences.includeNotes)}
+                  ${renderPreference("Include activity history", "includeActivityHistory", snapshot.syncPreferences.includeActivityHistory)}
                 </div>
               </div>
               ${conflict ? `
@@ -116,38 +241,41 @@ export function renderSettingsView(snapshot) {
               ${snapshot.restorePointMeta
                 ? `<div class="rounded-lg bg-primary/6 px-4 py-3"><p class="font-label text-[11px] tracking-[0.08em] text-primary mb-2">Local Restore Safety Snapshot</p><div class="flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-400"><span>Saved ${formatRelative(snapshot.restorePointMeta.timestamp)} from ${snapshot.restorePointMeta.source}</span>${renderSecondaryAction("Restore Local Snapshot (This Device)", "restore-local-snapshot", "px-4 py-2 text-[11px] tracking-[0.12em]")}</div></div>`
                 : `<p class="text-xs text-zinc-500 leading-relaxed">Before a Drive restore runs, Checkpoint saves a local restore safety snapshot in this browser so you can roll back quickly.</p>`}
+              <div class="rounded-lg bg-black/20 px-4 py-4 flex flex-col gap-5">
+                <div class="flex flex-col gap-2">
+                  <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary">Current Device</h3>
+                  <p class="text-on-surface-variant leading-relaxed text-sm">Name this browser so sync and recovery choices are easier to read.</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-label text-[11px] tracking-[0.08em] text-zinc-500" for="device-label">Device Label</label>
+                  <div class="flex flex-col sm:flex-row gap-3">
+                    <input id="device-label" class="flex-1 bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${snapshot.syncStatus.currentDeviceLabel}">
+                    ${renderSecondaryAction("Save Label (This Device)", "save-device-label", "px-4 py-3 text-[11px] tracking-[0.12em] whitespace-nowrap")}
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-zinc-500">
+                  <div class="rounded-lg bg-black/20 px-4 py-4">
+                    <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-2">Current Device ID</p>
+                    <p class="font-headline font-bold text-on-surface break-all">${snapshot.syncStatus.currentDeviceId}</p>
+                  </div>
+                  <div class="rounded-lg bg-black/20 px-4 py-4">
+                    <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-2">Last Synced Device</p>
+                    <p class="font-headline font-bold text-on-surface">${snapshot.syncStatus.lastSyncedByDeviceLabel || "Not synced yet"}</p>
+                    <p class="mt-2 text-xs text-zinc-500">${snapshot.syncStatus.comparisonMode.replace("-", " ")}</p>
+                  </div>
+                </div>
+              </div>
               ${renderSettingsNotice(snapshot.actionState.sync)}
             </div>
-            <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
-              <div class="flex flex-col gap-2">
-                <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary">Current Device</h3>
-                <p class="text-on-surface-variant leading-relaxed text-sm">Name this browser so sync and recovery choices are easier to read.</p>
-              </div>
-              <div class="space-y-2">
-                <label class="font-label text-[11px] tracking-[0.08em] text-zinc-500" for="device-label">Device Label</label>
-                <div class="flex flex-col sm:flex-row gap-3">
-                  <input id="device-label" class="flex-1 bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="text" value="${snapshot.syncStatus.currentDeviceLabel}">
-                  ${renderSecondaryAction("Save Label (This Device)", "save-device-label", "px-4 py-3 text-[11px] tracking-[0.12em] whitespace-nowrap")}
-                </div>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-zinc-500">
-                <div class="rounded-lg bg-black/20 px-4 py-4">
-                  <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-2">Current Device ID</p>
-                  <p class="font-headline font-bold text-on-surface break-all">${snapshot.syncStatus.currentDeviceId}</p>
-                </div>
-                <div class="rounded-lg bg-black/20 px-4 py-4">
-                  <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-2">Last Synced Device</p>
-                  <p class="font-headline font-bold text-on-surface">${snapshot.syncStatus.lastSyncedByDeviceLabel || "Not synced yet"}</p>
-                  <p class="mt-2 text-xs text-zinc-500">${snapshot.syncStatus.comparisonMode.replace("-", " ")}</p>
-                </div>
-              </div>
-            </div>
+            ${renderSyncHistoryPanel(snapshot.syncHistory)}
             </div>
           </div>
         </section>
+        ` : ""}
+        ${activeSection === "settings-backup-restore" ? `
         <section id="settings-backup-restore" data-surface-region="settings-backup-restore" class="space-y-8 mt-10">
           <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div class="xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div class="xl:col-span-12 grid grid-cols-1 gap-8">
               <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
@@ -178,13 +306,14 @@ export function renderSettingsView(snapshot) {
             </div>
           </div>
         </section>
+        ` : ""}
+        ${activeSection === "settings-maintenance" ? `
         <section id="settings-maintenance" data-surface-region="settings-maintenance" class="space-y-8 mt-10">
           <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div class="xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div class="xl:col-span-12 grid grid-cols-1 gap-8">
               <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <p class="font-label tracking-[0.08em] text-[11px] text-primary mb-2">Maintenance</p>
                     <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary mb-2">Metadata Refresh</h3>
                     <p class="text-on-surface-variant leading-relaxed text-sm">Library-wide metadata and artwork refresh actions live here.</p>
                   </div>
@@ -199,7 +328,7 @@ export function renderSettingsView(snapshot) {
                     <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary mb-2">Artwork Refresh</h3>
                     <p class="text-on-surface-variant leading-relaxed text-sm">Refresh artwork for every tracked title in your library.</p>
                   </div>
-                  ${renderSecondaryAction("Refresh Artwork (Library-wide)", "refresh-library-artwork", "px-5 py-3 text-[11px] tracking-[0.08em] whitespace-nowrap")}
+                  ${renderScopedPrimaryAction("Refresh Artwork", "Library-wide", "refresh-library-artwork")}
                 </div>
                 <p class="text-xs text-zinc-500">Refreshes artwork for tracked titles without exposing secrets in the browser.</p>
                 ${renderSettingsNotice(snapshot.actionState.artwork)}
@@ -207,6 +336,11 @@ export function renderSettingsView(snapshot) {
             </div>
           </div>
         </section>
+        ` : ""}
+        ${activeSection === "settings-activity" ? renderActivityPanel(snapshot.activityHistory) : ""}
+          </div>
+          ${renderSettingsSectionRail(settingsRailItems, activeSection, "desktop")}
+        </div>
       </div>
     </main>
   `;

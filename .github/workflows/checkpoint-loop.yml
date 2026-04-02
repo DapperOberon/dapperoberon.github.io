@@ -1,0 +1,43 @@
+name: Checkpoint Loop
+
+on:
+  push:
+    paths:
+      - "checkpoint/**"
+      - ".github/workflows/checkpoint-loop.yml"
+  pull_request:
+    paths:
+      - "checkpoint/**"
+      - ".github/workflows/checkpoint-loop.yml"
+  workflow_dispatch:
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: checkpoint/package-lock.json
+
+      - name: Install Checkpoint Dependencies
+        working-directory: checkpoint
+        run: npm ci
+
+      - name: Run Self-Tightening Loop
+        run: node checkpoint/scripts/loop_cycle.mjs
+
+      - name: Upload Loop Observability Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint-loop-observability
+          path: |
+            checkpoint/observability/latest-loop.json
+            checkpoint/observability/latest-loop.md
+            checkpoint/AGENT_LOOP_TASKS.md

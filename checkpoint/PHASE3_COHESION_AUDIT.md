@@ -36,9 +36,9 @@ Goal: convert drift into a concrete, prioritized todo backlog.
 - Files:
   - [entry-actions.js](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/checkpoint/modules/store/entry-actions.js)
 
-3. Action naming is inconsistent with user intent.
+3. Action naming was inconsistent with user intent.
 - Evidence:
-  - UI button label is `Sync Now`; event action is `mark-all-synced`.
+  - Previously, UI button label was `Sync Now` while event action was `mark-all-synced`.
 - Impact:
   - Increases cognitive overhead during maintenance.
   - Harder to follow intent through render → store.
@@ -49,23 +49,23 @@ Goal: convert drift into a concrete, prioritized todo backlog.
 
 ## Medium Priority
 
-4. Sync history model exists but has no current UI surface.
+4. Sync history model existed without a current UI surface (resolved).
 - Evidence:
   - `state.syncHistory` is populated.
-  - `renderSyncHistory()` exists but is unused.
+  - A compact `Recent Sync Activity` surface is now present in Settings.
 - Impact:
-  - Feature appears partially implemented.
-  - History capture cost without user value.
+  - Previously looked partially implemented.
+  - Now provides user-facing value for sync traceability.
 - Files:
   - [store.js](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/checkpoint/modules/store.js)
   - [drive-sync-actions.js](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/checkpoint/modules/store/drive-sync-actions.js)
   - [shared.js](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/checkpoint/modules/render/shared.js)
 
-5. Action state contains an unused channel.
+5. Action state contained an unused channel (resolved).
 - Evidence:
-  - `actionState.integrations` is initialized but not used by settings or flows.
+  - `actionState.integrations` was initialized but unused.
 - Impact:
-  - Dead state branch and mental noise.
+  - Previously added dead-state noise; now removed.
 - Files:
   - [store.js](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/checkpoint/modules/store.js)
 
@@ -109,26 +109,26 @@ Goal: convert drift into a concrete, prioritized todo backlog.
 
 ## Priority 1: Behavioral Cohesion
 
-- [ ] Implement payload filtering for `includeArtwork` and `includeNotes` in sync/export paths.
-- [ ] Add unit/integration verification that each sync preference changes payload content as expected.
-- [ ] Guard `togglePreference` with an explicit allowlist: `autoBackup`, `includeArtwork`, `includeNotes`.
-- [ ] Rename sync action/event path from `mark-all-synced` to `sync-now` (UI label aligned).
-- [ ] Update docs to explicitly describe what each sync preference includes/excludes.
+- [x] Implement payload filtering for `includeArtwork` and `includeNotes` in sync/export paths.
+- [x] Add unit/integration verification that each sync preference changes payload content as expected.
+- [x] Guard `togglePreference` with an explicit allowlist: `autoBackup`, `includeArtwork`, `includeNotes`.
+- [x] Rename sync action/event path from `mark-all-synced` to `sync-now` (UI label aligned).
+- [x] Update docs to explicitly describe what each sync preference includes/excludes.
 
 ## Priority 2: State and Surface Cohesion
 
-- [ ] Decide on `syncHistory` product status:
+- [x] Decide on `syncHistory` product status:
 - If keeping: add a compact settings surface for recent sync events.
 - If deferring: stop collecting history and remove dead renderer helper.
-- [ ] Remove unused `actionState.integrations` or wire it to real UI messaging.
-- [ ] Finish detail-page typography normalization in metadata/artwork forms.
-- [ ] Recheck and optionally trim library state-bar density after current UI simplification.
+- [x] Remove unused `actionState.integrations` or wire it to real UI messaging.
+- [x] Finish detail-page typography normalization in metadata/artwork forms.
+- [x] Recheck and optionally trim library state-bar density after current UI simplification.
 
 ## Priority 3: Hardening Cohesion
 
-- [ ] Replace Tailwind CDN runtime with a build-time CSS pipeline.
-- [ ] Add a config preflight script that reports missing/invalid runtime config in one place.
-- [ ] Expand smoke tests to validate sync preference semantics and conflict-resolution branches.
+- [x] Replace Tailwind CDN runtime with a build-time CSS pipeline.
+- [x] Add a config preflight script that reports missing/invalid runtime config in one place.
+- [x] Expand smoke tests to validate sync preference semantics and conflict-resolution branches.
 
 ## Suggested Execution Order
 

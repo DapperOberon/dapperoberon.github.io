@@ -101,6 +101,8 @@ function getDetailDraftValues(app) {
 function getAddDraftValues(app) {
   return {
     runLabel: app.querySelector("#add-run-label")?.value ?? "",
+    playtimeHours: app.querySelector("#add-playtime-hours")?.value ?? "",
+    completionPercent: app.querySelector("#add-completion-percent")?.value ?? "",
     notes: app.querySelector("#add-notes")?.value ?? ""
   };
 }
@@ -235,6 +237,9 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "set-view":
           store.setView(actionElement.dataset.view);
           break;
+        case "set-settings-section":
+          store.setSettingsSection(actionElement.dataset.section);
+          break;
         case "filter-status":
           store.setActiveStatus(actionElement.dataset.status);
           break;
@@ -296,8 +301,8 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "toggle-preference":
           store.togglePreference(actionElement.dataset.key);
           break;
-        case "mark-all-synced":
-          await store.markAllSynced();
+        case "sync-now":
+          await store.syncNow();
           break;
         case "connect-google-drive":
           await store.connectGoogleDrive();
@@ -382,13 +387,13 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           store.saveMetadataOverrides(actionElement.dataset.entryId, getOverrideDraftValues(app).metadata);
           break;
         case "clear-metadata-overrides":
-          store.clearMetadataOverrides(actionElement.dataset.entryId);
+          await store.clearMetadataOverrides(actionElement.dataset.entryId);
           break;
         case "save-artwork-overrides":
           store.saveArtworkOverrides(actionElement.dataset.entryId, getOverrideDraftValues(app).artwork);
           break;
         case "clear-artwork-overrides":
-          store.clearArtworkOverrides(actionElement.dataset.entryId);
+          await store.clearArtworkOverrides(actionElement.dataset.entryId);
           break;
         default:
           break;
@@ -434,6 +439,34 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           addSearchDebounceTimer = null;
           store.searchAddCatalog(target.value);
         }, 900);
+        return;
+      }
+
+      if (target.id === "add-run-label") {
+        store.updateAddForm({
+          runLabel: target.value
+        });
+        return;
+      }
+
+      if (target.id === "add-notes") {
+        store.updateAddForm({
+          notes: target.value
+        });
+        return;
+      }
+
+      if (target.id === "add-playtime-hours") {
+        store.updateAddForm({
+          playtimeHours: target.value
+        });
+        return;
+      }
+
+      if (target.id === "add-completion-percent") {
+        store.updateAddForm({
+          completionPercent: target.value
+        });
       }
     };
 

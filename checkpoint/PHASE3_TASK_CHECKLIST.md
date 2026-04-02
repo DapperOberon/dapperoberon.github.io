@@ -34,16 +34,19 @@ This checklist translates the Phase 3 plan into concrete implementation work.
 
 ## Phase 3E: Activity and History
 
-- [ ] Add a lightweight activity log model.
-- [ ] Capture entry changes, sync actions, and refresh actions in history.
-- [ ] Add a restrained UI surface for recent activity.
+- [x] Add a lightweight activity log model.
+- [x] Capture entry changes, sync actions, and refresh actions in history.
+- [x] Add a restrained UI surface for recent activity.
 
 ## Phase 3F: Hardening and Release Prep
 
-- [ ] Document the full deployment checklist.
-- [ ] Add config completeness verification for required runtime values.
-- [ ] Update QA coverage for multi-device and override flows.
-- [ ] Run final Phase 3 smoke and manual QA.
+- [x] Document the full deployment checklist.
+- [x] Add config completeness verification for required runtime values.
+- [x] Update QA coverage for multi-device and override flows.
+- [x] Implement a self-tightening engineering loop (`agent -> rules -> CI -> observability -> tasks -> agent`).
+- [x] Run final Phase 3 smoke and manual QA.
+  - [x] Smoke pass executed (`2026-04-02`): `bash checkpoint/scripts/smoke_test.sh`
+  - [x] Manual browser QA pass + production-origin verification
 
 ## Phase 3G: UI Streamlining and Design Alignment
 
@@ -58,9 +61,9 @@ This checklist translates the Phase 3 plan into concrete implementation work.
 
 - [x] Run an exhaustive cohesion audit across UI, state/actions, schema, integrations, and docs.
 - [x] Convert audit findings into prioritized actionable todos.
-- [ ] Execute Priority 1 behavioral cohesion fixes from the audit backlog.
-- [ ] Execute Priority 2 state/surface cohesion fixes from the audit backlog.
-- [ ] Execute Priority 3 hardening cohesion fixes from the audit backlog.
+- [x] Execute Priority 1 behavioral cohesion fixes from the audit backlog.
+- [x] Execute Priority 2 state/surface cohesion fixes from the audit backlog.
+- [x] Execute Priority 3 hardening cohesion fixes from the audit backlog.
 
 ## Phase 3I: Backloggd Reference Alignment (Layout + Feature Set)
 
@@ -74,18 +77,18 @@ This checklist translates the Phase 3 plan into concrete implementation work.
 
 ## Phase 3J: Add Flow Rework (IGDB Search -> Log)
 
-- [ ] Replace current add modal first step with a search-first experience.
-- [ ] Integrate IGDB match search via Worker-backed endpoint.
-- [ ] Show selectable candidate list with key context (title/year/cover/platforms where available).
-- [ ] Transition selected result into a compact run-log/edit step in the same modal flow.
-- [ ] Include run-level fields in log step (status, run label, playtime, completion, notes).
-- [ ] Add explicit manual/custom fallback when no result is suitable.
-- [ ] Keep “switch to manual” available after selecting an IGDB match.
-- [ ] Preserve existing validation and duplicate-entry warnings across both IGDB and manual paths.
-- [ ] Add smoke-test coverage for IGDB add path and manual fallback path.
+- [x] Replace current add modal first step with a search-first experience.
+- [x] Integrate IGDB match search via Worker-backed endpoint.
+- [x] Show selectable candidate list with key context (title/year/cover/platforms where available).
+- [x] Transition selected result into a compact run-log/edit step in the same modal flow.
+- [x] Include run-level fields in log step (status, run label, playtime, completion, notes).
+- [x] Add explicit manual/custom fallback when no result is suitable.
+- [x] Keep “switch to manual” available after selecting an IGDB match.
+- [x] Preserve existing validation and duplicate-entry warnings across both IGDB and manual paths.
+- [x] Add smoke-test coverage for IGDB add path and manual fallback path.
 
 ## Phase 3K: Full UI Design Compliance
 
-- [ ] Execute the full design compliance backlog in `PHASE3_DESIGN_COMPLIANCE_TODOS.md`.
-- [ ] Bring Library, Details, Settings, and Activity into template-driven surface compliance.
+- [x] Execute the full design compliance backlog in `PHASE3_DESIGN_COMPLIANCE_TODOS.md`.
+- [x] Bring Library, Details, Settings, and Activity into template-driven surface compliance.
 - [x] Complete system-wide visual cohesion validation and archive final audit artifacts.

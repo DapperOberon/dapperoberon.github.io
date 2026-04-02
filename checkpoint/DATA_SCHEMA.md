@@ -435,13 +435,21 @@ Shape:
 ### Field Definitions
 
 - `autoBackup`
-  Whether future sync/export flows should prefer automatic backups.
+  Whether Drive auto-backup should run when local state changes and no conflict is active.
 
 - `includeArtwork`
-  Whether artwork references should be included in backup payloads.
+  Whether Drive sync payloads should include catalog artwork fields.
+  When `false`, synced payloads omit:
+  - `heroArt`
+  - `capsuleArt`
+  - `screenshots`
+  - `steamGridSlug`
+  Local device data remains unchanged; this only affects outgoing sync payload content.
 
 - `includeNotes`
-  Whether user notes should be included in backup payloads.
+  Whether Drive sync payloads should include library entry `notes`.
+  When `false`, outgoing synced entries send `notes: ""`.
+  Local device notes remain unchanged; this only affects outgoing sync payload content.
 
 ---
 

@@ -17,7 +17,8 @@ export function createEntryActions(ctx) {
     mergeMetadataIntoCatalogGame,
     buildEntrySaveFeedback,
     applyMetadataOverridesToGame,
-    applyArtworkOverridesToGame
+    applyArtworkOverridesToGame,
+    recordActivity
   } = ctx;
 
   function selectEntry(entryId) {
@@ -203,12 +204,18 @@ export function createEntryActions(ctx) {
 
     const draftRunLabel = typeof draft.runLabel === "string" ? draft.runLabel : state.addForm.runLabel;
     const draftNotes = typeof draft.notes === "string" ? draft.notes : state.addForm.notes;
+    const draftPlaytimeHours = typeof draft.playtimeHours === "string" ? draft.playtimeHours : String(state.addForm.playtimeHours ?? "0");
+    const draftCompletionPercent = typeof draft.completionPercent === "string" ? draft.completionPercent : String(state.addForm.completionPercent ?? "0");
     const previousRunLabel = state.addForm.runLabel;
     const previousNotes = state.addForm.notes;
+    const previousPlaytimeHours = state.addForm.playtimeHours;
+    const previousCompletionPercent = state.addForm.completionPercent;
     state.addForm = {
       ...state.addForm,
       runLabel: draftRunLabel,
-      notes: draftNotes
+      notes: draftNotes,
+      playtimeHours: draftPlaytimeHours,
+      completionPercent: draftCompletionPercent
     };
 
     const validation = getAddFormValidation();
@@ -216,7 +223,9 @@ export function createEntryActions(ctx) {
       state.addForm = {
         ...state.addForm,
         runLabel: previousRunLabel,
-        notes: previousNotes
+        notes: previousNotes,
+        playtimeHours: previousPlaytimeHours,
+        completionPercent: previousCompletionPercent
       };
       state.addFormFeedback = {
         tone: "error",
@@ -226,7 +235,14 @@ export function createEntryActions(ctx) {
       return;
     }
 
-    const { title, storefront, status, runLabel } = validation.normalized;
+    const {
+      title,
+      storefront,
+      status,
+      runLabel,
+      playtimeHours,
+      completionPercent
+    } = validation.normalized;
     state.isAddFormSubmitting = true;
     state.addFormFeedback = {
       tone: "info",
@@ -288,10 +304,10 @@ export function createEntryActions(ctx) {
         runLabel,
         addedAt: existingEntry?.addedAt ?? now,
         updatedAt: now,
-        playtimeHours: existingEntry?.playtimeHours ?? 0,
+        playtimeHours: existingEntry?.playtimeHours ?? playtimeHours,
         completionPercent: existingEntry
           ? (status === "finished" ? Math.max(existingEntry.completionPercent, 100) : existingEntry.completionPercent)
-          : (status === "finished" ? 100 : 0),
+          : (status === "finished" ? 100 : completionPercent),
         personalRating: existingEntry?.personalRating ?? null,
         notes: state.addForm.notes.trim() || "Freshly added to Checkpoint. Ready for notes, milestones, and sync metadata.",
         spotlight: existingEntry?.spotlight ?? "New intake",
@@ -312,6 +328,14 @@ export function createEntryActions(ctx) {
         artwork,
         isEditing: Boolean(existingEntry)
       });
+      recordActivity({
+        category: "entry",
+        action: existingEntry ? "updated" : "added",
+        scope: "entry",
+        title: entry.title,
+        message: existingEntry ? "Entry details were updated." : "Entry was added to the library.",
+        tone: saveFeedback.tone
+      });
       state.notice = {
         tone: saveFeedback.tone,
         message: saveFeedback.notice
@@ -326,7 +350,9 @@ export function createEntryActions(ctx) {
       state.addForm = {
         ...state.addForm,
         runLabel: draftRunLabel,
-        notes: draftNotes
+        notes: draftNotes,
+        playtimeHours: draftPlaytimeHours,
+        completionPercent: draftCompletionPercent
       };
       state.isAddFormSubmitting = false;
       state.addFormFeedback = {
@@ -345,6 +371,7 @@ export function createEntryActions(ctx) {
   function confirmDeleteEntry() {
     const targetEntryId = state.pendingDeleteEntryId;
     if (!targetEntryId) return;
+    const removedEntry = getEntry(targetEntryId);
 
     state.library = state.library.filter((entry) => entry.entryId !== targetEntryId);
     state.catalog = pruneCatalogToLibrary(state.library, state.catalog);
@@ -364,6 +391,14 @@ export function createEntryActions(ctx) {
     state.currentView = "dashboard";
     state.uiPreferences.lastView = "dashboard";
     state.pendingDeleteEntryId = null;
+    recordActivity({
+      category: "entry",
+      action: "deleted",
+      scope: "entry",
+      title: removedEntry?.title ?? "",
+      message: removedEntry?.title ? `${removedEntry.title} was removed from the library.` : "Entry was removed from the library.",
+      tone: "warning"
+    });
     state.notice = {
       tone: "success",
       message: "Entry removed from your library."
@@ -403,6 +438,14 @@ export function createEntryActions(ctx) {
     }
 
     const statusLabel = statusDefinitions.find((item) => item.id === status)?.label ?? status;
+    recordActivity({
+      category: "entry",
+      action: "status",
+      scope: "entry",
+      title: existingEntry.title,
+      message: `Status changed to ${statusLabel}.`,
+      tone: "success"
+    });
     state.notice = {
       tone: "success",
       message: `${existingEntry.title} moved to ${statusLabel.toLowerCase()}.`
@@ -462,6 +505,14 @@ export function createEntryActions(ctx) {
     state.catalog = pruneCatalogToLibrary(state.library, state.catalog);
     state.detailForm = createDetailForm(updatedEntry);
     state.isDetailEditMode = false;
+    recordActivity({
+      category: "entry",
+      action: "details",
+      scope: "entry",
+      title: updatedEntry.title,
+      message: "Run details and overrides were saved.",
+      tone: "success"
+    });
     state.notice = {
       tone: "success",
       message: `${updatedEntry.title} details saved.`
@@ -487,6 +538,14 @@ export function createEntryActions(ctx) {
       .sort(sortByUpdatedAtDesc);
     state.catalog = pruneCatalogToLibrary(state.library, state.catalog);
     state.detailForm = createDetailForm(updatedEntry);
+    recordActivity({
+      category: "entry",
+      action: "notes",
+      scope: "entry",
+      title: updatedEntry.title,
+      message: "Run notes were updated.",
+      tone: "success"
+    });
     state.notice = {
       tone: "success",
       message: `${updatedEntry.title} notes saved.`
@@ -523,6 +582,14 @@ export function createEntryActions(ctx) {
       .sort(sortByUpdatedAtDesc);
     state.catalog = pruneCatalogToLibrary(state.library, state.catalog);
     state.detailForm = createDetailForm(updatedEntry);
+    recordActivity({
+      category: "entry",
+      action: "progress",
+      scope: "entry",
+      title: updatedEntry.title,
+      message: `Progress saved (${updatedEntry.playtimeHours}h, ${updatedEntry.completionPercent}%).`,
+      tone: "success"
+    });
     state.notice = {
       tone: "success",
       message: `${updatedEntry.title} progress updated.`
@@ -531,6 +598,8 @@ export function createEntryActions(ctx) {
   }
 
   function togglePreference(key) {
+    const allowedPreferenceKeys = new Set(["autoBackup", "includeArtwork", "includeNotes", "includeActivityHistory"]);
+    if (!allowedPreferenceKeys.has(key)) return;
     state.syncPreferences[key] = !state.syncPreferences[key];
     emit();
   }

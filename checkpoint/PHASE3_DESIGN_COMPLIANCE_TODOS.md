@@ -27,7 +27,7 @@ Definition of done:
 - [x] Library: enforce fixed region order (nav/search/actions -> state/filter row -> content shelves/grid).
 - [x] Details: enforce fixed region order (hero -> quick actions -> run details/progress/notes -> metadata/artwork/maintenance).
 - [x] Settings: enforce fixed region order (sync/account controls -> backup/restore -> maintenance/system actions).
-- [ ] Activity: define and enforce a single timeline/list template before implementation.
+- [x] Activity: define and enforce a single timeline/list template before implementation.
 
 Definition of done:
 - No ad-hoc one-off panel placements remain on core pages.
