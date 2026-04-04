@@ -72,7 +72,7 @@ function normalizeSyncHistory(history) {
     .slice(0, 12);
 }
 
-export const APP_STATE_SCHEMA_VERSION = 5;
+export const APP_STATE_SCHEMA_VERSION = 8;
 
 export function pruneCatalogToLibrary(library, catalog) {
   const referencedGameIds = new Set(
@@ -97,7 +97,9 @@ export function createInitialPersistedState({ initialLibrary, initialCatalog }) 
       autoBackup: true,
       includeArtwork: true,
       includeNotes: true,
-      includeActivityHistory: true
+      includeActivityHistory: true,
+      itadPreferredStorefront: "steam",
+      itadSelectedStoreIds: []
     },
     activityHistory: [],
     syncHistory: [],
@@ -114,11 +116,21 @@ export function createInitialPersistedState({ initialLibrary, initialCatalog }) 
 
 function normalizeSyncPreferences(syncPreferences) {
   const source = isRecord(syncPreferences) ? syncPreferences : {};
+  const preferredStorefront = typeof source.itadPreferredStorefront === "string" && source.itadPreferredStorefront.trim()
+    ? source.itadPreferredStorefront.trim()
+    : "steam";
+  const itadSelectedStoreIds = Array.isArray(source.itadSelectedStoreIds)
+    ? source.itadSelectedStoreIds
+      .map((value) => String(value ?? "").trim())
+      .filter((value) => /^\d+$/.test(value))
+    : [];
   return {
     autoBackup: source.autoBackup !== false,
     includeArtwork: source.includeArtwork !== false,
     includeNotes: source.includeNotes !== false,
-    includeActivityHistory: source.includeActivityHistory !== false
+    includeActivityHistory: source.includeActivityHistory !== false,
+    itadPreferredStorefront: preferredStorefront,
+    itadSelectedStoreIds
   };
 }
 
@@ -189,6 +201,54 @@ export function normalizePersistedState(rawState, { initialLibrary, initialCatal
   }
 
   if (rawState.schemaVersion === 4 && Array.isArray(rawState.library)) {
+    const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
+    const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
+    return {
+      ...initialState,
+      library,
+      catalog: pruneCatalogToLibrary(library, catalog),
+      syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      activityHistory: normalizeActivityHistory(rawState.activityHistory),
+      syncHistory: normalizeSyncHistory(rawState.syncHistory),
+      uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
+      deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+      syncMeta: normalizeSyncMeta(rawState.syncMeta)
+    };
+  }
+
+  if (rawState.schemaVersion === 5 && Array.isArray(rawState.library)) {
+    const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
+    const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
+    return {
+      ...initialState,
+      library,
+      catalog: pruneCatalogToLibrary(library, catalog),
+      syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      activityHistory: normalizeActivityHistory(rawState.activityHistory),
+      syncHistory: normalizeSyncHistory(rawState.syncHistory),
+      uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
+      deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+      syncMeta: normalizeSyncMeta(rawState.syncMeta)
+    };
+  }
+
+  if (rawState.schemaVersion === 6 && Array.isArray(rawState.library)) {
+    const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
+    const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
+    return {
+      ...initialState,
+      library,
+      catalog: pruneCatalogToLibrary(library, catalog),
+      syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      activityHistory: normalizeActivityHistory(rawState.activityHistory),
+      syncHistory: normalizeSyncHistory(rawState.syncHistory),
+      uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
+      deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+      syncMeta: normalizeSyncMeta(rawState.syncMeta)
+    };
+  }
+
+  if (rawState.schemaVersion === 7 && Array.isArray(rawState.library)) {
     const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
     const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
     return {

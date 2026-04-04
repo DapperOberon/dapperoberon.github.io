@@ -1,6 +1,6 @@
 import { renderDetailsView } from "./render/details.js";
 import { renderDashboardView, renderSidebar, renderTopbar } from "./render/library.js";
-import { renderAddModal, renderDeleteConfirmModal, renderGlobalNotice } from "./render/overlays.js";
+import { renderAddModal, renderDeleteConfirmModal, renderGlobalNotice, renderMediaLightbox } from "./render/overlays.js";
 import { renderSettingsView } from "./render/settings.js";
 
 function captureFocusState(app) {
@@ -34,7 +34,16 @@ function restoreFocusState(app, focusState) {
 }
 
 function captureScrollState(app) {
-  return Array.from(app.querySelectorAll("[data-scroll-root]")).map((element) => ({
+  const legacyRoots = Array.from(app.querySelectorAll("[data-scroll-root]"));
+  if (!legacyRoots.length) {
+    return [{
+      key: "__document__",
+      top: globalThis.scrollY ?? 0,
+      left: globalThis.scrollX ?? 0
+    }];
+  }
+
+  return legacyRoots.map((element) => ({
     key: element.dataset.scrollRoot,
     top: element.scrollTop,
     left: element.scrollLeft
@@ -44,6 +53,12 @@ function captureScrollState(app) {
 function restoreScrollState(app, scrollState) {
   if (!Array.isArray(scrollState) || !scrollState.length) return;
 
+  const documentState = scrollState.find((item) => item?.key === "__document__");
+  if (documentState) {
+    globalThis.scrollTo?.(documentState.left ?? 0, documentState.top ?? 0);
+    return;
+  }
+
   scrollState.forEach((item) => {
     if (!item?.key) return;
     const nextElement = app.querySelector(`[data-scroll-root="${item.key}"]`);
@@ -51,6 +66,27 @@ function restoreScrollState(app, scrollState) {
     nextElement.scrollTop = item.top ?? 0;
     nextElement.scrollLeft = item.left ?? 0;
   });
+}
+
+function getDetailContextKey(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return "";
+
+  if (snapshot.currentView === "details") {
+    const surface = String(snapshot.uiPreferences?.lastView || "library");
+    const entryId = String(snapshot.activeEntryId || "");
+    return `details:${surface}:${entryId}`;
+  }
+
+  if (snapshot.currentView === "discover") {
+    const selectedId = String(
+      snapshot.addForm?.selectedSearchResult?.igdbId
+      || snapshot.addForm?.selectedSearchResult?.id
+      || ""
+    ).trim();
+    if (selectedId) return `discover:${selectedId}`;
+  }
+
+  return "";
 }
 
 function getFocusableElements(container) {
@@ -78,6 +114,194 @@ function trapTabKey(container, event) {
   }
 }
 
+function enforceModalFocus(app, modalSelector, fallbackSelector) {
+  const modalRoot = app.querySelector(modalSelector);
+  if (!modalRoot) return;
+
+  const activeElement = document.activeElement;
+  if (activeElement && modalRoot.contains(activeElement)) return;
+
+  const fallbackTarget = app.querySelector(fallbackSelector) || getFocusableElements(modalRoot)[0];
+  fallbackTarget?.focus?.({ preventScroll: true });
+}
+
+function getDiscoverScreenshotCarousel(app) {
+  return app.querySelector("#discover-screenshot-carousel");
+}
+
+function getDiscoverScreenshotThumbButtons(app) {
+  return Array.from(app.querySelectorAll("[data-action='discover-screenshot-jump']"));
+}
+
+function getDiscoverScreenshotCurrentIndex(app) {
+  const carousel = getDiscoverScreenshotCarousel(app);
+  if (!carousel) return 0;
+  const raw = Number(carousel.dataset.screenshotIndex || 0);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 0;
+}
+
+function setDiscoverScreenshotIndex(app, index) {
+  const carousel = getDiscoverScreenshotCarousel(app);
+  const image = app.querySelector("#discover-screenshot-image");
+  const thumbs = getDiscoverScreenshotThumbButtons(app);
+  if (!carousel || !image || !thumbs.length) return;
+
+  const clamped = Math.max(0, Math.min(index, thumbs.length - 1));
+  const targetThumb = thumbs[clamped];
+  const nextSrc = String(targetThumb.dataset.screenshotUrl || "");
+  const nextAlt = String(targetThumb.dataset.screenshotAlt || "Screenshot");
+
+  carousel.dataset.screenshotIndex = String(clamped);
+  if (nextSrc) image.src = nextSrc;
+  image.alt = nextAlt;
+  queueDiscoverScreenshotUiUpdate(app);
+}
+
+function stepDiscoverScreenshot(app, direction) {
+  const currentIndex = getDiscoverScreenshotCurrentIndex(app);
+  const nextIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+  setDiscoverScreenshotIndex(app, nextIndex);
+}
+
+function updateDiscoverScreenshotUi(app) {
+  const carousel = getDiscoverScreenshotCarousel(app);
+  const thumbs = getDiscoverScreenshotThumbButtons(app);
+  const counter = app.querySelector("[data-discover-screenshot-counter]");
+  const prevButton = app.querySelector("[data-action='discover-screenshot-prev']");
+  const nextButton = app.querySelector("[data-action='discover-screenshot-next']");
+
+  if (!carousel || !thumbs.length) {
+    if (counter) counter.textContent = "";
+    if (prevButton) prevButton.disabled = true;
+    if (nextButton) nextButton.disabled = true;
+    thumbs.forEach((button) => {
+      button.classList.remove("is-active");
+      button.setAttribute("aria-pressed", "false");
+    });
+    return;
+  }
+
+  const total = thumbs.length;
+  const currentIndex = Math.max(0, Math.min(getDiscoverScreenshotCurrentIndex(app), total - 1));
+  carousel.dataset.screenshotIndex = String(currentIndex);
+
+  if (counter) {
+    counter.textContent = `${currentIndex + 1} / ${total}`;
+  }
+  if (prevButton) {
+    prevButton.disabled = currentIndex <= 0;
+  }
+  if (nextButton) {
+    nextButton.disabled = currentIndex >= total - 1;
+  }
+
+  thumbs.forEach((button, index) => {
+    const isActive = index === currentIndex;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function queueDiscoverScreenshotUiUpdate(app) {
+  globalThis.setTimeout?.(() => {
+    updateDiscoverScreenshotUi(app);
+  }, 220);
+}
+
+function getDiscoverVideoCarousel(app) {
+  return app.querySelector("#discover-video-carousel");
+}
+
+function getDiscoverVideoThumbButtons(app) {
+  return Array.from(app.querySelectorAll("[data-action='discover-video-jump']"));
+}
+
+function getDiscoverVideoCurrentIndex(app) {
+  const carousel = getDiscoverVideoCarousel(app);
+  if (!carousel) return 0;
+  const raw = Number(carousel.dataset.videoIndex || 0);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 0;
+}
+
+function buildDiscoverVideoFrame(frameRoot, { embedUrl, url, title }) {
+  if (!frameRoot) return;
+  frameRoot.innerHTML = "";
+
+  if (embedUrl) {
+    const iframe = document.createElement("iframe");
+    iframe.className = "w-full h-full";
+    iframe.src = embedUrl;
+    iframe.title = title || "Video";
+    iframe.loading = "lazy";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.allowFullscreen = true;
+    frameRoot.append(iframe);
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.className = "w-full h-full flex items-center justify-center text-sm text-zinc-300 underline";
+  link.href = url || "";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "Open video";
+  frameRoot.append(link);
+}
+
+function setDiscoverVideoIndex(app, index) {
+  const carousel = getDiscoverVideoCarousel(app);
+  const frame = app.querySelector("#discover-video-frame");
+  const thumbs = getDiscoverVideoThumbButtons(app);
+  if (!carousel || !frame || !thumbs.length) return;
+
+  const clamped = Math.max(0, Math.min(index, thumbs.length - 1));
+  const targetThumb = thumbs[clamped];
+  const embedUrl = String(targetThumb.dataset.videoEmbedUrl || "");
+  const url = String(targetThumb.dataset.videoUrl || "");
+  const title = String(targetThumb.dataset.videoTitle || "Video");
+
+  carousel.dataset.videoIndex = String(clamped);
+  buildDiscoverVideoFrame(frame, { embedUrl, url, title });
+  updateDiscoverVideoUi(app);
+}
+
+function stepDiscoverVideo(app, direction) {
+  const currentIndex = getDiscoverVideoCurrentIndex(app);
+  const nextIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+  setDiscoverVideoIndex(app, nextIndex);
+}
+
+function updateDiscoverVideoUi(app) {
+  const carousel = getDiscoverVideoCarousel(app);
+  const thumbs = getDiscoverVideoThumbButtons(app);
+  const counter = app.querySelector("[data-discover-video-counter]");
+  const prevButton = app.querySelector("[data-action='discover-video-prev']");
+  const nextButton = app.querySelector("[data-action='discover-video-next']");
+
+  if (!carousel || !thumbs.length) {
+    if (counter) counter.textContent = "";
+    if (prevButton) prevButton.disabled = true;
+    if (nextButton) nextButton.disabled = true;
+    return;
+  }
+
+  const total = thumbs.length;
+  const currentIndex = Math.max(0, Math.min(getDiscoverVideoCurrentIndex(app), total - 1));
+  carousel.dataset.videoIndex = String(currentIndex);
+
+  if (counter) {
+    counter.textContent = `${currentIndex + 1} / ${total}`;
+  }
+  if (prevButton) prevButton.disabled = currentIndex <= 0;
+  if (nextButton) nextButton.disabled = currentIndex >= total - 1;
+
+  thumbs.forEach((button, index) => {
+    const isActive = index === currentIndex;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
 function applyOverlayFocus(app, snapshot, previousSnapshot) {
   if (snapshot.isAddModalOpen && !previousSnapshot?.isAddModalOpen) {
     app.querySelector("#add-search-query")?.focus({ preventScroll: true });
@@ -86,6 +310,11 @@ function applyOverlayFocus(app, snapshot, previousSnapshot) {
 
   if (snapshot.pendingDeleteEntryId && !previousSnapshot?.pendingDeleteEntryId) {
     app.querySelector("[data-action='close-delete-confirm']")?.focus({ preventScroll: true });
+    return;
+  }
+
+  if (snapshot.mediaLightbox?.open && !previousSnapshot?.mediaLightbox?.open) {
+    app.querySelector("[data-action='close-media-lightbox']")?.focus({ preventScroll: true });
   }
 }
 
@@ -154,13 +383,14 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
 
     app.innerHTML = `
       <div id="app-sidebar-root"></div>
-      <main class="h-screen flex flex-col overflow-hidden bg-background">
+      <main class="flex flex-col bg-background min-h-screen">
         <div id="app-topbar-root"></div>
-        <div id="app-view-root" class="flex-1 min-h-0 flex flex-col overflow-hidden"></div>
+        <div id="app-view-root" class="flex-1 flex flex-col"></div>
       </main>
       <div id="app-notice-root"></div>
       <div id="app-add-modal-root"></div>
       <div id="app-delete-modal-root"></div>
+      <div id="app-media-lightbox-root"></div>
     `;
     isShellMounted = true;
   }
@@ -186,10 +416,22 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           return;
         }
 
+        if (snapshot.mediaLightbox?.open) {
+          event.preventDefault();
+          store.closeMediaLightbox();
+          return;
+        }
+
         if (snapshot.notice) {
           event.preventDefault();
           store.dismissNotice();
         }
+      }
+
+      if (snapshot.mediaLightbox?.open && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+        event.preventDefault();
+        store.stepMediaLightbox(event.key === "ArrowLeft" ? "prev" : "next");
+        return;
       }
 
       if (event.key === "Tab") {
@@ -200,6 +442,12 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
 
         if (snapshot.pendingDeleteEntryId) {
           trapTabKey(app.querySelector("[data-modal-root='delete-confirm']"), event);
+          return;
+        }
+
+        if (snapshot.mediaLightbox?.open) {
+          trapTabKey(app.querySelector("[data-modal-root='media-lightbox']"), event);
+          return;
         }
       }
 
@@ -226,16 +474,49 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           addSearchDebounceTimer = null;
           store.searchAddCatalog(target.value);
         }
+
+        if (target.id === "discover-search-query") {
+          event.preventDefault();
+          globalThis.clearTimeout?.(addSearchDebounceTimer);
+          addSearchDebounceTimer = null;
+          store.searchAddCatalog(target.value);
+        }
       }
+    };
+
+    app.onfocusin = (event) => {
+      const snapshot = store.getSnapshot();
+      if (!snapshot.mediaLightbox?.open) return;
+
+      const lightboxRoot = app.querySelector("[data-modal-root='media-lightbox']");
+      if (!lightboxRoot) return;
+      if (lightboxRoot.contains(event.target)) return;
+
+      const closeButton = app.querySelector("[data-action='close-media-lightbox']");
+      closeButton?.focus?.({ preventScroll: true });
     };
 
     app.onclick = async (event) => {
       const actionElement = event.target.closest("[data-action]");
+      if (!actionElement) {
+        const lightboxRoot = app.querySelector("[data-modal-root='media-lightbox']");
+        if (lightboxRoot && event.target === lightboxRoot) {
+          store.closeMediaLightbox();
+        }
+        return;
+      }
       if (!actionElement || !app.contains(actionElement)) return;
 
       switch (actionElement.dataset.action) {
         case "set-view":
-          store.setView(actionElement.dataset.view);
+          if (actionElement.dataset.view === "discover" && typeof store.openDiscover === "function") {
+            if (typeof store.clearDiscoverSelection === "function") {
+              store.clearDiscoverSelection();
+            }
+            await store.openDiscover();
+          } else {
+            store.setView(actionElement.dataset.view);
+          }
           break;
         case "set-settings-section":
           store.setSettingsSection(actionElement.dataset.section);
@@ -250,7 +531,10 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           store.openEntryDetails(actionElement.dataset.entryId);
           break;
         case "open-add-modal":
-          store.openAddModal();
+          await store.openDiscover({ resetQuery: true });
+          break;
+        case "open-discover":
+          await store.openDiscover();
           break;
         case "toggle-detail-edit-mode":
           store.toggleDetailEditMode(actionElement.dataset.detailEditMode === "true");
@@ -274,6 +558,65 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           break;
         case "search-add-catalog":
           await store.searchAddCatalog(app.querySelector("#add-search-query")?.value ?? "");
+          break;
+        case "search-discover":
+          await store.searchAddCatalog(app.querySelector("#discover-search-query")?.value ?? "");
+          break;
+        case "load-discover-top-played":
+          await store.loadDiscoverTopPlayed();
+          break;
+        case "select-discover-result":
+          await store.selectDiscoverResult(actionElement.dataset.searchResultId);
+          break;
+        case "select-discover-related":
+          await store.selectDiscoverRelated(actionElement.dataset.searchResultId);
+          break;
+        case "open-media-lightbox":
+          if (actionElement.dataset.mediaContext === "discover") {
+            const currentDiscoverIndex = Number(app.querySelector("#discover-screenshot-carousel")?.dataset?.screenshotIndex || 0);
+            store.openDiscoverScreenshotLightbox(Number.isFinite(currentDiscoverIndex) ? currentDiscoverIndex : 0);
+          } else if (actionElement.dataset.mediaContext === "details") {
+            store.openDetailScreenshotLightbox(Number(actionElement.dataset.mediaIndex || 0));
+          }
+          break;
+        case "close-media-lightbox":
+          store.closeMediaLightbox();
+          break;
+        case "media-lightbox-prev":
+          store.stepMediaLightbox("prev");
+          break;
+        case "media-lightbox-next":
+          store.stepMediaLightbox("next");
+          break;
+        case "media-lightbox-jump":
+          store.setMediaLightboxIndex(Number(actionElement.dataset.mediaIndex || 0));
+          break;
+        case "discover-screenshot-prev":
+          stepDiscoverScreenshot(app, "prev");
+          break;
+        case "discover-screenshot-next":
+          stepDiscoverScreenshot(app, "next");
+          break;
+        case "discover-screenshot-jump":
+          setDiscoverScreenshotIndex(app, Number(actionElement.dataset.screenshotIndex || 0));
+          break;
+        case "discover-video-prev":
+          stepDiscoverVideo(app, "prev");
+          break;
+        case "discover-video-next":
+          stepDiscoverVideo(app, "next");
+          break;
+        case "discover-video-jump":
+          setDiscoverVideoIndex(app, Number(actionElement.dataset.videoIndex || 0));
+          break;
+        case "clear-discover-selection":
+          store.clearDiscoverSelection();
+          break;
+        case "discover-add-wishlist":
+          await store.addDiscoverSelection("wishlist");
+          break;
+        case "discover-add-library":
+          await store.addDiscoverSelection("playing");
           break;
         case "select-add-search-result":
           globalThis.clearTimeout?.(addSearchDebounceTimer);
@@ -322,6 +665,12 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "refresh-library-artwork":
           await store.refreshLibraryArtwork();
           break;
+        case "refresh-library-pricing":
+          await store.refreshLibraryPricing();
+          break;
+        case "load-itad-stores":
+          await store.loadItadStores();
+          break;
         case "refresh-library-metadata":
           await store.refreshLibraryMetadata();
           break;
@@ -330,6 +679,9 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           break;
         case "refresh-entry-metadata":
           await store.refreshMetadataForEntry(actionElement.dataset.entryId);
+          break;
+        case "refresh-entry-pricing":
+          await store.refreshPricingForEntry(actionElement.dataset.entryId);
           break;
         case "export-json": {
           const backup = store.exportLibraryBackup();
@@ -360,6 +712,15 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           break;
         case "save-detail-progress":
           store.saveDetailProgress(getDetailDraftValues(app));
+          break;
+        case "toggle-price-watch":
+          store.togglePriceWatch(actionElement.dataset.entryId);
+          break;
+        case "save-price-watch":
+          store.savePriceWatch({
+            targetPrice: app.querySelector("#detail-price-target")?.value ?? "",
+            currency: app.querySelector("#detail-price-currency")?.value ?? "USD"
+          });
           break;
         case "save-detail-notes":
           store.saveDetailNotes({
@@ -442,6 +803,23 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         return;
       }
 
+      if (target.id === "discover-search-query") {
+        store.updateAddForm({
+          searchQuery: target.value
+        });
+        globalThis.clearTimeout?.(addSearchDebounceTimer);
+        addSearchDebounceTimer = globalThis.setTimeout?.(() => {
+          globalThis.clearTimeout?.(addSearchDebounceTimer);
+          addSearchDebounceTimer = null;
+          if (target.value.trim()) {
+            store.searchAddCatalog(target.value);
+          } else {
+            store.loadDiscoverTopPlayed();
+          }
+        }, 900);
+        return;
+      }
+
       if (target.id === "add-run-label") {
         store.updateAddForm({
           runLabel: target.value
@@ -488,6 +866,7 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           store.updateAddForm({ storefront: target.value });
           return;
         }
+
       }
 
       if (target instanceof HTMLInputElement && target.id === "global-search") {
@@ -516,6 +895,15 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         return;
       }
 
+      if (target instanceof HTMLInputElement && target.id === "discover-search-query") {
+        globalThis.clearTimeout?.(addSearchDebounceTimer);
+        addSearchDebounceTimer = null;
+        store.updateAddForm({
+          searchQuery: target.value
+        });
+        return;
+      }
+
       if (target instanceof HTMLInputElement && target.id === "import-json-input") {
         const file = target.files?.[0];
         if (!file) return;
@@ -523,6 +911,11 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         const content = await file.text();
         store.importLibraryBackup(content, file.name);
         target.value = "";
+        return;
+      }
+
+      if (target instanceof HTMLInputElement && target.dataset.action === "toggle-itad-store") {
+        store.toggleItadStoreSelection(target.dataset.storeId, target.checked);
       }
     };
   }
@@ -532,7 +925,7 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
       return renderDetailsView(snapshot, storefrontDefinitions, statusDefinitions);
     }
     if (snapshot.currentView === "settings") {
-      return renderSettingsView(snapshot);
+      return renderSettingsView(snapshot, storefrontDefinitions);
     }
     return renderDashboardView(snapshot, storefrontDefinitions, statusDefinitions);
   }
@@ -548,6 +941,7 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
     const noticeRoot = app.querySelector("#app-notice-root");
     const addModalRoot = app.querySelector("#app-add-modal-root");
     const deleteModalRoot = app.querySelector("#app-delete-modal-root");
+    const mediaLightboxRoot = app.querySelector("#app-media-lightbox-root");
 
     if (sidebarRoot) {
       sidebarRoot.innerHTML = renderSidebar(snapshot);
@@ -567,12 +961,44 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
     if (deleteModalRoot) {
       deleteModalRoot.innerHTML = renderDeleteConfirmModal(snapshot, storefrontDefinitions, statusDefinitions);
     }
+    if (mediaLightboxRoot) {
+      mediaLightboxRoot.innerHTML = renderMediaLightbox(snapshot);
+    }
+
+    const topbarElement = app.querySelector(".checkpoint-topbar");
+    const topbarHeight = topbarElement?.getBoundingClientRect?.().height || 72;
+    if (globalThis.document?.documentElement?.style) {
+      globalThis.document.documentElement.style.setProperty("--checkpoint-topbar-height", `${Math.ceil(topbarHeight)}px`);
+    }
+
+    if (globalThis.document?.body) {
+      const shouldLockBodyScroll = Boolean(
+        snapshot.isAddModalOpen
+        || snapshot.pendingDeleteEntryId
+        || snapshot.mediaLightbox?.open
+      );
+      globalThis.document.body.style.overflow = shouldLockBodyScroll ? "hidden" : "";
+    }
+
     bindEvents();
-    restoreScrollState(app, scrollState);
+    updateDiscoverScreenshotUi(app);
+    updateDiscoverVideoUi(app);
+    const nextDetailContextKey = getDetailContextKey(snapshot);
+    const previousDetailContextKey = getDetailContextKey(previousSnapshot);
+    const detailContextChanged = Boolean(nextDetailContextKey) && nextDetailContextKey !== previousDetailContextKey;
+
+    if (detailContextChanged) {
+      globalThis.scrollTo?.({ top: 0, left: 0, behavior: "auto" });
+    } else {
+      restoreScrollState(app, scrollState);
+    }
     const addModalJustOpened = snapshot.isAddModalOpen && !previousSnapshot?.isAddModalOpen;
     const deleteModalJustOpened = Boolean(snapshot.pendingDeleteEntryId) && !previousSnapshot?.pendingDeleteEntryId;
-    if (addModalJustOpened || deleteModalJustOpened) {
+    const mediaLightboxJustOpened = Boolean(snapshot.mediaLightbox?.open) && !previousSnapshot?.mediaLightbox?.open;
+    if (addModalJustOpened || deleteModalJustOpened || mediaLightboxJustOpened) {
       applyOverlayFocus(app, snapshot, previousSnapshot);
+    } else if (snapshot.mediaLightbox?.open) {
+      enforceModalFocus(app, "[data-modal-root='media-lightbox']", "[data-action='close-media-lightbox']");
     } else {
       restoreFocusState(app, focusState);
     }

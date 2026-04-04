@@ -163,7 +163,7 @@ export function createDriveSyncActions(ctx) {
   }
 
   async function loadRemoteSyncSnapshot() {
-    const backup = await integrations.googleDrive.restoreAppState();
+    const backup = await integrations.googleDrive.restoreAppState({ interactive: false });
     const imported = JSON.parse(backup.content);
     const normalized = normalizePersistedState(imported, { initialLibrary: [], initialCatalog: [] });
     const remoteComparableSignature = buildComparableStateSignature(normalized);
@@ -254,7 +254,7 @@ export function createDriveSyncActions(ctx) {
         ? {
             content: existingConflict.remoteBackupContent
           }
-        : await integrations.googleDrive.restoreAppState();
+        : await integrations.googleDrive.restoreAppState({ interactive: true });
       saveLocalRestorePoint("before Google Drive restore");
       const imported = importLibraryBackup(backup.content, "Google Drive backup");
       if (!imported) {
@@ -369,7 +369,8 @@ export function createDriveSyncActions(ctx) {
       const syncPayload = buildSyncPayload();
       syncResult = await integrations.googleDrive.syncAppState({
         state: syncPayload.state,
-        mode: "manual"
+        mode: "manual",
+        interactive: true
       });
     } catch (error) {
       setActionState("sync", {

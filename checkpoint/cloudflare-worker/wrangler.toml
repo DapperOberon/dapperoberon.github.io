@@ -7,3 +7,4 @@ preview_urls = true
 [vars]
 ALLOWED_ORIGIN = "https://dapperoberon.github.io"
 ALLOWED_ORIGINS = "https://dapperoberon.github.io,http://127.0.0.1:5500"
+ITAD_COUNTRY = "US"

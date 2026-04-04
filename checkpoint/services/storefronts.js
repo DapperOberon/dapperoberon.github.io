@@ -69,5 +69,77 @@ export function createMetadataResolverService() {
         return [];
       }
     }
+    ,
+
+    async getGameByIgdbId(id) {
+      const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
+      const numericId = Number(id);
+      if (!workerUrl || !Number.isFinite(numericId) || numericId <= 0) {
+        return null;
+      }
+
+      try {
+        const payload = await requestJson(
+          `${workerUrl}/api/igdb/game?id=${encodeURIComponent(String(Math.floor(numericId)))}`
+        );
+        if (!payload || typeof payload !== "object") return null;
+        return {
+          id: payload.id || `igdb-${numericId}`,
+          igdbId: Number.isFinite(Number(payload.igdbId)) ? Number(payload.igdbId) : numericId,
+          title: payload.title || "",
+          releaseDate: payload.releaseDate || "",
+          developer: payload.developer || "",
+          publisher: payload.publisher || "",
+          genres: Array.isArray(payload.genres) ? payload.genres : [],
+          platforms: Array.isArray(payload.platforms) ? payload.platforms : [],
+          criticSummary: payload.criticSummary || "",
+          description: payload.description || "",
+          coverArt: payload.coverArt || "",
+          heroArt: payload.heroArt || "",
+          screenshots: Array.isArray(payload.screenshots) ? payload.screenshots : [],
+          videos: Array.isArray(payload.videos) ? payload.videos : [],
+          links: payload.links && typeof payload.links === "object"
+            ? payload.links
+            : { igdb: "", official: "", storefronts: [] },
+          meta: payload.meta ?? {
+            resolved: false,
+            usedFallback: true,
+            reason: "worker_proxy"
+          }
+        };
+      } catch (error) {
+        return null;
+      }
+    },
+
+    async getRelatedGamesByIgdbId(id, limit = 12) {
+      const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
+      const numericId = Number(id);
+      const normalizedLimit = Number.isFinite(Number(limit))
+        ? Math.max(4, Math.min(24, Math.floor(Number(limit))))
+        : 12;
+      if (!workerUrl || !Number.isFinite(numericId) || numericId <= 0) {
+        return [];
+      }
+
+      try {
+        const payload = await requestJson(
+          `${workerUrl}/api/igdb/related?id=${encodeURIComponent(String(Math.floor(numericId)))}&limit=${encodeURIComponent(String(normalizedLimit))}`
+        );
+        return Array.isArray(payload?.results) ? payload.results : [];
+      } catch (error) {
+        return [];
+      }
+    },
+
+    async getTopPlayedGames() {
+      const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
+      if (!workerUrl) {
+        throw new Error("missing_worker_url");
+      }
+
+      const payload = await requestJson(`${workerUrl}/api/igdb/top-played?limit=50`);
+      return Array.isArray(payload?.results) ? payload.results : [];
+    }
   };
 }

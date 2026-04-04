@@ -25,6 +25,38 @@ export function formatRelative(dateString) {
   return `${Math.round(diff / day)}d ago`;
 }
 
+export function isUnreleasedGame(releaseDate) {
+  const value = String(releaseDate ?? "").trim();
+  if (!value) return false;
+
+  const normalized = value.toLowerCase();
+  if (
+    normalized.includes("tbd")
+    || normalized.includes("to be announced")
+    || normalized.includes("coming soon")
+  ) {
+    return true;
+  }
+
+  const releaseTime = Date.parse(value);
+  if (!Number.isFinite(releaseTime)) return false;
+  return releaseTime > Date.now();
+}
+
+export function formatCurrency(amount, currency = "USD") {
+  const numeric = Number(amount);
+  if (!Number.isFinite(numeric)) return "N/A";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: String(currency || "USD").toUpperCase(),
+      maximumFractionDigits: 2
+    }).format(numeric);
+  } catch (error) {
+    return `${String(currency || "USD").toUpperCase()} ${numeric.toFixed(2)}`;
+  }
+}
+
 export function getStorefrontLabel(storefrontDefinitions, storefrontId) {
   return storefrontDefinitions.find((item) => item.id === storefrontId)?.label ?? storefrontId;
 }

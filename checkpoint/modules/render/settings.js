@@ -154,7 +154,7 @@ function renderActivityPanel(activityHistory) {
   `;
 }
 
-export function renderSettingsView(snapshot) {
+export function renderSettingsView(snapshot, storefrontDefinitions = []) {
   const settingsRailItems = getSettingsRailItems();
   const sectionIds = new Set(settingsRailItems.map((item) => item.id));
   const activeSection = sectionIds.has(snapshot.uiPreferences?.settingsSection)
@@ -167,7 +167,7 @@ export function renderSettingsView(snapshot) {
   const conflictSecondaryAction = conflictPrefersRemote ? "keep-local-during-conflict" : "restore-google-drive";
 
   return `
-    <main data-scroll-root="settings" data-surface="settings" class="pt-[8.75rem] md:pt-24 pb-12 flex-1 overflow-y-auto custom-scrollbar">
+    <main data-surface="settings" class="pt-[8.75rem] md:pt-24 pb-12">
       <div class="max-w-[1400px] mx-auto px-6 lg:px-8">
         <div class="mb-12 max-w-3xl">
           <p class="font-label text-[11px] tracking-[0.08em] text-primary mb-3">Settings</p>
@@ -332,6 +332,44 @@ export function renderSettingsView(snapshot) {
                 </div>
                 <p class="text-xs text-zinc-500">Refreshes artwork for tracked titles without exposing secrets in the browser.</p>
                 ${renderSettingsNotice(snapshot.actionState.artwork)}
+              </div>
+              <div class="checkpoint-panel p-8 rounded-xl flex flex-col gap-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary mb-2">Wishlist Pricing (ITAD)</h3>
+                    <p class="text-on-surface-variant leading-relaxed text-sm">Load stores from ITAD, choose which stores to track, and refresh pricing.</p>
+                  </div>
+                  ${renderScopedPrimaryAction("Refresh Prices", "Library-wide", "refresh-library-pricing")}
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                  ${renderSecondaryAction("Load ITAD Stores", "load-itad-stores", "px-4 py-2 text-[11px] tracking-[0.12em]")}
+                  ${snapshot.itadStoresLoading ? `<span class="text-xs text-zinc-500">Loading stores...</span>` : ""}
+                  ${snapshot.itadStoresError ? `<span class="text-xs text-amber-200">${escapeHtml(snapshot.itadStoresError)}</span>` : ""}
+                </div>
+                ${Array.isArray(snapshot.itadStores) && snapshot.itadStores.length ? `
+                  <div class="rounded-lg bg-black/20 px-4 py-4">
+                    <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-3">Stores to include in wishlist price table</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+                      ${snapshot.itadStores.map((store) => {
+                        const checked = Array.isArray(snapshot.syncPreferences?.itadSelectedStoreIds) && snapshot.syncPreferences.itadSelectedStoreIds.includes(store.id);
+                        return `
+                          <label class="flex items-center gap-2 text-sm text-zinc-300">
+                            <input
+                              type="checkbox"
+                              data-action="toggle-itad-store"
+                              data-store-id="${escapeHtml(store.id)}"
+                              ${checked ? "checked" : ""}
+                              class="h-4 w-4 rounded border-primary/20 bg-black/30 text-primary focus:ring-primary"
+                            >
+                            <span>${escapeHtml(store.name)}</span>
+                          </label>
+                        `;
+                      }).join("")}
+                    </div>
+                  </div>
+                ` : ""}
+                <p class="text-xs text-zinc-500">Used for ITAD lookup prioritization when resolving current deals.</p>
+                ${renderSettingsNotice(snapshot.actionState.pricing)}
               </div>
             </div>
           </div>

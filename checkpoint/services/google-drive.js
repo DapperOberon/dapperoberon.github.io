@@ -4,9 +4,30 @@ const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3";
 const DRIVE_UPLOAD_BASE = "https://www.googleapis.com/upload/drive/v3";
 const BACKUP_FILENAME = "checkpoint-app-state.json";
+const DRIVE_CONNECTED_KEY = "checkpoint.googleDrive.connected";
 
 let accessToken = "";
 let tokenClient = null;
+
+function readConnectedMarker() {
+  try {
+    return globalThis.localStorage?.getItem(DRIVE_CONNECTED_KEY) === "1";
+  } catch (error) {
+    return false;
+  }
+}
+
+function writeConnectedMarker(connected) {
+  try {
+    if (connected) {
+      globalThis.localStorage?.setItem(DRIVE_CONNECTED_KEY, "1");
+    } else {
+      globalThis.localStorage?.removeItem(DRIVE_CONNECTED_KEY);
+    }
+  } catch (error) {
+    // best effort only
+  }
+}
 
 function getGoogleAccounts() {
   return globalThis.google?.accounts?.oauth2 ?? null;
@@ -14,10 +35,11 @@ function getGoogleAccounts() {
 
 function getStatusSnapshot() {
   const { googleDriveClientId } = getServiceConfig();
+  const rememberedConnection = readConnectedMarker();
 
   return {
     available: Boolean(googleDriveClientId && getGoogleAccounts()),
-    connected: Boolean(accessToken),
+    connected: Boolean(accessToken) || rememberedConnection,
     clientConfigured: Boolean(googleDriveClientId)
   };
 }
@@ -76,16 +98,24 @@ function requestAccessToken(prompt = "consent") {
   });
 }
 
-async function ensureAccessToken() {
-  if (accessToken) {
-    return accessToken;
+async function driveJson(url, init = {}, options = {}) {
+  const { interactive = false } = options;
+  let token = "";
+  if (interactive) {
+    token = accessToken || await requestAccessToken("consent");
+  } else if (accessToken) {
+    token = accessToken;
+  } else if (readConnectedMarker()) {
+    try {
+      token = await requestAccessToken("");
+    } catch (error) {
+      writeConnectedMarker(false);
+      throw new Error("auth_required");
+    }
+  } else {
+    throw new Error("auth_required");
   }
 
-  return requestAccessToken("consent");
-}
-
-async function driveJson(url, init = {}) {
-  const token = await ensureAccessToken();
   const response = await fetch(url, {
     ...init,
     headers: {
@@ -102,8 +132,24 @@ async function driveJson(url, init = {}) {
   return response.json();
 }
 
-async function driveText(url, init = {}) {
-  const token = await ensureAccessToken();
+async function driveText(url, init = {}, options = {}) {
+  const { interactive = false } = options;
+  let token = "";
+  if (interactive) {
+    token = accessToken || await requestAccessToken("consent");
+  } else if (accessToken) {
+    token = accessToken;
+  } else if (readConnectedMarker()) {
+    try {
+      token = await requestAccessToken("");
+    } catch (error) {
+      writeConnectedMarker(false);
+      throw new Error("auth_required");
+    }
+  } else {
+    throw new Error("auth_required");
+  }
+
   const response = await fetch(url, {
     ...init,
     headers: {
@@ -140,17 +186,17 @@ function buildMultipartBody(metadata, content) {
   };
 }
 
-async function findBackupFile() {
+async function findBackupFile(options = {}) {
   const query = encodeURIComponent(`name='${BACKUP_FILENAME}' and 'appDataFolder' in parents and trashed=false`);
   const fields = encodeURIComponent("files(id,name,modifiedTime,version)");
   const url = `${DRIVE_API_BASE}/files?q=${query}&spaces=appDataFolder&fields=${fields}&pageSize=1`;
-  const payload = await driveJson(url);
+  const payload = await driveJson(url, {}, options);
   return Array.isArray(payload.files) ? payload.files[0] ?? null : null;
 }
 
-async function uploadBackupContent(state) {
+async function uploadBackupContent(state, options = {}) {
   const content = JSON.stringify(state, null, 2);
-  const existingFile = await findBackupFile();
+  const existingFile = await findBackupFile(options);
   const metadata = existingFile
     ? { name: BACKUP_FILENAME }
     : { name: BACKUP_FILENAME, parents: ["appDataFolder"] };
@@ -166,7 +212,7 @@ async function uploadBackupContent(state) {
       "Content-Type": `multipart/related; boundary=${boundary}`
     },
     body
-  });
+  }, options);
 
   return {
     fileId: payload.id ?? existingFile?.id ?? "",
@@ -176,13 +222,13 @@ async function uploadBackupContent(state) {
   };
 }
 
-async function restoreAppState() {
-  const existingFile = await findBackupFile();
+async function restoreAppState(options = {}) {
+  const existingFile = await findBackupFile(options);
   if (!existingFile?.id) {
     throw new Error("No Checkpoint Drive backup was found in appDataFolder.");
   }
 
-  const content = await driveText(`${DRIVE_API_BASE}/files/${existingFile.id}?alt=media`);
+  const content = await driveText(`${DRIVE_API_BASE}/files/${existingFile.id}?alt=media`, {}, options);
 
   return {
     filename: BACKUP_FILENAME,
@@ -199,6 +245,7 @@ function revokeCurrentToken() {
     oauth.revoke(accessToken, () => {});
   }
   accessToken = "";
+  writeConnectedMarker(false);
 }
 
 export function createGoogleDriveService() {
@@ -209,6 +256,7 @@ export function createGoogleDriveService() {
     async connect() {
       try {
         await requestAccessToken("consent");
+        writeConnectedMarker(true);
         return {
           ok: true,
           mode: "oauth",
@@ -234,7 +282,7 @@ export function createGoogleDriveService() {
 
     async syncAppState(input = {}) {
       try {
-        const uploadResult = await uploadBackupContent(input.state ?? {});
+        const uploadResult = await uploadBackupContent(input.state ?? {}, { interactive: input.interactive === true });
         return {
           ok: true,
           mode: input.mode ?? "manual",
@@ -249,16 +297,19 @@ export function createGoogleDriveService() {
           }
         };
       } catch (error) {
+        const message = error instanceof Error && error.message === "auth_required"
+          ? "Google Drive auth expired. Reconnect to continue syncing."
+          : (error instanceof Error ? error.message : "Google Drive sync failed.");
         return {
           ok: false,
           mode: input.mode ?? "manual",
-          message: error instanceof Error ? error.message : "Google Drive sync failed."
+          message
         };
       }
     },
 
-    async restoreAppState() {
-      return restoreAppState();
+    async restoreAppState(input = {}) {
+      return restoreAppState({ interactive: input.interactive === true });
     }
   };
 }

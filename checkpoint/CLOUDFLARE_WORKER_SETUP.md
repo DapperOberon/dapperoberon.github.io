@@ -21,6 +21,7 @@ Set this secret in the Worker:
 - `STEAMGRID_API_KEY`
 - `IGDB_CLIENT_ID`
 - `IGDB_CLIENT_SECRET`
+- `ITAD_API_KEY`
 
 ## Allowed origin
 
@@ -48,6 +49,9 @@ You can keep `ALLOWED_ORIGIN` as a fallback single-origin value, but `ALLOWED_OR
 The frontend calls:
 
 - `GET /api/steamgrid/artwork?title=...&slug=...`
+- `GET /api/igdb/metadata?title=...`
+- `GET /api/igdb/search?query=...`
+- `GET /api/itad/pricing?title=...&storefront=...`
 
 The Worker:
 
@@ -56,20 +60,18 @@ The Worker:
 3. fetches grids and heroes
 4. returns normalized art payloads to Checkpoint
 
-For metadata, the frontend calls:
+For metadata and pricing, the Worker:
 
-- `GET /api/igdb/metadata?title=...`
-
-The Worker:
-
-1. authenticates to Twitch using client credentials
-2. queries IGDB server-side
-3. normalizes the result into Checkpoint metadata fields
-4. returns JSON the frontend can consume directly
+1. authenticates to Twitch using client credentials for IGDB
+2. queries IGDB server-side for metadata/search
+3. queries IsThereAnyDeal server-side for pricing
+4. normalizes results into Checkpoint payloads
+5. returns JSON the frontend can consume directly
 
 ## Notes
 
 - the Worker is the right long-term place for the SteamGridDB key
 - the Worker is also the right place for IGDB/Twitch credentials
+- the Worker is also the right place for ITAD credentials
 - user-specific browser keys are no longer the recommended deployment model
 - this same Worker can later host the storefront-agnostic metadata resolver too

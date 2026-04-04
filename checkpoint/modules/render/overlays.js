@@ -79,6 +79,65 @@ export function renderGlobalNotice(snapshot) {
   `;
 }
 
+export function renderMediaLightbox(snapshot) {
+  const lightbox = snapshot.mediaLightbox;
+  if (!lightbox?.open) return "";
+
+  const images = Array.isArray(lightbox.images) ? lightbox.images.filter(hasUsableAsset) : [];
+  if (!images.length) return "";
+
+  const index = Math.max(0, Math.min(Number(lightbox.index) || 0, images.length - 1));
+  const currentImage = images[index];
+  const title = String(lightbox.title || "Screenshot");
+
+  return `
+    <div class="checkpoint-lightbox-root z-[90] p-2 md:p-3 2xl:p-2" data-modal-root="media-lightbox" tabindex="-1">
+      <div class="checkpoint-lightbox-shell w-full h-full rounded-xl flex flex-col overflow-hidden">
+        <div class="checkpoint-lightbox-header checkpoint-lightbox-header-grid px-4 md:px-6 py-3">
+          <div class="min-w-0">
+            <p class="font-label text-[11px] tracking-[0.08em] text-primary">Screenshot Preview</p>
+            <p class="text-sm text-zinc-300 truncate">${escapeHtml(title)}</p>
+          </div>
+          <div class="flex items-center justify-center gap-2">
+            <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em] inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed" data-action="media-lightbox-prev" ${index <= 0 ? "disabled" : ""}>
+              <span class="material-symbols-outlined text-sm">arrow_back</span>
+              Prev
+            </button>
+            <p class="font-label text-xs tracking-[0.08em] text-zinc-300 min-w-[4.25rem] text-center">${index + 1} / ${images.length}</p>
+            <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em] inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed" data-action="media-lightbox-next" ${index >= images.length - 1 ? "disabled" : ""}>
+              Next
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+          </div>
+          <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em] inline-flex items-center gap-1.5" data-action="close-media-lightbox" aria-label="Close screenshot preview">
+            <span class="material-symbols-outlined text-sm">close</span>
+            Close
+          </button>
+        </div>
+        <div class="flex-1 min-h-0 px-2 md:px-3 py-2">
+          <div class="checkpoint-lightbox-stage h-full flex items-center justify-center overflow-hidden rounded-md">
+            <img class="checkpoint-lightbox-image object-contain object-center" src="${escapeHtml(currentImage)}" alt="${escapeHtml(title)} screenshot ${index + 1}">
+          </div>
+        </div>
+        <div class="checkpoint-lightbox-footer px-4 md:px-6 py-3 overflow-x-auto custom-scrollbar">
+          <div class="flex items-center gap-2 min-w-max">
+          ${images.map((image, imageIndex) => `
+            <button
+              class="discover-screenshot-thumb ${imageIndex === index ? "is-active" : ""} overflow-hidden rounded-md"
+              data-action="media-lightbox-jump"
+              data-media-index="${imageIndex}"
+              aria-label="Open screenshot ${imageIndex + 1}"
+            >
+              <img class="w-full h-full object-cover" src="${escapeHtml(image)}" alt="">
+            </button>
+          `).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderAddModal(snapshot, statusDefinitions, storefrontDefinitions) {
   if (!snapshot.isAddModalOpen) return "";
   const duplicateEntry = snapshot.addFormValidation.duplicateEntry;

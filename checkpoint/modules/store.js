@@ -71,7 +71,8 @@ function createActionState() {
     backup: null,
     sync: null,
     artwork: null,
-    metadata: null
+    metadata: null,
+    pricing: null
   };
 }
 
@@ -106,6 +107,10 @@ function createActivityEntry({
 }
 
 const LOCAL_RESTORE_POINT_KEY = "checkpoint.restorePoint";
+const ITAD_STORES_CACHE_KEY = "checkpoint.itadStoresCache";
+const DISCOVER_METADATA_CACHE_KEY = "checkpoint.discoverMetadataCache";
+const AUTO_BACKUP_DEBOUNCE_MS = 5000;
+const AUTO_BACKUP_MIN_INTERVAL_MS = 60000;
 
 function readLocalRestorePoint() {
   try {
@@ -130,6 +135,66 @@ function writeLocalRestorePoint(payload) {
   }
 }
 
+function readItadStoresCache() {
+  try {
+    const raw = globalThis.localStorage?.getItem(ITAD_STORES_CACHE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((row) => row && typeof row === "object")
+      .map((row) => ({
+        id: String(row.id ?? "").trim(),
+        name: String(row.name ?? "").trim()
+      }))
+      .filter((row) => row.id && row.name);
+  } catch (error) {
+    return [];
+  }
+}
+
+function writeItadStoresCache(stores) {
+  try {
+    const rows = Array.isArray(stores)
+      ? stores
+        .filter((row) => row && typeof row === "object")
+        .map((row) => ({
+          id: String(row.id ?? "").trim(),
+          name: String(row.name ?? "").trim()
+        }))
+        .filter((row) => row.id && row.name)
+      : [];
+    globalThis.localStorage?.setItem(ITAD_STORES_CACHE_KEY, JSON.stringify(rows));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function readDiscoverMetadataCache() {
+  try {
+    const raw = globalThis.localStorage?.getItem(DISCOVER_METADATA_CACHE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed;
+  } catch (error) {
+    return {};
+  }
+}
+
+function writeDiscoverMetadataCache(cache) {
+  try {
+    const normalized = cache && typeof cache === "object" && !Array.isArray(cache)
+      ? cache
+      : {};
+    globalThis.localStorage?.setItem(DISCOVER_METADATA_CACHE_KEY, JSON.stringify(normalized));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 export function createStore({ initialLibrary, catalog, persistence, integrations, statusDefinitions, storefrontDefinitions }) {
   const listeners = new Set();
   const validStatusIds = new Set(statusDefinitions.map((item) => item.id));
@@ -137,6 +202,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   let autoBackupTimer = null;
   let queuedAutoBackupSignature = "";
   let lastAutoBackupSignature = "";
+  let lastAutoBackupCompletedAt = 0;
   let lastTrackedSyncDataSignature = "";
   let suppressAutoBackup = false;
   const persistedState = normalizePersistedState(persistence.load({
@@ -148,6 +214,8 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   });
   const hydratedLibrary = persistedState.library.slice().sort(sortByUpdatedAtDesc);
   const initialRestorePoint = readLocalRestorePoint();
+  const cachedItadStores = readItadStoresCache();
+  const discoverMetadataCache = readDiscoverMetadataCache();
 
   const state = {
     currentView: persistedState.uiPreferences.lastView,
@@ -164,12 +232,37 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     addSearchResults: [],
     addSearchLoading: false,
     addSearchError: "",
+    discoverEntryDetails: null,
+    discoverEntryLoading: false,
+    discoverEntryError: "",
+    discoverEntryPricing: null,
+    discoverEntryPricingLoading: false,
+    discoverEntryPricingError: "",
+    discoverEntryRelated: [],
+    discoverEntryRelatedLoading: false,
+    discoverEntryRelatedError: "",
+    discoverEntryLinks: {
+      igdb: "",
+      official: "",
+      storefronts: []
+    },
+    mediaLightbox: {
+      open: false,
+      images: [],
+      index: 0,
+      title: ""
+    },
+    discoverMetadataCache,
+    discoverNavigationToken: 0,
     addFormFeedback: null,
     isAddFormSubmitting: false,
     detailForm: createDetailForm(hydratedLibrary[0] ?? null),
     isDetailEditMode: false,
     importMode: "replace",
     actionState: createActionState(),
+    itadStores: cachedItadStores,
+    itadStoresLoading: false,
+    itadStoresError: "",
     syncHistory: Array.isArray(persistedState.syncHistory) ? persistedState.syncHistory : [],
     activityHistory: Array.isArray(persistedState.activityHistory) ? persistedState.activityHistory : [],
     syncConflict: null,
@@ -270,29 +363,21 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   }
 
   function buildTrackedSyncDataSignature() {
-    const includeActivityHistory = state.syncPreferences.includeActivityHistory !== false;
     return JSON.stringify({
       library: state.library,
       catalog: pruneCatalogToLibrary(state.library, state.catalog),
-      syncPreferences: state.syncPreferences,
-      activityHistory: includeActivityHistory ? state.activityHistory : [],
-      syncHistory: includeActivityHistory ? state.syncHistory : [],
-      uiPreferences: state.uiPreferences
+      syncPreferences: state.syncPreferences
     });
   }
 
   function buildComparableStateSignature(inputState) {
     const library = Array.isArray(inputState?.library) ? inputState.library : [];
     const catalog = Array.isArray(inputState?.catalog) ? inputState.catalog : [];
-    const includeActivityHistory = inputState?.syncPreferences?.includeActivityHistory !== false;
 
     return JSON.stringify({
       library,
       catalog: pruneCatalogToLibrary(library, catalog),
-      syncPreferences: inputState?.syncPreferences ?? {},
-      activityHistory: includeActivityHistory && Array.isArray(inputState?.activityHistory) ? inputState.activityHistory : [],
-      syncHistory: includeActivityHistory && Array.isArray(inputState?.syncHistory) ? inputState.syncHistory : [],
-      uiPreferences: inputState?.uiPreferences ?? {}
+      syncPreferences: inputState?.syncPreferences ?? {}
     });
   }
 
@@ -366,9 +451,20 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   }
 
   function scheduleAutoBackupIfNeeded() {
-    if (suppressAutoBackup || !state.syncPreferences.autoBackup || !integrations.googleDrive.isConfigured() || state.syncConflict || getSyncComparisonStatus() === "diverged") {
+    const comparisonStatus = getSyncComparisonStatus();
+    if (
+      suppressAutoBackup
+      || !state.syncPreferences.autoBackup
+      || !integrations.googleDrive.isConfigured()
+      || state.syncConflict
+      || (comparisonStatus !== "local-newer" && comparisonStatus !== "local-only")
+    ) {
       return;
     }
+
+    const now = Date.now();
+    const elapsedSinceLastAutoBackup = now - lastAutoBackupCompletedAt;
+    const remainingCooldown = Math.max(0, AUTO_BACKUP_MIN_INTERVAL_MS - elapsedSinceLastAutoBackup);
 
     const syncPayload = buildSyncPayload();
     const signature = JSON.stringify(syncPayload.state);
@@ -387,7 +483,8 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
       const syncResult = await integrations.googleDrive.syncAppState({
         state: JSON.parse(signature),
-        mode: "auto"
+        mode: "auto",
+        interactive: false
       });
 
       queuedAutoBackupSignature = "";
@@ -407,6 +504,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
           syncState: "ready"
         }));
         suppressAutoBackup = false;
+        lastAutoBackupCompletedAt = Date.now();
         lastAutoBackupSignature = JSON.stringify(buildSyncExportState());
       }
 
@@ -425,7 +523,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       suppressAutoBackup = true;
       emit();
       suppressAutoBackup = false;
-    }, 1200);
+    }, Math.max(AUTO_BACKUP_DEBOUNCE_MS, remainingCooldown));
   }
 
   function getCatalogGame(gameId) {
@@ -605,12 +703,41 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
   function setView(view) {
     if (view === "details") return;
+    if (view === "wishlist") {
+      state.activeStatus = "wishlist";
+      state.uiPreferences.lastStatusFilter = "wishlist";
+    } else if (view === "discover") {
+      state.activeStatus = "all";
+      state.uiPreferences.lastStatusFilter = "all";
+    } else if (view === "dashboard" && state.activeStatus === "wishlist") {
+      state.activeStatus = "all";
+      state.uiPreferences.lastStatusFilter = "all";
+    }
     state.currentView = view;
     state.uiPreferences.lastView = view;
     if (view !== "dashboard" && !state.activeEntryId && state.library[0]) {
       state.activeEntryId = state.library[0].entryId;
     }
     emit();
+  }
+
+  function openDetailsByGameId(gameId, sourceView = "dashboard") {
+    const normalizedGameId = String(gameId ?? "").trim();
+    if (!normalizedGameId) return false;
+
+    const matchedEntry = state.library.find((entry) => String(entry?.gameId ?? "").trim() === normalizedGameId);
+    if (!matchedEntry) return false;
+
+    const normalizedSourceView = ["dashboard", "discover", "wishlist", "settings"].includes(sourceView)
+      ? sourceView
+      : "dashboard";
+    state.uiPreferences.lastView = normalizedSourceView;
+    state.activeEntryId = matchedEntry.entryId;
+    state.currentView = "details";
+    state.isDetailEditMode = false;
+    state.detailForm = createDetailForm(matchedEntry);
+    emit();
+    return true;
   }
 
   function setSettingsSection(sectionId) {
@@ -633,6 +760,12 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
   function setActiveStatus(status) {
     if (status !== "all" && !validStatusIds.has(status)) {
+      return;
+    }
+    if (state.currentView === "dashboard" && status === "wishlist") {
+      state.activeStatus = "all";
+      state.uiPreferences.lastStatusFilter = "all";
+      emit();
       return;
     }
     state.activeStatus = status;
@@ -667,6 +800,90 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     ].slice(0, 24);
   }
 
+  function normalizeMediaImages(images) {
+    if (!Array.isArray(images)) return [];
+    return images
+      .map((value) => String(value ?? "").trim())
+      .filter(Boolean);
+  }
+
+  function openMediaLightbox({ images = [], index = 0, title = "" } = {}) {
+    const normalizedImages = normalizeMediaImages(images);
+    if (!normalizedImages.length) return;
+    const clampedIndex = Math.max(0, Math.min(Number(index) || 0, normalizedImages.length - 1));
+    state.mediaLightbox = {
+      open: true,
+      images: normalizedImages,
+      index: clampedIndex,
+      title: String(title || "").trim()
+    };
+    emit();
+  }
+
+  function openDiscoverScreenshotLightbox(index = 0) {
+    const details = state.discoverEntryDetails ?? state.addForm.selectedSearchResult ?? {};
+    openMediaLightbox({
+      images: normalizeMediaImages(details?.screenshots),
+      index,
+      title: String(details?.title || state.addForm.selectedSearchResult?.title || "Discover screenshot").trim()
+    });
+  }
+
+  function openDetailScreenshotLightbox(index = 0) {
+    const active = getEntryWithGame();
+    const images = normalizeMediaImages(active?.game?.screenshots);
+    openMediaLightbox({
+      images,
+      index,
+      title: String(active?.title || "Screenshot").trim()
+    });
+  }
+
+  function closeMediaLightbox() {
+    if (!state.mediaLightbox?.open) return;
+    state.mediaLightbox = {
+      open: false,
+      images: [],
+      index: 0,
+      title: ""
+    };
+    emit();
+  }
+
+  function setMediaLightboxIndex(index = 0) {
+    if (!state.mediaLightbox?.open) return;
+    const images = normalizeMediaImages(state.mediaLightbox.images);
+    if (!images.length) {
+      closeMediaLightbox();
+      return;
+    }
+    const clampedIndex = Math.max(0, Math.min(Number(index) || 0, images.length - 1));
+    state.mediaLightbox = {
+      ...state.mediaLightbox,
+      images,
+      index: clampedIndex
+    };
+    emit();
+  }
+
+  function stepMediaLightbox(direction = "next") {
+    if (!state.mediaLightbox?.open) return;
+    const images = normalizeMediaImages(state.mediaLightbox.images);
+    if (!images.length) {
+      closeMediaLightbox();
+      return;
+    }
+    const delta = direction === "prev" ? -1 : 1;
+    const nextIndex = Math.max(0, Math.min((Number(state.mediaLightbox.index) || 0) + delta, images.length - 1));
+    if (nextIndex === state.mediaLightbox.index) return;
+    state.mediaLightbox = {
+      ...state.mediaLightbox,
+      images,
+      index: nextIndex
+    };
+    emit();
+  }
+
   const enrichmentActions = createEnrichmentActions({
     state,
     emit,
@@ -682,6 +899,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     state,
     emit,
     integrations,
+    setActionState,
     statusDefinitions,
     validStorefrontIds,
     validStatusIds,
@@ -699,7 +917,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     buildEntrySaveFeedback: enrichmentActions.buildEntrySaveFeedback,
     applyMetadataOverridesToGame: enrichmentActions.applyMetadataOverridesToGame,
     applyArtworkOverridesToGame: enrichmentActions.applyArtworkOverridesToGame,
-    recordActivity
+    recordActivity,
+    writeItadStoresCache,
+    writeDiscoverMetadataCache
   });
 
   const backupActions = createBackupActions({
@@ -754,6 +974,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       },
       setLastAutoBackupSignature(signature) {
         lastAutoBackupSignature = signature;
+        lastAutoBackupCompletedAt = Date.now();
       },
       setLastTrackedSyncDataSignature() {
         lastTrackedSyncDataSignature = buildTrackedSyncDataSignature();
@@ -762,6 +983,10 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   });
 
   lastTrackedSyncDataSignature = buildTrackedSyncDataSignature();
+  const parsedLastRemoteSyncAt = Date.parse(state.syncMeta.lastRemoteSyncAt || "");
+  if (Number.isFinite(parsedLastRemoteSyncAt) && parsedLastRemoteSyncAt > 0) {
+    lastAutoBackupCompletedAt = parsedLastRemoteSyncAt;
+  }
 
   return {
     subscribe,
@@ -770,6 +995,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     setSettingsSection,
     setSearchTerm,
     openLibrarySearch,
+    openDetailsByGameId,
     setActiveStatus,
     setSortMode,
     clearLibraryView,
@@ -781,6 +1007,12 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     refreshArtworkForEntry: enrichmentActions.refreshArtworkForEntry,
     refreshLibraryMetadata: enrichmentActions.refreshLibraryMetadata,
     refreshLibraryArtwork: enrichmentActions.refreshLibraryArtwork,
+    refreshPricingForEntry: entryActions.refreshPricingForEntry,
+    refreshLibraryPricing: entryActions.refreshLibraryPricing,
+    savePriceWatch: entryActions.savePriceWatch,
+    togglePriceWatch: entryActions.togglePriceWatch,
+    loadItadStores: entryActions.loadItadStores,
+    toggleItadStoreSelection: entryActions.toggleItadStoreSelection,
     saveMetadataOverrides: enrichmentActions.saveMetadataOverrides,
     clearMetadataOverrides: enrichmentActions.clearMetadataOverrides,
     saveArtworkOverrides: enrichmentActions.saveArtworkOverrides,
@@ -792,5 +1024,12 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     restoreLocalSafetySnapshot: driveActions.restoreLocalSafetySnapshot,
     syncNow: driveActions.syncNow,
     keepLocalDuringConflict: driveActions.keepLocalDuringConflict
+    ,
+    openMediaLightbox,
+    openDiscoverScreenshotLightbox,
+    openDetailScreenshotLightbox,
+    closeMediaLightbox,
+    setMediaLightboxIndex,
+    stepMediaLightbox
   };
 }

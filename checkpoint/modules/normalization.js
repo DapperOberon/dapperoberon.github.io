@@ -20,6 +20,76 @@ function normalizeStringArray(value, fallback = []) {
   return Array.isArray(fallback) ? fallback : [];
 }
 
+function normalizePriceWatch(priceWatch, fallback = {}, status = "playing") {
+  const source = priceWatch && typeof priceWatch === "object" ? priceWatch : {};
+  const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
+  const parseTarget = Number(source.targetPrice ?? fallbackSource.targetPrice);
+  const normalizedStatus = normalizeStatus(status, "playing");
+
+  const hasExplicitEnabled = typeof source.enabled === "boolean";
+  const fallbackEnabled = typeof fallbackSource.enabled === "boolean" ? fallbackSource.enabled : null;
+  const enabled = hasExplicitEnabled
+    ? source.enabled
+    : (fallbackEnabled ?? (normalizedStatus === "wishlist"));
+
+  return {
+    enabled,
+    targetPrice: Number.isFinite(parseTarget) && parseTarget >= 0 ? parseTarget : null,
+    currency: trimOrFallback(source.currency, trimOrFallback(fallbackSource.currency, "USD")),
+    lastNotifiedAt: trimOrFallback(source.lastNotifiedAt, trimOrFallback(fallbackSource.lastNotifiedAt, ""))
+  };
+}
+
+function normalizePricingSnapshot(input, fallback = {}) {
+  const source = input && typeof input === "object" ? input : {};
+  const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
+  const amount = Number(source.amount ?? fallbackSource.amount);
+  const regularAmount = Number(source.regularAmount ?? fallbackSource.regularAmount);
+  const discountPercent = Number(source.discountPercent ?? fallbackSource.discountPercent);
+
+  return {
+    amount: Number.isFinite(amount) ? amount : null,
+    currency: trimOrFallback(source.currency, trimOrFallback(fallbackSource.currency, "USD")),
+    storeId: trimOrFallback(source.storeId, trimOrFallback(fallbackSource.storeId, "")),
+    storeName: trimOrFallback(source.storeName, trimOrFallback(fallbackSource.storeName, "")),
+    url: trimOrFallback(source.url, trimOrFallback(fallbackSource.url, "")),
+    regularAmount: Number.isFinite(regularAmount) ? regularAmount : null,
+    discountPercent: Number.isFinite(discountPercent) ? discountPercent : null
+  };
+}
+
+function normalizeCatalogPricing(pricing, fallback = {}) {
+  const source = pricing && typeof pricing === "object" ? pricing : {};
+  const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
+  const normalizeStoreRows = (rows, fallbackRows = []) => {
+    const inputRows = Array.isArray(rows) ? rows : (Array.isArray(fallbackRows) ? fallbackRows : []);
+    return inputRows
+      .filter((row) => row && typeof row === "object")
+      .map((row) => ({
+        storeId: trimOrFallback(row.storeId, ""),
+        storeName: trimOrFallback(row.storeName, ""),
+        amount: Number.isFinite(Number(row.amount)) ? Number(row.amount) : null,
+        currency: trimOrFallback(row.currency, "USD"),
+        discountPercent: Number.isFinite(Number(row.discountPercent)) ? Number(row.discountPercent) : null,
+        url: trimOrFallback(row.url, "")
+      }));
+  };
+  return {
+    provider: trimOrFallback(source.provider, trimOrFallback(fallbackSource.provider, "")),
+    providerGameId: trimOrFallback(source.providerGameId, trimOrFallback(fallbackSource.providerGameId, "")),
+    currentBest: normalizePricingSnapshot(source.currentBest, fallbackSource.currentBest),
+    preferredStoreCurrent: normalizePricingSnapshot(source.preferredStoreCurrent, fallbackSource.preferredStoreCurrent),
+    storeRows: normalizeStoreRows(source.storeRows, fallbackSource.storeRows),
+    historicalLow: {
+      ...normalizePricingSnapshot(source.historicalLow, fallbackSource.historicalLow),
+      at: trimOrFallback(source?.historicalLow?.at, trimOrFallback(fallbackSource?.historicalLow?.at, ""))
+    },
+    lastCheckedAt: trimOrFallback(source.lastCheckedAt, trimOrFallback(fallbackSource.lastCheckedAt, "")),
+    status: trimOrFallback(source.status, trimOrFallback(fallbackSource.status, "unsupported")),
+    reason: trimOrFallback(source.reason, trimOrFallback(fallbackSource.reason, "pricing_not_configured"))
+  };
+}
+
 const CATALOG_PROVIDER_FIELDS = [
   "developer",
   "publisher",
@@ -87,19 +157,21 @@ export function normalizeCatalogGame(game, fallback = {}) {
     screenshots: normalizeStringArray(game?.screenshots, fallback.screenshots),
     steamGridSlug: trimOrFallback(game?.steamGridSlug, trimOrFallback(fallback.steamGridSlug, "")),
     providerValues: normalizeProviderValues(game?.providerValues, fallback.providerValues),
-    lockedFields: normalizeLockedFields(game?.lockedFields ?? fallback.lockedFields)
+    lockedFields: normalizeLockedFields(game?.lockedFields ?? fallback.lockedFields),
+    pricing: normalizeCatalogPricing(game?.pricing, fallback.pricing)
   };
 }
 
 export function normalizeLibraryEntry(entry, fallback = {}) {
   const now = new Date().toISOString();
+  const status = normalizeStatus(entry?.status, normalizeStatus(fallback.status, "playing"));
 
   return {
     entryId: trimOrFallback(entry?.entryId, trimOrFallback(fallback.entryId)),
     gameId: trimOrFallback(entry?.gameId, trimOrFallback(fallback.gameId)),
     title: trimOrFallback(entry?.title, trimOrFallback(fallback.title, "Untitled Game")),
     storefront: trimOrFallback(entry?.storefront, trimOrFallback(fallback.storefront, "steam")),
-    status: normalizeStatus(entry?.status, normalizeStatus(fallback.status, "playing")),
+    status,
     runLabel: trimOrFallback(entry?.runLabel, trimOrFallback(fallback.runLabel, "Main Save")),
     addedAt: trimOrFallback(entry?.addedAt, trimOrFallback(fallback.addedAt, now)),
     updatedAt: trimOrFallback(entry?.updatedAt, trimOrFallback(fallback.updatedAt, now)),
@@ -110,6 +182,7 @@ export function normalizeLibraryEntry(entry, fallback = {}) {
       : clampNumber(entry?.personalRating ?? fallback.personalRating, { min: 0, max: 10, fallback: 0 }),
     notes: trimOrFallback(entry?.notes, trimOrFallback(fallback.notes, "")),
     spotlight: trimOrFallback(entry?.spotlight, trimOrFallback(fallback.spotlight, "")),
-    syncState: trimOrFallback(entry?.syncState, trimOrFallback(fallback.syncState, "offline"))
+    syncState: trimOrFallback(entry?.syncState, trimOrFallback(fallback.syncState, "offline")),
+    priceWatch: normalizePriceWatch(entry?.priceWatch, fallback.priceWatch, status)
   };
 }
