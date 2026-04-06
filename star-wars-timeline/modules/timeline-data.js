@@ -15,6 +15,15 @@ export function normalizeOptionalUrl(value) {
   return trimmed;
 }
 
+export function isComingSoonWatchUrl(value) {
+  return normalizeOptionalText(value).toLowerCase() === "coming soon";
+}
+
+export function isPlayableWatchUrl(value) {
+  const trimmed = normalizeOptionalUrl(value);
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://");
+}
+
 function getEntryTypeValue(entry) {
   return String(entry && entry.type ? entry.type : "");
 }
@@ -127,7 +136,7 @@ function normalizeEpisodeDetails(entry) {
       ...episode,
       title: episode && episode.title ? episode.title : `Entry ${index + 1}`,
       time: episode && episode.time ? episode.time : getEntryDisplayYear(entry),
-      watchUrl: normalizeOptionalUrl(episode && episode.watchUrl),
+      watchUrl: normalizeOptionalUrl(episode && (episode.watchUrl || episode.watchURL)),
       episodeCode: episode && episode.episodeCode ? episode.episodeCode : buildEpisodeCode(episode && episode.title, index)
     }));
   }
@@ -298,10 +307,12 @@ export function isComplete(entry) {
 
 export function getEntryPlayUrl(entry) {
   if (!entry) return "";
-  if (entry.primaryWatchUrl) return entry.primaryWatchUrl;
-  if (entry.watchUrl) return normalizeOptionalUrl(entry.watchUrl);
+  if (isPlayableWatchUrl(entry.primaryWatchUrl)) return entry.primaryWatchUrl;
+  if (isPlayableWatchUrl(entry.watchUrl)) return normalizeOptionalUrl(entry.watchUrl);
   if (Array.isArray(entry.episodeDetails) && entry.episodeDetails.length === 1) {
-    return normalizeOptionalUrl(entry.episodeDetails[0].watchUrl);
+    return isPlayableWatchUrl(entry.episodeDetails[0].watchUrl)
+      ? normalizeOptionalUrl(entry.episodeDetails[0].watchUrl)
+      : "";
   }
   return "";
 }

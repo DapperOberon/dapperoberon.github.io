@@ -330,6 +330,17 @@ E: Episode
 * [ ] S1.E1 - A Way Forward - 18 BBY (19 BBY prologue)
 * [ ] S1.E2 - Friends - 18 BBY
 * [ ] S1.E3 - One Warrior to Another - 18 BBY
+### Maul - Shadow Lord - 17 BBY (2026-, Animated Show, Canon)
+* [x] S1.E1 - Chapter 1: The Dark Revenge - 17 BBY
+* [x] S1.E2 - Chapter 2: Sinister Schemes - 17 BBY
+* [ ] S1.E3 - Chapter 3: Whispers in the Unknown - 17 BBY
+* [ ] S1.E4 - Chapter 4: Pride and Vengeance - 17 BBY
+* [ ] S1.E5 - Chapter 5: Inquisition - 17 BBY
+* [ ] S1.E6 - Chapter 6: Night of the Hunted - 17 BBY
+* [ ] S1.E7 - Chapter 7: Call to the Oblivion - 17 BBY
+* [ ] S1.E8 - Chapter 8: The Creeping Fear - 17 BBY
+* [ ] S1.E9 - Chapter 9: Strange Allies - 17 BBY
+* [ ] S1.E10 - Chapter 10: Finale - 17 BBY
 ### Tales of the Jedi - 68-19 BBY (2022-, Animated Show, Canon)
 * [ ] S1.E6 - Resolve - between 18 and 5 BBY (the beginning takes place parallel to Star Wars Ep. 3 in 19 BBY)
 ### Star Wars: Droids - 15 BBY (1985-1986, Animated Show, Legends)

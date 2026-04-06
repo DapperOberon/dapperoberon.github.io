@@ -33,6 +33,8 @@ def fail(errors: list[str]) -> int:
 def validate_url(value: object, label: str, errors: list[str]) -> None:
     if value in (None, ""):
         return
+    if value == "Coming Soon":
+        return
     if not isinstance(value, str) or not value.startswith(("http://", "https://")):
         errors.append(f"{label} must be an absolute http(s) URL when provided")
 

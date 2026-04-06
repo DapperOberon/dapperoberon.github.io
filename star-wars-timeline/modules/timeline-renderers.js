@@ -5,6 +5,8 @@ import {
   getEntryPlayUrl,
   getEntryStoryMeta,
   getWatchedCount,
+  isComingSoonWatchUrl,
+  isPlayableWatchUrl,
   isComplete,
   isSeriesEntry
 } from "./timeline-data.js";
@@ -28,9 +30,16 @@ function renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount, escap
     ? Boolean(watchedCount[index])
     : index < watchedCount;
   const isNext = nextIndex >= 0 && index === nextIndex;
-  const playAction = episode.watchUrl
+  const playAction = isPlayableWatchUrl(episode.watchUrl)
     ? `
         <a class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-400 hover:text-primary-fixed"} transition-colors" href="${escapeHtml(episode.watchUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Watch ${escapeHtml(episode.title)}">play_circle</a>
+      `
+    : isComingSoonWatchUrl(episode.watchUrl)
+      ? `
+        <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-primary-fixed font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Coming Soon">
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
+          <span>Coming Soon</span>
+        </span>
       `
     : `
         <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Unavailable">
@@ -73,7 +82,7 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
     : index < watchedCount;
   const isNext = nextIndex >= 0 && index === nextIndex;
   const actionIcon = watched ? "check_circle" : "bookmark_add";
-  const playSurface = episode.watchUrl
+  const playSurface = isPlayableWatchUrl(episode.watchUrl)
     ? `
         <a class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest group/play" href="${escapeHtml(episode.watchUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Watch ${escapeHtml(episode.title)}">
           <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
@@ -81,6 +90,15 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
             <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 group-hover/play:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
           </div>
         </a>
+      `
+    : isComingSoonWatchUrl(episode.watchUrl)
+      ? `
+        <div class="flex-shrink-0">
+          <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-primary-fixed font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Coming Soon">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
+            <span>Coming Soon</span>
+          </span>
+        </div>
       `
     : `
         <div class="flex-shrink-0">
@@ -163,7 +181,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
                   <span class="kicker-label">${escapeHtml(entry.era)}</span>
                   <span class="story-meta text-secondary">${escapeHtml(metaLine)}</span>
                 </div>
-                <h2 id="entry-modal-title" class="max-w-4xl text-4xl md:text-6xl xl:text-7xl font-headline font-bold text-white tracking-tighter uppercase leading-[0.95]">${escapeHtml(entry.title)}</h2>
+                <h2 id="entry-modal-title" class="max-w-4xl text-4xl md:text-6xl xl:text-7xl font-headline font-bold text-white tracking-tighter leading-[0.95]">${escapeHtml(entry.title)}</h2>
                 <p class="max-w-2xl text-slate-300 font-body text-sm md:text-lg leading-relaxed opacity-90">${escapeHtml(entry.synopsis || "Entry synopsis coming soon.")}</p>
                 <div class="flex items-center gap-6 pt-3 flex-wrap">
                   <button class="cta-primary px-7" type="button" data-modal-primary>

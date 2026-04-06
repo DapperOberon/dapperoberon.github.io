@@ -129,7 +129,7 @@
             "watchUrl": "https://www.disneyplus.com/play/f76ede6c-ae73-4172-82f7-04f092116633"
           },
           {
-            "title": "S1.E24 - The Starship Show / Nash’s Super Busy Day",
+            "title": "S1.E24 - The Starship Show / Nash\u2019s Super Busy Day",
             "time": "232 BBY",
             "watchUrl": "https://www.disneyplus.com/play/7cefedab-482c-49b5-9807-daab1a2c937a"
           },
@@ -491,7 +491,7 @@
         "storageMigrationIds": [
           "fall-of-the-jedi__episode-ii-attack-of-the-clones__film__22-bby"
         ],
-        "synopsis": "Young Anakin and Padmé fall in love as galactic war looms.",
+        "synopsis": "Young Anakin and Padm\u00e9 fall in love as galactic war looms.",
         "watchUrl": "https://www.disneyplus.com/play/39cbdf17-1bbe-4de2-b4a4-8e342875c2c6",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Episode_II_Attack_of_the_Clones"
       },
@@ -614,7 +614,7 @@
         "storageMigrationIds": [
           "fall-of-the-jedi__clone-wars__show__22-19-bby"
         ],
-        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
+        "synopsis": "Enjoy this thrilling, Emmy\u00ae Award-winning animated series that continues the Star Wars story.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Clone_Wars"
       },
       {
@@ -680,7 +680,7 @@
         "episodeDetails": [
           {
             "title": "S1.E5 - Practice Makes Perfect",
-            "time": "between 21 and 19 BBY (the ending takes place parallel to The Clone Wars Season 7 Ep. 12)",
+            "time": "between 21 and 19 BBY (the ending is parallel to The Clone Wars S7.E12)",
             "watchUrl": "https://www.disneyplus.com/play/f7d69be6-d68d-4b2f-b8de-fa3eaa80297c"
           }
         ],
@@ -1439,7 +1439,7 @@
         "storageMigrationIds": [
           "fall-of-the-jedi__clone-wars__show__22-19-bby--2"
         ],
-        "synopsis": "Enjoy this thrilling, Emmy® Award-winning animated series that continues the Star Wars story.",
+        "synopsis": "Enjoy this thrilling, Emmy\u00ae Award-winning animated series that continues the Star Wars story.",
         "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Clone_Wars"
       },
       {
@@ -1837,6 +1837,75 @@
         "seasons": 1
       },
       {
+        "id": "01i",
+        "title": "Maul - Shadow Lord",
+        "year": "17 BBY",
+        "type": "Animated Show",
+        "canon": true,
+        "poster": "./images/posters/maul-shadow-lord-poster.jpg",
+        "episodes": 10,
+        "watched": 2,
+        "releaseYear": "2026-",
+        "episodeDetails": [
+          {
+            "title": "S1.E1 - Chapter 1: The Dark Revenge",
+            "time": "17 BBY",
+            "watchUrl": "https://www.disneyplus.com/play/0e49b158-190f-46f9-8be4-f1ffb5a76533"
+          },
+          {
+            "title": "S1.E2 - Chapter 2: Sinister Schemes",
+            "time": "17 BBY",
+            "watchUrl": "https://www.disneyplus.com/play/9bdbf6bc-ae50-4770-a9bd-c9db9411a8db"
+          },
+          {
+            "title": "S1.E3 - Chapter 3: Whispers in the Unknown",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E4 - Chapter 4: Pride and Vengeance",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E5 - Chapter 5: Inquisition",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E6 - Chapter 6: Night of the Hunted",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E7 - Chapter 7: Call to the Oblivion",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E8 - Chapter 8: The Creeping Fear",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E9 - Chapter 9: Strange Allies",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          },
+          {
+            "title": "S1.E10 - Chapter 10: Finale",
+            "time": "17 BBY",
+            "watchUrl": "Coming Soon"
+          }
+        ],
+        "storageMigrationIds": [
+          "reign-of-the-empire__maul-shadow-lord__show__17-bby"
+        ],
+        "synopsis": "Darth Maul builds power in the early Imperial era as his criminal empire and dark ambitions collide with a changing galaxy.",
+        "wookieepediaUrl": "https://starwars.fandom.com/wiki/Star_Wars:_Maul_-_Shadow_Lord",
+        "seasons": 1
+      },
+      {
         "id": "00m",
         "title": "Tales of the Jedi",
         "year": "68-19 BBY",
@@ -1848,7 +1917,8 @@
         "episodeDetails": [
           {
             "title": "S1.E6 - Resolve",
-            "time": "between 18 and 5 BBY (the beginning takes place parallel to Star Wars Ep. 3 in 19 BBY)"
+            "time": "between 18 and 5 BBY (the beginning is parallel to Star Wars Ep. 3)",
+            "watchUrl": "https://www.disneyplus.com/play/e7d825ee-a382-4b86-97ed-0d7c3787c7e9"
           }
         ],
         "storageMigrationIds": [
@@ -3617,7 +3687,7 @@
           },
           {
             "title": "S1.E8",
-            "time": "Lop & Ochō"
+            "time": "Lop & Och\u014d"
           },
           {
             "title": "S1.E9",
