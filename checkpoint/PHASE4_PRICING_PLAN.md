@@ -164,6 +164,30 @@ Notes:
 - Show “last checked” timestamp for trust.
 - Always label source: `Powered by IsThereAnyDeal` (or active provider).
 
+## Provider Scope Limits (MVP)
+
+Phase 4 pricing is intentionally aggregator-first and PC-store leaning:
+
+- Coverage depends on IsThereAnyDeal title/store support.
+- Region, edition, and platform parity are not guaranteed for every title.
+- Missing prices for unreleased/TBD titles should be treated as release-state context, not hard provider failure.
+- Consoles and niche storefronts may return sparse or no data in MVP.
+- Direct per-store API parity is out of scope until a later phase.
+
+## Pricing Status Meanings
+
+Use these canonical status values across UI and logs:
+
+- `ok`: pricing resolved successfully (at least one usable current price signal).
+- `no_match`: title could not be matched to provider catalog.
+- `unsupported`: pricing provider unavailable for this context/configuration.
+- `error`: provider/proxy request failed unexpectedly.
+
+Reason field guidance:
+
+- `reason` is a machine-readable debugging hint and should remain stable for analytics/QA.
+- UI should prefer friendly messaging mapped from `status` plus release context.
+
 ---
 
 ## QA Plan (MVP)

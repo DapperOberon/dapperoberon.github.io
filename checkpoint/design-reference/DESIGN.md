@@ -48,3 +48,22 @@ These principles define structure and interaction hierarchy (independent from co
 *   **Density by Intent:** Browsing surfaces may be denser; editing/settings flows should remain calmer and easier to parse.
 *   **Explicit Scope Labels:** Action labels should encode scope directly (for example, `This Entry` vs `Library-wide`).
 *   **Local-First Clarity:** Cloud/sync state should be visible and trustworthy, but never dominate core run-tracking workflows.
+
+## IA Map (Current Surface Responsibilities)
+
+Use this as the default information architecture map when designing or refactoring UI:
+
+*   **Library (`/checkpoint/library/`):** Run-tracking workspace for `playing`, `finished`, and `backlog` entries.
+    *   Primary goal: update run progress and review tracked library state.
+*   **Library Details (`/checkpoint/library/game/?id=...`):** Run-centric detail template for tracked entries.
+    *   Primary goal: maintain run details/progress/notes and view metadata in context.
+*   **Discover (`/checkpoint/discover/`):** Catalog-first search/browse surface for finding titles before tracking.
+    *   Primary goal: evaluate and select games to add to wishlist or library.
+*   **Discover Details (`/checkpoint/discover/game/?id=...`):** Decision workspace with richer metadata, media, links, and price snapshot.
+    *   Primary goal: make add/wishlist decisions with minimal friction.
+*   **Wishlist (`/checkpoint/wishlist/`):** Decision-first planning surface.
+    *   Primary goal: evaluate buy timing via price/release context, not run progress.
+*   **Wishlist Details (`/checkpoint/wishlist/game/?id=...`):** Wishlist-specific details with price-watch and release context.
+    *   Primary goal: monitor price and intent-to-buy signals.
+*   **Settings (`/checkpoint/settings/`):** Device/sync/backup/maintenance/activity configuration.
+    *   Primary goal: configure behavior without interrupting run-tracking workflows.

@@ -23,32 +23,32 @@ Definition of done:
 
 ## Phase 4B: Provider Integration (IsThereAnyDeal MVP)
 
-- [ ] Implement title search to provider game match flow.
-- [ ] Implement current best price/deal resolution for matched titles.
-- [ ] Normalize provider payloads into canonical `catalog[].pricing` shape.
-- [ ] Handle provider result states:
+- [x] Implement title search to provider game match flow.
+- [x] Implement current best price/deal resolution for matched titles.
+- [x] Normalize provider payloads into canonical `catalog[].pricing` shape.
+- [x] Handle provider result states:
   - `ok`
   - `no_match`
   - `unsupported`
   - `error`
-- [ ] Add provider attribution metadata (`provider`, `providerGameId`, `lastCheckedAt`, `reason`).
+- [x] Add provider attribution metadata (`provider`, `providerGameId`, `lastCheckedAt`, `reason`).
 
 Definition of done:
 - Wishlist titles can fetch and store normalized current price info via IsThereAnyDeal.
 
 ## Phase 4C: Wishlist Price Watch UI
 
-- [ ] Add wishlist price display in Library:
+- [x] Add wishlist price display in Library:
   - current price
   - store name
   - discount indicator (when available)
-- [ ] Add entry-level controls in Details:
+- [x] Add entry-level controls in Details:
   - watch enabled toggle
   - target price input
   - per-entry price refresh action
-- [ ] Add Settings maintenance action:
+- [x] Add Settings maintenance action:
   - `Refresh Prices (Library-wide)`
-- [ ] Add fallback UI copy for:
+- [x] Add fallback UI copy for:
   - no match
   - unsupported
   - provider unavailable
@@ -58,27 +58,27 @@ Definition of done:
 
 ## Phase 4D: Watch Evaluation + Alerts
 
-- [ ] Implement watch evaluation logic:
+- [x] Implement watch evaluation logic:
   - if `priceWatch.enabled`
   - and `targetPrice` exists
   - and `currentBest.amount <= targetPrice`
-- [ ] Emit in-app toast/notice when threshold is met.
-- [ ] Write activity history entry for threshold hits.
-- [ ] Add debounce guard using `priceWatch.lastNotifiedAt`.
+- [x] Emit in-app toast/notice when threshold is met.
+- [x] Write activity history entry for threshold hits.
+- [x] Add debounce guard using `priceWatch.lastNotifiedAt`.
 
 Definition of done:
 - Price-watch alerts trigger once per refresh cycle and do not spam on repeated checks.
 
 ## Phase 4E: Quality + Hardening
 
-- [ ] Add test coverage for:
+- [x] Add test coverage for:
   - provider match success/failure
   - wishlist default behavior
   - threshold trigger logic
   - no-match/unsupported/error UI states
-- [ ] Add smoke-check step for pricing adapter/mocks.
-- [ ] Validate that entry CRUD and sync flows are unaffected by pricing additions.
-- [ ] Add docs for:
+- [x] Add smoke-check step for pricing adapter/mocks.
+- [x] Validate that entry CRUD and sync flows are unaffected by pricing additions.
+- [x] Add docs for:
   - provider scope limits (MVP is aggregator-first, PC-leaning)
   - meaning of each pricing status
 
@@ -106,28 +106,28 @@ Definition of done:
 ## Phase 4G: Document Scroll + Screenshot Compatibility
 
 - [x] Replace internal page scroll containers with document flow scrolling.
-- [ ] Keep modal scrolling/focus trap behavior intact.
-- [ ] Validate sticky header and right rails under document scrolling.
-- [ ] Verify Firefox full-page screenshot captures full content (not viewport-only).
-- [ ] Fix full-page capture mismatch where fixed top nav/header may be missing from screenshots.
+- [x] Keep modal scrolling/focus trap behavior intact.
+- [x] Validate sticky header and right rails under document scrolling.
+- [x] Verify Firefox full-page screenshot captures full content (not viewport-only).
+- [x] Fix full-page capture mismatch where fixed top nav/header may be missing from screenshots.
 
 Definition of done:
 - App pages use document scroll and full-page screenshot behavior is reliable.
 
 ## Explicit Out of Scope (Phase 4)
 
-- [ ] Email/push notifications (defer).
-- [ ] Multi-currency conversion engine (defer).
-- [ ] Direct storefront API integrations (defer).
-- [ ] Multi-provider blending/arbitration (defer).
+- [x] Email/push notifications (defer).
+- [x] Multi-currency conversion engine (defer).
+- [x] Direct storefront API integrations (defer).
+- [x] Multi-provider blending/arbitration (defer).
 
 ---
 
 ## Final Phase 4 Exit Criteria
 
-- [ ] Wishlist entries can fetch and display normalized current prices.
-- [ ] Users can configure target-price watch per entry.
-- [ ] In-app alerts and activity entries fire when targets are met.
-- [ ] Existing tracking/sync behavior remains stable.
-- [ ] URL routing/slugs are stable for library/discover/wishlist/settings and game details.
-- [ ] Full-document rendering is in place (no internal page-scroll dependency).
+- [x] Wishlist entries can fetch and display normalized current prices.
+- [x] Users can configure target-price watch per entry.
+- [x] In-app alerts and activity entries fire when targets are met.
+- [x] Existing tracking/sync behavior remains stable.
+- [x] URL routing/slugs are stable for library/discover/wishlist/settings and game details.
+- [x] Full-document rendering is in place (no internal page-scroll dependency).

@@ -11,6 +11,8 @@ echo "[checkpoint] Running syntax checks..."
 node --check checkpoint/app.js
 node --check checkpoint/data/sample-data.js
 node --check checkpoint/scripts/verify_phase2_integrations.mjs
+node --check checkpoint/scripts/verify_pricing_services.mjs
+node --check checkpoint/scripts/verify_pricing_watch_states.mjs
 node --check checkpoint/scripts/preflight_config.mjs
 node --check checkpoint/modules/render.js
 node --check checkpoint/modules/store.js
@@ -88,5 +90,11 @@ fi
 
 echo "[checkpoint] Verifying integration failure, bulk-refresh, and add-flow paths..."
 node checkpoint/scripts/verify_phase2_integrations.mjs
+
+echo "[checkpoint] Verifying pricing service adapter paths..."
+node checkpoint/scripts/verify_pricing_services.mjs
+
+echo "[checkpoint] Verifying pricing watch defaults, trigger guard, and status UI states..."
+node checkpoint/scripts/verify_pricing_watch_states.mjs
 
 echo "[checkpoint] Smoke test passed."
