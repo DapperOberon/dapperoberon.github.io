@@ -48,6 +48,31 @@ export function createEntryActions(ctx) {
       : [];
   }
 
+  function normalizeDiscoverResultGameId(result) {
+    const igdbId = Number(result?.igdbId);
+    if (Number.isFinite(igdbId) && igdbId > 0) {
+      return `igdb-${igdbId}`;
+    }
+    return "";
+  }
+
+  function findWishlistEntryForDiscoverResult(result) {
+    if (!result) return null;
+    const normalizedGameId = normalizeDiscoverResultGameId(result);
+    const normalizedTitle = String(result?.title || "").trim().toLowerCase();
+    const normalizedStorefront = String(result?.storefront || state.addForm.storefront || "").trim().toLowerCase();
+
+    return state.library.find((entry) => {
+      if (entry?.status !== "wishlist") return false;
+      if (normalizedGameId && entry.gameId === normalizedGameId) return true;
+      const entryTitle = String(entry?.title || "").trim().toLowerCase();
+      const entryStorefront = String(entry?.storefront || "").trim().toLowerCase();
+      return Boolean(normalizedTitle)
+        && entryTitle === normalizedTitle
+        && (!normalizedStorefront || entryStorefront === normalizedStorefront);
+    }) ?? null;
+  }
+
   function resetDiscoverEntryState() {
     state.discoverEntryDetails = null;
     state.discoverEntryLoading = false;
@@ -115,6 +140,56 @@ export function createEntryActions(ctx) {
     const targetPrice = Number(entry?.priceWatch?.targetPrice);
     if (!Number.isFinite(currentPrice) || !Number.isFinite(targetPrice)) return false;
     return currentPrice <= targetPrice;
+  }
+
+  function getTrackedGameIgdbId(game) {
+    const directId = Number(game?.igdbId);
+    if (Number.isFinite(directId) && directId > 0) return directId;
+    const rawGameId = String(game?.id || "").trim();
+    const match = rawGameId.match(/^igdb-(\d+)$/i);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  function hasTrackedGameDecisionData(game) {
+    if (!game || typeof game !== "object") return false;
+    const hasVideos = Array.isArray(game.videos) && game.videos.length > 0;
+    const hasRelated = Array.isArray(game.relatedTitles) && game.relatedTitles.length > 0;
+    const hasLinks = Boolean(
+      String(game?.links?.igdb || "").trim()
+      || String(game?.links?.official || "").trim()
+      || (Array.isArray(game?.links?.storefronts) && game.links.storefronts.length)
+    );
+    return hasVideos && hasRelated && hasLinks;
+  }
+
+  async function hydrateTrackedGameDecisionData(entry) {
+    const game = getCatalogGame(entry?.gameId);
+    const igdbId = getTrackedGameIgdbId(game);
+    if (!game || !Number.isFinite(igdbId) || igdbId <= 0) return null;
+    if (hasTrackedGameDecisionData(game)) return game;
+    if (typeof integrations.metadataResolver.getGameByIgdbId !== "function") return game;
+
+    const [details, related] = await Promise.all([
+      integrations.metadataResolver.getGameByIgdbId(igdbId),
+      typeof integrations.metadataResolver.getRelatedGamesByIgdbId === "function"
+        ? integrations.metadataResolver.getRelatedGamesByIgdbId(igdbId, 12)
+        : Promise.resolve([])
+    ]);
+
+    const nextGame = mergeMetadataIntoCatalogGame(game, {
+      ...(details && typeof details === "object" ? details : {}),
+      relatedTitles: Array.isArray(related) && related.length
+        ? related
+        : (details?.relatedTitles ?? game.relatedTitles ?? [])
+    }, {
+      title: entry.title,
+      storefront: entry.storefront
+    });
+
+    state.catalog = state.catalog.map((item) => (item.id === nextGame.id ? nextGame : item));
+    return nextGame;
   }
 
   function shouldNotifyPriceWatch(entry) {
@@ -332,7 +407,7 @@ export function createEntryActions(ctx) {
     emit();
   }
 
-  function openEntryDetails(entryId) {
+  async function openEntryDetails(entryId) {
     const entry = getEntry(entryId);
     if (!entry) return;
     state.activeEntryId = entry.entryId;
@@ -340,6 +415,15 @@ export function createEntryActions(ctx) {
     state.isDetailEditMode = false;
     state.detailForm = createDetailForm(entry);
     emit();
+
+    if (entry.status === "wishlist") {
+      try {
+        await hydrateTrackedGameDecisionData(entry);
+        emit();
+      } catch {
+        // Best-effort hydrate only; keep the detail page usable if this fails.
+      }
+    }
   }
 
   function openAddModal() {
@@ -393,6 +477,16 @@ export function createEntryActions(ctx) {
 
   async function enrichSearchResultsWithArtwork(baseResults, queryStorefront = state.addForm.storefront) {
     return Promise.all(baseResults.map(async (result) => {
+      const existingCover = String(result?.coverArt || "").trim();
+      const existingHero = String(result?.heroArt || "").trim();
+      if (existingCover && existingHero) {
+        return {
+          ...result,
+          steamGridCover: "",
+          steamGridHero: "",
+          steamGridMeta: null
+        };
+      }
       try {
         const artwork = await integrations.steamGrid.resolveArtwork({
           title: result.title,
@@ -401,8 +495,8 @@ export function createEntryActions(ctx) {
         });
         return {
           ...result,
-          steamGridCover: artwork?.capsuleArt || "",
-          steamGridHero: artwork?.heroArt || "",
+          steamGridCover: existingCover ? "" : (artwork?.capsuleArt || ""),
+          steamGridHero: existingHero ? "" : (artwork?.heroArt || ""),
           steamGridMeta: artwork?.meta ?? null
         };
       } catch (error) {
@@ -487,6 +581,59 @@ export function createEntryActions(ctx) {
       return;
     }
     emit();
+  }
+
+  async function openDiscoverSearch(query = "") {
+    const normalizedQuery = String(query ?? "").trim();
+    const previousQuery = String(state.addForm?.searchQuery ?? "").trim();
+    const hasMatchingResults = (
+      normalizedQuery
+      && previousQuery === normalizedQuery
+      && !state.addForm?.selectedSearchResult
+      && Array.isArray(state.addSearchResults)
+      && state.addSearchResults.length > 0
+    );
+
+    nextDiscoverNavigationToken();
+    state.currentView = "discover";
+    state.uiPreferences.lastView = "discover";
+    state.activeStatus = "all";
+    state.uiPreferences.lastStatusFilter = "all";
+    state.searchTerm = "";
+    state.isAddModalOpen = false;
+    state.editingEntryId = null;
+    resetDiscoverEntryState();
+    state.addForm = {
+      ...state.addForm,
+      searchQuery: normalizedQuery,
+      selectedSearchResult: null,
+      step: "search",
+      mode: "search"
+    };
+
+    if (!normalizedQuery) {
+      state.addSearchResults = [];
+      state.addSearchLoading = false;
+      state.addSearchError = "";
+      emit();
+      await loadDiscoverTopPlayed();
+      return true;
+    }
+
+    if (!hasMatchingResults) {
+      state.addSearchResults = [];
+      state.addSearchLoading = true;
+      state.addSearchError = "";
+    }
+
+    emit();
+
+    if (hasMatchingResults) {
+      return true;
+    }
+
+    await searchAddCatalog(normalizedQuery);
+    return true;
   }
 
   async function searchAddCatalog(query = state.addForm.searchQuery) {
@@ -610,7 +757,7 @@ export function createEntryActions(ctx) {
             : (selectedResult.platforms || []),
           description: cachedDetails.description || selectedResult.description || "",
           coverArt: cachedDetails.coverArt || selectedResult.coverArt || "",
-          heroArt: selectedResult.steamGridHero || cachedDetails.heroArt || "",
+          heroArt: cachedDetails.heroArt || selectedResult.heroArt || selectedResult.steamGridHero || "",
           screenshots: Array.isArray(cachedDetails.screenshots) ? cachedDetails.screenshots : [],
           videos: Array.isArray(cachedDetails.videos) ? cachedDetails.videos : [],
           links: cachedDetails.links ?? { igdb: "", official: "", storefronts: [] }
@@ -661,7 +808,7 @@ export function createEntryActions(ctx) {
             : (selectedResult.platforms || []),
           description: details.description || selectedResult.description || "",
           coverArt: details.coverArt || selectedResult.coverArt || "",
-          heroArt: selectedResult.steamGridHero || details.heroArt || "",
+          heroArt: details.heroArt || selectedResult.heroArt || selectedResult.steamGridHero || "",
           screenshots: Array.isArray(details.screenshots) ? details.screenshots : [],
           videos: Array.isArray(details.videos) ? details.videos : [],
           links: details.links ?? { igdb: "", official: "", storefronts: [] }
@@ -842,6 +989,22 @@ export function createEntryActions(ctx) {
     const selectedResult = state.addForm.selectedSearchResult;
     if (!selectedResult) return;
 
+    if (target === "wishlist") {
+      const existingWishlistEntry = findWishlistEntryForDiscoverResult(selectedResult);
+      if (existingWishlistEntry) {
+        state.activeEntryId = existingWishlistEntry.entryId;
+        state.currentView = "details";
+        state.uiPreferences.lastView = "wishlist";
+        state.detailForm = createDetailForm(existingWishlistEntry);
+        state.notice = {
+          tone: "warning",
+          message: `${existingWishlistEntry.title} is already on your wishlist.`
+        };
+        emit();
+        return;
+      }
+    }
+
     const nextStatus = target === "wishlist" ? "wishlist" : "playing";
     const nextRunLabel = target === "wishlist" ? "Wishlist" : "Main Save";
     const nextNotes = target === "wishlist"
@@ -939,11 +1102,26 @@ export function createEntryActions(ctx) {
       const existingEntry = state.editingEntryId ? getEntry(state.editingEntryId) : null;
       const selectedCatalog = state.catalog.find((item) => item.id === state.addForm.selectedCatalogId);
       const selectedSearchResult = state.addForm.selectedSearchResult;
+      const selectedSearchIgdbId = Number(selectedSearchResult?.igdbId);
+      const matchingDiscoverDetails = Number.isFinite(selectedSearchIgdbId)
+        && Number(state.discoverEntryDetails?.igdbId) === selectedSearchIgdbId
+        ? state.discoverEntryDetails
+        : null;
+      const matchingDiscoverPricing = Number.isFinite(selectedSearchIgdbId)
+        && Number(state.discoverEntryDetails?.igdbId) === selectedSearchIgdbId
+        && state.discoverEntryPricing
+        && typeof state.discoverEntryPricing === "object"
+        ? state.discoverEntryPricing
+        : null;
+      const selectedRelated = matchingDiscoverDetails
+        ? (Array.isArray(state.discoverEntryRelated) ? state.discoverEntryRelated : [])
+        : [];
       const catalogSeed = selectedCatalog ?? (selectedSearchResult
         ? {
             id: selectedSearchResult.igdbId
               ? `igdb-${selectedSearchResult.igdbId}`
               : `game-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "manual"}`,
+            igdbId: Number.isFinite(selectedSearchIgdbId) ? selectedSearchIgdbId : null,
             title: selectedSearchResult.title || title,
             storefront,
             developer: "",
@@ -954,9 +1132,12 @@ export function createEntryActions(ctx) {
             criticSummary: "",
             description: selectedSearchResult.description || "",
             steamGridSlug: "",
-            heroArt: "",
-            capsuleArt: selectedSearchResult.steamGridCover || selectedSearchResult.coverArt || "",
+            heroArt: selectedSearchResult.heroArt || selectedSearchResult.steamGridHero || "",
+            capsuleArt: selectedSearchResult.coverArt || selectedSearchResult.steamGridCover || "",
             screenshots: [],
+            videos: Array.isArray(matchingDiscoverDetails?.videos) ? matchingDiscoverDetails.videos : [],
+            links: matchingDiscoverDetails?.links ?? { igdb: "", official: "", storefronts: [] },
+            relatedTitles: selectedRelated,
             lockedFields: []
           }
         : null);
@@ -965,14 +1146,40 @@ export function createEntryActions(ctx) {
         storefront,
         catalogGame: catalogSeed
       });
-      const artwork = await integrations.steamGrid.resolveArtwork({
-        title,
-        storefront,
-        catalogGame: catalogSeed
-      });
-
-      const metadataGame = mergeMetadataIntoCatalogGame(catalogSeed, metadata, { title, storefront });
-      const catalogGame = mergeArtworkIntoCatalogGame(metadataGame, artwork);
+      let metadataGame = mergeMetadataIntoCatalogGame(catalogSeed, metadata, { title, storefront });
+      if (matchingDiscoverDetails) {
+        metadataGame = mergeMetadataIntoCatalogGame(metadataGame, {
+          ...matchingDiscoverDetails,
+          links: matchingDiscoverDetails.links ?? state.discoverEntryLinks ?? { igdb: "", official: "", storefronts: [] },
+          relatedTitles: selectedRelated
+        }, { title, storefront });
+      }
+      const needsArtworkFallback = !metadataGame?.heroArt || !metadataGame?.capsuleArt || !(Array.isArray(metadataGame?.screenshots) && metadataGame.screenshots.length);
+      const artwork = needsArtworkFallback
+        ? await integrations.steamGrid.resolveArtwork({
+            title,
+            storefront,
+            catalogGame: metadataGame
+          })
+        : {
+            heroArt: metadataGame.heroArt || "",
+            capsuleArt: metadataGame.capsuleArt || "",
+            screenshots: metadataGame.screenshots || [],
+            meta: {
+              resolved: true,
+              usedFallback: false,
+              reason: "igdb_primary"
+            }
+          };
+      const catalogGame = {
+        ...mergeArtworkIntoCatalogGame(metadataGame, artwork),
+        pricing: matchingDiscoverPricing
+          ? {
+              ...(metadataGame?.pricing && typeof metadataGame.pricing === "object" ? metadataGame.pricing : {}),
+              ...matchingDiscoverPricing
+            }
+          : metadataGame?.pricing
+      };
 
       const catalogGameExists = state.catalog.some((item) => item.id === catalogGame.id);
       state.catalog = catalogGameExists
@@ -1006,9 +1213,11 @@ export function createEntryActions(ctx) {
       state.activeEntryId = entry.entryId;
       const previousView = state.currentView;
       state.currentView = "details";
-      state.uiPreferences.lastView = ["dashboard", "discover", "wishlist", "settings"].includes(previousView)
-        ? previousView
-        : "dashboard";
+      state.uiPreferences.lastView = entry.status === "wishlist"
+        ? "wishlist"
+        : (["dashboard", "discover", "wishlist", "settings"].includes(previousView)
+          ? previousView
+          : "dashboard");
       state.detailForm = createDetailForm(entry);
       const saveFeedback = buildEntrySaveFeedback({
         title: entry.title,
@@ -1297,9 +1506,17 @@ export function createEntryActions(ctx) {
     const enabled = typeof draft.enabled === "boolean"
       ? draft.enabled
       : (entry.priceWatch?.enabled !== false);
+    const nextWishlistPriority = typeof draft.wishlistPriority === "string" && ["low", "medium", "high", "must-buy"].includes(draft.wishlistPriority)
+      ? draft.wishlistPriority
+      : (entry.wishlistPriority || "medium");
+    const nextWishlistIntent = typeof draft.wishlistIntent === "string" && ["buy-now", "wait-sale", "monitor-release", "research"].includes(draft.wishlistIntent)
+      ? draft.wishlistIntent
+      : (entry.wishlistIntent || "wait-sale");
 
     const updatedEntry = normalizeLibraryEntry({
       ...entry,
+      wishlistPriority: nextWishlistPriority,
+      wishlistIntent: nextWishlistIntent,
       priceWatch: {
         ...entry.priceWatch,
         enabled,
@@ -1316,14 +1533,14 @@ export function createEntryActions(ctx) {
     state.detailForm = createDetailForm(updatedEntry);
     state.notice = {
       tone: "success",
-      message: `${updatedEntry.title} price watch saved.`
+      message: `${updatedEntry.title} wishlist settings saved.`
     };
     recordActivity({
       category: "pricing",
       action: "watch-updated",
       scope: "entry",
       title: updatedEntry.title,
-      message: "Price watch settings updated.",
+      message: "Price watch, priority, and intent updated.",
       tone: "success"
     });
     emit();
@@ -1416,6 +1633,7 @@ export function createEntryActions(ctx) {
     closeDeleteConfirm,
     updateAddForm,
     openDiscover,
+    openDiscoverSearch,
     loadDiscoverTopPlayed,
     searchAddCatalog,
     backToAddSearch,
@@ -1440,6 +1658,7 @@ export function createEntryActions(ctx) {
     togglePriceWatch,
     refreshPricingForEntry,
     refreshLibraryPricing,
+    hydrateTrackedGameDecisionData,
     loadItadStores,
     toggleItadStoreSelection,
     togglePreference

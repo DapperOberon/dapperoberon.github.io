@@ -719,7 +719,9 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "save-price-watch":
           store.savePriceWatch({
             targetPrice: app.querySelector("#detail-price-target")?.value ?? "",
-            currency: app.querySelector("#detail-price-currency")?.value ?? "USD"
+            currency: app.querySelector("#detail-price-currency")?.value ?? "USD",
+            wishlistPriority: app.querySelector("#detail-wishlist-priority")?.value ?? "medium",
+            wishlistIntent: app.querySelector("#detail-wishlist-intent")?.value ?? "wait-sale"
           });
           break;
         case "save-detail-notes":
@@ -854,6 +856,21 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
       if (target instanceof HTMLSelectElement) {
         if (target.id === "library-status-filter") {
           store.setActiveStatus(target.value);
+          return;
+        }
+
+        if (target.id === "wishlist-priority-filter") {
+          store.setWishlistPriorityFilter(target.value);
+          return;
+        }
+
+        if (target.id === "wishlist-intent-filter") {
+          store.setWishlistIntentFilter(target.value);
+          return;
+        }
+
+        if (target.id === "wishlist-price-status-filter") {
+          store.setWishlistPriceStatusFilter(target.value);
           return;
         }
 

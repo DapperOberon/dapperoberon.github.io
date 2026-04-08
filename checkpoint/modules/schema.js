@@ -72,7 +72,7 @@ function normalizeSyncHistory(history) {
     .slice(0, 12);
 }
 
-export const APP_STATE_SCHEMA_VERSION = 8;
+export const APP_STATE_SCHEMA_VERSION = 9;
 
 export function pruneCatalogToLibrary(library, catalog) {
   const referencedGameIds = new Set(
@@ -109,6 +109,10 @@ export function createInitialPersistedState({ initialLibrary, initialCatalog }) 
       lastView: "dashboard",
       lastStatusFilter: "all",
       librarySort: "updated_desc",
+      wishlistSort: "wishlist_priority_desc",
+      wishlistPriorityFilter: "all",
+      wishlistIntentFilter: "all",
+      wishlistPriceStatusFilter: "all",
       settingsSection: "settings-sync-account"
     }
   };
@@ -143,6 +147,10 @@ function normalizeUiPreferences(uiPreferences) {
     lastView: typeof source.lastView === "string" ? source.lastView : "dashboard",
     lastStatusFilter,
     librarySort: typeof source.librarySort === "string" ? source.librarySort : "updated_desc",
+    wishlistSort: typeof source.wishlistSort === "string" ? source.wishlistSort : "wishlist_priority_desc",
+    wishlistPriorityFilter: typeof source.wishlistPriorityFilter === "string" ? source.wishlistPriorityFilter : "all",
+    wishlistIntentFilter: typeof source.wishlistIntentFilter === "string" ? source.wishlistIntentFilter : "all",
+    wishlistPriceStatusFilter: typeof source.wishlistPriceStatusFilter === "string" ? source.wishlistPriceStatusFilter : "all",
     settingsSection: typeof source.settingsSection === "string" ? source.settingsSection : "settings-sync-account"
   };
 }
@@ -249,6 +257,22 @@ export function normalizePersistedState(rawState, { initialLibrary, initialCatal
   }
 
   if (rawState.schemaVersion === 7 && Array.isArray(rawState.library)) {
+    const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
+    const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
+    return {
+      ...initialState,
+      library,
+      catalog: pruneCatalogToLibrary(library, catalog),
+      syncPreferences: normalizeSyncPreferences(rawState.syncPreferences),
+      activityHistory: normalizeActivityHistory(rawState.activityHistory),
+      syncHistory: normalizeSyncHistory(rawState.syncHistory),
+      uiPreferences: normalizeUiPreferences(rawState.uiPreferences),
+      deviceIdentity: normalizeDeviceIdentity(rawState.deviceIdentity),
+      syncMeta: normalizeSyncMeta(rawState.syncMeta)
+    };
+  }
+
+  if (rawState.schemaVersion === 8 && Array.isArray(rawState.library)) {
     const library = rawState.library.map((entry) => normalizeLibraryEntry(entry));
     const catalog = Array.isArray(rawState.catalog) ? rawState.catalog.map((game) => normalizeCatalogGame(game)) : initialState.catalog;
     return {

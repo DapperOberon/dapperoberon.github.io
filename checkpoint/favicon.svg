@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="checkpoint-favicon-bg" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="checkpoint-favicon-glow" x1="18" y1="14" x2="46" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ECFEFF" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#ECFEFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="52" height="52" rx="14" fill="#090B0D"/>
+  <rect x="8" y="8" width="48" height="48" rx="12" fill="url(#checkpoint-favicon-bg)"/>
+  <path d="M18 28.2C18 23.6713 21.6713 20 26.2 20H37.8C42.3287 20 46 23.6713 46 28.2V31.3C46 33.1376 45.3036 34.9069 44.0511 36.2516L40.7843 39.7586C39.9916 40.6094 38.6834 40.8653 37.6115 40.3971L33.8368 38.7483C32.6682 38.2378 31.3318 38.2378 30.1632 38.7483L26.3885 40.3971C25.3166 40.8653 24.0084 40.6094 23.2157 39.7586L19.9489 36.2516C18.6964 34.9069 18 33.1376 18 31.3V28.2Z" stroke="#F8FAFC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 29.5H30" stroke="#F8FAFC" stroke-width="3" stroke-linecap="round"/>
+  <path d="M27 26.5V32.5" stroke="#F8FAFC" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="37.5" cy="28.5" r="2.25" fill="#F8FAFC"/>
+  <circle cx="41.75" cy="32.75" r="2.25" fill="#F8FAFC"/>
+  <path d="M18 15C21 12.4 24.3 11 28.5 11" stroke="url(#checkpoint-favicon-glow)" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -61,6 +61,7 @@ export function createPricingService() {
       return {
         provider: result?.provider || "itad",
         providerGameId: result?.providerGameId || "",
+        gameUrl: result?.gameUrl || result?.meta?.itadGameUrl || "",
         currentBest: resolvedCurrentBest,
         preferredStoreCurrent: {
           amount: null,

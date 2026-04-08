@@ -47,6 +47,10 @@ sleep 1
 
 echo "[checkpoint] Verifying app shell..."
 curl -fsSI "http://127.0.0.1:$PORT/checkpoint/" >/dev/null
+curl -fsSI "http://127.0.0.1:$PORT/checkpoint/discover/" >/dev/null
+curl -fsSI "http://127.0.0.1:$PORT/checkpoint/discover/search/" >/dev/null
+curl -fsSI "http://127.0.0.1:$PORT/checkpoint/discover/search/?query=elden%20ring" >/dev/null
+curl -fsSI "http://127.0.0.1:$PORT/checkpoint/discover/game/?id=17269" >/dev/null
 curl -fsSI "http://127.0.0.1:$PORT/checkpoint/app.js" >/dev/null
 curl -fsSI "http://127.0.0.1:$PORT/checkpoint/tailwind.generated.css" >/dev/null
 curl -fsSI "http://127.0.0.1:$PORT/checkpoint/styles.css" >/dev/null

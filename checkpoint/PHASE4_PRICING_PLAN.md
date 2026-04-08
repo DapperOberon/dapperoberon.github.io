@@ -163,6 +163,25 @@ Notes:
 - Pricing is additive, never required.
 - Show “last checked” timestamp for trust.
 - Always label source: `Powered by IsThereAnyDeal` (or active provider).
+- For wishlist cards with `coming-soon`/`TBD` style pricing states:
+  - do not invent a store name placeholder
+  - render price state text only (store field blank until a concrete store row exists)
+
+## Media Source Policy (Discover + Wishlist Decision Surfaces)
+
+To reduce mismatched artwork while preserving coverage:
+
+- IGDB is the primary media source for:
+  - cover/capsule
+  - hero/backdrop
+  - screenshots/videos
+- SteamGrid remains fallback-only for missing IGDB media fields.
+- UI should prefer IGDB media URLs first and only read SteamGrid values when IGDB fields are empty.
+
+Implementation intent:
+
+- deterministic ordering (`IGDB -> SteamGrid fallback`) to avoid source flicker
+- better title-to-art alignment on discover/wishlist decision pages
 
 ## Provider Scope Limits (MVP)
 

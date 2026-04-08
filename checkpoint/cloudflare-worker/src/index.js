@@ -309,40 +309,85 @@ function parseLookupIdPayload(payload, title) {
 
 async function resolveItadGameId(env, title) {
   const normalizedTitle = trim(title);
-  if (!normalizedTitle) return "";
+  if (!normalizedTitle) {
+    return {
+      id: "",
+      slug: ""
+    };
+  }
+
+  let resolvedId = "";
+  let resolvedSlug = "";
+
+  async function hydrateSlug(candidateId = "") {
+    try {
+      const searchPayload = await itadJson(env, `/games/search/v1?title=${encodeURIComponent(normalizedTitle)}&results=5`);
+      const rows = Array.isArray(searchPayload) ? searchPayload : [];
+      const match = rows.find((row) => trim(row?.id) === trim(candidateId)) ?? rows[0] ?? null;
+      return {
+        id: trim(match?.id || candidateId),
+        slug: trim(match?.slug)
+      };
+    } catch (error) {
+      return {
+        id: trim(candidateId),
+        slug: ""
+      };
+    }
+  }
 
   try {
     const lookupPayload = await itadJson(env, `/games/lookup/v1?title=${encodeURIComponent(normalizedTitle)}`);
     const lookupId = parseLookupIdPayload(lookupPayload, normalizedTitle);
-    if (lookupId) return lookupId;
+    if (lookupId) {
+      resolvedId = lookupId;
+    }
   } catch (error) {
     // try alternative lookup endpoint
   }
 
-  try {
-    const lookupByTitle = await itadJson(env, "/lookup/id/title/v1", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify([normalizedTitle])
-    });
-    const lookupId = parseLookupIdPayload(lookupByTitle, normalizedTitle);
-    if (lookupId) return lookupId;
-  } catch (error) {
-    // try search endpoint fallback
+  if (!resolvedId) {
+    try {
+      const lookupByTitle = await itadJson(env, "/lookup/id/title/v1", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify([normalizedTitle])
+      });
+      const lookupId = parseLookupIdPayload(lookupByTitle, normalizedTitle);
+      if (lookupId) {
+        resolvedId = lookupId;
+      }
+    } catch (error) {
+      // try search endpoint fallback
+    }
   }
 
-  try {
-    const searchPayload = await itadJson(env, `/games/search/v1?title=${encodeURIComponent(normalizedTitle)}&results=1`);
-    const first = Array.isArray(searchPayload) ? searchPayload[0] : null;
-    const fallbackId = trim(first?.id);
-    if (fallbackId) return fallbackId;
-  } catch (error) {
-    // no fallback remaining
+  if (resolvedId) {
+    const hydrated = await hydrateSlug(resolvedId);
+    resolvedSlug = hydrated.slug;
+    return {
+      id: hydrated.id || resolvedId,
+      slug: resolvedSlug
+    };
   }
 
-  return "";
+  const hydratedFallback = await hydrateSlug("");
+  if (hydratedFallback.id) {
+    return hydratedFallback;
+  }
+
+  return {
+    id: "",
+    slug: ""
+  };
+}
+
+function buildItadGameUrl(slug) {
+  const normalizedSlug = trim(slug);
+  if (!normalizedSlug) return "";
+  return `https://isthereanydeal.com/game/${encodeURIComponent(normalizedSlug)}/info/`;
 }
 
 function normalizeItadDeal(deal) {
@@ -497,7 +542,9 @@ async function handleItadPricingRequest(request, env) {
     return json(emptyItadPricing("empty_title", "no_match"), { status: 400 });
   }
 
-  const gameId = await resolveItadGameId(env, title);
+  const resolvedGame = await resolveItadGameId(env, title);
+  const gameId = trim(resolvedGame?.id);
+  const gameUrl = buildItadGameUrl(resolvedGame?.slug);
   if (!gameId) {
     return json(emptyItadPricing("no_match", "no_match"));
   }
@@ -538,6 +585,7 @@ async function handleItadPricingRequest(request, env) {
     return json({
       provider: "itad",
       providerGameId: gameId,
+      gameUrl,
       currentBest: {
         amount: bestDeal.amount,
         currency: bestDeal.currency || "USD",
@@ -575,6 +623,7 @@ async function handleItadPricingRequest(request, env) {
         usedFallback: false,
         reason: "itad",
         country,
+        itadGameUrl: gameUrl,
         preferredStorefront: storefront,
         preferredShopIds,
         selectedShopIds,

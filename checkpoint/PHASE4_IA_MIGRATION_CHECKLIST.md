@@ -30,6 +30,7 @@ Definition of done:
   - `/checkpoint/library/`
   - `/checkpoint/library/game/?id=<gameId>`
   - `/checkpoint/discover/`
+  - `/checkpoint/discover/search/?query=<query>`
   - `/checkpoint/discover/game/?id=<gameId-or-igdbId>`
   - `/checkpoint/wishlist/`
   - `/checkpoint/wishlist/game/?id=<gameId>`
@@ -90,6 +91,12 @@ Definition of done:
   - refresh price
   - open details
   - remove from wishlist
+- [x] Reuse the Discover detail template wholesale for Wishlist in the first pass.
+- [x] Limit first-pass Wishlist differences to hero/button actions and watch-specific controls.
+- [x] Remove legacy library-style wishlist body sections that diverge from Discover.
+- [x] Keep wishlist-specific watch controls as first-class modules within the shared shell.
+- [x] Auto-hydrate and persist missing Discover-style detail payload for older tracked wishlist games on open.
+- [x] Remove synthetic store-name placeholder for coming-soon wishlist card prices.
 
 Definition of done:
 - Wishlist helps answer “what should I buy next?” quickly.
@@ -97,7 +104,7 @@ Definition of done:
 ## Slice 5: IA Cleanup + Documentation
 
 - [x] Update `PHASE4_TASK_CHECKLIST.md` to reference IA split completion.
-- [ ] Update `PHASE4_WISHLIST_CHECKLIST.md` statuses after each migrated item.
+- [x] Update `PHASE4_WISHLIST_CHECKLIST.md` statuses after each migrated item.
 - [x] Add short IA map to `DESIGN.md` for future cohesion.
 
 Definition of done:
@@ -110,6 +117,6 @@ Definition of done:
 - [x] Wishlist no longer inherits run-save detail mental model.
 - [x] Library remains focused on active/completed tracking.
 - [x] Discover owns find/add workflows.
-- [ ] Surface responsibilities are obvious to a first-time user.
+- [x] Surface responsibilities are obvious to a first-time user.
 - [x] URL/slug routing is stable and deep-linkable across all primary surfaces.
 - [x] Document scroll is the default page-render model.

@@ -6,6 +6,21 @@ function trimOrFallback(value, fallback = "") {
   return isNonEmptyString(value) ? value.trim() : fallback;
 }
 
+function inferIgdbId(value, fallback = null) {
+  const directValue = Number(value);
+  if (Number.isFinite(directValue) && directValue > 0) return directValue;
+
+  const raw = trimOrFallback(value, "");
+  const match = raw.match(/^igdb-(\d+)$/i);
+  if (match) {
+    const parsed = Number(match[1]);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+
+  const fallbackValue = Number(fallback);
+  return Number.isFinite(fallbackValue) && fallbackValue > 0 ? fallbackValue : null;
+}
+
 function clampNumber(value, { min = 0, max = Number.POSITIVE_INFINITY, fallback = 0 } = {}) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return fallback;
@@ -18,6 +33,54 @@ function normalizeStringArray(value, fallback = []) {
   }
 
   return Array.isArray(fallback) ? fallback : [];
+}
+
+function normalizeVideoArray(value, fallback = []) {
+  const input = Array.isArray(value) ? value : (Array.isArray(fallback) ? fallback : []);
+  return input
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      title: trimOrFallback(item.title, ""),
+      url: trimOrFallback(item.url, ""),
+      embedUrl: trimOrFallback(item.embedUrl, ""),
+      thumbnail: trimOrFallback(item.thumbnail, trimOrFallback(item.previewImage, trimOrFallback(item.coverArt, "")))
+    }))
+    .filter((item) => item.url || item.embedUrl);
+}
+
+function normalizeLinks(value, fallback = {}) {
+  const source = value && typeof value === "object" ? value : {};
+  const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
+  const storefronts = Array.isArray(source.storefronts)
+    ? source.storefronts
+    : (Array.isArray(fallbackSource.storefronts) ? fallbackSource.storefronts : []);
+  return {
+    igdb: trimOrFallback(source.igdb, trimOrFallback(fallbackSource.igdb, "")),
+    official: trimOrFallback(source.official, trimOrFallback(fallbackSource.official, "")),
+    storefronts: storefronts
+      .filter((item) => item && typeof item === "object")
+      .map((item) => ({
+        kind: trimOrFallback(item.kind, ""),
+        url: trimOrFallback(item.url, "")
+      }))
+      .filter((item) => item.url)
+  };
+}
+
+function normalizeRelatedTitles(value, fallback = []) {
+  const input = Array.isArray(value) ? value : (Array.isArray(fallback) ? fallback : []);
+  return input
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      id: trimOrFallback(item.id, trimOrFallback(item.igdbId, "")),
+      igdbId: Number.isFinite(Number(item.igdbId)) ? Number(item.igdbId) : null,
+      title: trimOrFallback(item.title, ""),
+      releaseDate: trimOrFallback(item.releaseDate, ""),
+      coverArt: trimOrFallback(item.coverArt, ""),
+      description: trimOrFallback(item.description, ""),
+      platforms: normalizeStringArray(item.platforms, [])
+    }))
+    .filter((item) => item.id && item.title);
 }
 
 function normalizePriceWatch(priceWatch, fallback = {}, status = "playing") {
@@ -107,6 +170,7 @@ const CATALOG_PROVIDER_FIELDS = [
 function normalizeProviderValues(providerValues, fallback = {}) {
   const source = providerValues && typeof providerValues === "object" ? providerValues : {};
   return {
+    igdbId: inferIgdbId(source.igdbId, fallback.igdbId),
     developer: trimOrFallback(source.developer, trimOrFallback(fallback.developer, "")),
     publisher: trimOrFallback(source.publisher, trimOrFallback(fallback.publisher, "")),
     releaseDate: trimOrFallback(source.releaseDate, trimOrFallback(fallback.releaseDate, "")),
@@ -117,7 +181,10 @@ function normalizeProviderValues(providerValues, fallback = {}) {
     heroArt: trimOrFallback(source.heroArt, trimOrFallback(fallback.heroArt, "")),
     capsuleArt: trimOrFallback(source.capsuleArt, trimOrFallback(fallback.capsuleArt, "")),
     screenshots: normalizeStringArray(source.screenshots, fallback.screenshots),
-    steamGridSlug: trimOrFallback(source.steamGridSlug, trimOrFallback(fallback.steamGridSlug, ""))
+    steamGridSlug: trimOrFallback(source.steamGridSlug, trimOrFallback(fallback.steamGridSlug, "")),
+    videos: normalizeVideoArray(source.videos, fallback.videos),
+    links: normalizeLinks(source.links, fallback.links),
+    relatedTitles: normalizeRelatedTitles(source.relatedTitles, fallback.relatedTitles)
   };
 }
 
@@ -143,6 +210,7 @@ export function normalizeCatalogGame(game, fallback = {}) {
 
   return {
     id: trimOrFallback(game?.id, trimOrFallback(fallback.id, `custom-${title.toLowerCase().replace(/\s+/g, "-")}`)),
+    igdbId: inferIgdbId(game?.igdbId ?? game?.id, fallback.igdbId ?? fallback.id),
     title,
     storefront,
     developer: trimOrFallback(game?.developer, trimOrFallback(fallback.developer, "Unknown developer")),
@@ -155,6 +223,9 @@ export function normalizeCatalogGame(game, fallback = {}) {
     heroArt: trimOrFallback(game?.heroArt, trimOrFallback(fallback.heroArt, "")),
     capsuleArt: trimOrFallback(game?.capsuleArt, trimOrFallback(fallback.capsuleArt, trimOrFallback(game?.heroArt, trimOrFallback(fallback.heroArt, "")))),
     screenshots: normalizeStringArray(game?.screenshots, fallback.screenshots),
+    videos: normalizeVideoArray(game?.videos, fallback.videos),
+    links: normalizeLinks(game?.links, fallback.links),
+    relatedTitles: normalizeRelatedTitles(game?.relatedTitles, fallback.relatedTitles),
     steamGridSlug: trimOrFallback(game?.steamGridSlug, trimOrFallback(fallback.steamGridSlug, "")),
     providerValues: normalizeProviderValues(game?.providerValues, fallback.providerValues),
     lockedFields: normalizeLockedFields(game?.lockedFields ?? fallback.lockedFields),
@@ -165,6 +236,10 @@ export function normalizeCatalogGame(game, fallback = {}) {
 export function normalizeLibraryEntry(entry, fallback = {}) {
   const now = new Date().toISOString();
   const status = normalizeStatus(entry?.status, normalizeStatus(fallback.status, "playing"));
+  const sourcePriority = trimOrFallback(entry?.wishlistPriority, trimOrFallback(fallback.wishlistPriority, status === "wishlist" ? "medium" : "medium"));
+  const sourceIntent = trimOrFallback(entry?.wishlistIntent, trimOrFallback(fallback.wishlistIntent, status === "wishlist" ? "wait-sale" : "wait-sale"));
+  const wishlistPriority = ["low", "medium", "high", "must-buy"].includes(sourcePriority) ? sourcePriority : "medium";
+  const wishlistIntent = ["buy-now", "wait-sale", "monitor-release", "research"].includes(sourceIntent) ? sourceIntent : "wait-sale";
 
   return {
     entryId: trimOrFallback(entry?.entryId, trimOrFallback(fallback.entryId)),
@@ -182,6 +257,8 @@ export function normalizeLibraryEntry(entry, fallback = {}) {
       : clampNumber(entry?.personalRating ?? fallback.personalRating, { min: 0, max: 10, fallback: 0 }),
     notes: trimOrFallback(entry?.notes, trimOrFallback(fallback.notes, "")),
     spotlight: trimOrFallback(entry?.spotlight, trimOrFallback(fallback.spotlight, "")),
+    wishlistPriority,
+    wishlistIntent,
     syncState: trimOrFallback(entry?.syncState, trimOrFallback(fallback.syncState, "offline")),
     priceWatch: normalizePriceWatch(entry?.priceWatch, fallback.priceWatch, status)
   };

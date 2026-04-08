@@ -43,6 +43,56 @@ export function isUnreleasedGame(releaseDate) {
   return releaseTime > Date.now();
 }
 
+export function getReleaseState(releaseDate) {
+  const value = String(releaseDate ?? "").trim();
+  if (!value) return "tbd";
+
+  const normalized = value.toLowerCase();
+  if (normalized.includes("tbd") || normalized.includes("to be announced")) {
+    return "tbd";
+  }
+  if (normalized.includes("coming soon")) {
+    return "coming-soon";
+  }
+
+  const releaseTime = Date.parse(value);
+  if (!Number.isFinite(releaseTime)) {
+    return "tbd";
+  }
+  if (releaseTime > Date.now()) {
+    return "releasing-soon";
+  }
+  return "released";
+}
+
+export function getReleaseStateLabel(releaseState) {
+  return {
+    released: "Released",
+    "releasing-soon": "Releasing Soon",
+    "coming-soon": "Coming Soon",
+    tbd: "TBD"
+  }[releaseState] ?? "TBD";
+}
+
+export function getReleaseStatusDetail(releaseDate) {
+  const state = getReleaseState(releaseDate);
+  const value = String(releaseDate ?? "").trim();
+  if (state === "released") {
+    return value ? formatDate(value) : "Released";
+  }
+  if (state === "releasing-soon") {
+    const releaseTime = Date.parse(value);
+    if (!Number.isFinite(releaseTime)) return "Releasing soon";
+    const diffMs = releaseTime - Date.now();
+    const diffDays = Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
+    return diffDays <= 0 ? formatDate(value) : `Releasing in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+  }
+  if (state === "coming-soon") {
+    return "Coming soon";
+  }
+  return "Release date TBD";
+}
+
 export function formatCurrency(amount, currency = "USD") {
   const numeric = Number(amount);
   if (!Number.isFinite(numeric)) return "N/A";
@@ -152,4 +202,22 @@ export function renderPreference(label, key, enabled) {
       </div>
     </button>
   `;
+}
+
+export function getWishlistPriorityLabel(value) {
+  return {
+    low: "Low Priority",
+    medium: "Medium Priority",
+    high: "High Priority",
+    "must-buy": "Must Buy"
+  }[value] ?? "Medium Priority";
+}
+
+export function getWishlistIntentLabel(value) {
+  return {
+    "buy-now": "Buy Now",
+    "wait-sale": "Wait for Sale",
+    "monitor-release": "Monitor Release",
+    research: "Research"
+  }[value] ?? "Wait for Sale";
 }

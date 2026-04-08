@@ -57,13 +57,17 @@ function parseRouteFromLocation(locationLike = globalThis.location) {
 
   const surface = (segments[0] || "library").toLowerCase();
   const isGameDetails = segments[1] === "game";
+  const isSearchResults = segments[1] === "search";
   const id = searchParams.get("id");
+  const query = searchParams.get("query");
 
   return {
     basePath,
     surface: ["library", "discover", "wishlist", "settings"].includes(surface) ? surface : "library",
     isGameDetails,
-    id: id ? String(id).trim() : ""
+    isSearchResults,
+    id: id ? String(id).trim() : "",
+    query: query ? String(query).trim() : ""
   };
 }
 
@@ -73,6 +77,16 @@ function buildRouteFromSnapshot(snapshot, basePath = getCheckpointBasePath()) {
   const lastView = String(snapshot?.uiPreferences?.lastView || "dashboard");
   const discoverResultId = String(snapshot?.addForm?.selectedSearchResult?.igdbId ?? "").trim()
     || String(snapshot?.addForm?.selectedSearchResult?.id ?? "").trim();
+  const discoverSearchQuery = String(snapshot?.addForm?.searchQuery ?? "").trim();
+  const hasDiscoverSearchState = Boolean(
+    discoverSearchQuery
+    && !discoverResultId
+    && (
+      snapshot?.addSearchLoading
+      || (Array.isArray(snapshot?.addSearchResults) && snapshot.addSearchResults.length)
+      || String(snapshot?.addSearchError || "").trim()
+    )
+  );
 
   if (snapshot.currentView === "settings") {
     return `${normalizedBase}/settings/`;
@@ -81,6 +95,9 @@ function buildRouteFromSnapshot(snapshot, basePath = getCheckpointBasePath()) {
   if (snapshot.currentView === "discover") {
     if (discoverResultId) {
       return `${normalizedBase}/discover/game/?id=${encodeURIComponent(discoverResultId)}`;
+    }
+    if (hasDiscoverSearchState) {
+      return `${normalizedBase}/discover/search/?query=${encodeURIComponent(discoverSearchQuery)}`;
     }
     return `${normalizedBase}/discover/`;
   }
@@ -109,9 +126,13 @@ function applyRouteToStore(route) {
       return;
     }
 
+    if (route.surface === "discover" && route.isSearchResults) {
+      void store.openDiscoverSearch?.(route.query);
+      return;
+    }
+
     if (route.surface === "discover" && !route.isGameDetails) {
-      store.setView("discover");
-      store.clearDiscoverSelection?.();
+      void store.openDiscover?.({ resetQuery: true });
       return;
     }
 

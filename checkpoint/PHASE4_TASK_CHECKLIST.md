@@ -90,6 +90,7 @@ Definition of done:
 - [x] Add route model for surface URLs:
   - `/checkpoint/library/`
   - `/checkpoint/discover/`
+  - `/checkpoint/discover/search/?query=...`
   - `/checkpoint/wishlist/`
   - `/checkpoint/settings/`
 - [x] Add game detail slug routes:
@@ -113,6 +114,93 @@ Definition of done:
 
 Definition of done:
 - App pages use document scroll and full-page screenshot behavior is reliable.
+
+## Phase 4H: Discover + Wishlist Convergence and Media Source Policy
+
+- [x] Fix direct `/checkpoint/discover/` route behavior so initial top/trending results auto-load when no active query exists.
+- [x] Remove placeholder wishlist store labels for unreleased/coming-soon rows in library cards (no synthetic `Release pending` store name).
+- [x] Switch to IGDB-first media hydration in metadata resolver (hero/cover/screenshots) with SteamGrid as fallback only when IGDB media is missing.
+- [x] Ensure discover search/detail rendering prefers IGDB media URLs before SteamGrid fallback fields.
+- [x] Reuse the Discover detail template for Wishlist in the first-pass convergence:
+  - same hero shell
+  - same local nav
+  - same body section order
+  - same side rail structure
+- [x] Refactor Discover detail renderer into shared decision-detail functions/modules so Wishlist calls the exact same code path.
+- [x] Replace wishlist-specific body helpers with shared decision-detail renderer usage.
+- [x] Keep surface-specific variation injection limited to hero CTA config and surface copy only.
+- [x] Limit first-pass Wishlist differences to:
+  - hero CTA cluster
+  - pricing/watch copy and controls
+  - remove run-management actions/fields
+- [x] Split detail actions by surface responsibility:
+  - Discover: `Add to Wishlist`, `Add to Library`
+  - Wishlist: `Watch controls`, `Move to Library`, `Remove`
+- [x] Remove legacy wishlist/library-style detail sections that diverge from Discover:
+  - `Wishlist Context`
+  - standalone `Notes`
+  - standalone `Maintenance`
+- [x] Add self-healing tracked-game detail hydration:
+  - infer `igdbId` for older tracked games when missing
+  - auto-fetch/persist richer Discover-style IGDB payload on detail open when key decision fields are missing
+  - skip re-fetch when tracked game is already complete enough
+- [ ] Add regression checks for media-source ordering:
+  - IGDB image used when present
+  - SteamGrid used only when IGDB asset missing
+  - no mixed-source flicker during lazy hydration
+- [ ] Add QA fixtures for coming-soon/unreleased wishlist cards to verify blank store label behavior remains stable.
+
+Definition of done:
+- Discover and Wishlist use a consistent decision-first structure, and media sourcing is deterministic (IGDB primary, SteamGrid fallback).
+
+## Phase 4I: Wishlist Decision Signals
+
+- [x] Add `wishlistPriority` and `wishlistIntent` to normalized wishlist entries.
+- [x] Apply safe migration defaults for existing wishlist entries.
+- [x] Add wishlist detail controls so users can edit priority/intent alongside price-watch settings.
+- [x] Render wishlist priority/intent on wishlist cards with human-readable labels.
+- [x] Add wishlist-specific sort/filter preferences and persist them in UI state.
+- [x] Add first-pass wishlist decision controls:
+  - sort by next to buy
+  - sort by priority
+  - sort by recent
+  - sort by lowest price
+  - filter by priority
+  - filter by intent
+- [ ] Add second-pass wishlist decision controls:
+  - [x] sort by biggest discount
+  - [x] sort by closest to target
+  - [x] filter by price status
+  - filter by selected stores only
+
+Definition of done:
+- Wishlist can answer both "how much do I care?" and "what am I waiting for?" directly in cards, details, and top-level controls.
+
+## Phase 4J: Wishlist Surface Cleanup
+
+- [x] Align wishlist cards to the simpler Discover card rhythm.
+- [x] Fix fixed-height title alignment so price/store rows share a baseline across cards.
+- [x] Remove over-designed priority/intent card treatments when they add noise instead of scan value.
+- [x] Simplify the wishlist top controls into a calmer planning toolbar.
+- [x] Run a final visual QA pass on wishlist density and sorting behavior in real use.
+
+Definition of done:
+- Wishlist reads as a buying/planning surface rather than a mini dashboard.
+
+## Phase 4K: Release-Aware Wishlist States
+
+- [x] Define a shared release-state model:
+  - `released`
+  - `releasing-soon`
+  - `coming-soon`
+  - `tbd`
+- [x] Use release-aware fallback labels in wishlist cards instead of treating unreleased entries like pricing failures.
+- [x] Use release-aware provider status copy in wishlist pricing/watch panels.
+- [x] Update shared Discover/Wishlist decision hero to show release-state labels and countdown/detail text.
+- [ ] Add release-aware regression coverage and fixtures for future-dated, announced-without-date, and true-TBD titles.
+
+Definition of done:
+- Upcoming wishlist entries read intentionally, and unreleased titles no longer look like provider failures.
 
 ## Explicit Out of Scope (Phase 4)
 

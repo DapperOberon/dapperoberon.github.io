@@ -16,6 +16,7 @@ function emptyPricing(reason, status = "unsupported") {
   return {
     provider: "itad",
     providerGameId: "",
+    gameUrl: "",
     currentBest: {
       amount: null,
       currency: "USD",
@@ -88,6 +89,7 @@ export function createItadPricingProvider() {
         return {
           provider: "itad",
           providerGameId: String(payload?.providerGameId ?? ""),
+          gameUrl: String(payload?.gameUrl ?? payload?.meta?.itadGameUrl ?? ""),
           currentBest: {
             amount: Number.isFinite(Number(payload?.currentBest?.amount)) ? Number(payload.currentBest.amount) : null,
             currency: String(payload?.currentBest?.currency ?? "USD"),

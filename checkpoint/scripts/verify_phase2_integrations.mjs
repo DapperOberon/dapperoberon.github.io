@@ -257,8 +257,10 @@ async function verifySyncPreferencePayloadFiltering() {
   });
 
   const beforeSnapshot = store.getSnapshot();
-  const beforeNotes = beforeSnapshot.library[0]?.notes ?? "";
-  const beforeHeroArt = beforeSnapshot.catalog[0]?.heroArt ?? "";
+  const baselineEntryId = beforeSnapshot.library[0]?.entryId ?? "";
+  const baselineGameId = beforeSnapshot.catalog[0]?.id ?? "";
+  const beforeNotes = beforeSnapshot.library.find((entry) => entry.entryId === baselineEntryId)?.notes ?? "";
+  const beforeHeroArt = beforeSnapshot.catalog.find((game) => game.id === baselineGameId)?.heroArt ?? "";
   const beforeActivityCount = beforeSnapshot.activityHistory.length;
   const beforeSyncHistoryCount = beforeSnapshot.syncHistory.length;
 
@@ -293,8 +295,10 @@ async function verifySyncPreferencePayloadFiltering() {
   assert(Array.isArray(capturedPayload.state.syncHistory) && capturedPayload.state.syncHistory.length === 0, "Expected sync history to be omitted from sync payload when activity history sync is off.");
 
   const afterSnapshot = store.getSnapshot();
-  assert((afterSnapshot.library[0]?.notes ?? "") === beforeNotes, "Expected local notes to remain unchanged after filtered sync.");
-  assert((afterSnapshot.catalog[0]?.heroArt ?? "") === beforeHeroArt, "Expected local artwork to remain unchanged after filtered sync.");
+  const afterBaselineNotes = afterSnapshot.library.find((entry) => entry.entryId === baselineEntryId)?.notes ?? "";
+  const afterBaselineHeroArt = afterSnapshot.catalog.find((game) => game.id === baselineGameId)?.heroArt ?? "";
+  assert(afterBaselineNotes === beforeNotes, "Expected local notes to remain unchanged after filtered sync.");
+  assert(afterBaselineHeroArt === beforeHeroArt, "Expected local artwork to remain unchanged after filtered sync.");
   assert(afterSnapshot.activityHistory.length >= beforeActivityCount, "Expected local activity history to remain intact after filtered sync.");
   assert(afterSnapshot.syncHistory.length >= beforeSyncHistoryCount, "Expected local sync history to remain intact after filtered sync.");
 

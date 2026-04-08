@@ -5,6 +5,7 @@ import { createEntryActions } from "./store/entry-actions.js";
 import { createEnrichmentActions } from "./store/enrichment-actions.js";
 import { createBackupActions } from "./store/backup-actions.js";
 import { createDriveSyncActions } from "./store/drive-sync-actions.js";
+import { getReleaseState } from "./render/shared.js";
 
 function createEntryId() {
   return `entry-${Math.random().toString(36).slice(2, 10)}`;
@@ -40,7 +41,9 @@ function createDetailForm(entry = null) {
     notes: entry?.notes ?? "",
     playtimeHours: String(entry?.playtimeHours ?? 0),
     completionPercent: String(entry?.completionPercent ?? 0),
-    status: entry?.status ?? "playing"
+    status: entry?.status ?? "playing",
+    wishlistPriority: entry?.wishlistPriority ?? "medium",
+    wishlistIntent: entry?.wishlistIntent ?? "wait-sale"
   };
 }
 
@@ -222,7 +225,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     library: hydratedLibrary,
     catalog: persistedState.catalog,
     activeStatus: persistedState.uiPreferences.lastStatusFilter,
-    sortMode: persistedState.uiPreferences.librarySort,
+    sortMode: persistedState.uiPreferences.lastView === "wishlist"
+      ? persistedState.uiPreferences.wishlistSort
+      : persistedState.uiPreferences.librarySort,
     searchTerm: "",
     activeEntryId: hydratedLibrary[0]?.entryId ?? null,
     isAddModalOpen: false,
@@ -278,6 +283,91 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         }
       : null
   };
+
+  function getWishlistPriorityRank(entry) {
+    return {
+      low: 1,
+      medium: 2,
+      high: 3,
+      "must-buy": 4
+    }[entry?.wishlistPriority] ?? 2;
+  }
+
+  function getEntryCurrentBestAmount(entry) {
+    const game = getCatalogGame(entry?.gameId);
+    const amount = Number(game?.pricing?.currentBest?.amount);
+    return Number.isFinite(amount) ? amount : Number.POSITIVE_INFINITY;
+  }
+
+  function isEntryReleased(entry) {
+    const game = getCatalogGame(entry?.gameId);
+    return getReleaseState(game?.releaseDate) === "released";
+  }
+
+  function getEntryCurrentDiscount(entry) {
+    const game = getCatalogGame(entry?.gameId);
+    const discountPercent = Number(game?.pricing?.currentBest?.discountPercent);
+    return Number.isFinite(discountPercent) ? discountPercent : Number.NEGATIVE_INFINITY;
+  }
+
+  function getEntryTargetDistance(entry) {
+    const game = getCatalogGame(entry?.gameId);
+    const currentAmount = Number(game?.pricing?.currentBest?.amount);
+    const targetAmount = Number(entry?.priceWatch?.targetPrice);
+    if (!Number.isFinite(currentAmount) || !Number.isFinite(targetAmount) || targetAmount < 0) {
+      return {
+        metTargetRank: 1,
+        distance: Number.POSITIVE_INFINITY
+      };
+    }
+    return {
+      metTargetRank: currentAmount <= targetAmount ? 0 : 1,
+      distance: Math.abs(currentAmount - targetAmount)
+    };
+  }
+
+  function getWishlistIntentRank(entry) {
+    return {
+      "buy-now": 4,
+      "wait-sale": 3,
+      research: 2,
+      "monitor-release": 1
+    }[entry?.wishlistIntent] ?? 2;
+  }
+
+  function getNextBuySortTuple(entry) {
+    const releasedRank = isEntryReleased(entry) ? 0 : 1;
+    const targetDistance = getEntryTargetDistance(entry);
+    const hasPrice = Number.isFinite(getEntryCurrentBestAmount(entry)) ? 0 : 1;
+    const intentRank = getWishlistIntentRank(entry);
+    const priorityRank = getWishlistPriorityRank(entry);
+    const currentPrice = getEntryCurrentBestAmount(entry);
+
+    return {
+      releasedRank,
+      hasPrice,
+      metTargetRank: targetDistance.metTargetRank,
+      intentRank,
+      priorityRank,
+      price: currentPrice,
+      distance: targetDistance.distance
+    };
+  }
+
+  function getWishlistPriceStatus(entry) {
+    const game = getCatalogGame(entry?.gameId);
+    const pricing = game?.pricing ?? {};
+    const releaseState = getReleaseState(game?.releaseDate);
+    const amount = Number(pricing?.currentBest?.amount);
+    if (Number.isFinite(amount)) {
+      const discountPercent = Number(pricing?.currentBest?.discountPercent);
+      return Number.isFinite(discountPercent) && discountPercent > 0 ? "on-sale" : "full-price";
+    }
+    if (releaseState === "releasing-soon" || releaseState === "coming-soon" || releaseState === "tbd") {
+      return "coming-soon";
+    }
+    return pricing?.status === "unsupported" || pricing?.status === "no_match" ? "coming-soon" : "no-data";
+  }
 
   function getPersistedState() {
     return {
@@ -426,6 +516,61 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   function applySort(entries) {
     const sorted = entries.slice();
     switch (state.sortMode) {
+      case "discount_desc":
+        sorted.sort((a, b) => {
+          const discountDelta = getEntryCurrentDiscount(b) - getEntryCurrentDiscount(a);
+          if (discountDelta !== 0) return discountDelta;
+          return sortByUpdatedAtDesc(a, b);
+        });
+        break;
+      case "closest_to_target":
+        sorted.sort((a, b) => {
+          const aDistance = getEntryTargetDistance(a);
+          const bDistance = getEntryTargetDistance(b);
+          const metDelta = aDistance.metTargetRank - bDistance.metTargetRank;
+          if (metDelta !== 0) return metDelta;
+          const distanceDelta = aDistance.distance - bDistance.distance;
+          if (distanceDelta !== 0) return distanceDelta;
+          return sortByUpdatedAtDesc(a, b);
+        });
+        break;
+      case "wishlist_priority_desc":
+        sorted.sort((a, b) => {
+          const priorityDelta = getWishlistPriorityRank(b) - getWishlistPriorityRank(a);
+          if (priorityDelta !== 0) return priorityDelta;
+          return sortByUpdatedAtDesc(a, b);
+        });
+        break;
+      case "next_to_buy":
+        sorted.sort((a, b) => {
+          const aTuple = getNextBuySortTuple(a);
+          const bTuple = getNextBuySortTuple(b);
+          const releasedDelta = aTuple.releasedRank - bTuple.releasedRank;
+          if (releasedDelta !== 0) return releasedDelta;
+          const hasPriceDelta = aTuple.hasPrice - bTuple.hasPrice;
+          if (hasPriceDelta !== 0) return hasPriceDelta;
+          const metTargetDelta = aTuple.metTargetRank - bTuple.metTargetRank;
+          if (metTargetDelta !== 0) return metTargetDelta;
+          const intentDelta = bTuple.intentRank - aTuple.intentRank;
+          if (intentDelta !== 0) return intentDelta;
+          const priorityDelta = bTuple.priorityRank - aTuple.priorityRank;
+          if (priorityDelta !== 0) return priorityDelta;
+          const distanceDelta = aTuple.distance - bTuple.distance;
+          if (distanceDelta !== 0) return distanceDelta;
+          const priceDelta = aTuple.price - bTuple.price;
+          if (priceDelta !== 0) return priceDelta;
+          return sortByUpdatedAtDesc(a, b);
+        });
+        break;
+      case "price_asc":
+        sorted.sort((a, b) => {
+          const releasedDelta = (isEntryReleased(a) ? 0 : 1) - (isEntryReleased(b) ? 0 : 1);
+          if (releasedDelta !== 0) return releasedDelta;
+          const priceDelta = getEntryCurrentBestAmount(a) - getEntryCurrentBestAmount(b);
+          if (priceDelta !== 0) return priceDelta;
+          return sortByUpdatedAtDesc(a, b);
+        });
+        break;
       case "title_asc":
         sorted.sort((a, b) => a.title.localeCompare(b.title));
         break;
@@ -548,18 +693,32 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     const term = normalizeTerm(state.searchTerm);
     return applySort(state.library.filter((entry) => {
       const matchesStatus = state.activeStatus === "all" || entry.status === state.activeStatus;
+      const wishlistPriorityFilter = state.uiPreferences.wishlistPriorityFilter || "all";
+      const wishlistIntentFilter = state.uiPreferences.wishlistIntentFilter || "all";
+      const matchesWishlistPriority = state.currentView !== "wishlist"
+        || wishlistPriorityFilter === "all"
+        || entry.wishlistPriority === wishlistPriorityFilter;
+      const matchesWishlistIntent = state.currentView !== "wishlist"
+        || wishlistIntentFilter === "all"
+        || entry.wishlistIntent === wishlistIntentFilter;
+      const wishlistPriceStatusFilter = state.uiPreferences.wishlistPriceStatusFilter || "all";
+      const matchesWishlistPriceStatus = state.currentView !== "wishlist"
+        || wishlistPriceStatusFilter === "all"
+        || getWishlistPriceStatus(entry) === wishlistPriceStatusFilter;
       const game = getCatalogGame(entry.gameId);
       const haystack = [
         entry.title,
         entry.runLabel,
         entry.storefront,
         entry.notes,
+        entry.wishlistPriority,
+        entry.wishlistIntent,
         game?.developer,
         game?.publisher,
         ...(game?.genres ?? [])
       ].join(" ").toLowerCase();
       const matchesTerm = !term || haystack.includes(term);
-      return matchesStatus && matchesTerm;
+      return matchesStatus && matchesWishlistPriority && matchesWishlistIntent && matchesWishlistPriceStatus && matchesTerm;
     }));
   }
 
@@ -706,12 +865,17 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     if (view === "wishlist") {
       state.activeStatus = "wishlist";
       state.uiPreferences.lastStatusFilter = "wishlist";
+      state.sortMode = state.uiPreferences.wishlistSort;
     } else if (view === "discover") {
       state.activeStatus = "all";
       state.uiPreferences.lastStatusFilter = "all";
+      state.sortMode = state.uiPreferences.librarySort;
     } else if (view === "dashboard" && state.activeStatus === "wishlist") {
       state.activeStatus = "all";
       state.uiPreferences.lastStatusFilter = "all";
+      state.sortMode = state.uiPreferences.librarySort;
+    } else if (view !== "wishlist") {
+      state.sortMode = state.uiPreferences.librarySort;
     }
     state.currentView = view;
     state.uiPreferences.lastView = view;
@@ -737,6 +901,13 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     state.isDetailEditMode = false;
     state.detailForm = createDetailForm(matchedEntry);
     emit();
+    if (matchedEntry.status === "wishlist") {
+      void entryActions.hydrateTrackedGameDecisionData?.(matchedEntry).then(() => {
+        emit();
+      }).catch(() => {
+        // Best effort only; keep route-open stable even if enrichment fails.
+      });
+    }
     return true;
   }
 
@@ -775,7 +946,26 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
   function setSortMode(sortMode) {
     state.sortMode = sortMode;
-    state.uiPreferences.librarySort = sortMode;
+    if (state.currentView === "wishlist") {
+      state.uiPreferences.wishlistSort = sortMode;
+    } else {
+      state.uiPreferences.librarySort = sortMode;
+    }
+    emit();
+  }
+
+  function setWishlistPriorityFilter(value) {
+    state.uiPreferences.wishlistPriorityFilter = value || "all";
+    emit();
+  }
+
+  function setWishlistIntentFilter(value) {
+    state.uiPreferences.wishlistIntentFilter = value || "all";
+    emit();
+  }
+
+  function setWishlistPriceStatusFilter(value) {
+    state.uiPreferences.wishlistPriceStatusFilter = value || "all";
     emit();
   }
 
@@ -998,6 +1188,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     openDetailsByGameId,
     setActiveStatus,
     setSortMode,
+    setWishlistPriorityFilter,
+    setWishlistIntentFilter,
+    setWishlistPriceStatusFilter,
     clearLibraryView,
     ...entryActions,
     setImportMode: backupActions.setImportMode,

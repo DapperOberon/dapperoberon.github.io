@@ -34,6 +34,9 @@ export function createMetadataResolverService() {
         );
 
         return {
+          igdbId: Number.isFinite(Number(metadata.igdbId ?? catalogGame?.igdbId))
+            ? Number(metadata.igdbId ?? catalogGame?.igdbId)
+            : null,
           developer: metadata.developer || catalogGame?.developer || "",
           publisher: metadata.publisher || catalogGame?.publisher || "",
           releaseDate: metadata.releaseDate || catalogGame?.releaseDate || "",
@@ -41,6 +44,14 @@ export function createMetadataResolverService() {
           platforms: metadata.platforms?.length ? metadata.platforms : (catalogGame?.platforms ?? []),
           criticSummary: metadata.criticSummary || catalogGame?.criticSummary || "",
           description: metadata.description || catalogGame?.description || "",
+          heroArt: metadata.heroArt || metadata.coverArt || catalogGame?.heroArt || "",
+          capsuleArt: metadata.coverArt || metadata.capsuleArt || catalogGame?.capsuleArt || "",
+          screenshots: metadata.screenshots?.length ? metadata.screenshots : (catalogGame?.screenshots ?? []),
+          videos: Array.isArray(metadata.videos) ? metadata.videos : (catalogGame?.videos ?? []),
+          links: metadata.links && typeof metadata.links === "object"
+            ? metadata.links
+            : (catalogGame?.links ?? { igdb: "", official: "", storefronts: [] }),
+          relatedTitles: Array.isArray(metadata.relatedTitles) ? metadata.relatedTitles : (catalogGame?.relatedTitles ?? []),
           steamGridSlug: catalogGame?.steamGridSlug ?? "",
           meta: metadata.meta ?? {
             resolved: false,

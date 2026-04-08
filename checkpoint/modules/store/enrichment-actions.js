@@ -67,19 +67,43 @@ export function createEnrichmentActions(ctx) {
       storefront: entryLike.storefront ?? "steam"
     };
 
-    const developer = mergeProviderField(game, "developer", metadata.developer || game.providerValues?.developer || baseGame.developer);
-    const publisher = mergeProviderField(game, "publisher", metadata.publisher || game.providerValues?.publisher || baseGame.publisher);
-    const releaseDate = mergeProviderField(game, "releaseDate", metadata.releaseDate || game.providerValues?.releaseDate || baseGame.releaseDate);
-    const genres = mergeProviderField(game, "genres", metadata.genres?.length ? metadata.genres : (game.providerValues?.genres ?? baseGame.genres ?? []));
-    const platforms = mergeProviderField(game, "platforms", metadata.platforms?.length ? metadata.platforms : (game.providerValues?.platforms ?? baseGame.platforms ?? []));
-    const criticSummary = mergeProviderField(game, "criticSummary", metadata.criticSummary || game.providerValues?.criticSummary || baseGame.criticSummary);
-    const description = mergeProviderField(game, "description", metadata.description || game.providerValues?.description || baseGame.description);
-    const steamGridSlug = mergeProviderField(game, "steamGridSlug", metadata.steamGridSlug || game.providerValues?.steamGridSlug || baseGame.steamGridSlug);
+    const igdbId = mergeProviderField(game, "igdbId", metadata.igdbId || game?.providerValues?.igdbId || baseGame.igdbId || null);
+    const developer = mergeProviderField(game, "developer", metadata.developer || game?.providerValues?.developer || baseGame.developer);
+    const publisher = mergeProviderField(game, "publisher", metadata.publisher || game?.providerValues?.publisher || baseGame.publisher);
+    const releaseDate = mergeProviderField(game, "releaseDate", metadata.releaseDate || game?.providerValues?.releaseDate || baseGame.releaseDate);
+    const genres = mergeProviderField(game, "genres", metadata.genres?.length ? metadata.genres : (game?.providerValues?.genres ?? baseGame.genres ?? []));
+    const platforms = mergeProviderField(game, "platforms", metadata.platforms?.length ? metadata.platforms : (game?.providerValues?.platforms ?? baseGame.platforms ?? []));
+    const criticSummary = mergeProviderField(game, "criticSummary", metadata.criticSummary || game?.providerValues?.criticSummary || baseGame.criticSummary);
+    const description = mergeProviderField(game, "description", metadata.description || game?.providerValues?.description || baseGame.description);
+    const videos = mergeProviderField(game, "videos", metadata.videos?.length ? metadata.videos : (game?.providerValues?.videos ?? baseGame.videos ?? []));
+    const links = mergeProviderField(
+      game,
+      "links",
+      metadata.links && typeof metadata.links === "object"
+        ? metadata.links
+        : (game?.providerValues?.links ?? baseGame.links ?? { igdb: "", official: "", storefronts: [] })
+    );
+    const relatedTitles = mergeProviderField(
+      game,
+      "relatedTitles",
+      metadata.relatedTitles?.length
+        ? metadata.relatedTitles
+        : (game?.providerValues?.relatedTitles ?? baseGame.relatedTitles ?? [])
+    );
+    const steamGridSlug = mergeProviderField(game, "steamGridSlug", metadata.steamGridSlug || game?.providerValues?.steamGridSlug || baseGame.steamGridSlug);
+    const heroArt = mergeProviderField(game, "heroArt", metadata.heroArt || game?.providerValues?.heroArt || baseGame.heroArt);
+    const capsuleArt = mergeProviderField(game, "capsuleArt", metadata.capsuleArt || game?.providerValues?.capsuleArt || baseGame.capsuleArt);
+    const screenshots = mergeProviderField(
+      game,
+      "screenshots",
+      metadata.screenshots?.length ? metadata.screenshots : (game?.providerValues?.screenshots ?? baseGame.screenshots ?? [])
+    );
 
     return normalizeCatalogGame({
       ...baseGame,
       title: entryLike.title ?? baseGame.title,
       storefront: entryLike.storefront ?? baseGame.storefront,
+      igdbId: igdbId.value,
       developer: developer.value,
       publisher: publisher.value,
       releaseDate: releaseDate.value,
@@ -87,7 +111,13 @@ export function createEnrichmentActions(ctx) {
       platforms: platforms.value,
       criticSummary: criticSummary.value,
       description: description.value,
+      videos: videos.value,
+      links: links.value,
+      relatedTitles: relatedTitles.value,
       steamGridSlug: steamGridSlug.value,
+      heroArt: heroArt.value,
+      capsuleArt: capsuleArt.value,
+      screenshots: screenshots.value,
       providerValues: {
         ...(game?.providerValues ?? {}),
         ...developer.providerValues,
@@ -97,7 +127,13 @@ export function createEnrichmentActions(ctx) {
         ...platforms.providerValues,
         ...criticSummary.providerValues,
         ...description.providerValues,
-        ...steamGridSlug.providerValues
+        ...videos.providerValues,
+        ...links.providerValues,
+        ...relatedTitles.providerValues,
+        ...steamGridSlug.providerValues,
+        ...heroArt.providerValues,
+        ...capsuleArt.providerValues,
+        ...screenshots.providerValues
       }
     });
   }
@@ -119,8 +155,88 @@ export function createEnrichmentActions(ctx) {
       || JSON.stringify(nextGame?.platforms ?? []) !== JSON.stringify(previousGame?.platforms ?? [])
       || (nextGame?.criticSummary ?? "") !== (previousGame?.criticSummary ?? "")
       || (nextGame?.description ?? "") !== (previousGame?.description ?? "")
+      || JSON.stringify(nextGame?.videos ?? []) !== JSON.stringify(previousGame?.videos ?? [])
+      || JSON.stringify(nextGame?.links ?? {}) !== JSON.stringify(previousGame?.links ?? {})
+      || JSON.stringify(nextGame?.relatedTitles ?? []) !== JSON.stringify(previousGame?.relatedTitles ?? [])
+      || Number(nextGame?.igdbId ?? 0) !== Number(previousGame?.igdbId ?? 0)
       || (nextGame?.steamGridSlug ?? "") !== (previousGame?.steamGridSlug ?? "")
     );
+  }
+
+  async function resolveArtworkWithIgdbPrimary(entry, game) {
+    let metadataArtwork = {
+      heroArt: "",
+      capsuleArt: "",
+      screenshots: []
+    };
+    try {
+      const metadata = await integrations.metadataResolver.resolveGameMetadata({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: game
+      });
+      metadataArtwork = {
+        heroArt: String(metadata?.heroArt || "").trim(),
+        capsuleArt: String(metadata?.capsuleArt || "").trim(),
+        screenshots: Array.isArray(metadata?.screenshots)
+          ? metadata.screenshots.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim())
+          : []
+      };
+    } catch (error) {
+      // Best effort: continue into SteamGrid fallback.
+    }
+
+    const needsHero = !metadataArtwork.heroArt;
+    const needsCapsule = !metadataArtwork.capsuleArt;
+    const needsScreenshots = !metadataArtwork.screenshots.length;
+
+    if (!needsHero && !needsCapsule && !needsScreenshots) {
+      return {
+        heroArt: metadataArtwork.heroArt,
+        capsuleArt: metadataArtwork.capsuleArt,
+        screenshots: metadataArtwork.screenshots,
+        meta: {
+          resolved: true,
+          usedFallback: false,
+          reason: "igdb_primary"
+        }
+      };
+    }
+
+    try {
+      const fallbackArtwork = await integrations.steamGrid.resolveArtwork({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: game
+      });
+      return {
+        heroArt: metadataArtwork.heroArt || fallbackArtwork?.heroArt || "",
+        capsuleArt: metadataArtwork.capsuleArt || fallbackArtwork?.capsuleArt || "",
+        screenshots: metadataArtwork.screenshots.length
+          ? metadataArtwork.screenshots
+          : (fallbackArtwork?.screenshots ?? []),
+        meta: {
+          resolved: Boolean(metadataArtwork.heroArt || metadataArtwork.capsuleArt || metadataArtwork.screenshots.length || fallbackArtwork?.meta?.resolved),
+          usedFallback: true,
+          reason: metadataArtwork.heroArt || metadataArtwork.capsuleArt || metadataArtwork.screenshots.length
+            ? "igdb_primary_steamgrid_fallback"
+            : (fallbackArtwork?.meta?.reason ?? "steamgrid_fallback")
+        }
+      };
+    } catch (error) {
+      return {
+        heroArt: metadataArtwork.heroArt || "",
+        capsuleArt: metadataArtwork.capsuleArt || "",
+        screenshots: metadataArtwork.screenshots,
+        meta: {
+          resolved: Boolean(metadataArtwork.heroArt || metadataArtwork.capsuleArt || metadataArtwork.screenshots.length),
+          usedFallback: true,
+          reason: metadataArtwork.heroArt || metadataArtwork.capsuleArt || metadataArtwork.screenshots.length
+            ? "igdb_primary"
+            : "worker_request_failed"
+        }
+      };
+    }
   }
 
   function getArtworkRefreshMessage(entryTitle, artwork, changed) {
@@ -137,21 +253,21 @@ export function createEnrichmentActions(ctx) {
       return {
         tone: "error",
         actionMessage: "Add the deployed Cloudflare Worker URL in checkpoint/config.js before refreshing artwork.",
-        noticeMessage: "A SteamGrid proxy URL is required to refresh artwork."
+        noticeMessage: "A worker URL is required to refresh artwork."
       };
     }
     if (reason === "no_match") {
       return {
         tone: "info",
-        actionMessage: `No SteamGridDB match was found for ${entryTitle}. Existing artwork was kept.`,
-        noticeMessage: `${entryTitle} had no SteamGridDB match, so the current artwork stayed in place.`
+        actionMessage: `No artwork match was found for ${entryTitle}. Existing artwork was kept.`,
+        noticeMessage: `${entryTitle} had no artwork match, so the current artwork stayed in place.`
       };
     }
     if (reason === "worker_request_failed") {
       return {
         tone: "error",
-        actionMessage: `Checkpoint couldn't reach the SteamGrid proxy for ${entryTitle}. Existing artwork was kept.`,
-        noticeMessage: `${entryTitle} artwork could not be refreshed because the SteamGrid proxy request failed.`
+        actionMessage: `Checkpoint couldn't reach the artwork services for ${entryTitle}. Existing artwork was kept.`,
+        noticeMessage: `${entryTitle} artwork could not be refreshed because the artwork request failed.`
       };
     }
 
@@ -248,11 +364,7 @@ export function createEnrichmentActions(ctx) {
     emit();
 
     try {
-      const artwork = await integrations.steamGrid.resolveArtwork({
-        title: entry.title,
-        storefront: entry.storefront,
-        catalogGame: game
-      });
+      const artwork = await resolveArtworkWithIgdbPrimary(entry, game);
       const nextGame = mergeArtworkIntoCatalogGame(game, artwork);
       const changed = didArtworkChange(game, nextGame);
 
@@ -312,11 +424,28 @@ export function createEnrichmentActions(ctx) {
     emit();
 
     try {
-      const metadata = await integrations.metadataResolver.resolveGameMetadata({
+      const baseMetadata = await integrations.metadataResolver.resolveGameMetadata({
         title: entry.title,
         storefront: entry.storefront,
         catalogGame: game
       });
+      let metadata = baseMetadata;
+      const igdbId = Number(game?.igdbId ?? baseMetadata?.igdbId);
+      if (Number.isFinite(igdbId) && igdbId > 0 && typeof integrations.metadataResolver.getGameByIgdbId === "function") {
+        const [details, related] = await Promise.all([
+          integrations.metadataResolver.getGameByIgdbId(igdbId),
+          typeof integrations.metadataResolver.getRelatedGamesByIgdbId === "function"
+            ? integrations.metadataResolver.getRelatedGamesByIgdbId(igdbId, 12)
+            : Promise.resolve([])
+        ]);
+        metadata = {
+          ...baseMetadata,
+          ...(details && typeof details === "object" ? details : {}),
+          relatedTitles: Array.isArray(related) && related.length
+            ? related
+            : (details?.relatedTitles ?? baseMetadata?.relatedTitles ?? [])
+        };
+      }
       const nextGame = mergeMetadataIntoCatalogGame(game, metadata, {
         title: entry.title,
         storefront: entry.storefront
@@ -392,11 +521,7 @@ export function createEnrichmentActions(ctx) {
       if (!linkedEntry) continue;
 
       try {
-        const artwork = await integrations.steamGrid.resolveArtwork({
-          title: linkedEntry.title,
-          storefront: linkedEntry.storefront,
-          catalogGame: game
-        });
+        const artwork = await resolveArtworkWithIgdbPrimary(linkedEntry, game);
 
         const nextGame = mergeArtworkIntoCatalogGame(game, artwork);
         const artworkChanged = didArtworkChange(game, nextGame);
@@ -818,11 +943,7 @@ export function createEnrichmentActions(ctx) {
 
     let finalGame = unlockedGame;
     try {
-      const artwork = await integrations.steamGrid.resolveArtwork({
-        title: entry.title,
-        storefront: entry.storefront,
-        catalogGame: unlockedGame
-      });
+      const artwork = await resolveArtworkWithIgdbPrimary(entry, unlockedGame);
       finalGame = mergeArtworkIntoCatalogGame(unlockedGame, artwork);
     } catch (error) {
       // Keep unlocked provider snapshot if a refresh call fails.
