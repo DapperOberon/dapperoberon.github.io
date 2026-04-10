@@ -16,6 +16,7 @@ async function verifyFallbackWhenUnconfigured() {
 
   assert(result.status === "unsupported", "Expected unsupported status when worker URL is missing.");
   assert(result.reason === "pricing_not_configured", "Expected pricing_not_configured reason when unconfigured.");
+  assert(!("preferredStoreCurrent" in result), "Expected deprecated preferredStoreCurrent field to be absent from fallback pricing results.");
 }
 
 async function verifyConfiguredPricingAndStoreList() {
@@ -109,6 +110,7 @@ async function verifyConfiguredPricingAndStoreList() {
     assert(result.status === "ok", "Expected ok status for successful configured provider call.");
     assert(Array.isArray(result.storeRows) && result.storeRows.length === 2, "Expected two normalized storeRows.");
     assert(result.currentBest.storeId === "61", "Expected currentBest to resolve from lowest selected store row.");
+    assert(!("preferredStoreCurrent" in result), "Expected deprecated preferredStoreCurrent field to be absent from configured pricing results.");
 
     const stores = await pricing.listStores();
     assert(Array.isArray(stores) && stores.length === 2, "Expected listStores to return normalized stores.");
@@ -141,6 +143,7 @@ async function verifyProviderErrorFallback() {
 
     assert(result.status === "error", "Expected error status when provider request fails.");
     assert(result.reason === "worker_request_failed", "Expected worker_request_failed reason for provider fetch failure.");
+    assert(!("preferredStoreCurrent" in result), "Expected deprecated preferredStoreCurrent field to be absent from error pricing results.");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -158,4 +161,3 @@ run().catch((error) => {
   console.error(error?.stack || error?.message || error);
   process.exitCode = 1;
 });
-

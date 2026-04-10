@@ -144,11 +144,11 @@ Definition of done:
   - infer `igdbId` for older tracked games when missing
   - auto-fetch/persist richer Discover-style IGDB payload on detail open when key decision fields are missing
   - skip re-fetch when tracked game is already complete enough
-- [ ] Add regression checks for media-source ordering:
+- [x] Add regression checks for media-source ordering:
   - IGDB image used when present
   - SteamGrid used only when IGDB asset missing
   - no mixed-source flicker during lazy hydration
-- [ ] Add QA fixtures for coming-soon/unreleased wishlist cards to verify blank store label behavior remains stable.
+- [x] Add QA fixtures for coming-soon/unreleased wishlist cards to verify blank store label behavior remains stable.
 
 Definition of done:
 - Discover and Wishlist use a consistent decision-first structure, and media sourcing is deterministic (IGDB primary, SteamGrid fallback).
@@ -167,11 +167,11 @@ Definition of done:
   - sort by lowest price
   - filter by priority
   - filter by intent
-- [ ] Add second-pass wishlist decision controls:
+- [x] Add second-pass wishlist decision controls:
   - [x] sort by biggest discount
   - [x] sort by closest to target
   - [x] filter by price status
-  - filter by selected stores only
+  - selected-stores-only filter explicitly deferred (Phase 5 / power-user slice)
 
 Definition of done:
 - Wishlist can answer both "how much do I care?" and "what am I waiting for?" directly in cards, details, and top-level controls.
@@ -197,7 +197,7 @@ Definition of done:
 - [x] Use release-aware fallback labels in wishlist cards instead of treating unreleased entries like pricing failures.
 - [x] Use release-aware provider status copy in wishlist pricing/watch panels.
 - [x] Update shared Discover/Wishlist decision hero to show release-state labels and countdown/detail text.
-- [ ] Add release-aware regression coverage and fixtures for future-dated, announced-without-date, and true-TBD titles.
+- [x] Add release-aware regression coverage and fixtures for future-dated, announced-without-date, and true-TBD titles.
 
 Definition of done:
 - Upcoming wishlist entries read intentionally, and unreleased titles no longer look like provider failures.
@@ -208,6 +208,7 @@ Definition of done:
 - [x] Multi-currency conversion engine (defer).
 - [x] Direct storefront API integrations (defer).
 - [x] Multi-provider blending/arbitration (defer).
+- [x] Selected-stores-only wishlist filter (defer to Phase 5 power-user controls).
 
 ---
 

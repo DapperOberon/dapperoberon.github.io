@@ -12,15 +12,6 @@ export function createMockPricingResult({ catalogGame } = {}) {
       regularAmount: existingPricing.currentBest?.regularAmount ?? null,
       discountPercent: existingPricing.currentBest?.discountPercent ?? null
     },
-    preferredStoreCurrent: {
-      amount: existingPricing.preferredStoreCurrent?.amount ?? null,
-      currency: existingPricing.preferredStoreCurrent?.currency || "USD",
-      storeId: existingPricing.preferredStoreCurrent?.storeId || "",
-      storeName: existingPricing.preferredStoreCurrent?.storeName || "",
-      url: existingPricing.preferredStoreCurrent?.url || "",
-      regularAmount: existingPricing.preferredStoreCurrent?.regularAmount ?? null,
-      discountPercent: existingPricing.preferredStoreCurrent?.discountPercent ?? null
-    },
     storeRows: Array.isArray(existingPricing.storeRows) ? existingPricing.storeRows : [],
     historicalLow: {
       amount: existingPricing.historicalLow?.amount ?? null,

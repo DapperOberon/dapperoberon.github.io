@@ -57,7 +57,7 @@ function renderCard(entry, game, storefrontDefinitions, statusDefinitions, cardC
     ? `
       <div class="mt-1 flex items-center justify-between gap-3 text-xs text-zinc-400 leading-4">
         <span class="truncate">${escapeHtml(pricingLabel)}</span>
-        <span class="truncate text-right">${escapeHtml(pricingStore || getStorefrontLabel(storefrontDefinitions, entry.storefront))}</span>
+        <span class="truncate text-right">${escapeHtml(pricingStore)}</span>
       </div>
     `
     : entry.status === "backlog"
@@ -98,7 +98,7 @@ function renderCard(entry, game, storefrontDefinitions, statusDefinitions, cardC
 
 function renderMetricPanel(snapshot) {
   return `
-    <div class="checkpoint-panel rounded-xl p-6 flex flex-col justify-between gap-6">
+    <div class="checkpoint-subpanel rounded-xl p-6 flex flex-col justify-between gap-6">
       <div class="space-y-2">
         <p class="font-label text-[11px] tracking-[0.08em] text-primary">Library Snapshot</p>
         <h4 class="text-3xl font-headline font-extrabold text-on-surface">${snapshot.dashboardMetrics.totalEntries}</h4>
@@ -171,13 +171,13 @@ function renderLibraryStateBar(snapshot, statusDefinitions) {
       : `${visibleEntries} visible · ${prioritySummary} · ${intentSummary} · ${priceSummary}`;
 
     return `
-      <section class="checkpoint-panel rounded-xl px-6 py-4">
-        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div class="max-w-2xl space-y-2">
-            <p class="font-label text-[11px] tracking-[0.08em] text-primary">Planning Controls</p>
+      <section class="checkpoint-toolbar rounded-xl px-5 py-4">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div class="max-w-2xl space-y-1.5">
+            <p class="font-label text-[11px] tracking-[0.08em] text-primary">Planning View</p>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface-variant leading-relaxed">
               <span>${escapeHtml(stateSummary)}</span>
-              <span class="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-label text-[10px] tracking-[0.08em] text-zinc-300">${totalEntries} total</span>
+              <span class="text-zinc-500">${totalEntries} total</span>
             </div>
           </div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:min-w-[760px]">
@@ -244,7 +244,7 @@ function renderLibraryStateBar(snapshot, statusDefinitions) {
       : `Showing all ${totalEntries} tracked entries`;
 
   return `
-    <section class="checkpoint-panel rounded-xl px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <section class="checkpoint-toolbar rounded-xl px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div class="flex flex-col gap-1">
         <p class="font-headline text-base font-bold text-on-surface">${escapeHtml(getStatusLabel(snapshot.activeStatus))}</p>
         <p class="text-sm text-on-surface-variant leading-relaxed">${escapeHtml(stateSummary)}</p>
@@ -330,7 +330,7 @@ function renderLibraryFocusSection(snapshot, storefrontDefinitions, statusDefini
 function renderDashboardHero(snapshot) {
   return `
     <section class="grid grid-cols-1 xl:grid-cols-[1.5fr_320px] gap-6 lg:gap-8">
-      <div class="checkpoint-panel rounded-xl p-8">
+      <div class="checkpoint-toolbar rounded-xl p-8">
         <div class="flex flex-col gap-3">
           <p class="font-label text-[11px] tracking-[0.08em] text-primary">Your Library</p>
           <h1 class="text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Track what you are playing, what you finished, and what is queued next.</h1>
@@ -377,7 +377,7 @@ function renderDashboardShelf({ title, eyebrow, filterStatus, entries, emptyMess
 
 function renderDiscoverSearchPanel(snapshot) {
   return `
-    <section class="checkpoint-panel rounded-xl p-8">
+    <section class="checkpoint-toolbar rounded-xl p-8">
       <div class="flex flex-col gap-3 mb-5">
         <p class="font-label text-[11px] tracking-[0.08em] text-primary">Discover</p>
         <h1 class="text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Find games before you track them.</h1>
@@ -611,14 +611,7 @@ export function renderDashboardView(snapshot, storefrontDefinitions, statusDefin
         <section data-surface-region="library-content" class="space-y-10">
           ${isWishlistView
             ? `
-              <section class="checkpoint-panel rounded-xl p-8">
-                <div class="flex flex-col gap-3">
-                  <p class="font-label text-[11px] tracking-[0.08em] text-primary">Wishlist</p>
-                  <h1 class="text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Track deals, release timing, and what to buy next.</h1>
-                  <p class="max-w-3xl text-on-surface-variant leading-relaxed">Wishlist entries are decision-first: price watch, store comparison, and release readiness.</p>
-                </div>
-              </section>
-              ${renderDashboardShelf({ title: "Wishlist", eyebrow: "Decision Queue", filterStatus: "wishlist", entries: wishlist, emptyMessage: "No wishlist entries in the current filter.", snapshot, storefrontDefinitions, statusDefinitions })}
+              ${renderLibraryFocusSection(snapshot, storefrontDefinitions, statusDefinitions, "Wishlist", "Price-watch and release planning view")}
             `
             : isDiscoverView
               ? `

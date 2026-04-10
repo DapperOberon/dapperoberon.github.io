@@ -32,6 +32,13 @@ const checks = [
     command: "PORT=8142 bash checkpoint/scripts/smoke_test.sh",
     cwd: repoRoot,
     guidance: "Fix syntax/runtime/integration regressions introduced by recent changes."
+  },
+  {
+    id: "phase4-hardening",
+    title: "Phase 4 hardening verification",
+    command: "node checkpoint/scripts/verify_phase4_hardening.mjs",
+    cwd: repoRoot,
+    guidance: "Fix release-state helpers, wishlist UI states, selected-store validation, or IGDB media ordering regressions."
   }
 ];
 

@@ -63,15 +63,6 @@ export function createPricingService() {
         providerGameId: result?.providerGameId || "",
         gameUrl: result?.gameUrl || result?.meta?.itadGameUrl || "",
         currentBest: resolvedCurrentBest,
-        preferredStoreCurrent: {
-          amount: null,
-          currency: "USD",
-          storeId: "",
-          storeName: "",
-          url: "",
-          regularAmount: null,
-          discountPercent: null
-        },
         storeRows: normalizedStoreRows,
         historicalLow: {
           amount: Number.isFinite(Number(result?.historicalLow?.amount)) ? Number(result.historicalLow.amount) : null,

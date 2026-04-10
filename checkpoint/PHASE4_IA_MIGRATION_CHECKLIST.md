@@ -81,16 +81,14 @@ Definition of done:
 
 ## Slice 4: Wishlist Decision UX
 
-- [ ] Wishlist page defaults to price/release/priority sorting.
-- [ ] Add quick filters:
-  - on sale
-  - coming soon
-  - target hit
-  - no data
-- [ ] Add quick actions on wishlist cards:
-  - refresh price
-  - open details
-  - remove from wishlist
+- [x] Wishlist page defaults to a decision-first sort (`Next to Buy`) and preserves local user preference after that.
+- [x] Add quick filters:
+  - priority
+  - intent
+  - price status
+- [x] Keep wishlist card quick actions intentionally minimal in Phase 4:
+  - open details via the card itself
+  - additional card-level refresh/remove actions explicitly deferred to avoid visual clutter
 - [x] Reuse the Discover detail template wholesale for Wishlist in the first pass.
 - [x] Limit first-pass Wishlist differences to hero/button actions and watch-specific controls.
 - [x] Remove legacy library-style wishlist body sections that diverge from Discover.

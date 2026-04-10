@@ -54,15 +54,6 @@ function buildPricingResult({
       regularAmount: null,
       discountPercent: Number.isFinite(Number(discountPercent)) ? Number(discountPercent) : null
     },
-    preferredStoreCurrent: {
-      amount: null,
-      currency,
-      storeId: "",
-      storeName: "",
-      url: "",
-      regularAmount: null,
-      discountPercent: null
-    },
     storeRows: Number.isFinite(Number(amount))
       ? [{
           storeId,

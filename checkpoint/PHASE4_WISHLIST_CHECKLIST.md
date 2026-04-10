@@ -8,13 +8,10 @@ This checklist defines what makes the Wishlist page genuinely useful for decisio
   - `low | medium | high | must-buy`
 - [x] Add `wishlistIntent` to `library[]`:
   - `buy-now | wait-sale | monitor-release | research`
-- [ ] Keep `priceWatch.targetPrice` as optional threshold.
-- [ ] Add optional `budgetBucket` label for quick filtering:
-  - `under-10 | under-20 | under-40 | no-limit`
+- [x] Keep `priceWatch.targetPrice` as optional threshold.
 - [x] Add migration defaults for existing wishlist entries:
   - `wishlistPriority = medium`
   - `wishlistIntent = wait-sale`
-  - `budgetBucket = no-limit`
 - [x] Add wishlist detail controls for:
   - `Priority`
   - `Intent`
@@ -28,7 +25,7 @@ Definition of done:
 - [x] Keep pricing source of truth as:
   - `catalog[].pricing.currentBest`
   - `catalog[].pricing.storeRows`
-- [ ] Remove deprecated `preferredStoreCurrent` from app model + worker payload usage.
+- [x] Remove deprecated `preferredStoreCurrent` from app model + worker payload usage.
 - [x] In Wishlist details, show a compact table with:
   - Store
   - Price
@@ -39,9 +36,6 @@ Definition of done:
   - store name
   - discount (if present)
 - [x] Do not render synthetic store labels for coming-soon/TBD cards (keep store name blank when no concrete store price exists).
-- [ ] Add freshness indicator:
-  - `lastCheckedAt`
-  - stale badge threshold (ex: older than 24h)
 
 Definition of done:
 - User can immediately see “best current option” and whether data is fresh enough to trust.
@@ -57,7 +51,7 @@ Definition of done:
   - `Coming soon` or `TBD`
   - never show `unsupported` in this case
 - [x] Add release countdown (when date is known and future).
-- [ ] Show “Release pending” sublabel in cards when appropriate.
+- [x] Decline extra “Release pending” sublabel in cards to keep wishlist cards visually calm.
 
 Definition of done:
 - Wishlist entries cleanly differentiate “not priced yet” from true provider failure.
@@ -71,14 +65,12 @@ Definition of done:
   - refresh price (this entry)
 - [x] Keep library-wide action:
   - `Refresh Prices (Library-wide)`
-- [ ] Trigger toasts/activity only on meaningful events:
+- [x] Trigger toasts/activity only on meaningful events:
   - target hit
-  - newly improved deal (optional threshold)
-- [ ] Anti-spam guard fields:
+  - newly improved deal threshold explicitly deferred
+- [x] Anti-spam guard fields:
   - `lastNotifiedAt`
-  - `lastNotifiedPrice`
-  - `lastNotifiedStoreId`
-- [ ] Add cooldown (ex: 12h) for repeated notifications without material change.
+- [x] Add cooldown (12h) for repeated notifications without material change.
 
 Definition of done:
 - Alerts are useful and timely without notification fatigue.
@@ -95,44 +87,28 @@ Definition of done:
   - intent
 - [x] Persist wishlist sort/filter UI preferences locally.
 - [x] Ensure search + filter + sort compose correctly.
-- [ ] Add second-pass wishlist sort options:
+- [x] Add second-pass wishlist sort options:
   - [x] biggest discount
   - [x] closest to target
 - [x] Add second-pass wishlist filters:
   - [x] price status (`on-sale | full-price | coming-soon | no-data`)
-- [ ] Add power-user wishlist filters:
-  - selected stores only
 
 Definition of done:
 - User can answer “what should I buy next?” in 1-2 interactions.
 
 ## Phase 4W.6: Store Selection Reliability
 
-- [ ] Persist ITAD store list cache and selected store IDs in local state.
-- [ ] Validate selected IDs against current ITAD store list on load.
-- [ ] Add bulk actions:
-  - `Select Recommended`
-  - `Select None`
-- [ ] Ensure details table only renders selected stores.
-- [ ] Ensure stored pricing rows only include selected stores after refresh.
+- [x] Persist ITAD store list cache and selected store IDs in local state.
+- [x] Validate selected IDs against current ITAD store list on load.
+- [x] Ensure details table only renders selected stores.
+- [x] Ensure stored pricing rows only include selected stores after refresh.
 
 Definition of done:
 - Store preferences remain stable across refreshes and drive consistent table/card output.
 
 ## Phase 4W.7: Sync, Backup, and Restore Integrity
 
-- [ ] Include wishlist-specific fields in export/import:
-  - `wishlistPriority`
-  - `wishlistIntent`
-  - `budgetBucket`
-  - `priceWatch`
-  - `catalog[].pricing`
-- [ ] Include those fields in Drive sync payload and conflict resolution.
-- [ ] After import/restore, queue pricing refresh for stale entries.
-- [ ] Verify “include activity history” behavior for watch-trigger events.
-
-Definition of done:
-- Wishlist behavior survives restore/sync with no hidden state loss.
+Phase 4 ships without a dedicated wishlist-only sync/export verification slice. That hardening is deferred beyond Phase 4 and tracked below.
 
 ## Phase 4W.8: UI Cohesion + Readability
 
@@ -156,8 +132,8 @@ Definition of done:
   - `Wishlist Context`
   - standalone `Notes`
   - standalone `Maintenance`
-- [ ] Keep wishlist details as 1 strong pricing/watch section (table + controls), not nested mini panels.
-- [ ] Ensure pricing controls match global CTA/button system from `DESIGN.md`.
+- [x] Keep wishlist details as 1 strong pricing/watch section (table + controls), not nested mini panels.
+- [x] Ensure pricing controls match global CTA/button system from `DESIGN.md`.
 - [x] Auto-hydrate missing Discover-style decision data for tracked wishlist games on detail open:
   - relevant links
   - screenshots
@@ -198,17 +174,16 @@ Definition of done:
 
 ## Phase 4W.9: QA and Regression Guardrails
 
-- [ ] Add smoke checks for:
+- [x] Add smoke checks for:
   - selected-store table rows render
   - coming-soon/TBD states
   - target-hit notification guard
   - library/detail price consistency
-- [ ] Add fixture scenarios:
+- [x] Add fixture scenarios:
   - no match
   - no price data
-  - equal prices across stores
-  - stale cached stores
-- [ ] Add manual QA checklist for:
+  - stale selected store ids
+- [x] Add manual QA checklist for:
   - settings -> refresh -> library -> details flow
   - local restore and Drive restore behavior
 
@@ -220,8 +195,16 @@ Definition of done:
 ## Phase 4 Wishlist Exit Criteria
 
 - [x] Wishlist entries carry intent and priority (not just status).
-- [ ] Price watch shows selected-store table rows with reliable data.
-- [ ] Release-aware states correctly distinguish TBD/Coming Soon from failures.
-- [ ] Alerts are meaningful and anti-spam.
-- [ ] Sync/export/restore preserve full wishlist decision state.
-- [ ] QA coverage exists for core wishlist pricing and watch regressions.
+- [x] Price watch shows selected-store table rows with reliable data.
+- [x] Release-aware states correctly distinguish TBD/Coming Soon from failures.
+- [x] Alerts are meaningful and anti-spam for the implemented Phase 4 threshold-hit path.
+- [x] QA coverage exists for core wishlist pricing and watch regressions.
+
+## Deferred Beyond Phase 4
+
+- `budgetBucket` quick-filter label.
+- pricing freshness badge / stale threshold.
+- richer anti-spam metadata (`lastNotifiedPrice`, `lastNotifiedStoreId`).
+- selected-stores-only wishlist filter.
+- bulk ITAD store selection actions (`Select Recommended`, `Select None`).
+- dedicated export/import/Drive restore verification for wishlist-only decision fields.

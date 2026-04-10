@@ -1581,6 +1581,25 @@ export function createEntryActions(ctx) {
     state.itadStoresLoading = false;
     state.itadStores = Array.isArray(stores) ? stores : [];
     writeItadStoresCache(state.itadStores);
+    if (state.itadStores.length) {
+      const validStoreIds = new Set(
+        state.itadStores
+          .map((row) => String(row?.id ?? "").trim())
+          .filter((value) => /^\d+$/.test(value))
+      );
+      const currentSelectedIds = Array.isArray(state.syncPreferences.itadSelectedStoreIds)
+        ? state.syncPreferences.itadSelectedStoreIds
+          .map((value) => String(value ?? "").trim())
+          .filter((value) => /^\d+$/.test(value))
+        : [];
+      const nextSelectedIds = currentSelectedIds.filter((value) => validStoreIds.has(value));
+      if (JSON.stringify(nextSelectedIds) !== JSON.stringify(currentSelectedIds)) {
+        state.syncPreferences = {
+          ...state.syncPreferences,
+          itadSelectedStoreIds: nextSelectedIds
+        };
+      }
+    }
     if (!state.itadStores.length) {
       state.itadStoresError = "No stores were returned by ITAD.";
       setActionState("pricing", {

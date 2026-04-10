@@ -11,6 +11,7 @@ echo "[checkpoint] Running syntax checks..."
 node --check checkpoint/app.js
 node --check checkpoint/data/sample-data.js
 node --check checkpoint/scripts/verify_phase2_integrations.mjs
+node --check checkpoint/scripts/verify_phase4_hardening.mjs
 node --check checkpoint/scripts/verify_pricing_services.mjs
 node --check checkpoint/scripts/verify_pricing_watch_states.mjs
 node --check checkpoint/scripts/preflight_config.mjs
@@ -100,5 +101,8 @@ node checkpoint/scripts/verify_pricing_services.mjs
 
 echo "[checkpoint] Verifying pricing watch defaults, trigger guard, and status UI states..."
 node checkpoint/scripts/verify_pricing_watch_states.mjs
+
+echo "[checkpoint] Verifying Phase 4 hardening coverage..."
+node checkpoint/scripts/verify_phase4_hardening.mjs
 
 echo "[checkpoint] Smoke test passed."

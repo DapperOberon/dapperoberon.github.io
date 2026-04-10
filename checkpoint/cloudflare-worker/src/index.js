@@ -206,15 +206,6 @@ function emptyItadPricing(reason, status = "unsupported") {
       regularAmount: null,
       discountPercent: null
     },
-    preferredStoreCurrent: {
-      amount: null,
-      currency: "USD",
-      storeId: "",
-      storeName: "",
-      url: "",
-      regularAmount: null,
-      discountPercent: null
-    },
     storeRows: [],
     historicalLow: {
       amount: null,
@@ -571,7 +562,6 @@ async function handleItadPricingRequest(request, env) {
     ]);
 
     const bestDeal = pickBestCurrentDeal(pricesPayload, gameId);
-    const preferredDeal = pickPreferredStoreDeal(pricesPayload, gameId, preferredShopIds);
     const storeRows = buildItadStoreRows(pricesPayload, gameId, selectedShopIds);
     const normalizedDeals = getNormalizedDealsForGame(pricesPayload, gameId);
     const historicalLow = normalizeHistoryLow(historyPayload, gameId);
@@ -594,15 +584,6 @@ async function handleItadPricingRequest(request, env) {
         url: bestDeal.url,
         regularAmount: bestDeal.regularAmount,
         discountPercent: bestDeal.discountPercent
-      },
-      preferredStoreCurrent: {
-        amount: parseNullableNumber(preferredDeal?.amount),
-        currency: trim(preferredDeal?.currency || bestDeal.currency || "USD").toUpperCase() || "USD",
-        storeId: trim(preferredDeal?.storeId ?? ""),
-        storeName: trim(preferredDeal?.storeName ?? ""),
-        url: trim(preferredDeal?.url ?? ""),
-        regularAmount: parseNullableNumber(preferredDeal?.regularAmount),
-        discountPercent: parseNullableNumber(preferredDeal?.discountPercent)
       },
       storeRows,
       historicalLow: {

@@ -141,7 +141,6 @@ function normalizeCatalogPricing(pricing, fallback = {}) {
     provider: trimOrFallback(source.provider, trimOrFallback(fallbackSource.provider, "")),
     providerGameId: trimOrFallback(source.providerGameId, trimOrFallback(fallbackSource.providerGameId, "")),
     currentBest: normalizePricingSnapshot(source.currentBest, fallbackSource.currentBest),
-    preferredStoreCurrent: normalizePricingSnapshot(source.preferredStoreCurrent, fallbackSource.preferredStoreCurrent),
     storeRows: normalizeStoreRows(source.storeRows, fallbackSource.storeRows),
     historicalLow: {
       ...normalizePricingSnapshot(source.historicalLow, fallbackSource.historicalLow),

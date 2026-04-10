@@ -26,15 +26,6 @@ function emptyPricing(reason, status = "unsupported") {
       regularAmount: null,
       discountPercent: null
     },
-    preferredStoreCurrent: {
-      amount: null,
-      currency: "USD",
-      storeId: "",
-      storeName: "",
-      url: "",
-      regularAmount: null,
-      discountPercent: null
-    },
     storeRows: [],
     historicalLow: {
       amount: null,
@@ -98,15 +89,6 @@ export function createItadPricingProvider() {
             url: String(payload?.currentBest?.url ?? ""),
             regularAmount: Number.isFinite(Number(payload?.currentBest?.regularAmount)) ? Number(payload.currentBest.regularAmount) : null,
             discountPercent: Number.isFinite(Number(payload?.currentBest?.discountPercent)) ? Number(payload.currentBest.discountPercent) : null
-          },
-          preferredStoreCurrent: {
-            amount: Number.isFinite(Number(payload?.preferredStoreCurrent?.amount)) ? Number(payload.preferredStoreCurrent.amount) : null,
-            currency: String(payload?.preferredStoreCurrent?.currency ?? "USD"),
-            storeId: String(payload?.preferredStoreCurrent?.storeId ?? ""),
-            storeName: String(payload?.preferredStoreCurrent?.storeName ?? ""),
-            url: String(payload?.preferredStoreCurrent?.url ?? ""),
-            regularAmount: Number.isFinite(Number(payload?.preferredStoreCurrent?.regularAmount)) ? Number(payload.preferredStoreCurrent.regularAmount) : null,
-            discountPercent: Number.isFinite(Number(payload?.preferredStoreCurrent?.discountPercent)) ? Number(payload.preferredStoreCurrent.discountPercent) : null
           },
           storeRows: Array.isArray(payload?.storeRows)
             ? payload.storeRows.map((row) => ({
