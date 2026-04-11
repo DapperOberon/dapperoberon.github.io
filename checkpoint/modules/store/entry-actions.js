@@ -1494,6 +1494,56 @@ export function createEntryActions(ctx) {
     emit();
   }
 
+  function applySteamPlaytimeToDetailProgress(mode = "replace") {
+    const entry = getEntry();
+    if (!entry) return;
+
+    const steamMinutes = Number(entry?.externalPlaytime?.steam?.playtimeForeverMinutes);
+    if (!Number.isFinite(steamMinutes) || steamMinutes <= 0) {
+      state.notice = {
+        tone: "warning",
+        message: `${entry.title} has no Steam playtime to apply.`
+      };
+      emit();
+      return;
+    }
+
+    const steamHours = Math.round((steamMinutes / 60) * 10) / 10;
+    const nextPlaytimeHours = mode === "add"
+      ? Math.round(((Number(entry.playtimeHours || 0) + steamHours) * 10)) / 10
+      : steamHours;
+
+    const updatedEntry = normalizeLibraryEntry({
+      ...entry,
+      playtimeHours: nextPlaytimeHours,
+      updatedAt: new Date().toISOString(),
+      syncState: integrations.googleDrive.isConfigured() ? "pending" : "offline"
+    });
+
+    state.library = state.library
+      .map((item) => (item.entryId === entry.entryId ? updatedEntry : item))
+      .sort(sortByUpdatedAtDesc);
+    state.catalog = pruneCatalogToLibrary(state.library, state.catalog);
+    state.detailForm = createDetailForm(updatedEntry);
+    recordActivity({
+      category: "entry",
+      action: "progress",
+      scope: "entry",
+      title: updatedEntry.title,
+      message: mode === "add"
+        ? `Added Steam playtime (${steamHours}h) to Checkpoint progress.`
+        : `Replaced Checkpoint playtime with Steam total (${steamHours}h).`,
+      tone: "success"
+    });
+    state.notice = {
+      tone: "success",
+      message: mode === "add"
+        ? `${updatedEntry.title} added Steam time to local progress.`
+        : `${updatedEntry.title} now uses Steam total for local playtime.`
+    };
+    emit();
+  }
+
   function savePriceWatch(draft = {}) {
     const entry = getEntry();
     if (!entry) return;
@@ -1673,6 +1723,7 @@ export function createEntryActions(ctx) {
     saveDetailWorkspace,
     saveDetailNotes,
     saveDetailProgress,
+    applySteamPlaytimeToDetailProgress,
     savePriceWatch,
     togglePriceWatch,
     refreshPricingForEntry,

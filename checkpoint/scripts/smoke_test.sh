@@ -9,9 +9,14 @@ SERVER_LOG="${TMPDIR:-/tmp}/checkpoint-smoke-test.log"
 
 echo "[checkpoint] Running syntax checks..."
 node --check checkpoint/app.js
+node --check checkpoint/cloudflare-worker/src/index.js
 node --check checkpoint/data/sample-data.js
 node --check checkpoint/scripts/verify_phase2_integrations.mjs
 node --check checkpoint/scripts/verify_phase4_hardening.mjs
+node --check checkpoint/scripts/verify_phase5_steam_model.mjs
+node --check checkpoint/scripts/verify_phase5_steam_playtime.mjs
+node --check checkpoint/scripts/verify_phase5_steam_preview.mjs
+node --check checkpoint/scripts/verify_phase5_steam_worker.mjs
 node --check checkpoint/scripts/verify_pricing_services.mjs
 node --check checkpoint/scripts/verify_pricing_watch_states.mjs
 node --check checkpoint/scripts/preflight_config.mjs
@@ -104,5 +109,17 @@ node checkpoint/scripts/verify_pricing_watch_states.mjs
 
 echo "[checkpoint] Verifying Phase 4 hardening coverage..."
 node checkpoint/scripts/verify_phase4_hardening.mjs
+
+echo "[checkpoint] Verifying Phase 5 Steam import model coverage..."
+node checkpoint/scripts/verify_phase5_steam_model.mjs
+
+echo "[checkpoint] Verifying Phase 5 Steam worker coverage..."
+node checkpoint/scripts/verify_phase5_steam_worker.mjs
+
+echo "[checkpoint] Verifying Phase 5 Steam preview coverage..."
+node checkpoint/scripts/verify_phase5_steam_preview.mjs
+
+echo "[checkpoint] Verifying Phase 5 Steam playtime coverage..."
+node checkpoint/scripts/verify_phase5_steam_playtime.mjs
 
 echo "[checkpoint] Smoke test passed."

@@ -109,6 +109,17 @@ function renderDetailWorkspacePanel(snapshot, activeEntry, storefrontDefinitions
 }
 
 function renderDetailProgressPanel(snapshot, activeEntry, statusDefinitions) {
+  const steamMinutes = Number(activeEntry?.externalPlaytime?.steam?.playtimeForeverMinutes);
+  const steamRecentMinutes = Number(activeEntry?.externalPlaytime?.steam?.playtime2WeeksMinutes);
+  const hasSteamPlaytime = Number.isFinite(steamMinutes) && steamMinutes > 0;
+  const formatSteamHours = (minutes) => {
+    const numeric = Number(minutes);
+    if (!Number.isFinite(numeric) || numeric <= 0) return "0h";
+    const hours = numeric / 60;
+    if (hours < 10) return `${hours.toFixed(1)}h`;
+    return `${Math.round(hours)}h`;
+  };
+
   return `
     <div id="detail-progress" class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-6 relative overflow-hidden">
       <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-6">
@@ -123,6 +134,32 @@ function renderDetailProgressPanel(snapshot, activeEntry, statusDefinitions) {
         </div>
       </div>
       <div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-cyan-500 to-primary-container shadow-[0_0_15px_rgba(168,232,255,0.5)]" style="width:${activeEntry.completionPercent}%"></div></div>
+      ${hasSteamPlaytime ? `
+        <div class="rounded-lg bg-black/20 px-4 py-4 space-y-4">
+          <div class="flex flex-col gap-1">
+            <p class="font-label text-[11px] tracking-[0.08em] text-primary">Steam Playtime</p>
+            <p class="text-xs text-zinc-500">Steam is shown as imported context. It does not overwrite Checkpoint progress unless you explicitly choose to use it.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Checkpoint Total</p>
+              <p class="font-headline font-bold text-on-surface">${escapeHtml(`${activeEntry.playtimeHours}h`)}</p>
+            </div>
+            <div>
+              <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Steam Total</p>
+              <p class="font-headline font-bold text-on-surface">${escapeHtml(formatSteamHours(steamMinutes))}</p>
+            </div>
+            <div>
+              <p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Steam Recent</p>
+              <p class="font-headline font-bold text-on-surface">${escapeHtml(formatSteamHours(steamRecentMinutes))}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            ${renderSecondaryAction("Use Steam Total", "use-steam-total-playtime", "px-4 py-2 text-[11px] tracking-[0.08em]")}
+            ${renderSecondaryAction("Add Steam Time to Checkpoint", "add-steam-playtime", "px-4 py-2 text-[11px] tracking-[0.08em]")}
+          </div>
+        </div>
+      ` : ""}
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
         <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Playtime</span><input id="detail-playtime" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="number" min="0" step="0.5" value="${escapeHtml(snapshot.detailForm.playtimeHours)}"></label>
         <label class="space-y-2"><span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Completion</span><input id="detail-completion" class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary" type="number" min="0" max="100" step="1" value="${escapeHtml(snapshot.detailForm.completionPercent)}"></label>

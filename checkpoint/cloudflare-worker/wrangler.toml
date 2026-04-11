@@ -8,3 +8,6 @@ preview_urls = true
 ALLOWED_ORIGIN = "https://dapperoberon.github.io"
 ALLOWED_ORIGINS = "https://dapperoberon.github.io,http://127.0.0.1:5500"
 ITAD_COUNTRY = "US"
+
+# Required for /api/steam/* routes. Configure as a secret, not a checked-in var:
+#   npx wrangler secret put STEAM_WEB_API_KEY

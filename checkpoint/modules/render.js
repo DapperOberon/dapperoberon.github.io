@@ -521,6 +521,29 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "set-settings-section":
           store.setSettingsSection(actionElement.dataset.section);
           break;
+        case "set-steam-import-mode":
+          store.setSteamImportMode(actionElement.dataset.mode);
+          break;
+        case "set-steam-import-step":
+          store.setSteamImportStep(actionElement.dataset.step);
+          break;
+        case "set-steam-import-rule":
+          store.updateSteamImportRules({
+            [actionElement.dataset.rule]: actionElement.dataset.value
+          });
+          break;
+        case "set-steam-import-candidate-action":
+          store.setSteamImportCandidateAction(
+            actionElement.dataset.candidateId,
+            actionElement.dataset.value
+          );
+          break;
+        case "fetch-steam-owned-preview":
+          await store.fetchSteamOwnedLibraryPreview();
+          break;
+        case "commit-steam-owned-import":
+          await store.commitSteamOwnedImport();
+          break;
         case "filter-status":
           store.setActiveStatus(actionElement.dataset.status);
           break;
@@ -713,6 +736,12 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "save-detail-progress":
           store.saveDetailProgress(getDetailDraftValues(app));
           break;
+        case "use-steam-total-playtime":
+          store.applySteamPlaytimeToDetailProgress("replace");
+          break;
+        case "add-steam-playtime":
+          store.applySteamPlaytimeToDetailProgress("add");
+          break;
         case "toggle-price-watch":
           store.togglePriceWatch(actionElement.dataset.entryId);
           break;
@@ -822,6 +851,13 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         return;
       }
 
+      if (target.id === "steam-profile-source") {
+        store.updateSteamImportSource({
+          steamProfile: target.value
+        });
+        return;
+      }
+
       if (target.id === "add-run-label") {
         store.updateAddForm({
           runLabel: target.value
@@ -917,6 +953,27 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         addSearchDebounceTimer = null;
         store.updateAddForm({
           searchQuery: target.value
+        });
+        return;
+      }
+
+      if (target instanceof HTMLInputElement && target.id === "steam-profile-source") {
+        store.updateSteamImportSource({
+          steamProfile: target.value
+        });
+        return;
+      }
+
+      if (target instanceof HTMLInputElement && target.id === "steam-include-free-played") {
+        store.updateSteamImportSource({
+          includeFreePlayed: target.checked
+        });
+        return;
+      }
+
+      if (target instanceof HTMLInputElement && target.id === "steam-rules-suggest-playing") {
+        store.updateSteamImportRules({
+          suggestRecentlyPlayedAsPlaying: target.checked
         });
         return;
       }

@@ -83,6 +83,38 @@ function normalizeRelatedTitles(value, fallback = []) {
     .filter((item) => item.id && item.title);
 }
 
+function normalizeSteamMetadata(value, fallback = {}) {
+  const source = value && typeof value === "object" ? value : {};
+  const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
+  const appid = Number(source.appid ?? source.appId ?? fallbackSource.appid ?? fallbackSource.appId);
+  const playtimeForeverMinutes = Number(source.playtimeForeverMinutes ?? source.playtime_forever ?? fallbackSource.playtimeForeverMinutes ?? fallbackSource.playtime_forever);
+  const playtime2WeeksMinutes = Number(source.playtime2WeeksMinutes ?? source.playtime_2weeks ?? fallbackSource.playtime2WeeksMinutes ?? fallbackSource.playtime_2weeks);
+
+  return {
+    appid: Number.isFinite(appid) && appid > 0 ? Math.trunc(appid) : null,
+    appUrl: trimOrFallback(source.appUrl, trimOrFallback(source.app_url, trimOrFallback(fallbackSource.appUrl, trimOrFallback(fallbackSource.app_url, "")))),
+    playtimeForeverMinutes: Number.isFinite(playtimeForeverMinutes) && playtimeForeverMinutes >= 0 ? Math.trunc(playtimeForeverMinutes) : 0,
+    playtime2WeeksMinutes: Number.isFinite(playtime2WeeksMinutes) && playtime2WeeksMinutes >= 0 ? Math.trunc(playtime2WeeksMinutes) : 0,
+    lastImportedAt: trimOrFallback(source.lastImportedAt, trimOrFallback(fallbackSource.lastImportedAt, "")),
+    lastRefreshedAt: trimOrFallback(source.lastRefreshedAt, trimOrFallback(fallbackSource.lastRefreshedAt, "")),
+    importSource: trimOrFallback(source.importSource, trimOrFallback(fallbackSource.importSource, ""))
+  };
+}
+
+function normalizeExternalPlaytime(value, fallback = {}) {
+  const source = value && typeof value === "object" ? value : {};
+  const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
+  const steam = normalizeSteamMetadata(source.steam, fallbackSource.steam);
+  return {
+    steam: {
+      appid: steam.appid,
+      playtimeForeverMinutes: steam.playtimeForeverMinutes,
+      playtime2WeeksMinutes: steam.playtime2WeeksMinutes,
+      lastImportedAt: steam.lastImportedAt
+    }
+  };
+}
+
 function normalizePriceWatch(priceWatch, fallback = {}, status = "playing") {
   const source = priceWatch && typeof priceWatch === "object" ? priceWatch : {};
   const fallbackSource = fallback && typeof fallback === "object" ? fallback : {};
@@ -225,6 +257,7 @@ export function normalizeCatalogGame(game, fallback = {}) {
     videos: normalizeVideoArray(game?.videos, fallback.videos),
     links: normalizeLinks(game?.links, fallback.links),
     relatedTitles: normalizeRelatedTitles(game?.relatedTitles, fallback.relatedTitles),
+    steam: normalizeSteamMetadata(game?.steam, fallback.steam),
     steamGridSlug: trimOrFallback(game?.steamGridSlug, trimOrFallback(fallback.steamGridSlug, "")),
     providerValues: normalizeProviderValues(game?.providerValues, fallback.providerValues),
     lockedFields: normalizeLockedFields(game?.lockedFields ?? fallback.lockedFields),
@@ -258,6 +291,9 @@ export function normalizeLibraryEntry(entry, fallback = {}) {
     spotlight: trimOrFallback(entry?.spotlight, trimOrFallback(fallback.spotlight, "")),
     wishlistPriority,
     wishlistIntent,
+    importSource: trimOrFallback(entry?.importSource, trimOrFallback(fallback.importSource, "")),
+    importedAt: trimOrFallback(entry?.importedAt, trimOrFallback(fallback.importedAt, "")),
+    externalPlaytime: normalizeExternalPlaytime(entry?.externalPlaytime, fallback.externalPlaytime),
     syncState: trimOrFallback(entry?.syncState, trimOrFallback(fallback.syncState, "offline")),
     priceWatch: normalizePriceWatch(entry?.priceWatch, fallback.priceWatch, status)
   };

@@ -1,5 +1,5 @@
 import { APP_STATE_SCHEMA_VERSION, normalizePersistedState, pruneCatalogToLibrary } from "./schema.js";
-import { normalizeLibraryEntry } from "./normalization.js";
+import { normalizeCatalogGame, normalizeLibraryEntry } from "./normalization.js";
 import { getServiceConfig } from "../services/index.js";
 import { createEntryActions } from "./store/entry-actions.js";
 import { createEnrichmentActions } from "./store/enrichment-actions.js";
@@ -12,7 +12,31 @@ function createEntryId() {
 }
 
 function normalizeTerm(value) {
-  return value.trim().toLowerCase();
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function normalizeComparableTitle(value) {
+  return normalizeTerm(value)
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getSteamPreviewPriority(matchStatus) {
+  return {
+    possible: 0,
+    existing: 1,
+    unmatched: 2
+  }[matchStatus] ?? 3;
+}
+
+function normalizeSteamStoreUrl(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[?#].*$/, "")
+    .replace(/\/+$/, "");
 }
 
 function sortByUpdatedAtDesc(a, b) {
@@ -76,6 +100,40 @@ function createActionState() {
     artwork: null,
     metadata: null,
     pricing: null
+  };
+}
+
+function createDefaultSteamImportSession() {
+  return {
+    mode: "owned-library",
+    step: "source",
+    source: {
+      steamProfile: "",
+      includeFreePlayed: true
+    },
+    loading: false,
+    lastResolvedSteamId: "",
+    rawResults: [],
+    igdbSuggestions: {},
+    actionOverrides: {},
+    rules: {
+      defaultDestination: "backlog",
+      suggestRecentlyPlayedAsPlaying: true,
+      duplicateBehavior: "merge-appid"
+    },
+    candidates: [],
+    commitResult: null,
+    summary: {
+      total: 0,
+      played: 0,
+      unplayed: 0,
+      recent: 0,
+      existing: 0,
+      possibleMatches: 0,
+      unmatched: 0
+    },
+    errors: [],
+    lastFetchedAt: ""
   };
 }
 
@@ -264,6 +322,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     detailForm: createDetailForm(hydratedLibrary[0] ?? null),
     isDetailEditMode: false,
     importMode: "replace",
+    steamImport: createDefaultSteamImportSession(),
     actionState: createActionState(),
     itadStores: cachedItadStores,
     itadStoresLoading: false,
@@ -675,6 +734,385 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     return state.catalog.find((item) => item.id === gameId) ?? null;
   }
 
+  function getSteamAppIdFromGame(game) {
+    const directAppId = Number(game?.steam?.appid);
+    if (Number.isFinite(directAppId) && directAppId > 0) {
+      return directAppId;
+    }
+
+    const storefrontUrl = [
+      game?.steam?.appUrl,
+      ...(Array.isArray(game?.links?.storefronts) ? game.links.storefronts.map((link) => link?.url ?? link) : []),
+      game?.links?.official
+    ].map((value) => String(value ?? "")).find((value) => /store\.steampowered\.com\/app\/\d+/i.test(value));
+    const match = storefrontUrl?.match(/store\.steampowered\.com\/app\/(\d+)/i);
+    const linkedAppId = Number(match?.[1]);
+    return Number.isFinite(linkedAppId) && linkedAppId > 0 ? linkedAppId : null;
+  }
+
+  function getSteamStoreUrlsFromGame(game) {
+    const candidateUrls = [
+      game?.steam?.appUrl,
+      ...(Array.isArray(game?.links?.storefronts) ? game.links.storefronts.map((link) => link?.url ?? link) : []),
+      game?.links?.official
+    ];
+
+    return candidateUrls
+      .map(normalizeSteamStoreUrl)
+      .filter((url) => url && url.includes("store.steampowered.com/app/"));
+  }
+
+  function findExactSteamImportMatch(steamGame) {
+    const appid = Number(steamGame?.appid);
+    const steamUrl = normalizeSteamStoreUrl(steamGame?.appUrl);
+
+    if (Number.isFinite(appid) && appid > 0) {
+      const directSteamEntry = state.library.find((entry) => {
+        const catalogGame = getCatalogGame(entry.gameId);
+        return Number(catalogGame?.steam?.appid) === appid;
+      }) ?? null;
+
+      if (directSteamEntry) {
+        return {
+          entry: directSteamEntry,
+          reason: "steam_appid",
+          confidence: "exact"
+        };
+      }
+    }
+
+    if (steamUrl) {
+      const directUrlEntry = state.library.find((entry) => {
+        const catalogGame = getCatalogGame(entry.gameId);
+        return getSteamStoreUrlsFromGame(catalogGame).includes(steamUrl);
+      }) ?? null;
+
+      if (directUrlEntry) {
+        return {
+          entry: directUrlEntry,
+          reason: "steam_url",
+          confidence: "exact"
+        };
+      }
+    }
+
+    if (Number.isFinite(appid) && appid > 0) {
+      const inferredUrlEntry = state.library.find((entry) => {
+        const catalogGame = getCatalogGame(entry.gameId);
+        return getSteamAppIdFromGame(catalogGame) === appid;
+      }) ?? null;
+
+      if (inferredUrlEntry) {
+        return {
+          entry: inferredUrlEntry,
+          reason: "steam_url",
+          confidence: "exact"
+        };
+      }
+    }
+
+    return null;
+  }
+
+  function findPossibleSteamImportMatch(steamGame) {
+    const titleKey = normalizeComparableTitle(steamGame?.title);
+    if (!titleKey) return null;
+
+    const titleEntry = state.library.find((entry) => {
+      const catalogGame = getCatalogGame(entry.gameId);
+      return normalizeComparableTitle(entry.title) === titleKey
+        || normalizeComparableTitle(catalogGame?.title) === titleKey;
+    }) ?? null;
+
+    if (!titleEntry) return null;
+
+    return {
+      entry: titleEntry,
+      reason: "title",
+      confidence: "high"
+    };
+  }
+
+  function getSteamMatchContext(entry) {
+    if (!entry) {
+      return {
+        surface: "",
+        label: ""
+      };
+    }
+
+    const isWishlist = entry.status === "wishlist";
+    return {
+      surface: isWishlist ? "wishlist" : "library",
+      label: isWishlist ? "Wishlist" : "Library"
+    };
+  }
+
+  function getSteamImportReasonLabel(reason) {
+    return {
+      steam_appid: "Exact Steam AppID match",
+      steam_url: "Matched existing Steam store URL",
+      title: "Normalized title match",
+      igdb_title: "IGDB title suggestion",
+      none: "No existing match"
+    }[reason] ?? "No existing match";
+  }
+
+  function classifySteamImportCandidate(steamGame, options = {}) {
+    const rules = options.rules ?? state.steamImport?.rules ?? createDefaultSteamImportSession().rules;
+    const actionOverrides = options.actionOverrides ?? state.steamImport?.actionOverrides ?? {};
+    const igdbSuggestions = options.igdbSuggestions ?? state.steamImport?.igdbSuggestions ?? {};
+    const appid = Number(steamGame?.appid);
+    const exactMatch = findExactSteamImportMatch(steamGame);
+    const possibleMatch = exactMatch ? null : findPossibleSteamImportMatch(steamGame);
+    const existingEntry = exactMatch?.entry ?? possibleMatch?.entry ?? null;
+    const matchContext = getSteamMatchContext(existingEntry);
+    const suggestionKey = Number.isFinite(appid) && appid > 0
+      ? String(Math.trunc(appid))
+      : normalizeComparableTitle(steamGame?.title);
+    const igdbSuggestion = suggestionKey ? (igdbSuggestions[suggestionKey] ?? null) : null;
+
+    const matchStatus = exactMatch
+      ? "existing"
+      : possibleMatch
+        ? "possible"
+        : "unmatched";
+    const defaultDestination = rules?.defaultDestination === "playing"
+      ? "playing"
+      : "backlog";
+    const proposedStatus = steamGame?.recentlyPlayed && rules?.suggestRecentlyPlayedAsPlaying
+      ? "playing"
+      : defaultDestination;
+    const defaultAction = exactMatch
+      ? (rules?.duplicateBehavior === "skip" ? "skip" : "merge")
+      : possibleMatch
+        ? "merge"
+        : "add";
+    const selectedAction = actionOverrides?.[suggestionKey] ?? defaultAction;
+    const matchReason = exactMatch?.reason ?? possibleMatch?.reason ?? (igdbSuggestion ? "igdb_title" : "none");
+    const matchConfidence = exactMatch?.confidence ?? possibleMatch?.confidence ?? (igdbSuggestion ? "medium" : "none");
+
+    return {
+      id: `steam-${appid || Math.random().toString(36).slice(2, 10)}`,
+      ...steamGame,
+      proposedStatus,
+      matchStatus,
+      matchReason,
+      matchReasonLabel: getSteamImportReasonLabel(matchReason),
+      matchConfidence,
+      existingEntryId: existingEntry?.entryId ?? "",
+      existingTitle: existingEntry?.title ?? "",
+      existingSurface: matchContext.surface,
+      existingSurfaceLabel: matchContext.label,
+      action: selectedAction,
+      defaultAction,
+      igdbSuggestion
+    };
+  }
+
+  function sortSteamImportCandidates(candidates) {
+    return (Array.isArray(candidates) ? candidates.slice() : []).sort((a, b) => {
+      const priorityDelta = getSteamPreviewPriority(a?.matchStatus) - getSteamPreviewPriority(b?.matchStatus);
+      if (priorityDelta !== 0) return priorityDelta;
+
+      const recentDelta = Number(Boolean(b?.recentlyPlayed)) - Number(Boolean(a?.recentlyPlayed));
+      if (recentDelta !== 0) return recentDelta;
+
+      const playtimeDelta = Number(b?.playtimeForeverMinutes ?? 0) - Number(a?.playtimeForeverMinutes ?? 0);
+      if (playtimeDelta !== 0) return playtimeDelta;
+
+      return String(a?.title ?? "").localeCompare(String(b?.title ?? ""));
+    });
+  }
+
+  function rebuildSteamImportPreview(rawResults, workerSummary = null, options = {}) {
+    const rules = {
+      ...(state.steamImport?.rules ?? createDefaultSteamImportSession().rules),
+      ...(options.rules ?? {})
+    };
+    const actionOverrides = options.actionOverrides ?? state.steamImport?.actionOverrides ?? {};
+    const igdbSuggestions = options.igdbSuggestions ?? state.steamImport?.igdbSuggestions ?? {};
+    const candidates = sortSteamImportCandidates(
+      (Array.isArray(rawResults) ? rawResults : []).map((steamGame) => classifySteamImportCandidate(steamGame, {
+        rules,
+        actionOverrides,
+        igdbSuggestions
+      }))
+    );
+    const summary = summarizeSteamImportCandidates(candidates, workerSummary ?? state.steamImport?.summary ?? {});
+    return { candidates, summary };
+  }
+
+  async function resolveSteamImportIgdbSuggestions(rawResults) {
+    if (!integrations.metadataResolver?.isConfigured?.()) {
+      return {};
+    }
+
+    const unresolved = (Array.isArray(rawResults) ? rawResults : [])
+      .filter((row) => row && !findExactSteamImportMatch(row) && !findPossibleSteamImportMatch(row))
+      .slice(0, 20);
+
+    const suggestions = {};
+
+    for (const row of unresolved) {
+      const query = String(row?.title ?? "").trim();
+      const key = Number.isFinite(Number(row?.appid)) && Number(row.appid) > 0
+        ? String(Math.trunc(Number(row.appid)))
+        : normalizeComparableTitle(query);
+      if (!query || !key) continue;
+
+      try {
+        const results = await integrations.metadataResolver.searchGames({ query });
+        const normalizedQuery = normalizeComparableTitle(query);
+        const suggestion = (Array.isArray(results) ? results : []).find((result) => (
+          normalizeComparableTitle(result?.title) === normalizedQuery
+        )) ?? (Array.isArray(results) ? results[0] : null);
+        if (!suggestion) continue;
+        suggestions[key] = {
+          igdbId: Number.isFinite(Number(suggestion?.igdbId)) ? Number(suggestion.igdbId) : null,
+          title: String(suggestion?.title ?? "").trim(),
+          releaseDate: String(suggestion?.releaseDate ?? "").trim()
+        };
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return suggestions;
+  }
+
+  function summarizeSteamImportCandidates(candidates, workerSummary = {}) {
+    const rows = Array.isArray(candidates) ? candidates : [];
+    return {
+      total: Number(workerSummary?.total ?? rows.length) || rows.length,
+      played: Number(workerSummary?.played ?? rows.filter((row) => row.playtimeForeverMinutes > 0).length) || 0,
+      unplayed: Number(workerSummary?.unplayed ?? rows.filter((row) => row.playtimeForeverMinutes === 0).length) || 0,
+      recent: Number(workerSummary?.recentlyPlayed ?? rows.filter((row) => row.playtime2WeeksMinutes > 0).length) || 0,
+      existing: rows.filter((row) => row.matchStatus === "existing").length,
+      possibleMatches: rows.filter((row) => row.matchStatus === "possible").length,
+      unmatched: rows.filter((row) => row.matchStatus === "unmatched").length
+    };
+  }
+
+  function getSteamImportCommitSummary(candidates) {
+    const rows = Array.isArray(candidates) ? candidates : [];
+    return {
+      total: rows.length,
+      add: rows.filter((row) => row.action === "add").length,
+      merge: rows.filter((row) => row.action === "merge").length,
+      skip: rows.filter((row) => row.action === "skip").length,
+      review: rows.filter((row) => row.action === "review").length
+    };
+  }
+
+  function buildSteamCatalogLinks(candidate, fallbackLinks = {}) {
+    const storefronts = Array.isArray(fallbackLinks?.storefronts)
+      ? fallbackLinks.storefronts.filter((row) => row && typeof row === "object" && row.url)
+      : [];
+    const hasSteamLink = storefronts.some((row) => normalizeSteamStoreUrl(row.url) === normalizeSteamStoreUrl(candidate?.appUrl));
+    const nextStorefronts = hasSteamLink || !candidate?.appUrl
+      ? storefronts
+      : [
+          ...storefronts,
+          {
+            kind: "steam",
+            url: String(candidate.appUrl).trim()
+          }
+        ];
+
+    return {
+      igdb: String(fallbackLinks?.igdb ?? "").trim(),
+      official: String(fallbackLinks?.official ?? "").trim(),
+      storefronts: nextStorefronts
+    };
+  }
+
+  function buildCatalogGameFromSteamCandidate(candidate) {
+    const igdbId = Number(candidate?.igdbSuggestion?.igdbId);
+    const normalizedId = Number.isFinite(igdbId) && igdbId > 0
+      ? `igdb-${Math.trunc(igdbId)}`
+      : `steam-${Math.trunc(Number(candidate?.appid || Date.now()))}`;
+    const now = new Date().toISOString();
+    return normalizeCatalogGame({
+      id: normalizedId,
+      igdbId: Number.isFinite(igdbId) && igdbId > 0 ? Math.trunc(igdbId) : null,
+      title: String(candidate?.igdbSuggestion?.title || candidate?.title || "Steam Import").trim(),
+      storefront: "steam",
+      releaseDate: String(candidate?.igdbSuggestion?.releaseDate || "").trim(),
+      steam: {
+        appid: Number.isFinite(Number(candidate?.appid)) ? Math.trunc(Number(candidate.appid)) : null,
+        appUrl: String(candidate?.appUrl || "").trim(),
+        playtimeForeverMinutes: Number(candidate?.playtimeForeverMinutes ?? 0),
+        playtime2WeeksMinutes: Number(candidate?.playtime2WeeksMinutes ?? 0),
+        lastImportedAt: now,
+        lastRefreshedAt: now,
+        importSource: String(candidate?.importSource || "steam-owned-games").trim()
+      },
+      links: buildSteamCatalogLinks(candidate, {})
+    });
+  }
+
+  function mergeSteamCandidateIntoCatalogGame(game, candidate) {
+    const now = new Date().toISOString();
+    return normalizeCatalogGame({
+      ...game,
+      steam: {
+        ...(game?.steam ?? {}),
+        appid: Number.isFinite(Number(candidate?.appid)) ? Math.trunc(Number(candidate.appid)) : (game?.steam?.appid ?? null),
+        appUrl: String(candidate?.appUrl || game?.steam?.appUrl || "").trim(),
+        playtimeForeverMinutes: Number(candidate?.playtimeForeverMinutes ?? game?.steam?.playtimeForeverMinutes ?? 0),
+        playtime2WeeksMinutes: Number(candidate?.playtime2WeeksMinutes ?? game?.steam?.playtime2WeeksMinutes ?? 0),
+        lastImportedAt: now,
+        lastRefreshedAt: now,
+        importSource: String(candidate?.importSource || game?.steam?.importSource || "steam-owned-games").trim()
+      },
+      links: buildSteamCatalogLinks(candidate, game?.links ?? {}),
+      releaseDate: String(game?.releaseDate || candidate?.igdbSuggestion?.releaseDate || "").trim(),
+      title: String(game?.title || candidate?.title || "").trim()
+    }, game);
+  }
+
+  function buildImportedEntryFromSteamCandidate({ candidate, existingEntry = null, game }) {
+    const now = new Date().toISOString();
+    const nextStatus = existingEntry?.status && existingEntry.status !== "wishlist"
+      ? existingEntry.status
+      : (candidate?.proposedStatus === "playing" ? "playing" : "backlog");
+    const nextRunLabel = existingEntry?.runLabel
+      ? existingEntry.runLabel
+      : (nextStatus === "playing" ? "Steam Import" : "Backlog");
+    const nextNotes = existingEntry?.notes
+      ? existingEntry.notes
+      : "Imported from Steam owned library.";
+
+    return normalizeLibraryEntry({
+      entryId: existingEntry?.entryId ?? createEntryId(),
+      gameId: game.id,
+      title: game.title,
+      storefront: "steam",
+      status: nextStatus,
+      runLabel: nextRunLabel,
+      addedAt: existingEntry?.addedAt ?? now,
+      updatedAt: now,
+      playtimeHours: existingEntry?.playtimeHours ?? 0,
+      completionPercent: existingEntry?.completionPercent ?? 0,
+      personalRating: existingEntry?.personalRating ?? null,
+      notes: nextNotes,
+      spotlight: existingEntry?.spotlight ?? "Steam import",
+      syncState: integrations.googleDrive.isConfigured() ? "pending" : "offline",
+      wishlistPriority: existingEntry?.wishlistPriority ?? "medium",
+      wishlistIntent: existingEntry?.wishlistIntent ?? "wait-sale",
+      externalPlaytime: {
+        ...(existingEntry?.externalPlaytime ?? {}),
+        steam: {
+          appid: Number.isFinite(Number(candidate?.appid)) ? Math.trunc(Number(candidate.appid)) : null,
+          playtimeForeverMinutes: Number(candidate?.playtimeForeverMinutes ?? 0),
+          playtime2WeeksMinutes: Number(candidate?.playtime2WeeksMinutes ?? 0),
+          lastImportedAt: now
+        }
+      }
+    });
+  }
+
   function getEntry(entryId = state.activeEntryId) {
     return state.library.find((item) => item.entryId === entryId) ?? null;
   }
@@ -915,6 +1353,287 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     if (typeof sectionId !== "string" || !sectionId.trim()) return;
     state.uiPreferences.settingsSection = sectionId;
     emit();
+  }
+
+  function setSteamImportMode(mode) {
+    const normalizedMode = mode === "wishlist" ? "wishlist" : "owned-library";
+    state.steamImport = {
+      ...state.steamImport,
+      mode: normalizedMode,
+      step: "source",
+      rawResults: [],
+      igdbSuggestions: {},
+      actionOverrides: {},
+      candidates: [],
+      summary: createDefaultSteamImportSession().summary,
+      errors: []
+    };
+    emit();
+  }
+
+  function updateSteamImportSource(patch = {}) {
+    const nextSource = {
+      ...state.steamImport.source,
+      ...patch
+    };
+    state.steamImport = {
+      ...state.steamImport,
+      source: nextSource,
+      errors: []
+    };
+    emit();
+  }
+
+  function setSteamImportCandidateAction(candidateId, action) {
+    const normalizedId = String(candidateId ?? "").trim();
+    const normalizedAction = String(action ?? "").trim();
+    if (!normalizedId || !["add", "skip", "merge", "review"].includes(normalizedAction)) return;
+
+    const nextOverrides = {
+      ...(state.steamImport?.actionOverrides ?? {}),
+      [normalizedId]: normalizedAction
+    };
+    const rebuilt = rebuildSteamImportPreview(state.steamImport.rawResults, state.steamImport.summary, {
+      actionOverrides: nextOverrides
+    });
+
+    state.steamImport = {
+      ...state.steamImport,
+      step: state.steamImport.step === "preview" ? "review" : state.steamImport.step,
+      actionOverrides: nextOverrides,
+      candidates: rebuilt.candidates,
+      summary: rebuilt.summary,
+      errors: []
+    };
+    emit();
+  }
+
+  function updateSteamImportRules(patch = {}) {
+    const nextRules = {
+      ...state.steamImport.rules,
+      ...patch
+    };
+    const rebuilt = rebuildSteamImportPreview(state.steamImport.rawResults, state.steamImport.summary, {
+      rules: nextRules
+    });
+    state.steamImport = {
+      ...state.steamImport,
+      rules: nextRules,
+      candidates: rebuilt.candidates,
+      summary: rebuilt.summary,
+      errors: []
+    };
+    emit();
+  }
+
+  function setSteamImportStep(step) {
+    const allowedSteps = new Set(["source", "preview", "rules", "review", "import", "complete"]);
+    if (!allowedSteps.has(step)) return;
+    state.steamImport = {
+      ...state.steamImport,
+      step
+    };
+    emit();
+  }
+
+  function resetSteamImportSession() {
+    state.steamImport = createDefaultSteamImportSession();
+    emit();
+  }
+
+  async function commitSteamOwnedImport() {
+    const session = state.steamImport ?? createDefaultSteamImportSession();
+    const candidates = Array.isArray(session.candidates) ? session.candidates : [];
+    if (!candidates.length) {
+      state.notice = {
+        tone: "warning",
+        message: "Fetch a Steam preview before importing."
+      };
+      emit();
+      return;
+    }
+
+    const blocked = candidates.filter((candidate) => candidate.action === "review");
+    if (blocked.length) {
+      state.steamImport = {
+        ...state.steamImport,
+        step: "review",
+        errors: [`Resolve ${blocked.length} review item${blocked.length === 1 ? "" : "s"} before import.`]
+      };
+      emit();
+      return;
+    }
+
+    state.steamImport = {
+      ...state.steamImport,
+      loading: true,
+      errors: []
+    };
+    emit();
+
+    try {
+      const catalogById = new Map(state.catalog.map((game) => [game.id, game]));
+      const nextCatalog = state.catalog.slice();
+      const nextLibrary = state.library.slice();
+      const enrichedEntryIds = [];
+      let addedCount = 0;
+      let mergedCount = 0;
+      let skippedCount = 0;
+
+      for (const candidate of candidates) {
+        if (candidate.action === "skip") {
+          skippedCount += 1;
+          continue;
+        }
+
+        const existingEntry = candidate.existingEntryId
+          ? nextLibrary.find((entry) => entry.entryId === candidate.existingEntryId) ?? null
+          : null;
+        const existingGame = existingEntry ? catalogById.get(existingEntry.gameId) ?? null : null;
+        const nextGame = existingGame
+          ? mergeSteamCandidateIntoCatalogGame(existingGame, candidate)
+          : buildCatalogGameFromSteamCandidate(candidate);
+
+        catalogById.set(nextGame.id, nextGame);
+        const existingCatalogIndex = nextCatalog.findIndex((game) => game.id === nextGame.id);
+        if (existingCatalogIndex >= 0) {
+          nextCatalog[existingCatalogIndex] = nextGame;
+        } else {
+          nextCatalog.unshift(nextGame);
+        }
+
+        const nextEntry = buildImportedEntryFromSteamCandidate({
+          candidate,
+          existingEntry,
+          game: nextGame
+        });
+        const existingEntryIndex = existingEntry
+          ? nextLibrary.findIndex((entry) => entry.entryId === existingEntry.entryId)
+          : -1;
+        if (existingEntryIndex >= 0) {
+          nextLibrary[existingEntryIndex] = nextEntry;
+          mergedCount += 1;
+        } else {
+          nextLibrary.unshift(nextEntry);
+          addedCount += 1;
+        }
+        enrichedEntryIds.push(nextEntry.entryId);
+      }
+
+      state.catalog = pruneCatalogToLibrary(
+        nextLibrary.map((entry) => normalizeLibraryEntry(entry)),
+        nextCatalog.map((game) => normalizeCatalogGame(game))
+      );
+      state.library = nextLibrary
+        .map((entry) => normalizeLibraryEntry(entry))
+        .sort(sortByUpdatedAtDesc);
+
+      const enrichmentResult = await enrichmentActions.enrichImportedEntries(enrichedEntryIds);
+
+      const commitResult = {
+        added: addedCount,
+        merged: mergedCount,
+        skipped: skippedCount,
+        total: candidates.length,
+        enrichment: enrichmentResult,
+        completedAt: new Date().toISOString()
+      };
+
+      state.steamImport = {
+        ...state.steamImport,
+        loading: false,
+        step: "complete",
+        commitResult,
+        errors: []
+      };
+      setActionState("metadata", {
+        tone: "success",
+        message: `Steam import complete: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped.${enrichmentResult.failed ? ` ${enrichmentResult.failed} enrichment issue${enrichmentResult.failed === 1 ? "" : "s"} need review.` : ""}`
+      });
+      state.notice = {
+        tone: enrichmentResult.failed ? "warning" : "success",
+        message: `Steam import complete: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped.${enrichmentResult.metadataUpdated || enrichmentResult.artworkUpdated || enrichmentResult.pricingUpdated ? ` Enrichment updated ${enrichmentResult.metadataUpdated} metadata, ${enrichmentResult.artworkUpdated} artwork, and ${enrichmentResult.pricingUpdated} pricing record${enrichmentResult.pricingUpdated === 1 ? "" : "s"}.` : ""}${enrichmentResult.failed ? ` ${enrichmentResult.failed} title${enrichmentResult.failed === 1 ? "" : "s"} had partial enrichment failures.` : ""}`
+      };
+      recordActivity({
+        category: "import",
+        action: "steam-import",
+        scope: "library",
+        message: `Steam import complete: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped. Enrichment updated ${enrichmentResult.metadataUpdated} metadata, ${enrichmentResult.artworkUpdated} artwork, and ${enrichmentResult.pricingUpdated} pricing records${enrichmentResult.failed ? ` with ${enrichmentResult.failed} partial failures` : ""}.`,
+        tone: enrichmentResult.failed ? "warning" : "success"
+      });
+      emit();
+    } catch (error) {
+      state.steamImport = {
+        ...state.steamImport,
+        loading: false,
+        errors: [error instanceof Error ? error.message : "Steam import failed."],
+        step: "import"
+      };
+      state.notice = {
+        tone: "error",
+        message: "Steam import failed. Your existing Checkpoint data is unchanged."
+      };
+      emit();
+    }
+  }
+
+  async function fetchSteamOwnedLibraryPreview() {
+    const profile = String(state.steamImport?.source?.steamProfile ?? "").trim();
+    if (!profile) {
+      state.steamImport = {
+        ...state.steamImport,
+        errors: ["Enter a SteamID64 or Steam profile URL first."]
+      };
+      emit();
+      return;
+    }
+
+    state.steamImport = {
+      ...state.steamImport,
+      loading: true,
+      errors: []
+    };
+    emit();
+
+    try {
+      const resolved = await integrations.steamImport.resolveProfile(profile);
+      const ownedGames = await integrations.steamImport.fetchOwnedGames({
+        steamid: resolved.steamid,
+        includeFreePlayed: state.steamImport?.source?.includeFreePlayed !== false
+      });
+      const igdbSuggestions = await resolveSteamImportIgdbSuggestions(ownedGames.results);
+      const rebuilt = rebuildSteamImportPreview(ownedGames.results, ownedGames.summary, {
+        igdbSuggestions,
+        actionOverrides: {}
+      });
+      state.steamImport = {
+        ...state.steamImport,
+        loading: false,
+        step: "preview",
+        lastResolvedSteamId: resolved.steamid,
+        rawResults: Array.isArray(ownedGames.results) ? ownedGames.results.slice() : [],
+        igdbSuggestions,
+        actionOverrides: {},
+        candidates: rebuilt.candidates,
+        commitResult: null,
+        summary: rebuilt.summary,
+        errors: [],
+        lastFetchedAt: new Date().toISOString()
+      };
+      emit();
+    } catch (error) {
+      state.steamImport = {
+        ...state.steamImport,
+        loading: false,
+        rawResults: [],
+        igdbSuggestions: {},
+        actionOverrides: {},
+        candidates: [],
+        summary: createDefaultSteamImportSession().summary,
+        errors: [error instanceof Error ? error.message : "Steam library preview failed."]
+      };
+      emit();
+    }
   }
 
   function setSearchTerm(value) {
@@ -1183,6 +1902,14 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     getSnapshot,
     setView,
     setSettingsSection,
+    setSteamImportMode,
+    setSteamImportStep,
+    updateSteamImportSource,
+    updateSteamImportRules,
+    setSteamImportCandidateAction,
+    fetchSteamOwnedLibraryPreview,
+    commitSteamOwnedImport,
+    resetSteamImportSession,
     setSearchTerm,
     openLibrarySearch,
     openDetailsByGameId,

@@ -24,6 +24,14 @@ export function createEnrichmentActions(ctx) {
     recordActivity
   } = ctx;
 
+  function getSelectedItadStoreIds() {
+    return Array.isArray(state.syncPreferences?.itadSelectedStoreIds)
+      ? state.syncPreferences.itadSelectedStoreIds
+        .map((value) => String(value ?? "").trim())
+        .filter((value) => /^\d+$/.test(value))
+      : [];
+  }
+
   function mergeProviderField(game, field, nextValue) {
     const lockedFields = Array.isArray(game?.lockedFields) ? game.lockedFields : [];
     const providerValues = {
@@ -633,6 +641,120 @@ export function createEnrichmentActions(ctx) {
     return true;
   }
 
+  async function enrichImportedEntries(entryIds = []) {
+    const uniqueEntryIds = Array.from(new Set(
+      (Array.isArray(entryIds) ? entryIds : [])
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean)
+    ));
+
+    const summary = {
+      attempted: uniqueEntryIds.length,
+      metadataUpdated: 0,
+      artworkUpdated: 0,
+      pricingUpdated: 0,
+      pricingSkipped: 0,
+      failed: 0,
+      errors: []
+    };
+
+    if (!uniqueEntryIds.length) {
+      return summary;
+    }
+
+    const nextCatalogById = new Map(state.catalog.map((game) => [game.id, game]));
+
+    for (const entryId of uniqueEntryIds) {
+      const entry = getEntry(entryId);
+      const game = entry ? (nextCatalogById.get(entry.gameId) ?? getCatalogGame(entry.gameId)) : null;
+      if (!entry || !game) continue;
+
+      let workingGame = game;
+      let hadFailure = false;
+
+      try {
+        const baseMetadata = await integrations.metadataResolver.resolveGameMetadata({
+          title: entry.title,
+          storefront: entry.storefront,
+          catalogGame: workingGame
+        });
+
+        let metadata = baseMetadata;
+        const igdbId = Number(workingGame?.igdbId ?? baseMetadata?.igdbId);
+        if (Number.isFinite(igdbId) && igdbId > 0 && typeof integrations.metadataResolver.getGameByIgdbId === "function") {
+          const [details, related] = await Promise.all([
+            integrations.metadataResolver.getGameByIgdbId(igdbId),
+            typeof integrations.metadataResolver.getRelatedGamesByIgdbId === "function"
+              ? integrations.metadataResolver.getRelatedGamesByIgdbId(igdbId, 12)
+              : Promise.resolve([])
+          ]);
+          metadata = {
+            ...baseMetadata,
+            ...(details && typeof details === "object" ? details : {}),
+            relatedTitles: Array.isArray(related) && related.length
+              ? related
+              : (details?.relatedTitles ?? baseMetadata?.relatedTitles ?? [])
+          };
+        }
+
+        const nextGame = mergeMetadataIntoCatalogGame(workingGame, metadata, {
+          title: entry.title,
+          storefront: entry.storefront
+        });
+
+        if (didMetadataChange(workingGame, nextGame)) {
+          summary.metadataUpdated += 1;
+        }
+        if (didArtworkChange(workingGame, nextGame)) {
+          summary.artworkUpdated += 1;
+        }
+        workingGame = nextGame;
+      } catch (error) {
+        hadFailure = true;
+        summary.errors.push(`${entry.title}: metadata enrichment failed.`);
+      }
+
+      if (integrations.pricing?.isConfigured?.()) {
+        try {
+          const pricing = await integrations.pricing.resolvePrice({
+            title: entry.title,
+            storefront: entry.storefront,
+            catalogGame: workingGame,
+            selectedStoreIds: getSelectedItadStoreIds()
+          });
+          if (pricing && typeof pricing === "object") {
+            const nextGame = normalizeCatalogGame({
+              ...workingGame,
+              pricing: {
+                ...(workingGame?.pricing && typeof workingGame.pricing === "object" ? workingGame.pricing : {}),
+                ...pricing
+              }
+            }, workingGame);
+            if (JSON.stringify(nextGame?.pricing ?? {}) !== JSON.stringify(workingGame?.pricing ?? {})) {
+              summary.pricingUpdated += 1;
+            }
+            workingGame = nextGame;
+          }
+        } catch (error) {
+          hadFailure = true;
+          summary.errors.push(`${entry.title}: pricing enrichment failed.`);
+        }
+      } else {
+        summary.pricingSkipped += 1;
+      }
+
+      if (hadFailure) {
+        summary.failed += 1;
+      }
+
+      nextCatalogById.set(workingGame.id, workingGame);
+    }
+
+    state.catalog = state.catalog.map((game) => nextCatalogById.get(game.id) ?? game);
+    emit();
+    return summary;
+  }
+
   function saveMetadataOverrides(entryId, overrides = {}) {
     const entry = getEntry(entryId);
     if (!entry) return false;
@@ -982,6 +1104,7 @@ export function createEnrichmentActions(ctx) {
     refreshMetadataForEntry,
     refreshLibraryArtwork,
     refreshLibraryMetadata,
+    enrichImportedEntries,
     applyMetadataOverridesToGame,
     applyArtworkOverridesToGame,
     saveMetadataOverrides,
