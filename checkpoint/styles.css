@@ -258,6 +258,31 @@ select:focus-visible {
   line-height: 1.05;
 }
 
+.checkpoint-steam-preview-head,
+.checkpoint-steam-preview-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.checkpoint-steam-preview-cell {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .checkpoint-steam-preview-head,
+  .checkpoint-steam-preview-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2.02fr) minmax(9.5rem, 0.88fr) minmax(5rem, 0.5fr) minmax(5.75rem, 0.56fr) minmax(0, 1.7fr);
+    align-items: start;
+    column-gap: 1rem;
+  }
+
+  .checkpoint-steam-preview-nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .checkpoint-scoped-cta-scope {
   font-family: "Space Grotesk", sans-serif;
   font-size: 0.72rem;
@@ -644,4 +669,31 @@ select:focus-visible {
 .checkpoint-panel .text-on-surface-variant,
 .glass-panel .text-on-surface-variant {
   color: rgba(228, 226, 227, 0.8);
+}
+
+.checkpoint-match-search-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.checkpoint-match-results {
+  max-height: min(44rem, 72vh);
+}
+
+.checkpoint-import-review-scroll {
+  max-height: min(68vh, 56rem);
+  overflow-y: auto;
+}
+
+.checkpoint-import-preview-scroll {
+  max-height: min(68vh, 56rem);
+  overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .checkpoint-match-search-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
 }

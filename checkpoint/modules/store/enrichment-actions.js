@@ -13,16 +13,62 @@ function normalizeOverrideValue(field, value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function isSteamPlaceholderTitle(value) {
+  return /^steam app \d+$/i.test(String(value ?? "").trim());
+}
+
+function shouldPromoteMetadataTitle(currentTitle, nextTitle) {
+  const normalizedCurrent = String(currentTitle ?? "").trim();
+  const normalizedNext = String(nextTitle ?? "").trim();
+  if (!normalizedNext) return false;
+  if (!normalizedCurrent) return true;
+  if (isSteamPlaceholderTitle(normalizedCurrent) && !isSteamPlaceholderTitle(normalizedNext)) return true;
+  return false;
+}
+
+function canPromoteSteamCatalogIdentity(game) {
+  const sourceId = String(game?.id ?? "").trim();
+  const igdbId = Number(game?.igdbId);
+  const title = String(game?.title ?? "").trim();
+  return (
+    /^steam-\d+$/i.test(sourceId)
+    && Number.isFinite(igdbId)
+    && igdbId > 0
+    && title.length > 0
+    && !isSteamPlaceholderTitle(title)
+  );
+}
+
 export function createEnrichmentActions(ctx) {
   const {
     state,
     emit,
+    emitNoticeOnly,
     integrations,
     setActionState,
     getEntry,
     getCatalogGame,
-    recordActivity
+    recordActivity,
+    startJob,
+    finishJob,
+    isJobCancelRequested
   } = ctx;
+
+  function updateBulkRefreshNotice({ key, label, current, total, message }) {
+    state.notice = {
+      key,
+      tone: "info",
+      message,
+      actionLabel: "Cancel",
+      actionJobKey: key,
+      progress: {
+        current,
+        total,
+        label
+      }
+    };
+    emitNoticeOnly?.();
+  }
 
   function getSelectedItadStoreIds() {
     return Array.isArray(state.syncPreferences?.itadSelectedStoreIds)
@@ -107,9 +153,15 @@ export function createEnrichmentActions(ctx) {
       metadata.screenshots?.length ? metadata.screenshots : (game?.providerValues?.screenshots ?? baseGame.screenshots ?? [])
     );
 
+    const resolvedTitle = String(metadata?.title || "").trim();
+    const fallbackTitle = String(entryLike.title ?? baseGame.title ?? "").trim();
+    const nextTitle = shouldPromoteMetadataTitle(baseGame.title, resolvedTitle)
+      ? resolvedTitle
+      : fallbackTitle;
+
     return normalizeCatalogGame({
       ...baseGame,
-      title: entryLike.title ?? baseGame.title,
+      title: nextTitle,
       storefront: entryLike.storefront ?? baseGame.storefront,
       igdbId: igdbId.value,
       developer: developer.value,
@@ -128,6 +180,7 @@ export function createEnrichmentActions(ctx) {
       screenshots: screenshots.value,
       providerValues: {
         ...(game?.providerValues ?? {}),
+        ...igdbId.providerValues,
         ...developer.providerValues,
         ...publisher.providerValues,
         ...releaseDate.providerValues,
@@ -156,7 +209,8 @@ export function createEnrichmentActions(ctx) {
 
   function didMetadataChange(previousGame, nextGame) {
     return (
-      (nextGame?.developer ?? "") !== (previousGame?.developer ?? "")
+      (nextGame?.title ?? "") !== (previousGame?.title ?? "")
+      || (nextGame?.developer ?? "") !== (previousGame?.developer ?? "")
       || (nextGame?.publisher ?? "") !== (previousGame?.publisher ?? "")
       || (nextGame?.releaseDate ?? "") !== (previousGame?.releaseDate ?? "")
       || JSON.stringify(nextGame?.genres ?? []) !== JSON.stringify(previousGame?.genres ?? [])
@@ -171,6 +225,88 @@ export function createEnrichmentActions(ctx) {
     );
   }
 
+  function promoteSteamCatalogGameIdentity(catalog, library, game) {
+    if (!canPromoteSteamCatalogIdentity(game)) {
+      return {
+        catalog,
+        library,
+        game,
+        promoted: false
+      };
+    }
+
+    const sourceId = String(game.id);
+    const targetId = `igdb-${Math.trunc(Number(game.igdbId))}`;
+    if (sourceId === targetId) {
+      return {
+        catalog,
+        library,
+        game,
+        promoted: false
+      };
+    }
+
+    const existingTarget = Array.isArray(catalog)
+      ? catalog.find((item) => item?.id === targetId)
+      : null;
+
+    const mergedGame = normalizeCatalogGame({
+      ...(existingTarget ?? {}),
+      ...game,
+      id: targetId,
+      igdbId: Math.trunc(Number(game.igdbId)),
+      title: String(game?.title ?? "").trim() || String(existingTarget?.title ?? "").trim(),
+      storefront: String(existingTarget?.storefront ?? "").trim() || String(game?.storefront ?? "").trim() || "steam",
+      steam: {
+        ...(existingTarget?.steam ?? {}),
+        ...(game?.steam ?? {})
+      },
+      providerValues: {
+        ...(existingTarget?.providerValues ?? {}),
+        ...(game?.providerValues ?? {}),
+        igdbId: Math.trunc(Number(game.igdbId))
+      },
+      links: {
+        ...(existingTarget?.links ?? {}),
+        ...(game?.links ?? {})
+      },
+      pricing: {
+        ...(existingTarget?.pricing ?? {}),
+        ...(game?.pricing ?? {})
+      },
+      lockedFields: Array.from(new Set([
+        ...((existingTarget?.lockedFields ?? []).filter(Boolean)),
+        ...((game?.lockedFields ?? []).filter(Boolean))
+      ]))
+    }, existingTarget ?? game);
+
+    const nextLibrary = Array.isArray(library)
+      ? library.map((entry) => {
+          if (entry?.gameId !== sourceId) return entry;
+          return {
+            ...entry,
+            gameId: targetId,
+            title: shouldPromoteMetadataTitle(entry.title, mergedGame.title)
+              ? mergedGame.title
+              : entry.title
+          };
+        })
+      : library;
+
+    const nextCatalog = Array.isArray(catalog)
+      ? [mergedGame, ...catalog.filter((item) => item?.id !== sourceId && item?.id !== targetId)]
+      : catalog;
+
+    return {
+      catalog: nextCatalog,
+      library: nextLibrary,
+      game: mergedGame,
+      promoted: true,
+      fromId: sourceId,
+      toId: targetId
+    };
+  }
+
   async function resolveArtworkWithIgdbPrimary(entry, game) {
     let metadataArtwork = {
       heroArt: "",
@@ -178,18 +314,35 @@ export function createEnrichmentActions(ctx) {
       screenshots: []
     };
     try {
-      const metadata = await integrations.metadataResolver.resolveGameMetadata({
-        title: entry.title,
-        storefront: entry.storefront,
-        catalogGame: game
-      });
-      metadataArtwork = {
-        heroArt: String(metadata?.heroArt || "").trim(),
-        capsuleArt: String(metadata?.capsuleArt || "").trim(),
-        screenshots: Array.isArray(metadata?.screenshots)
-          ? metadata.screenshots.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim())
-          : []
-      };
+      const knownIgdbId = Number(game?.igdbId);
+      if (
+        Number.isFinite(knownIgdbId)
+        && knownIgdbId > 0
+        && typeof integrations.metadataResolver.getGameByIgdbId === "function"
+      ) {
+        const details = await integrations.metadataResolver.getGameByIgdbId(knownIgdbId);
+        metadataArtwork = {
+          heroArt: String(details?.heroArt || details?.coverArt || "").trim(),
+          capsuleArt: String(details?.coverArt || details?.capsuleArt || "").trim(),
+          screenshots: Array.isArray(details?.screenshots)
+            ? details.screenshots.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim())
+            : []
+        };
+      } else {
+        const metadata = await integrations.metadataResolver.resolveGameMetadata({
+          title: String(game?.title || entry.title || "").trim(),
+          storefront: entry.storefront,
+          catalogGame: game,
+          steamAppId: game?.steam?.appid
+        });
+        metadataArtwork = {
+          heroArt: String(metadata?.heroArt || "").trim(),
+          capsuleArt: String(metadata?.capsuleArt || "").trim(),
+          screenshots: Array.isArray(metadata?.screenshots)
+            ? metadata.screenshots.filter((item) => typeof item === "string" && item.trim()).map((item) => item.trim())
+            : []
+        };
+      }
     } catch (error) {
       // Best effort: continue into SteamGrid fallback.
     }
@@ -435,7 +588,8 @@ export function createEnrichmentActions(ctx) {
       const baseMetadata = await integrations.metadataResolver.resolveGameMetadata({
         title: entry.title,
         storefront: entry.storefront,
-        catalogGame: game
+        catalogGame: game,
+        steamAppId: game?.steam?.appid
       });
       let metadata = baseMetadata;
       const igdbId = Number(game?.igdbId ?? baseMetadata?.igdbId);
@@ -454,15 +608,30 @@ export function createEnrichmentActions(ctx) {
             : (details?.relatedTitles ?? baseMetadata?.relatedTitles ?? [])
         };
       }
-      const nextGame = mergeMetadataIntoCatalogGame(game, metadata, {
+      let nextGame = mergeMetadataIntoCatalogGame(game, metadata, {
         title: entry.title,
         storefront: entry.storefront
       });
-      const changed = didMetadataChange(game, nextGame);
+      const metadataChanged = didMetadataChange(game, nextGame);
+      const promotion = promoteSteamCatalogGameIdentity(state.catalog, state.library, nextGame);
+      const changed = metadataChanged || promotion.promoted;
 
-      state.catalog = state.catalog.map((item) => (
-        item.id === entry.gameId ? nextGame : item
-      ));
+      if (promotion.promoted) {
+        state.catalog = promotion.catalog;
+        state.library = promotion.library;
+        nextGame = promotion.game;
+      } else {
+        state.catalog = state.catalog.map((item) => (
+          item.id === entry.gameId ? nextGame : item
+        ));
+        if (shouldPromoteMetadataTitle(entry.title, nextGame?.title)) {
+          state.library = state.library.map((item) => (
+            item.entryId === entry.entryId
+              ? { ...item, title: nextGame.title }
+              : item
+          ));
+        }
+      }
       const refreshMessage = getMetadataRefreshMessage(entry.title, metadata, changed);
       setActionState("metadata", {
         tone: refreshMessage.tone,
@@ -504,7 +673,134 @@ export function createEnrichmentActions(ctx) {
     }
   }
 
+  async function refreshGameDataForEntry(entryId = state.activeEntryId) {
+    const entry = getEntry(entryId);
+    if (!entry) return false;
+
+    const originalGame = getCatalogGame(entry.gameId);
+    if (!originalGame) return false;
+
+    setActionState("metadata", {
+      tone: "info",
+      message: `Refreshing game data for ${entry.title}...`
+    });
+    emit();
+
+    try {
+      const baseMetadata = await integrations.metadataResolver.resolveGameMetadata({
+        title: entry.title,
+        storefront: entry.storefront,
+        catalogGame: originalGame,
+        steamAppId: originalGame?.steam?.appid
+      });
+
+      let metadata = baseMetadata;
+      const igdbId = Number(originalGame?.igdbId ?? baseMetadata?.igdbId);
+      if (Number.isFinite(igdbId) && igdbId > 0 && typeof integrations.metadataResolver.getGameByIgdbId === "function") {
+        const [details, related] = await Promise.all([
+          integrations.metadataResolver.getGameByIgdbId(igdbId),
+          typeof integrations.metadataResolver.getRelatedGamesByIgdbId === "function"
+            ? integrations.metadataResolver.getRelatedGamesByIgdbId(igdbId, 12)
+            : Promise.resolve([])
+        ]);
+        metadata = {
+          ...baseMetadata,
+          ...(details && typeof details === "object" ? details : {}),
+          relatedTitles: Array.isArray(related) && related.length
+            ? related
+            : (details?.relatedTitles ?? baseMetadata?.relatedTitles ?? [])
+        };
+      }
+
+      let nextGame = mergeMetadataIntoCatalogGame(originalGame, metadata, {
+        title: entry.title,
+        storefront: entry.storefront
+      });
+
+      const artwork = await resolveArtworkWithIgdbPrimary(entry, nextGame);
+      nextGame = mergeArtworkIntoCatalogGame(nextGame, artwork);
+
+      const metadataChanged = didMetadataChange(originalGame, nextGame);
+      const artworkChanged = didArtworkChange(originalGame, nextGame);
+      const promotion = promoteSteamCatalogGameIdentity(state.catalog, state.library, nextGame);
+      const changed = metadataChanged || artworkChanged || promotion.promoted;
+
+      if (promotion.promoted) {
+        state.catalog = promotion.catalog;
+        state.library = promotion.library;
+        nextGame = promotion.game;
+      } else {
+        state.catalog = state.catalog.map((item) => (
+          item.id === entry.gameId ? nextGame : item
+        ));
+
+        if (shouldPromoteMetadataTitle(entry.title, nextGame?.title)) {
+          state.library = state.library.map((item) => (
+            item.entryId === entry.entryId
+              ? { ...item, title: nextGame.title }
+              : item
+          ));
+        }
+      }
+
+      const tone = changed ? "success" : "info";
+      const actionMessage = changed
+        ? `${entry.title} game data refreshed.`
+        : `No new game data was applied for ${entry.title}.`;
+      const noticeMessage = changed
+        ? `${entry.title} game data updated.`
+        : `${entry.title} game data was unchanged.`;
+
+      setActionState("metadata", {
+        tone,
+        message: actionMessage
+      });
+      setActionState("artwork", {
+        tone,
+        message: actionMessage
+      });
+      state.notice = {
+        tone,
+        message: noticeMessage
+      };
+      recordActivity({
+        category: "refresh",
+        action: "game-data",
+        scope: "entry",
+        title: entry.title,
+        message: noticeMessage,
+        tone
+      });
+      emit();
+      return changed;
+    } catch (error) {
+      setActionState("metadata", {
+        tone: "error",
+        message: `Checkpoint couldn't refresh game data for ${entry.title}.`
+      });
+      setActionState("artwork", {
+        tone: "error",
+        message: `Checkpoint couldn't refresh game data for ${entry.title}.`
+      });
+      state.notice = {
+        tone: "error",
+        message: `${entry.title} game data refresh failed.`
+      };
+      recordActivity({
+        category: "refresh",
+        action: "game-data",
+        scope: "entry",
+        title: entry.title,
+        message: `${entry.title} game data refresh failed.`,
+        tone: "error"
+      });
+      emit();
+      return false;
+    }
+  }
+
   async function refreshLibraryArtwork() {
+    startJob?.("refresh-library-artwork");
     const referencedGames = state.catalog.filter((game) => state.library.some((entry) => entry.gameId === game.id));
 
     if (!referencedGames.length) {
@@ -512,6 +808,7 @@ export function createEnrichmentActions(ctx) {
         tone: "info",
         message: "No tracked games are available for artwork refresh."
       });
+      finishJob?.("refresh-library-artwork");
       emit();
       return false;
     }
@@ -523,8 +820,13 @@ export function createEnrichmentActions(ctx) {
     emit();
 
     let refreshedCount = 0;
+    let canceled = false;
 
-    for (const game of referencedGames) {
+    for (const [index, game] of referencedGames.entries()) {
+      if (isJobCancelRequested?.("refresh-library-artwork")) {
+        canceled = true;
+        break;
+      }
       const linkedEntry = state.library.find((entry) => entry.gameId === game.id);
       if (!linkedEntry) continue;
 
@@ -541,19 +843,32 @@ export function createEnrichmentActions(ctx) {
       } catch (error) {
         // Keep best-effort refresh behavior for the rest of the library.
       }
+
+      updateBulkRefreshNotice({
+        key: "refresh-library-artwork",
+        label: "Artwork Refresh",
+        current: index + 1,
+        total: referencedGames.length,
+        message: `Refreshing artwork for tracked entries... ${refreshedCount} updated so far.`
+      });
     }
 
     setActionState("artwork", {
-      tone: refreshedCount > 0 ? "success" : "info",
-      message: refreshedCount > 0
-        ? `Artwork refreshed for ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"}.`
-        : "Artwork refresh finished with no new assets found."
+      tone: canceled ? "warning" : (refreshedCount > 0 ? "success" : "info"),
+      message: canceled
+        ? `Artwork refresh canceled safely after ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"} updated.`
+        : refreshedCount > 0
+          ? `Artwork refreshed for ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"}.`
+          : "Artwork refresh finished with no new assets found."
     });
     state.notice = {
-      tone: refreshedCount > 0 ? "success" : "info",
-      message: refreshedCount > 0
-        ? `Checkpoint refreshed artwork for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
-        : "Artwork refresh finished. Existing artwork was retained."
+      key: "refresh-library-artwork",
+      tone: canceled ? "warning" : (refreshedCount > 0 ? "success" : "info"),
+      message: canceled
+        ? `Artwork refresh canceled safely after ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}. Completed updates were kept.`
+        : refreshedCount > 0
+          ? `Checkpoint refreshed artwork for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
+          : "Artwork refresh finished. Existing artwork was retained."
     };
     recordActivity({
       category: "refresh",
@@ -563,13 +878,15 @@ export function createEnrichmentActions(ctx) {
       message: refreshedCount > 0
         ? `Library artwork refreshed for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
         : "Library artwork refresh finished with no changes.",
-      tone: refreshedCount > 0 ? "success" : "info"
+      tone: canceled ? "warning" : (refreshedCount > 0 ? "success" : "info")
     });
+    finishJob?.("refresh-library-artwork");
     emit();
     return true;
   }
 
   async function refreshLibraryMetadata() {
+    startJob?.("refresh-library-metadata");
     const referencedGames = state.catalog.filter((game) => state.library.some((entry) => entry.gameId === game.id));
 
     if (!referencedGames.length) {
@@ -577,6 +894,7 @@ export function createEnrichmentActions(ctx) {
         tone: "info",
         message: "No tracked games are available for metadata refresh."
       });
+      finishJob?.("refresh-library-metadata");
       emit();
       return false;
     }
@@ -588,8 +906,13 @@ export function createEnrichmentActions(ctx) {
     emit();
 
     let refreshedCount = 0;
+    let canceled = false;
 
-    for (const game of referencedGames) {
+    for (const [index, game] of referencedGames.entries()) {
+      if (isJobCancelRequested?.("refresh-library-metadata")) {
+        canceled = true;
+        break;
+      }
       const linkedEntry = state.library.find((entry) => entry.gameId === game.id);
       if (!linkedEntry) continue;
 
@@ -597,7 +920,8 @@ export function createEnrichmentActions(ctx) {
         const metadata = await integrations.metadataResolver.resolveGameMetadata({
           title: linkedEntry.title,
           storefront: linkedEntry.storefront,
-          catalogGame: game
+          catalogGame: game,
+          steamAppId: game?.steam?.appid
         });
 
         const nextGame = mergeMetadataIntoCatalogGame(game, metadata, {
@@ -605,27 +929,53 @@ export function createEnrichmentActions(ctx) {
           storefront: linkedEntry.storefront
         });
         const metadataChanged = didMetadataChange(game, nextGame);
+        const promotion = promoteSteamCatalogGameIdentity(state.catalog, state.library, nextGame);
 
-        state.catalog = state.catalog.map((item) => (item.id === game.id ? nextGame : item));
-        if (metadataChanged) {
+        if (promotion.promoted) {
+          state.catalog = promotion.catalog;
+          state.library = promotion.library;
+        } else {
+          state.catalog = state.catalog.map((item) => (item.id === game.id ? nextGame : item));
+          if (shouldPromoteMetadataTitle(linkedEntry.title, nextGame?.title)) {
+            state.library = state.library.map((item) => (
+              item.entryId === linkedEntry.entryId
+                ? { ...item, title: nextGame.title }
+                : item
+            ));
+          }
+        }
+        if (metadataChanged || promotion.promoted) {
           refreshedCount += 1;
         }
       } catch (error) {
         // Keep best-effort refresh behavior for the rest of the library.
       }
+
+      updateBulkRefreshNotice({
+        key: "refresh-library-metadata",
+        label: "Metadata Refresh",
+        current: index + 1,
+        total: referencedGames.length,
+        message: `Refreshing metadata for tracked entries... ${refreshedCount} updated so far.`
+      });
     }
 
     setActionState("metadata", {
-      tone: refreshedCount > 0 ? "success" : "info",
-      message: refreshedCount > 0
-        ? `Metadata refreshed for ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"}.`
-        : "Metadata refresh finished with no new values found."
+      tone: canceled ? "warning" : (refreshedCount > 0 ? "success" : "info"),
+      message: canceled
+        ? `Metadata refresh canceled safely after ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"} updated.`
+        : refreshedCount > 0
+          ? `Metadata refreshed for ${refreshedCount} ${refreshedCount === 1 ? "game" : "games"}.`
+          : "Metadata refresh finished with no new values found."
     });
     state.notice = {
-      tone: refreshedCount > 0 ? "success" : "info",
-      message: refreshedCount > 0
-        ? `Checkpoint refreshed metadata for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
-        : "Metadata refresh finished. Existing metadata was retained."
+      key: "refresh-library-metadata",
+      tone: canceled ? "warning" : (refreshedCount > 0 ? "success" : "info"),
+      message: canceled
+        ? `Metadata refresh canceled safely after ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}. Completed updates were kept.`
+        : refreshedCount > 0
+          ? `Checkpoint refreshed metadata for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
+          : "Metadata refresh finished. Existing metadata was retained."
     };
     recordActivity({
       category: "refresh",
@@ -635,13 +985,14 @@ export function createEnrichmentActions(ctx) {
       message: refreshedCount > 0
         ? `Library metadata refreshed for ${refreshedCount} ${refreshedCount === 1 ? "title" : "titles"}.`
         : "Library metadata refresh finished with no changes.",
-      tone: refreshedCount > 0 ? "success" : "info"
+      tone: canceled ? "warning" : (refreshedCount > 0 ? "success" : "info")
     });
+    finishJob?.("refresh-library-metadata");
     emit();
     return true;
   }
 
-  async function enrichImportedEntries(entryIds = []) {
+  async function enrichImportedEntries(entryIds = [], options = {}) {
     const uniqueEntryIds = Array.from(new Set(
       (Array.isArray(entryIds) ? entryIds : [])
         .map((value) => String(value ?? "").trim())
@@ -662,11 +1013,29 @@ export function createEnrichmentActions(ctx) {
       return summary;
     }
 
-    const nextCatalogById = new Map(state.catalog.map((game) => [game.id, game]));
+    const onProgress = typeof options.onProgress === "function" ? options.onProgress : null;
+    const shouldStop = typeof options.shouldStop === "function" ? options.shouldStop : null;
+    const totalSteps = uniqueEntryIds.length * 3;
+    let completedSteps = 0;
+
+    const emitProgress = (phase, entry) => {
+      completedSteps += 1;
+      onProgress?.({
+        phase,
+        current: completedSteps,
+        total: totalSteps,
+        entryId: entry?.entryId ?? "",
+        title: entry?.title ?? ""
+      });
+    };
 
     for (const entryId of uniqueEntryIds) {
+      if (shouldStop?.()) {
+        summary.canceled = true;
+        break;
+      }
       const entry = getEntry(entryId);
-      const game = entry ? (nextCatalogById.get(entry.gameId) ?? getCatalogGame(entry.gameId)) : null;
+      const game = entry ? getCatalogGame(entry.gameId) : null;
       if (!entry || !game) continue;
 
       let workingGame = game;
@@ -676,7 +1045,8 @@ export function createEnrichmentActions(ctx) {
         const baseMetadata = await integrations.metadataResolver.resolveGameMetadata({
           title: entry.title,
           storefront: entry.storefront,
-          catalogGame: workingGame
+          catalogGame: workingGame,
+          steamAppId: workingGame?.steam?.appid
         });
 
         let metadata = baseMetadata;
@@ -713,6 +1083,17 @@ export function createEnrichmentActions(ctx) {
         hadFailure = true;
         summary.errors.push(`${entry.title}: metadata enrichment failed.`);
       }
+        emitProgress("metadata", entry);
+        if (shouldStop?.()) {
+          summary.canceled = true;
+          break;
+        }
+
+        emitProgress("artwork", entry);
+        if (shouldStop?.()) {
+          summary.canceled = true;
+          break;
+        }
 
       if (integrations.pricing?.isConfigured?.()) {
         try {
@@ -742,15 +1123,22 @@ export function createEnrichmentActions(ctx) {
       } else {
         summary.pricingSkipped += 1;
       }
+      emitProgress("pricing", entry);
 
       if (hadFailure) {
         summary.failed += 1;
       }
 
-      nextCatalogById.set(workingGame.id, workingGame);
+      const promotion = promoteSteamCatalogGameIdentity(state.catalog, state.library, workingGame);
+      if (promotion.promoted) {
+        state.catalog = promotion.catalog;
+        state.library = promotion.library;
+      } else {
+        state.catalog = state.catalog.map((item) => (
+          item.id === workingGame.id ? workingGame : item
+        ));
+      }
     }
-
-    state.catalog = state.catalog.map((game) => nextCatalogById.get(game.id) ?? game);
     emit();
     return summary;
   }
@@ -1099,7 +1487,10 @@ export function createEnrichmentActions(ctx) {
   return {
     mergeArtworkIntoCatalogGame,
     mergeMetadataIntoCatalogGame,
+    promoteSteamCatalogGameIdentity,
+    resolveArtworkWithIgdbPrimary,
     buildEntrySaveFeedback,
+    refreshGameDataForEntry,
     refreshArtworkForEntry,
     refreshMetadataForEntry,
     refreshLibraryArtwork,

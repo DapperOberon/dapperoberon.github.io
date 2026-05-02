@@ -2,6 +2,7 @@ import {
   escapeHtml,
   formatCurrency,
   getGameForEntry,
+  getMetadataSourceLabel,
   getReleaseState,
   getReleaseStateLabel,
   getStatusMeta,
@@ -9,6 +10,7 @@ import {
   hasUsableAsset,
   isUnreleasedGame,
   renderFallbackArt,
+  renderMetaChip,
   renderPrimaryAction,
   renderSecondaryAction
 } from "./shared.js";
@@ -216,6 +218,7 @@ function renderLibraryStateBar(snapshot, statusDefinitions) {
               <select id="library-sort-state" class="checkpoint-control-select text-sm font-body px-3 py-2 rounded-md transition-all text-zinc-200 w-full">
                 <option value="next_to_buy" ${snapshot.sortMode === "next_to_buy" ? "selected" : ""}>Next to Buy</option>
                 <option value="wishlist_priority_desc" ${snapshot.sortMode === "wishlist_priority_desc" ? "selected" : ""}>Priority</option>
+                <option value="title_asc" ${snapshot.sortMode === "title_asc" ? "selected" : ""}>Title</option>
                 <option value="updated_desc" ${snapshot.sortMode === "updated_desc" ? "selected" : ""}>Recent</option>
                 <option value="price_asc" ${snapshot.sortMode === "price_asc" ? "selected" : ""}>Lowest Price</option>
                 <option value="discount_desc" ${snapshot.sortMode === "discount_desc" ? "selected" : ""}>Biggest Discount</option>
@@ -420,9 +423,12 @@ function renderDiscoverResultsPanel(snapshot) {
               ? `<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" src="${escapeHtml(result.coverArt || result.steamGridCover)}" alt="${escapeHtml(result.title)} cover">`
               : renderFallbackArt(result.title, "IGDB result", "text-xs p-3 rounded-md")}
           </div>
-          <div class="pt-3 px-1 h-20 flex flex-col justify-start">
+          <div class="pt-3 px-1 min-h-[6.75rem] flex flex-col justify-start gap-2">
             <p class="font-headline font-bold text-sm text-on-surface leading-6 h-12 overflow-hidden break-words checkpoint-title-clamp">${escapeHtml(result.title)}</p>
-            <p class="text-xs text-zinc-400 leading-4 mt-auto">${escapeHtml(result.releaseDate ? result.releaseDate.slice(0, 4) : "Year unknown")}</p>
+            <div class="mt-auto flex flex-wrap items-center gap-2">
+              <span class="text-xs text-zinc-400 leading-4">${escapeHtml(result.releaseDate ? result.releaseDate.slice(0, 4) : "Year unknown")}</span>
+              ${result.gameTypeLabel ? renderMetaChip(result.gameTypeLabel, "primary") : ""}
+            </div>
           </div>
         </button>
       `).join("")}
@@ -470,13 +476,14 @@ function renderDiscoverSelectionPage(snapshot) {
         ? `<button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em] opacity-70 cursor-default" type="button" disabled aria-disabled="true">Already on Wishlist</button>`
         : `<button class="checkpoint-button checkpoint-button-primary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="discover-add-wishlist">Add to Wishlist</button>`}
       <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="discover-add-library">Add to Library</button>
+      <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="refresh-discover-pricing">Refresh Pricing Data</button>
       ${existingWishlistEntry
         ? `<button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="select-entry" data-entry-id="${existingWishlistEntry.entryId}">Open Wishlist Entry</button>`
         : ""}
       <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="clear-discover-selection">Back to Discover Results</button>
     `,
     sideRailTitle: "Game Details",
-    sourceLabel: "IGDB"
+    sourceLabel: getMetadataSourceLabel(details)
   });
 }
 

@@ -173,8 +173,8 @@ function applyRouteToStore(route) {
   }
 }
 
-store.subscribe((snapshot) => {
-  renderer.render();
+store.subscribe((snapshot, meta) => {
+  renderer.render(meta);
 
   if (isApplyingRoute) return;
 

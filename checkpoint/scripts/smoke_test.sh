@@ -15,8 +15,12 @@ node --check checkpoint/scripts/verify_phase2_integrations.mjs
 node --check checkpoint/scripts/verify_phase4_hardening.mjs
 node --check checkpoint/scripts/verify_phase5_steam_model.mjs
 node --check checkpoint/scripts/verify_phase5_steam_playtime.mjs
+node --check checkpoint/scripts/verify_phase5_steam_promotion.mjs
 node --check checkpoint/scripts/verify_phase5_steam_preview.mjs
+node --check checkpoint/scripts/verify_phase5_steam_fixture_matrix.mjs
+node --check checkpoint/scripts/verify_phase5_steam_wishlist_preview.mjs
 node --check checkpoint/scripts/verify_phase5_steam_worker.mjs
+node --check checkpoint/scripts/verify_phase5_hardening.mjs
 node --check checkpoint/scripts/verify_pricing_services.mjs
 node --check checkpoint/scripts/verify_pricing_watch_states.mjs
 node --check checkpoint/scripts/preflight_config.mjs
@@ -119,7 +123,19 @@ node checkpoint/scripts/verify_phase5_steam_worker.mjs
 echo "[checkpoint] Verifying Phase 5 Steam preview coverage..."
 node checkpoint/scripts/verify_phase5_steam_preview.mjs
 
+echo "[checkpoint] Verifying Phase 5 Steam fixture matrix coverage..."
+node checkpoint/scripts/verify_phase5_steam_fixture_matrix.mjs
+
+echo "[checkpoint] Verifying Phase 5 Steam wishlist preview coverage..."
+node checkpoint/scripts/verify_phase5_steam_wishlist_preview.mjs
+
 echo "[checkpoint] Verifying Phase 5 Steam playtime coverage..."
 node checkpoint/scripts/verify_phase5_steam_playtime.mjs
+
+echo "[checkpoint] Verifying Phase 5 Steam promotion coverage..."
+node checkpoint/scripts/verify_phase5_steam_promotion.mjs
+
+echo "[checkpoint] Verifying Phase 5 hardening coverage..."
+node checkpoint/scripts/verify_phase5_hardening.mjs
 
 echo "[checkpoint] Smoke test passed."

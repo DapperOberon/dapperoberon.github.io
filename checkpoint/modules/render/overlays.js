@@ -54,27 +54,72 @@ export function renderDeleteConfirmModal(snapshot, storefrontDefinitions, status
 }
 
 export function renderGlobalNotice(snapshot) {
-  if (!snapshot.notice) return "";
+  const notices = Array.isArray(snapshot.notices)
+    ? snapshot.notices.filter((item) => item && typeof item === "object" && item.message)
+    : (snapshot.notice && typeof snapshot.notice === "object" && snapshot.notice.message
+      ? [snapshot.notice]
+      : []);
+  if (!notices.length) return "";
 
   const toneClasses = {
     success: "border-emerald-300/30 bg-emerald-400/10 text-emerald-100",
     error: "border-red-300/30 bg-red-400/10 text-red-100",
+    warning: "border-amber-300/30 bg-amber-400/10 text-amber-100",
     info: "border-primary/30 bg-primary/10 text-on-surface"
   };
 
   return `
-    <div class="fixed bottom-6 right-6 z-[70] max-w-md">
-      <div class="glass-panel rounded-xl border px-5 py-4 shadow-[0_20px_48px_rgba(0,0,0,0.45)] ${toneClasses[snapshot.notice.tone] ?? toneClasses.info}">
-        <div class="flex items-start gap-4">
-          <div class="flex-1">
-            <p class="font-label text-[11px] tracking-[0.08em] opacity-80 mb-1">Status</p>
-            <p class="text-sm leading-relaxed">${escapeHtml(snapshot.notice.message)}</p>
+    <div class="fixed bottom-6 right-6 z-[70] flex max-w-md flex-col gap-3">
+      ${notices.map((notice) => {
+        const progress = notice?.progress && typeof notice.progress === "object"
+          ? notice.progress
+          : null;
+        const progressCurrent = Number(progress?.current);
+        const progressTotal = Number(progress?.total);
+        const progressPercent = Number.isFinite(progressCurrent) && Number.isFinite(progressTotal) && progressTotal > 0
+          ? Math.max(0, Math.min(100, Math.round((progressCurrent / progressTotal) * 100)))
+          : 0;
+
+        return `
+          <div class="glass-panel rounded-xl border px-5 py-4 shadow-[0_20px_48px_rgba(0,0,0,0.45)] ${toneClasses[notice.tone] ?? toneClasses.info}">
+            <div class="flex items-start gap-4">
+              <div class="flex-1">
+                <p class="font-label text-[11px] tracking-[0.08em] opacity-80 mb-1">Status</p>
+                <p class="text-sm leading-relaxed">${escapeHtml(notice.message)}</p>
+                ${progress
+                  ? `
+                    <div class="mt-3 space-y-2">
+                      <div class="flex items-center justify-between gap-3 font-label text-[11px] tracking-[0.08em] opacity-80">
+                        <span>${escapeHtml(String(progress.label || "Progress"))}</span>
+                        <span>${escapeHtml(`${Number.isFinite(progressCurrent) ? progressCurrent : 0} / ${Number.isFinite(progressTotal) ? progressTotal : 0}`)}</span>
+                      </div>
+                      <div class="h-2 rounded-full bg-black/25 overflow-hidden">
+                        <div class="h-full rounded-full" style="width:${progressPercent}%;background:rgba(34,211,238,0.92);transition:width 300ms ease-out;"></div>
+                      </div>
+                    </div>
+                  `
+                  : ""}
+                ${notice?.actionLabel && notice?.actionJobKey
+                  ? `
+                    <div class="mt-3">
+                      <button
+                        class="checkpoint-button checkpoint-button-secondary px-3 py-2 text-[11px] tracking-[0.08em]"
+                        data-action="cancel-job"
+                        data-job-key="${escapeHtml(notice.actionJobKey)}"
+                      >
+                        ${escapeHtml(notice.actionLabel)}
+                      </button>
+                    </div>
+                  `
+                  : ""}
+              </div>
+              <button class="text-current/70 hover:text-current transition-colors" data-action="dismiss-notice" data-notice-id="${escapeHtml(notice.id || "")}" aria-label="Dismiss status message">
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>
           </div>
-          <button class="text-current/70 hover:text-current transition-colors" data-action="dismiss-notice" aria-label="Dismiss status message">
-            <span class="material-symbols-outlined text-base">close</span>
-          </button>
-        </div>
-      </div>
+        `;
+      }).join("")}
     </div>
   `;
 }

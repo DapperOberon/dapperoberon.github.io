@@ -2,6 +2,7 @@ export function createEntryActions(ctx) {
   const {
     state,
     emit,
+    emitNoticeOnly,
     integrations,
     setActionState,
     statusDefinitions,
@@ -21,8 +22,27 @@ export function createEntryActions(ctx) {
     applyArtworkOverridesToGame,
     recordActivity,
     writeItadStoresCache,
-    writeDiscoverMetadataCache
+    writeDiscoverMetadataCache,
+    startJob,
+    finishJob,
+    isJobCancelRequested
   } = ctx;
+
+  function updateBulkPricingProgressNotice({ current, total, successCount, warningCount, errorCount }) {
+    state.notice = {
+      key: "refresh-library-pricing",
+      tone: "info",
+      message: `Refreshing pricing for tracked entries... ${successCount} ok, ${warningCount} partial, ${errorCount} failed so far.`,
+      actionLabel: "Cancel",
+      actionJobKey: "refresh-library-pricing",
+      progress: {
+        current,
+        total,
+        label: "Pricing Refresh"
+      }
+    };
+    emitNoticeOnly?.();
+  }
 
   function mergeCatalogPricing(gameId, pricing) {
     let nextGame = null;
@@ -74,6 +94,12 @@ export function createEntryActions(ctx) {
   }
 
   function resetDiscoverEntryState() {
+    state.mediaLightbox = {
+      open: false,
+      images: [],
+      index: 0,
+      title: ""
+    };
     state.discoverEntryDetails = null;
     state.discoverEntryLoading = false;
     state.discoverEntryError = "";
@@ -251,6 +277,7 @@ export function createEntryActions(ctx) {
     const game = getCatalogGame(entry.gameId);
     if (!game) return false;
     const suppressNotice = options.suppressNotice === true;
+    const suppressEmit = options.suppressEmit === true;
     const selectedStoreIds = getSelectedItadStoreIds();
 
     if (!suppressNotice) {
@@ -258,7 +285,9 @@ export function createEntryActions(ctx) {
         tone: "info",
         message: `Refreshing price for ${entry.title}...`
       });
-      emit();
+      if (!suppressEmit) {
+        emit();
+      }
     }
 
     try {
@@ -308,7 +337,9 @@ export function createEntryActions(ctx) {
         tone: status === "ok" ? "success" : (status === "error" ? "error" : "warning")
       });
       maybeEmitPriceWatchHit(entry.entryId, { suppressNotice });
-      emit();
+      if (!suppressEmit) {
+        emit();
+      }
       return true;
     } catch (error) {
       setActionState("pricing", {
@@ -329,12 +360,15 @@ export function createEntryActions(ctx) {
         message: "Pricing refresh failed.",
         tone: "error"
       });
-      emit();
+      if (!suppressEmit) {
+        emit();
+      }
       return false;
     }
   }
 
   async function refreshLibraryPricing() {
+    startJob?.("refresh-library-pricing");
     const entries = state.library.slice();
     if (!entries.length) {
       setActionState("pricing", {
@@ -345,6 +379,7 @@ export function createEntryActions(ctx) {
         tone: "warning",
         message: "No entries are available for price refresh."
       };
+      finishJob?.("refresh-library-pricing");
       emit();
       return;
     }
@@ -359,11 +394,23 @@ export function createEntryActions(ctx) {
     let warningCount = 0;
     let errorCount = 0;
     let watchHits = 0;
-    for (const entry of entries) {
+    let canceled = false;
+    for (const [index, entry] of entries.entries()) {
+      if (isJobCancelRequested?.("refresh-library-pricing")) {
+        canceled = true;
+        break;
+      }
       const previousNotifiedAt = getEntry(entry.entryId)?.priceWatch?.lastNotifiedAt || "";
-      const ok = await refreshPricingForEntry(entry.entryId, { suppressNotice: true });
+      const ok = await refreshPricingForEntry(entry.entryId, { suppressNotice: true, suppressEmit: true });
       if (!ok) {
         errorCount += 1;
+        updateBulkPricingProgressNotice({
+          current: index + 1,
+          total: entries.length,
+          successCount,
+          warningCount,
+          errorCount
+        });
         continue;
       }
       const game = getCatalogGame(entry.gameId);
@@ -379,15 +426,25 @@ export function createEntryActions(ctx) {
       if (nextNotifiedAt && nextNotifiedAt !== previousNotifiedAt) {
         watchHits += 1;
       }
+      updateBulkPricingProgressNotice({
+        current: index + 1,
+        total: entries.length,
+        successCount,
+        warningCount,
+        errorCount
+      });
     }
 
-    const summary = `Pricing refresh complete: ${successCount} ok, ${warningCount} partial, ${errorCount} failed.`;
+    const summary = canceled
+      ? `Pricing refresh canceled safely: ${successCount} ok, ${warningCount} partial, ${errorCount} failed before stopping.`
+      : `Pricing refresh complete: ${successCount} ok, ${warningCount} partial, ${errorCount} failed.`;
     setActionState("pricing", {
-      tone: errorCount ? (successCount ? "warning" : "error") : "success",
+      tone: canceled ? "warning" : (errorCount ? (successCount ? "warning" : "error") : "success"),
       message: summary
     });
     state.notice = {
-      tone: errorCount ? (successCount ? "warning" : "error") : "success",
+      key: "refresh-library-pricing",
+      tone: canceled ? "warning" : (errorCount ? (successCount ? "warning" : "error") : "success"),
       message: watchHits
         ? `${summary} ${watchHits} watch target${watchHits === 1 ? "" : "s"} met.`
         : summary
@@ -397,8 +454,9 @@ export function createEntryActions(ctx) {
       action: "refresh-library",
       scope: "library",
       message: summary,
-      tone: errorCount ? (successCount ? "warning" : "error") : "success"
+      tone: canceled ? "warning" : (errorCount ? (successCount ? "warning" : "error") : "success")
     });
+    finishJob?.("refresh-library-pricing");
     emit();
   }
 
@@ -840,6 +898,38 @@ export function createEntryActions(ctx) {
     }
     state.discoverEntryRelatedLoading = false;
     emit();
+  }
+
+  async function refreshDiscoverPricing() {
+    const selectedResult = state.addForm?.selectedSearchResult;
+    const title = String(
+      state.discoverEntryDetails?.title
+      || selectedResult?.title
+      || ""
+    ).trim();
+    const storefront = String(state.addForm?.storefront || "steam");
+    const selectedStoreIds = getSelectedItadStoreIds();
+
+    if (!title) return;
+
+    state.discoverEntryPricingLoading = true;
+    state.discoverEntryPricingError = "";
+    emit();
+
+    try {
+      const pricing = await integrations.pricing.resolvePrice({
+        title,
+        storefront,
+        catalogGame: null,
+        selectedStoreIds
+      });
+      state.discoverEntryPricing = pricing;
+    } catch {
+      state.discoverEntryPricingError = "Could not load pricing snapshot right now.";
+    } finally {
+      state.discoverEntryPricingLoading = false;
+      emit();
+    }
   }
 
   async function selectDiscoverResult(resultId) {
@@ -1303,9 +1393,20 @@ export function createEntryActions(ctx) {
     emit();
   }
 
-  function dismissNotice() {
-    if (!state.notice) return;
-    state.notice = null;
+  function dismissNotice(noticeId = "") {
+    const normalizedId = String(noticeId ?? "").trim();
+    const currentNotices = Array.isArray(state.notices) ? state.notices : [];
+    if (normalizedId) {
+      state.notices = currentNotices.filter((item) => String(item?.id || "").trim() !== normalizedId);
+      if (String(state.notice?.id || "").trim() === normalizedId) {
+        state.notice = state.notices[state.notices.length - 1] ?? null;
+      }
+      emit();
+      return;
+    }
+    if (!state.notice && !currentNotices.length) return;
+    state.notices = currentNotices.slice(0, -1);
+    state.notice = state.notices[state.notices.length - 1] ?? null;
     emit();
   }
 
@@ -1712,6 +1813,7 @@ export function createEntryActions(ctx) {
     openDiscoverGameById,
     selectDiscoverRelated,
     clearDiscoverSelection,
+    refreshDiscoverPricing,
     addDiscoverSelection,
     selectCatalogSuggestion,
     commitEntry,

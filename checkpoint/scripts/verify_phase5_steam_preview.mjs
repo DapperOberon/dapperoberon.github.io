@@ -311,9 +311,11 @@ const rendered = renderSettingsView(store.getSnapshot(), storefrontDefinitions);
 assert(rendered.includes("Hades II"), "Expected owned-library candidate title to render.");
 assert(rendered.includes("AppID 1145350"), "Expected Steam AppID to render.");
 assert(rendered.includes("Exact match"), "Expected exact match badge to render.");
+assert(rendered.includes('data-step="rules"'), "Expected preview footer to include a Review Rules step target.");
+assert(rendered.includes('data-step="review"'), "Expected preview footer to include a Review step target.");
 
 store.setSteamImportStep("review");
-store.setSteamImportCandidateAction("steam-1145350", "skip");
+store.setSteamImportCandidateAction("1145350", "skip");
 const reviewSnapshot = store.getSnapshot();
 assert.equal(
   reviewSnapshot.steamImport.candidates.find((row) => row.appid === 1145350)?.action,
@@ -329,6 +331,7 @@ store.setSteamImportStep("import");
 const importRendered = renderSettingsView(store.getSnapshot(), storefrontDefinitions);
 assert(importRendered.includes("Import Commit"), "Expected import commit summary to render.");
 assert(importRendered.includes("Import Selected"), "Expected import CTA to render.");
+assert(importRendered.includes('data-step="review"'), "Expected import footer to include a Back To Review step target.");
 
 const previousLibraryCount = store.getSnapshot().library.length;
 await store.commitSteamOwnedImport();
@@ -353,6 +356,12 @@ assert.equal(importedGame?.relatedTitles?.[0]?.title, "Related Steam Import Game
 const mergedEntry = completeSnapshot.library.find((entry) => entry.entryId === possibleCandidate.existingEntryId);
 assert(mergedEntry, "Expected title-match entry to still exist after merge.");
 assert.equal(mergedEntry.externalPlaytime?.steam?.appid, 1888930);
+assert.equal(mergedEntry.status, "playing", "Steam merge must not downgrade an existing tracked status.");
+assert.equal(mergedEntry.playtimeHours, 18, "Steam merge must not overwrite Checkpoint playtime.");
+const skippedExistingEntry = completeSnapshot.library.find((entry) => entry.entryId === existingCandidate.entryId || entry.entryId === existingCandidate.existingEntryId);
+assert(skippedExistingEntry, "Expected exact-match entry to remain after skip.");
+assert.equal(skippedExistingEntry.status, "playing", "Skipping exact Steam match must keep the existing status.");
+assert.equal(skippedExistingEntry.playtimeHours, 9, "Skipping exact Steam match must keep existing playtime.");
 const completeRendered = renderSettingsView(completeSnapshot, storefrontDefinitions);
 assert(completeRendered.includes("Import Complete"), "Expected completion surface to render.");
 assert(completeRendered.includes("Post-Import Enrichment"), "Expected enrichment summary to render.");
@@ -360,5 +369,25 @@ assert(completeRendered.includes("Post-Import Enrichment"), "Expected enrichment
 const savedState = persistence.getSavedState();
 assert(savedState, "Expected store persistence to run.");
 assert.equal(savedState.steamImport, undefined, "Steam import preview must remain transient and unpersisted.");
+
+await store.fetchSteamOwnedLibraryPreview();
+const repeatPreviewSnapshot = store.getSnapshot();
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.length, 3);
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.find((row) => row.appid === 1145350)?.matchStatus, "existing");
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.find((row) => row.appid === 1145350)?.action, "skip");
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.find((row) => row.appid === 999001)?.matchStatus, "existing");
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.find((row) => row.appid === 999001)?.action, "skip");
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.find((row) => row.appid === 1888930)?.matchStatus, "existing");
+assert.equal(repeatPreviewSnapshot.steamImport.candidates.find((row) => row.appid === 1888930)?.action, "skip");
+
+const libraryCountBeforeRepeatCommit = repeatPreviewSnapshot.library.length;
+await store.commitSteamOwnedImport();
+const repeatCompleteSnapshot = store.getSnapshot();
+assert.equal(repeatCompleteSnapshot.library.length, libraryCountBeforeRepeatCommit, "Repeat owned-library import must not create duplicate entries.");
+assert.equal(repeatCompleteSnapshot.steamImport.commitResult.added, 0);
+assert.equal(repeatCompleteSnapshot.steamImport.commitResult.merged, 0);
+assert.equal(repeatCompleteSnapshot.steamImport.commitResult.skipped, 3);
+const repeatedImportedEntries = repeatCompleteSnapshot.library.filter((entry) => entry.externalPlaytime?.steam?.appid === 999001);
+assert.equal(repeatedImportedEntries.length, 1, "Repeat owned-library import should keep a single entry for the imported Steam game.");
 
 console.log("[checkpoint] Phase 5 Steam preview verification passed.");

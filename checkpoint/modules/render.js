@@ -3,6 +3,9 @@ import { renderDashboardView, renderSidebar, renderTopbar } from "./render/libra
 import { renderAddModal, renderDeleteConfirmModal, renderGlobalNotice, renderMediaLightbox } from "./render/overlays.js";
 import { renderSettingsView } from "./render/settings.js";
 
+const noticeAutoDismissTimers = new Map();
+const NOTICE_AUTO_DISMISS_MS = 5000;
+
 function captureFocusState(app) {
   const activeElement = document.activeElement;
   if (!activeElement || !app.contains(activeElement) || !activeElement.id) {
@@ -125,12 +128,65 @@ function enforceModalFocus(app, modalSelector, fallbackSelector) {
   fallbackTarget?.focus?.({ preventScroll: true });
 }
 
+function syncNoticeAutoDismiss(snapshot, store) {
+  const notices = Array.isArray(snapshot?.notices)
+    ? snapshot.notices.filter((item) => item && typeof item === "object" && item.message)
+    : [];
+  const activeIds = new Set(notices.map((notice) => String(notice.id || "").trim()).filter(Boolean));
+
+  Array.from(noticeAutoDismissTimers.entries()).forEach(([id, timer]) => {
+    if (activeIds.has(id)) return;
+    globalThis.clearTimeout?.(timer);
+    noticeAutoDismissTimers.delete(id);
+  });
+
+  notices.forEach((notice) => {
+    const id = String(notice.id || "").trim();
+    if (!id) return;
+
+    const isActiveProgressNotice = Boolean(notice?.progress);
+    const isActionableNotice = Boolean(notice?.actionLabel && notice?.actionJobKey);
+    if (isActiveProgressNotice || isActionableNotice) {
+      const existing = noticeAutoDismissTimers.get(id);
+      if (existing) {
+        globalThis.clearTimeout?.(existing);
+        noticeAutoDismissTimers.delete(id);
+      }
+      return;
+    }
+
+    if (noticeAutoDismissTimers.has(id)) return;
+    const timer = globalThis.setTimeout?.(() => {
+      noticeAutoDismissTimers.delete(id);
+      store.dismissNotice(id);
+    }, NOTICE_AUTO_DISMISS_MS);
+    if (timer) {
+      noticeAutoDismissTimers.set(id, timer);
+    }
+  });
+}
+
 function getDiscoverScreenshotCarousel(app) {
   return app.querySelector("#discover-screenshot-carousel");
 }
 
 function getDiscoverScreenshotThumbButtons(app) {
   return Array.from(app.querySelectorAll("[data-action='discover-screenshot-jump']"));
+}
+
+function getMediaCollectionRoot(trigger) {
+  return trigger?.closest?.("[data-media-collection]") ?? null;
+}
+
+function getMediaCollectionImages(root) {
+  if (!root) return [];
+  return Array.from(root.querySelectorAll("[data-media-src]"))
+    .map((element) => String(element.dataset.mediaSrc || "").trim())
+    .filter(Boolean);
+}
+
+function getMediaCollectionTitle(root) {
+  return String(root?.dataset?.mediaTitle || "").trim();
 }
 
 function getDiscoverScreenshotCurrentIndex(app) {
@@ -206,6 +262,25 @@ function queueDiscoverScreenshotUiUpdate(app) {
   globalThis.setTimeout?.(() => {
     updateDiscoverScreenshotUi(app);
   }, 220);
+}
+
+function queueDocumentScrollToTop() {
+  const run = () => {
+    globalThis.scrollTo?.({
+      top: 0,
+      left: 0,
+      behavior: "smooth"
+    });
+  };
+
+  if (typeof globalThis.requestAnimationFrame === "function") {
+    globalThis.requestAnimationFrame(() => {
+      globalThis.requestAnimationFrame(run);
+    });
+    return;
+  }
+
+  run();
 }
 
 function getDiscoverVideoCarousel(app) {
@@ -526,6 +601,7 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           break;
         case "set-steam-import-step":
           store.setSteamImportStep(actionElement.dataset.step);
+          queueDocumentScrollToTop();
           break;
         case "set-steam-import-rule":
           store.updateSteamImportRules({
@@ -538,8 +614,39 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
             actionElement.dataset.value
           );
           break;
+        case "search-steam-import-match":
+          await store.searchSteamImportCandidateMatches(
+            actionElement.dataset.candidateId,
+            actionElement.dataset.inputId
+              ? app.querySelector(`#${actionElement.dataset.inputId}`)?.value ?? ""
+              : ""
+          );
+          break;
+        case "apply-steam-import-match":
+          store.applySteamImportCandidateMatch(
+            actionElement.dataset.candidateId,
+            actionElement.dataset.matchIgdbId
+          );
+          break;
+        case "search-entry-metadata-match":
+          await store.searchEntryMetadataMatches(
+            actionElement.dataset.entryId,
+            actionElement.dataset.inputId
+              ? app.querySelector(`#${actionElement.dataset.inputId}`)?.value ?? ""
+              : ""
+          );
+          break;
+        case "apply-entry-metadata-match":
+          await store.applyEntryMetadataMatch(
+            actionElement.dataset.entryId,
+            actionElement.dataset.matchIgdbId
+          );
+          break;
         case "fetch-steam-owned-preview":
           await store.fetchSteamOwnedLibraryPreview();
+          break;
+        case "fetch-steam-wishlist-preview":
+          await store.fetchSteamWishlistPreview();
           break;
         case "commit-steam-owned-import":
           await store.commitSteamOwnedImport();
@@ -574,7 +681,10 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           store.closeDeleteConfirm();
           break;
         case "dismiss-notice":
-          store.dismissNotice();
+          store.dismissNotice(actionElement.dataset.noticeId);
+          break;
+        case "cancel-job":
+          store.requestJobCancel(actionElement.dataset.jobKey);
           break;
         case "pick-form-status":
           store.updateAddForm({ status: actionElement.dataset.status });
@@ -595,11 +705,28 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           await store.selectDiscoverRelated(actionElement.dataset.searchResultId);
           break;
         case "open-media-lightbox":
-          if (actionElement.dataset.mediaContext === "discover") {
-            const currentDiscoverIndex = Number(app.querySelector("#discover-screenshot-carousel")?.dataset?.screenshotIndex || 0);
-            store.openDiscoverScreenshotLightbox(Number.isFinite(currentDiscoverIndex) ? currentDiscoverIndex : 0);
-          } else if (actionElement.dataset.mediaContext === "details") {
-            store.openDetailScreenshotLightbox(Number(actionElement.dataset.mediaIndex || 0));
+          if (actionElement.dataset.mediaContext === "discover" || actionElement.dataset.mediaContext === "details") {
+            const mediaCollectionRoot = getMediaCollectionRoot(actionElement);
+            const collectionImages = getMediaCollectionImages(mediaCollectionRoot);
+            const collectionTitle = getMediaCollectionTitle(mediaCollectionRoot);
+
+            if (collectionImages.length) {
+              const currentDiscoverIndex = Number(
+                mediaCollectionRoot?.querySelector("#discover-screenshot-carousel")?.dataset?.screenshotIndex
+                || actionElement.dataset.mediaIndex
+                || 0
+              );
+              store.openMediaLightbox({
+                images: collectionImages,
+                index: Number.isFinite(currentDiscoverIndex) ? currentDiscoverIndex : 0,
+                title: collectionTitle
+              });
+            } else if (actionElement.dataset.mediaContext === "discover") {
+              const currentDiscoverIndex = Number(app.querySelector("#discover-screenshot-carousel")?.dataset?.screenshotIndex || 0);
+              store.openDiscoverScreenshotLightbox(Number.isFinite(currentDiscoverIndex) ? currentDiscoverIndex : 0);
+            } else {
+              store.openDetailScreenshotLightbox(Number(actionElement.dataset.mediaIndex || 0));
+            }
           }
           break;
         case "close-media-lightbox":
@@ -697,6 +824,9 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         case "refresh-library-metadata":
           await store.refreshLibraryMetadata();
           break;
+        case "refresh-entry-game-data":
+          await store.refreshGameDataForEntry(actionElement.dataset.entryId);
+          break;
         case "refresh-entry-artwork":
           await store.refreshArtworkForEntry(actionElement.dataset.entryId);
           break;
@@ -705,6 +835,9 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
           break;
         case "refresh-entry-pricing":
           await store.refreshPricingForEntry(actionElement.dataset.entryId);
+          break;
+        case "refresh-discover-pricing":
+          await store.refreshDiscoverPricing();
           break;
         case "export-json": {
           const backup = store.exportLibraryBackup();
@@ -858,6 +991,13 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         return;
       }
 
+      if (target.id === "steam-wishlist-source") {
+        store.updateSteamImportSource({
+          wishlistSource: target.value
+        });
+        return;
+      }
+
       if (target.id === "add-run-label") {
         store.updateAddForm({
           runLabel: target.value
@@ -964,6 +1104,13 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
         return;
       }
 
+      if (target instanceof HTMLTextAreaElement && target.id === "steam-wishlist-source") {
+        store.updateSteamImportSource({
+          wishlistSource: target.value
+        });
+        return;
+      }
+
       if (target instanceof HTMLInputElement && target.id === "steam-include-free-played") {
         store.updateSteamImportSource({
           includeFreePlayed: target.checked
@@ -1004,15 +1151,25 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
     return renderDashboardView(snapshot, storefrontDefinitions, statusDefinitions);
   }
 
-  function render() {
+  function render(meta = { type: "full" }) {
     ensureShell();
     const snapshot = store.getSnapshot();
+    const noticeRoot = app.querySelector("#app-notice-root");
+
+    if (meta?.type === "notice") {
+      if (noticeRoot) {
+        noticeRoot.innerHTML = renderGlobalNotice(snapshot);
+      }
+      syncNoticeAutoDismiss(snapshot, store);
+      previousSnapshot = snapshot;
+      return;
+    }
+
     const focusState = captureFocusState(app);
     const scrollState = captureScrollState(app);
     const sidebarRoot = app.querySelector("#app-sidebar-root");
     const topbarRoot = app.querySelector("#app-topbar-root");
     const viewRoot = app.querySelector("#app-view-root");
-    const noticeRoot = app.querySelector("#app-notice-root");
     const addModalRoot = app.querySelector("#app-add-modal-root");
     const deleteModalRoot = app.querySelector("#app-delete-modal-root");
     const mediaLightboxRoot = app.querySelector("#app-media-lightbox-root");
@@ -1029,6 +1186,7 @@ export function createAppRenderer({ app, store, statusDefinitions, storefrontDef
     if (noticeRoot) {
       noticeRoot.innerHTML = renderGlobalNotice(snapshot);
     }
+    syncNoticeAutoDismiss(snapshot, store);
     if (addModalRoot) {
       addModalRoot.innerHTML = renderAddModal(snapshot, statusDefinitions, storefrontDefinitions);
     }

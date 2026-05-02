@@ -2,6 +2,7 @@ import {
   escapeHtml,
   formatRelative,
   renderActionMessage,
+  renderMetaChip,
   renderPreference,
   renderSecondaryAction
 } from "./shared.js";
@@ -17,6 +18,15 @@ function renderSettingsNotice(messageState) {
 function renderScopedPrimaryAction(action, scope, dataAction) {
   return `
     <button class="checkpoint-button checkpoint-button-primary checkpoint-scoped-cta" data-action="${dataAction}">
+      <span class="checkpoint-scoped-cta-action">${action}</span>
+      <span class="checkpoint-scoped-cta-scope">(${scope})</span>
+    </button>
+  `;
+}
+
+function renderScopedSecondaryAction(action, scope, dataAction, extraClasses = "", extraAttributes = "") {
+  return `
+    <button class="checkpoint-button checkpoint-button-secondary checkpoint-scoped-cta ${extraClasses}" data-action="${dataAction}" ${extraAttributes}>
       <span class="checkpoint-scoped-cta-action">${action}</span>
       <span class="checkpoint-scoped-cta-scope">(${scope})</span>
     </button>
@@ -136,27 +146,100 @@ function getSteamActionLabel(action) {
 
 function getSteamActionTone(action) {
   return {
-    add: "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(168,232,255,0.24)]",
-    merge: "bg-emerald-400/10 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(167,243,208,0.22)]",
-    review: "bg-amber-400/10 text-amber-100 shadow-[inset_0_0_0_1px_rgba(253,230,138,0.22)]",
-    skip: "bg-white/[0.06] text-zinc-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
-  }[action] ?? "bg-white/[0.06] text-zinc-300";
+    add: "checkpoint-button-primary text-[#041017]",
+    merge: "checkpoint-button-secondary border-emerald-300/28 bg-emerald-400/10 text-emerald-100 hover:bg-emerald-400/16 hover:border-emerald-300/38",
+    review: "checkpoint-button-secondary border-amber-300/28 bg-amber-400/10 text-amber-100 hover:bg-amber-400/16 hover:border-amber-300/38",
+    skip: "checkpoint-button-secondary border-white/[0.12] bg-white/[0.06] text-zinc-200 hover:bg-white/[0.1]"
+  }[action] ?? "checkpoint-button-secondary";
+}
+
+function renderSteamCandidateActionButton(candidate, action) {
+  const isActive = candidate.action === action;
+  const activeClasses = getSteamActionTone(action);
+  const inactiveClasses = "checkpoint-button-secondary border-primary/14 text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06]";
+  return `
+    <button
+      class="checkpoint-button ${isActive ? activeClasses : inactiveClasses} min-w-[5.75rem] rounded-md px-4 py-2.5 font-label text-[11px] font-bold tracking-[0.08em] transition-colors"
+      data-action="set-steam-import-candidate-action"
+      data-candidate-id="${escapeHtml(candidate.id)}"
+      data-value="${action}"
+    >
+      ${escapeHtml(getSteamActionLabel(action))}
+    </button>
+  `;
+}
+
+function getSteamCandidateStateCopy(candidate) {
+  if (candidate?.matchStatus === "existing") {
+    return "Checkpoint already has a strong match for this Steam row. Merge keeps one entry while attaching Steam metadata safely.";
+  }
+  if (candidate?.matchStatus === "possible") {
+    if (candidate?.existingSurface === "wishlist") {
+      return "This looks close to an item already in Wishlist. Review before importing so we do not create a duplicate watch.";
+    }
+    return "This looks close to an existing Checkpoint title, but still needs a human decision before import.";
+  }
+  if (candidate?.igdbSuggestion?.title) {
+    return "Checkpoint found an IGDB suggestion for this Steam row. Review if you want to trust the suggested match before adding it.";
+  }
+  if (!candidate?.appid) {
+    return "Steam did not provide a stable AppID for this row, so Checkpoint is treating it conservatively until you review it.";
+  }
+  if (String(candidate?.parseReason || "").toLowerCase().includes("title unavailable")) {
+    return "Steam returned an AppID but no public store title. Checkpoint can still track the row, but metadata may need follow-up enrichment.";
+  }
+  return "Checkpoint did not find an existing match. This row can be added as a new title.";
+}
+
+function getSteamCompleteSummaryCopy(session, result, enrichment) {
+  const isWishlist = session.mode === "wishlist";
+  const added = Number(result?.added ?? 0);
+  const merged = Number(result?.merged ?? 0);
+  const skipped = Number(result?.skipped ?? 0);
+  const failed = Number(enrichment?.failed ?? 0);
+  const enrichmentTouched = Number(enrichment?.metadataUpdated ?? 0) + Number(enrichment?.artworkUpdated ?? 0) + Number(enrichment?.pricingUpdated ?? 0);
+
+  let base = isWishlist
+    ? `Steam wishlist import finished: ${added} added, ${merged} merged, ${skipped} skipped.`
+    : `Steam owned-library import finished: ${added} added, ${merged} merged, ${skipped} skipped.`;
+
+  if (enrichmentTouched > 0) {
+    base += ` Post-import enrichment updated ${Number(enrichment?.metadataUpdated ?? 0)} metadata, ${Number(enrichment?.artworkUpdated ?? 0)} artwork, and ${Number(enrichment?.pricingUpdated ?? 0)} pricing record${Number(enrichment?.pricingUpdated ?? 0) === 1 ? "" : "s"}.`;
+  } else {
+    base += " No extra enrichment changes were needed after import.";
+  }
+
+  if (failed > 0) {
+    base += ` ${failed} title${failed === 1 ? "" : "s"} still need follow-up review.`;
+  }
+
+  return base;
 }
 
 function renderSteamImportSummary(session) {
   const summary = session.summary ?? {};
-  const tiles = [
-    ["Total found", summary.total ?? 0],
-    ["Played", summary.played ?? 0],
-    ["Unplayed", summary.unplayed ?? 0],
-    ["Recent", summary.recent ?? 0],
-    ["Existing", summary.existing ?? 0],
-    ["Needs review", summary.possibleMatches ?? 0],
-    ["New", summary.unmatched ?? 0]
-  ];
+  const isWishlist = session.mode === "wishlist";
+  const tiles = isWishlist
+    ? [
+        ["Total parsed", summary.total ?? 0],
+        ["With AppIDs", summary.withAppIds ?? 0],
+        ["Title only", summary.titleOnly ?? 0],
+        ["Existing", summary.existing ?? 0],
+        ["Needs review", summary.possibleMatches ?? 0],
+        ["New", summary.unmatched ?? 0]
+      ]
+    : [
+        ["Total found", summary.total ?? 0],
+        ["Played", summary.played ?? 0],
+        ["Unplayed", summary.unplayed ?? 0],
+        ["Recent", summary.recent ?? 0],
+        ["Existing", summary.existing ?? 0],
+        ["Needs review", summary.possibleMatches ?? 0],
+        ["New", summary.unmatched ?? 0]
+      ];
 
   return `
-    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+    <div class="grid ${isWishlist ? "grid-cols-2 md:grid-cols-3 xl:grid-cols-6" : "grid-cols-2 md:grid-cols-4 xl:grid-cols-7"} gap-3">
       ${tiles.map(([label, value]) => `
         <div class="rounded-lg bg-black/20 px-4 py-3">
           <p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">${escapeHtml(label)}</p>
@@ -180,6 +263,7 @@ function renderSteamImportErrors(errors) {
 
 function renderSteamOwnedPreviewRows(session) {
   const candidates = Array.isArray(session.candidates) ? session.candidates : [];
+  const isWishlist = session.mode === "wishlist";
   if (!candidates.length) {
     return `
       <div class="rounded-lg bg-black/20 px-4 py-8 text-sm text-zinc-500">
@@ -189,27 +273,27 @@ function renderSteamOwnedPreviewRows(session) {
   }
 
   return `
-    <div class="overflow-hidden rounded-xl bg-black/20">
-      <div class="hidden md:grid grid-cols-[minmax(0,1.5fr)_0.7fr_0.7fr_0.9fr_0.9fr] gap-4 px-4 py-3 font-label text-[10px] tracking-[0.08em] text-zinc-500">
-        <span>Steam game</span>
-        <span>Total</span>
-        <span>Recent</span>
-        <span>Proposed</span>
-        <span>Match</span>
+    <div class="overflow-hidden rounded-xl bg-black/20 checkpoint-steam-preview-table">
+      <div class="checkpoint-steam-preview-head hidden md:grid px-4 py-3 font-label text-[10px] tracking-[0.08em] text-zinc-500">
+        <span class="checkpoint-steam-preview-cell">Steam game</span>
+        <span class="checkpoint-steam-preview-cell">${isWishlist ? "Source" : "Total"}</span>
+        <span class="checkpoint-steam-preview-cell">${isWishlist ? "Confidence" : "Recent"}</span>
+        <span class="checkpoint-steam-preview-cell">Proposed</span>
+        <span class="checkpoint-steam-preview-cell">Match</span>
       </div>
       <div class="divide-y divide-white/[0.06]">
         ${candidates.slice(0, 40).map((candidate) => `
-          <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1.5fr)_0.7fr_0.7fr_0.9fr_0.9fr] gap-3 md:gap-4 px-4 py-4">
-            <div class="min-w-0">
-              <p class="font-headline font-bold text-on-surface truncate">${escapeHtml(candidate.title)}</p>
-              <p class="mt-1 font-label text-[10px] tracking-[0.08em] text-zinc-500">AppID ${escapeHtml(candidate.appid ?? "Unknown")}</p>
+          <div class="checkpoint-steam-preview-row grid grid-cols-1 gap-3 md:gap-4 px-4 py-4 items-start">
+            <div class="checkpoint-steam-preview-cell min-w-0">
+              <p class="font-headline font-bold text-on-surface truncate" title="${escapeHtml(candidate.title)}">${escapeHtml(candidate.title)}</p>
+              <p class="mt-1 font-label text-[10px] tracking-[0.08em] text-zinc-500">${candidate.appid ? `AppID ${escapeHtml(candidate.appid)}` : "Title-only parse"}</p>
             </div>
-            <p class="text-sm text-zinc-300">${escapeHtml(formatSteamPlaytime(candidate.playtimeForeverMinutes))}</p>
-            <p class="text-sm ${candidate.playtime2WeeksMinutes > 0 ? "text-primary" : "text-zinc-500"}">${escapeHtml(formatSteamPlaytime(candidate.playtime2WeeksMinutes))}</p>
-            <p class="font-label text-[11px] font-bold tracking-[0.08em] text-zinc-300">${escapeHtml(candidate.proposedStatus === "playing" ? "Playing" : "Backlog")}</p>
-            <div class="flex flex-col items-start gap-1">
+            <p class="checkpoint-steam-preview-cell checkpoint-steam-preview-nowrap min-w-0 text-sm text-zinc-300 truncate" title="${escapeHtml(isWishlist ? (candidate.parseReason || (candidate.appid ? "Steam app URL" : "Pasted title")) : formatSteamPlaytime(candidate.playtimeForeverMinutes))}">${escapeHtml(isWishlist ? (candidate.parseReason || (candidate.appid ? "Steam app URL" : "Pasted title")) : formatSteamPlaytime(candidate.playtimeForeverMinutes))}</p>
+            <p class="checkpoint-steam-preview-cell checkpoint-steam-preview-nowrap text-sm ${!isWishlist && candidate.playtime2WeeksMinutes > 0 ? "text-primary" : "text-zinc-500"}">${escapeHtml(isWishlist ? getSteamConfidenceLabel(candidate.parseConfidence || "low") : formatSteamPlaytime(candidate.playtime2WeeksMinutes))}</p>
+            <p class="checkpoint-steam-preview-cell checkpoint-steam-preview-nowrap font-label text-[11px] font-bold tracking-[0.08em] text-zinc-300">${escapeHtml(candidate.proposedStatus === "wishlist" ? "Wishlist" : candidate.proposedStatus === "playing" ? "Playing" : "Backlog")}</p>
+            <div class="checkpoint-steam-preview-cell min-w-0 flex flex-col items-start gap-1">
               ${getSteamCandidateBadge(candidate)}
-              ${candidate.existingTitle ? `<span class="text-xs text-zinc-500 truncate max-w-full">${escapeHtml(candidate.existingTitle)}</span>` : ""}
+              ${candidate.existingTitle ? `<span class="checkpoint-steam-preview-nowrap max-w-full text-xs text-zinc-500 truncate" title="${escapeHtml(candidate.existingTitle)}">${escapeHtml(candidate.existingTitle)}</span>` : ""}
             </div>
           </div>
         `).join("")}
@@ -220,7 +304,14 @@ function renderSteamOwnedPreviewRows(session) {
 }
 
 function renderSteamImportReviewRows(session) {
-  const candidates = Array.isArray(session.candidates) ? session.candidates : [];
+  const actionOrder = { add: 0, merge: 1, skip: 2, review: 3 };
+  const candidates = Array.isArray(session.candidates)
+    ? session.candidates.slice().sort((a, b) => {
+        const actionDelta = (actionOrder[a?.action] ?? 99) - (actionOrder[b?.action] ?? 99);
+        if (actionDelta !== 0) return actionDelta;
+        return String(a?.title || "").localeCompare(String(b?.title || ""));
+      })
+    : [];
   if (!candidates.length) {
     return `
       <div class="rounded-lg bg-black/20 px-4 py-8 text-sm text-zinc-500">
@@ -230,9 +321,16 @@ function renderSteamImportReviewRows(session) {
   }
 
   return `
-    <div class="space-y-3">
+    <div class="space-y-3 checkpoint-import-review-scroll pr-1 custom-scrollbar">
       ${candidates.map((candidate) => {
         const showSuggestion = candidate.matchStatus === "unmatched" && candidate.igdbSuggestion;
+        const canSearchForMatch = candidate.matchStatus !== "existing";
+        const matchSearchOptions = Array.isArray(session.matchOptions?.[candidate.id]) ? session.matchOptions[candidate.id] : [];
+        const matchSearchQuery = String(session.matchQueries?.[candidate.id] || candidate.title || "").trim();
+        const matchSearchError = String(session.matchSearchErrors?.[candidate.id] || "").trim();
+        const isSearchingMatch = session.matchSearchLoadingId === candidate.id;
+        const selectedManualSuggestion = candidate.igdbSuggestion?.manual ? candidate.igdbSuggestion : null;
+        const matchInputId = `steam-import-match-query-${escapeHtml(candidate.id)}`;
         const actions = candidate.matchStatus === "existing"
           ? ["merge", "skip"]
           : candidate.matchStatus === "possible"
@@ -254,20 +352,11 @@ function renderSteamImportReviewRows(session) {
                   <span>AppID ${escapeHtml(candidate.appid ?? "Unknown")}</span>
                   <span>Total ${escapeHtml(formatSteamPlaytime(candidate.playtimeForeverMinutes))}</span>
                   <span>Recent ${escapeHtml(formatSteamPlaytime(candidate.playtime2WeeksMinutes))}</span>
-                  <span>Proposed ${escapeHtml(candidate.proposedStatus === "playing" ? "Playing" : "Backlog")}</span>
+                  <span>Proposed ${escapeHtml(candidate.proposedStatus === "wishlist" ? "Wishlist" : candidate.proposedStatus === "playing" ? "Playing" : "Backlog")}</span>
                 </div>
               </div>
               <div class="flex flex-wrap gap-2 xl:max-w-[26rem] xl:justify-end">
-                ${actions.map((action) => `
-                  <button
-                    class="rounded-full px-3 py-2 font-label text-[11px] font-bold tracking-[0.08em] transition-colors ${candidate.action === action ? getSteamActionTone(action) : "bg-white/[0.03] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06]"}"
-                    data-action="set-steam-import-candidate-action"
-                    data-candidate-id="${escapeHtml(candidate.id)}"
-                    data-value="${action}"
-                  >
-                    ${escapeHtml(getSteamActionLabel(action))}
-                  </button>
-                `).join("")}
+                ${actions.map((action) => renderSteamCandidateActionButton(candidate, action)).join("")}
               </div>
             </div>
             <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] gap-3">
@@ -275,16 +364,82 @@ function renderSteamImportReviewRows(session) {
                 <p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Match Reason</p>
                 <p class="mt-2 text-sm text-zinc-300">${escapeHtml(candidate.matchReasonLabel)}</p>
                 ${candidate.existingTitle ? `<p class="mt-1 text-xs text-zinc-500">Existing ${escapeHtml(candidate.existingSurfaceLabel || "entry")}: ${escapeHtml(candidate.existingTitle)}</p>` : ""}
+                <p class="mt-3 text-xs leading-relaxed text-zinc-500">${escapeHtml(getSteamCandidateStateCopy(candidate))}</p>
               </div>
               <div class="rounded-lg bg-black/20 px-4 py-3">
-                <p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">${showSuggestion ? "IGDB Suggestion" : "Current Decision"}</p>
+                <div class="flex items-center justify-between gap-3">
+                  <p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">${showSuggestion || selectedManualSuggestion ? "IGDB Suggestion" : "Current Decision"}</p>
+                </div>
+                ${canSearchForMatch ? `
+                  <div class="mt-3 checkpoint-match-search-grid">
+                    <label class="min-w-0 space-y-2">
+                      <span class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Search title</span>
+                      <input
+                        id="${matchInputId}"
+                        class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary"
+                        type="text"
+                        value="${escapeHtml(matchSearchQuery)}"
+                        placeholder="Search for the correct game title or Title, 2023"
+                      >
+                    </label>
+                    <button
+                      class="checkpoint-button checkpoint-button-secondary w-full px-4 py-3 text-[11px] tracking-[0.08em] lg:min-w-[14rem] ${isSearchingMatch ? "opacity-60 cursor-not-allowed" : ""}"
+                      data-action="search-steam-import-match"
+                      data-candidate-id="${escapeHtml(candidate.id)}"
+                      data-input-id="${matchInputId}"
+                      ${isSearchingMatch ? "disabled" : ""}
+                    >
+                      ${isSearchingMatch ? "Searching..." : (matchSearchOptions.length ? "Refresh Match Search" : "Find Better Match")}
+                    </button>
+                  </div>
+                ` : ""}
                 ${showSuggestion ? `
-                  <p class="mt-2 text-sm text-zinc-300">${escapeHtml(candidate.igdbSuggestion.title || "Suggested metadata match")}</p>
+                  <p class="mt-3 text-sm text-zinc-300">${escapeHtml(candidate.igdbSuggestion.title || "Suggested metadata match")}</p>
                   ${candidate.igdbSuggestion.releaseDate ? `<p class="mt-1 text-xs text-zinc-500">${escapeHtml(candidate.igdbSuggestion.releaseDate)}</p>` : ""}
+                  <p class="mt-3 text-xs leading-relaxed text-zinc-500">Review keeps this row conservative until you decide whether the IGDB suggestion is trustworthy enough to merge or add.</p>
                 ` : `
-                  <p class="mt-2 text-sm text-zinc-300">${escapeHtml(getSteamActionLabel(candidate.action))}</p>
+                  <p class="mt-3 text-sm text-zinc-300">${escapeHtml(getSteamActionLabel(candidate.action))}</p>
                   <p class="mt-1 text-xs text-zinc-500">Default ${escapeHtml(getSteamActionLabel(candidate.defaultAction))}</p>
+                  <p class="mt-3 text-xs leading-relaxed text-zinc-500">${escapeHtml(candidate.action === "skip" ? "Skipping leaves the Steam row out of this import pass, but you can always re-run the preview later." : candidate.action === "merge" ? "Merging keeps one Checkpoint entry while attaching Steam metadata and identity safely." : candidate.action === "review" ? "Review keeps this row out of commit until you are comfortable with the match." : "Adding creates a new Checkpoint title from this Steam row without touching existing entries.")}</p>
                 `}
+                ${selectedManualSuggestion ? `
+                  <div class="mt-3 rounded-lg border border-primary/14 bg-primary/8 px-3 py-3">
+                    <p class="font-label text-[10px] tracking-[0.08em] text-primary">Selected Manual Match</p>
+                    <p class="mt-2 text-sm text-zinc-200">${escapeHtml(selectedManualSuggestion.title || "Selected IGDB title")}</p>
+                    ${selectedManualSuggestion.releaseDate ? `<p class="mt-1 text-xs text-zinc-500">${escapeHtml(selectedManualSuggestion.releaseDate)}</p>` : ""}
+                  </div>
+                ` : ""}
+                ${matchSearchError ? `<p class="mt-3 text-xs text-amber-200">${escapeHtml(matchSearchError)}</p>` : ""}
+                ${matchSearchOptions.length ? `
+                  <div class="mt-3 space-y-2 checkpoint-match-results overflow-y-auto pr-1 custom-scrollbar">
+                    ${matchSearchOptions.map((option) => `
+                      <div class="flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] bg-black/20 px-3 py-3">
+                        <div class="min-w-0 flex items-center gap-3">
+                          <div class="h-16 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-900">
+                            ${option.coverArt
+                              ? `<img class="h-full w-full object-cover" src="${escapeHtml(option.coverArt)}" alt="${escapeHtml(option.title || `IGDB ${option.igdbId}`)} cover">`
+                              : `<div class="h-full w-full bg-zinc-900"></div>`}
+                          </div>
+                          <div class="min-w-0">
+                            <p class="truncate text-sm text-zinc-200">${escapeHtml(option.title || `IGDB ${option.igdbId}`)}</p>
+                            <div class="mt-1 flex flex-wrap items-center gap-2">
+                              <span class="text-xs text-zinc-500">${escapeHtml(option.releaseDate || "Release unknown")}</span>
+                              ${option.gameTypeLabel ? renderMetaChip(option.gameTypeLabel, "primary") : ""}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          class="checkpoint-button checkpoint-button-secondary rounded-md px-3 py-2 font-label text-[10px] font-bold tracking-[0.08em]"
+                          data-action="apply-steam-import-match"
+                          data-candidate-id="${escapeHtml(candidate.id)}"
+                          data-match-igdb-id="${escapeHtml(option.igdbId)}"
+                        >
+                          Use Match
+                        </button>
+                      </div>
+                    `).join("")}
+                  </div>
+                ` : ""}
               </div>
             </div>
           </div>
@@ -306,14 +461,15 @@ function renderSteamImportSourceStep(session, serviceConfig) {
         <div class="rounded-lg bg-black/20 px-4 py-4 space-y-4">
           <div>
             <label class="font-label text-[11px] tracking-[0.08em] text-zinc-500" for="steam-wishlist-source">Wishlist URL or copied list</label>
-            <textarea id="steam-wishlist-source" class="mt-2 min-h-36 w-full rounded-lg bg-black/30 border border-primary/10 px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary" placeholder="Paste a Steam wishlist URL, copied wishlist page content, or one Steam app URL/title per line."></textarea>
+            <textarea id="steam-wishlist-source" class="mt-2 min-h-36 w-full rounded-lg bg-black/30 border border-primary/10 px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary" placeholder="Paste a Steam wishlist URL, copied wishlist page content, or one Steam app URL/title per line.">${escapeHtml(source.wishlistSource ?? "")}</textarea>
           </div>
-          <p class="text-xs text-zinc-500 leading-relaxed">Wishlist import is best-effort because Steam does not provide a stable official public wishlist API. Nothing is added until you review matches.</p>
+          <p class="text-xs text-zinc-500 leading-relaxed">Wishlist import is best-effort. Checkpoint will parse what Steam exposes, surface anything uncertain, and wait for review before adding or merging titles.</p>
+          ${renderSteamImportErrors(session.errors)}
         </div>
         <div class="rounded-lg bg-black/20 px-4 py-4 space-y-3">
           <p class="font-label text-[11px] tracking-[0.08em] text-primary">What happens next</p>
-          <p class="text-xs text-zinc-500 leading-relaxed">Checkpoint will extract Steam app IDs and titles where possible, then resolve conflicts against your Library and Wishlist.</p>
-          ${renderSecondaryAction("Parse Preview", "steam-import-placeholder", "w-full px-4 py-2 text-[11px] tracking-[0.12em] justify-center opacity-60 cursor-not-allowed")}
+          <p class="text-xs text-zinc-500 leading-relaxed">Checkpoint will extract Steam AppIDs and titles where possible, then compare them against your Library and Wishlist before anything is committed.</p>
+          ${renderSecondaryAction(loading ? "Parsing..." : "Parse Preview", "fetch-steam-wishlist-preview", `w-full px-4 py-2 text-[11px] tracking-[0.12em] justify-center ${loading ? "opacity-60 cursor-not-allowed" : ""}`, loading ? "disabled" : "")}
         </div>
       </div>
     `;
@@ -330,12 +486,12 @@ function renderSteamImportSourceStep(session, serviceConfig) {
           <span>Include played free games</span>
           <input id="steam-include-free-played" type="checkbox" ${source.includeFreePlayed === false ? "" : "checked"} class="accent-primary">
         </label>
-        <p class="text-xs text-zinc-500 leading-relaxed">Owned-library import uses Steam's official API. Your Steam game details must be public or accessible to the API key.</p>
+        <p class="text-xs text-zinc-500 leading-relaxed">Owned-library import uses Steam's official API. Steam playtime stays separate from Checkpoint progress, and nothing is written until you confirm the review step.</p>
         ${renderSteamImportErrors(session.errors)}
       </div>
       <div class="rounded-lg bg-black/20 px-4 py-4 space-y-3">
         <p class="font-label text-[11px] tracking-[0.08em] text-primary">Setup Status</p>
-        <p class="text-xs leading-relaxed ${workerReady ? "text-zinc-400" : "text-amber-200"}">${workerReady ? "Worker endpoint is configured. If STEAM_WEB_API_KEY is present on the worker, preview can run now." : "Worker endpoint is not configured, so Steam API preview cannot run yet."}</p>
+        <p class="text-xs leading-relaxed ${workerReady ? "text-zinc-400" : "text-amber-200"}">${workerReady ? "Worker endpoint is configured. If STEAM_WEB_API_KEY is present on the worker, preview can run now." : "Worker endpoint is not configured yet, so Steam preview cannot run."}</p>
         ${session.lastResolvedSteamId ? `<p class="text-xs text-zinc-500">Last SteamID: <span class="text-zinc-300">${escapeHtml(session.lastResolvedSteamId)}</span></p>` : ""}
         ${renderSecondaryAction(loading ? "Fetching..." : "Fetch Preview", "fetch-steam-owned-preview", `w-full px-4 py-2 text-[11px] tracking-[0.12em] justify-center ${loading || !workerReady ? "opacity-60 cursor-not-allowed" : ""}`, loading || !workerReady ? "disabled" : "")}
       </div>
@@ -370,15 +526,18 @@ function renderSteamImportPlanningStep(session) {
 }
 
 function renderSteamImportPreviewStep(session) {
+  const isWishlist = session.mode === "wishlist";
   return `
     <div class="space-y-4">
       ${renderSteamImportErrors(session.errors)}
       ${renderSteamImportSummary(session)}
       <div class="rounded-lg bg-black/20 px-4 py-4">
         <p class="font-label text-[11px] tracking-[0.08em] text-primary mb-2">Read-only Preview</p>
-        <p class="text-sm text-zinc-500 leading-relaxed">These rows are candidates only. The next phases add import rules, conflict review, and explicit commit actions.</p>
+        <p class="text-sm text-zinc-500 leading-relaxed">${isWishlist ? "These parsed wishlist rows are still only candidates. The next step separates clear adds from rows that need human review, especially when Steam provides only partial titles or when something already exists in Library or Wishlist." : "These owned-library rows are still only candidates. The next steps apply import rules, surface conflicts, and wait for an explicit commit before anything is written."}</p>
       </div>
-      ${renderSteamOwnedPreviewRows(session)}
+      <div class="checkpoint-import-preview-scroll custom-scrollbar pr-1">
+        ${renderSteamOwnedPreviewRows(session)}
+      </div>
     </div>
   `;
 }
@@ -480,21 +639,37 @@ function renderSteamImportFlowFooter(session) {
   const reviewCount = candidates.filter((candidate) => candidate.action === "review").length;
   const actionableCount = candidates.filter((candidate) => candidate.action === "add" || candidate.action === "merge").length;
   const loadingDisabled = session.loading ? "opacity-60 cursor-not-allowed" : "";
+  const isWishlist = session.mode === "wishlist";
 
   if (session.step === "preview") {
+    if (isWishlist) {
+      return `
+        <div class="flex flex-wrap gap-3 pt-2">
+          ${renderScopedSecondaryAction("Go To Review", "Next Step", "set-steam-import-step", `${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, `${!hasCandidates ? "disabled" : ""} data-step="review"`)}
+        </div>
+      `;
+    }
     return `
       <div class="flex flex-wrap gap-3 pt-2">
-        ${renderSecondaryAction("Review Rules", "set-steam-import-step", `px-4 py-2 text-[11px] tracking-[0.12em] justify-center ${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, !hasCandidates ? "disabled" : "", 'data-step="rules"')}
-        ${renderSecondaryAction("Go To Review", "set-steam-import-step", `px-4 py-2 text-[11px] tracking-[0.12em] justify-center ${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, !hasCandidates ? "disabled" : "", 'data-step="review"')}
+        ${renderScopedSecondaryAction("Review Rules", "Step 3", "set-steam-import-step", `${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, `${!hasCandidates ? "disabled" : ""} data-step="rules"`)}
+        ${renderScopedSecondaryAction("Go To Review", "Step 4", "set-steam-import-step", `${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, `${!hasCandidates ? "disabled" : ""} data-step="review"`)}
       </div>
     `;
   }
 
   if (session.step === "rules") {
+    if (isWishlist) {
+      return `
+        <div class="flex flex-wrap gap-3 pt-2">
+          ${renderScopedSecondaryAction("Back To Preview", "Step 2", "set-steam-import-step", "", 'data-step="preview"')}
+          ${renderScopedSecondaryAction("Continue To Review", "Step 4", "set-steam-import-step", `${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, `${!hasCandidates ? "disabled" : ""} data-step="review"`)}
+        </div>
+      `;
+    }
     return `
       <div class="flex flex-wrap gap-3 pt-2">
-        ${renderSecondaryAction("Back To Preview", "set-steam-import-step", "px-4 py-2 text-[11px] tracking-[0.12em] justify-center", "", 'data-step="preview"')}
-        ${renderSecondaryAction("Continue To Review", "set-steam-import-step", `px-4 py-2 text-[11px] tracking-[0.12em] justify-center ${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, !hasCandidates ? "disabled" : "", 'data-step="review"')}
+        ${renderScopedSecondaryAction("Back To Preview", "Step 2", "set-steam-import-step", "", 'data-step="preview"')}
+        ${renderScopedSecondaryAction("Continue To Review", "Step 4", "set-steam-import-step", `${!hasCandidates ? "opacity-60 cursor-not-allowed" : ""}`, `${!hasCandidates ? "disabled" : ""} data-step="review"`)}
       </div>
     `;
   }
@@ -507,8 +682,8 @@ function renderSteamImportFlowFooter(session) {
           <p class="mt-1 text-sm text-zinc-500">${reviewCount ? `${reviewCount} review item${reviewCount === 1 ? "" : "s"} still need a decision.` : `${actionableCount} import action${actionableCount === 1 ? "" : "s"} ready to commit.`}</p>
         </div>
         <div class="flex flex-wrap gap-3">
-          ${renderSecondaryAction("Back To Rules", "set-steam-import-step", "px-4 py-2 text-[11px] tracking-[0.12em] justify-center", "", 'data-step="rules"')}
-          ${renderSecondaryAction("Prepare Import", "set-steam-import-step", `px-4 py-2 text-[11px] tracking-[0.12em] justify-center ${reviewCount ? "opacity-60 cursor-not-allowed" : ""}`, reviewCount ? "disabled" : "", 'data-step="import"')}
+          ${renderScopedSecondaryAction("Back To Rules", "Step 3", "set-steam-import-step", "", 'data-step="rules"')}
+          ${renderScopedSecondaryAction("Prepare Import", "Step 5", "set-steam-import-step", `${reviewCount ? "opacity-60 cursor-not-allowed" : ""}`, `${reviewCount ? "disabled" : ""} data-step="import"`)}
         </div>
       </div>
     `;
@@ -517,8 +692,11 @@ function renderSteamImportFlowFooter(session) {
   if (session.step === "import") {
     return `
       <div class="flex flex-wrap gap-3 pt-2">
-        ${renderSecondaryAction("Back To Review", "set-steam-import-step", "px-4 py-2 text-[11px] tracking-[0.12em] justify-center", "", 'data-step="review"')}
-        ${renderScopedPrimaryAction(session.loading ? "Importing..." : "Import Selected", "This Device", "commit-steam-owned-import").replace('checkpoint-scoped-cta"', `checkpoint-scoped-cta ${loadingDisabled}"`).replace("data-action=\"commit-steam-owned-import\"", `data-action="commit-steam-owned-import"${session.loading ? " disabled" : ""}`)}
+        ${renderScopedSecondaryAction("Back To Review", "Step 4", "set-steam-import-step", "", 'data-step="review"')}
+        ${session.loading
+          ? renderScopedSecondaryAction("Cancel Import", "Safe Stop", "cancel-job", "", 'data-job-key="steam-import"')
+          : ""}
+        ${renderScopedPrimaryAction(session.loading ? "Importing..." : (session.mode === "wishlist" ? "Import Wishlist" : "Import Selected"), "This Device", "commit-steam-owned-import").replace('checkpoint-scoped-cta"', `checkpoint-scoped-cta ${loadingDisabled}"`).replace("data-action=\"commit-steam-owned-import\"", `data-action="commit-steam-owned-import"${session.loading ? " disabled" : ""}`)}
       </div>
     `;
   }
@@ -526,7 +704,7 @@ function renderSteamImportFlowFooter(session) {
   if (session.step === "complete") {
     return `
       <div class="flex flex-wrap gap-3 pt-2">
-        ${renderSecondaryAction("Start Another Preview", "set-steam-import-step", "px-4 py-2 text-[11px] tracking-[0.12em] justify-center", "", 'data-step="source"')}
+        ${renderScopedSecondaryAction("Start Another Preview", "Step 1", "set-steam-import-step", "", 'data-step="source"')}
       </div>
     `;
   }
@@ -539,9 +717,7 @@ function renderSteamImportStepBody(session, serviceConfig) {
     case "source":
       return renderSteamImportSourceStep(session, serviceConfig);
     case "preview":
-      return session.mode === "owned-library"
-        ? renderSteamImportPreviewStep(session)
-        : renderSteamImportPlanningStep(session);
+      return renderSteamImportPreviewStep(session);
     case "rules":
       return session.mode === "owned-library"
         ? renderSteamImportRulesStep(session)
@@ -552,7 +728,7 @@ function renderSteamImportStepBody(session, serviceConfig) {
           ${renderSteamImportErrors(session.errors)}
           <div class="rounded-lg bg-black/20 px-4 py-4">
             <p class="font-label text-[11px] tracking-[0.08em] text-primary mb-2">Conflict Review</p>
-            <p class="text-sm text-zinc-500 leading-relaxed">Review exact duplicates, title-only matches, and unresolved titles before import commit is enabled. Actions here stay transient for now.</p>
+            <p class="text-sm text-zinc-500 leading-relaxed">${session.mode === "wishlist" ? "Review duplicate watches, title-only parses, and unresolved Steam rows before import commit is enabled. Actions here stay transient until you confirm the final import." : "Review exact duplicates, title-only matches, and unresolved Steam rows before import commit is enabled. Actions here stay transient until you confirm the final import."}</p>
           </div>
           ${renderSteamImportReviewRows(session)}
         </div>
@@ -569,7 +745,7 @@ function renderSteamImportStepBody(session, serviceConfig) {
             ${renderSteamImportErrors(session.errors)}
             <div class="rounded-lg bg-black/20 px-4 py-4 space-y-3">
               <p class="font-label text-[11px] tracking-[0.08em] text-primary">Import Commit</p>
-              <p class="text-sm text-zinc-500 leading-relaxed">Checkpoint will add new owned games, merge exact/title-confirmed matches into existing entries, and keep Steam playtime separate from local progress.</p>
+              <p class="text-sm text-zinc-500 leading-relaxed">${session.mode === "wishlist" ? "Checkpoint will add new wishlist titles, merge safe matches into existing entries, and leave anything unresolved out of the commit until you review it." : "Checkpoint will add new owned games, merge safe matches into existing entries, and keep Steam playtime separate from local progress."}</p>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div class="rounded-lg bg-black/20 px-4 py-3"><p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Add</p><p class="mt-1 font-headline text-2xl font-bold text-on-surface">${escapeHtml(addCount)}</p></div>
                 <div class="rounded-lg bg-black/20 px-4 py-3"><p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Merge</p><p class="mt-1 font-headline text-2xl font-bold text-on-surface">${escapeHtml(mergeCount)}</p></div>
@@ -583,6 +759,7 @@ function renderSteamImportStepBody(session, serviceConfig) {
     case "complete":
       {
         const result = session.commitResult ?? { added: 0, merged: 0, skipped: 0, total: 0 };
+        const isWishlist = session.mode === "wishlist";
         const enrichment = result.enrichment ?? {
           attempted: 0,
           metadataUpdated: 0,
@@ -595,7 +772,7 @@ function renderSteamImportStepBody(session, serviceConfig) {
         return `
           <div class="rounded-lg bg-black/20 px-4 py-4 space-y-3">
             <p class="font-label text-[11px] tracking-[0.08em] text-primary">Import Complete</p>
-            <p class="text-sm text-zinc-500 leading-relaxed">Steam owned-library selections have been committed into local Checkpoint state without overwriting your editable progress fields.</p>
+            <p class="text-sm text-zinc-500 leading-relaxed">${escapeHtml(getSteamCompleteSummaryCopy(session, result, enrichment))}</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div class="rounded-lg bg-black/20 px-4 py-3"><p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Total</p><p class="mt-1 font-headline text-2xl font-bold text-on-surface">${escapeHtml(result.total)}</p></div>
               <div class="rounded-lg bg-black/20 px-4 py-3"><p class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Added</p><p class="mt-1 font-headline text-2xl font-bold text-on-surface">${escapeHtml(result.added)}</p></div>
@@ -968,7 +1145,6 @@ export function renderSettingsView(snapshot, storefrontDefinitions = []) {
                   ${renderScopedPrimaryAction("Refresh Metadata", "Library-wide", "refresh-library-metadata")}
                 </div>
                 <p class="text-xs text-zinc-500">Updates catalog metadata while keeping your run-specific notes, progress, and status intact.</p>
-                ${renderSettingsNotice(snapshot.actionState.metadata)}
               </div>
               <div class="checkpoint-subpanel p-7 rounded-xl flex flex-col gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -979,7 +1155,6 @@ export function renderSettingsView(snapshot, storefrontDefinitions = []) {
                   ${renderScopedPrimaryAction("Refresh Artwork", "Library-wide", "refresh-library-artwork")}
                 </div>
                 <p class="text-xs text-zinc-500">Refreshes artwork for tracked titles without exposing secrets in the browser.</p>
-                ${renderSettingsNotice(snapshot.actionState.artwork)}
               </div>
               <div class="checkpoint-subpanel p-7 rounded-xl flex flex-col gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1017,7 +1192,6 @@ export function renderSettingsView(snapshot, storefrontDefinitions = []) {
                   </div>
                 ` : ""}
                 <p class="text-xs text-zinc-500">Used for ITAD lookup prioritization when resolving current deals.</p>
-                ${renderSettingsNotice(snapshot.actionState.pricing)}
               </div>
             </div>
           </div>

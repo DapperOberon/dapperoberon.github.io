@@ -8,6 +8,8 @@ let igdbAccessToken = "";
 let igdbAccessTokenExpiresAt = 0;
 let itadShopsCache = null;
 let itadShopsCacheAt = 0;
+let igdbGameTypesCache = null;
+let igdbGameTypesCacheAt = 0;
 
 function json(data, init = {}) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -52,7 +54,7 @@ function buildCorsHeaders(origin, allowedOrigins) {
 
   return {
     "access-control-allow-origin": resolvedOrigin,
-    "access-control-allow-methods": "GET,OPTIONS",
+    "access-control-allow-methods": "GET,POST,OPTIONS",
     "access-control-allow-headers": "content-type"
   };
 }
@@ -305,25 +307,36 @@ function parseLookupIdPayload(payload, title) {
 }
 
 async function resolveItadGameId(env, title) {
-  const normalizedTitle = trim(title);
-  if (!normalizedTitle) {
+  const rawTitle = trim(title);
+  if (!rawTitle) {
     return {
       id: "",
       slug: ""
     };
   }
 
+  const normalizedTitleVariants = buildIgdbSearchVariants(rawTitle);
+  const normalizedTitle = normalizedTitleVariants[0] || rawTitle;
+
   let resolvedId = "";
   let resolvedSlug = "";
 
   async function hydrateSlug(candidateId = "") {
     try {
-      const searchPayload = await itadJson(env, `/games/search/v1?title=${encodeURIComponent(normalizedTitle)}&results=5`);
-      const rows = Array.isArray(searchPayload) ? searchPayload : [];
-      const match = rows.find((row) => trim(row?.id) === trim(candidateId)) ?? rows[0] ?? null;
+      for (const candidateTitle of normalizedTitleVariants) {
+        const searchPayload = await itadJson(env, `/games/search/v1?title=${encodeURIComponent(candidateTitle)}&results=5`);
+        const rows = Array.isArray(searchPayload) ? searchPayload : [];
+        const match = rows.find((row) => trim(row?.id) === trim(candidateId)) ?? rows[0] ?? null;
+        if (match) {
+          return {
+            id: trim(match?.id || candidateId),
+            slug: trim(match?.slug)
+          };
+        }
+      }
       return {
-        id: trim(match?.id || candidateId),
-        slug: trim(match?.slug)
+        id: trim(candidateId),
+        slug: ""
       };
     } catch (error) {
       return {
@@ -334,10 +347,13 @@ async function resolveItadGameId(env, title) {
   }
 
   try {
-    const lookupPayload = await itadJson(env, `/games/lookup/v1?title=${encodeURIComponent(normalizedTitle)}`);
-    const lookupId = parseLookupIdPayload(lookupPayload, normalizedTitle);
-    if (lookupId) {
-      resolvedId = lookupId;
+    for (const candidateTitle of normalizedTitleVariants) {
+      const lookupPayload = await itadJson(env, `/games/lookup/v1?title=${encodeURIComponent(candidateTitle)}`);
+      const lookupId = parseLookupIdPayload(lookupPayload, candidateTitle);
+      if (lookupId) {
+        resolvedId = lookupId;
+        break;
+      }
     }
   } catch (error) {
     // try alternative lookup endpoint
@@ -345,16 +361,19 @@ async function resolveItadGameId(env, title) {
 
   if (!resolvedId) {
     try {
-      const lookupByTitle = await itadJson(env, "/lookup/id/title/v1", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify([normalizedTitle])
-      });
-      const lookupId = parseLookupIdPayload(lookupByTitle, normalizedTitle);
-      if (lookupId) {
-        resolvedId = lookupId;
+      for (const candidateTitle of normalizedTitleVariants) {
+        const lookupByTitle = await itadJson(env, "/lookup/id/title/v1", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify([candidateTitle])
+        });
+        const lookupId = parseLookupIdPayload(lookupByTitle, candidateTitle);
+        if (lookupId) {
+          resolvedId = lookupId;
+          break;
+        }
       }
     } catch (error) {
       // try search endpoint fallback
@@ -948,6 +967,587 @@ function summarizeSteamOwnedGames(games) {
   };
 }
 
+function normalizeSteamWishlistTitle(value) {
+  return trim(String(value ?? "").replace(/\s+/g, " "));
+}
+
+function titleCaseSteamSlug(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function normalizeSteamWishlistRow(row) {
+  const appid = parsePositiveInteger(row?.appid);
+  return {
+    appid,
+    title: normalizeSteamWishlistTitle(row?.title),
+    appUrl: trim(row?.appUrl) || (appid ? `https://store.steampowered.com/app/${appid}/` : ""),
+    parseConfidence: trim(row?.parseConfidence) || "low",
+    parseReason: trim(row?.parseReason) || "Parsed title",
+    importSource: "steam-wishlist-import"
+  };
+}
+
+function summarizeSteamWishlistRows(rows) {
+  return {
+    total: rows.length,
+    unplayed: rows.length,
+    withAppIds: rows.filter((row) => row.appid).length,
+    titleOnly: rows.filter((row) => !row.appid).length
+  };
+}
+
+function normalizeSteamWishlistRows(rows) {
+  return rows
+    .map(normalizeSteamWishlistRow)
+    .filter((row) => row.appid || row.title);
+}
+
+function buildSteamWishlistSourceDescriptor(source) {
+  const raw = trim(source);
+  if (!raw) {
+    return { type: "empty", value: "" };
+  }
+
+  const lines = raw
+    .split(/\r?\n+/)
+    .map((line) => trim(line))
+    .filter(Boolean);
+
+  if (lines.length === 1) {
+    try {
+      const parsed = new URL(lines[0]);
+      const pathParts = parsed.pathname.split("/").map((part) => trim(part)).filter(Boolean);
+      const wishlistIndex = pathParts.findIndex((part) => part.toLowerCase() === "wishlist");
+      const profileIndex = pathParts.findIndex((part) => part.toLowerCase() === "profiles");
+      const vanityIndex = pathParts.findIndex((part) => part.toLowerCase() === "id");
+      const host = parsed.hostname.toLowerCase();
+
+      if (wishlistIndex >= 0 && host.includes("steamcommunity.com")) {
+        if (profileIndex >= 0 && /^\d{17}$/.test(pathParts[profileIndex + 1] ?? "")) {
+          return {
+            type: "wishlist_url",
+            value: lines[0],
+            profileType: "profiles",
+            profileValue: pathParts[profileIndex + 1]
+          };
+        }
+
+        if (vanityIndex >= 0 && pathParts[vanityIndex + 1]) {
+          return {
+            type: "wishlist_url",
+            value: lines[0],
+            profileType: "id",
+            profileValue: pathParts[vanityIndex + 1]
+          };
+        }
+      }
+
+      if (host.includes("store.steampowered.com")) {
+        const storeWishlistIndex = pathParts.findIndex((part) => part.toLowerCase() === "wishlist");
+        if (storeWishlistIndex >= 0 && profileIndex > storeWishlistIndex && /^\d{17}$/.test(pathParts[profileIndex + 1] ?? "")) {
+          return {
+            type: "wishlist_url",
+            value: lines[0],
+            profileType: "profiles",
+            profileValue: pathParts[profileIndex + 1]
+          };
+        }
+        if (storeWishlistIndex >= 0 && vanityIndex > storeWishlistIndex && pathParts[vanityIndex + 1]) {
+          return {
+            type: "wishlist_url",
+            value: lines[0],
+            profileType: "id",
+            profileValue: pathParts[vanityIndex + 1]
+          };
+        }
+      }
+    } catch (error) {
+      // Non-URL single line input should be treated as pasted content.
+    }
+  }
+
+  return {
+    type: "text",
+    value: raw
+  };
+}
+
+function parseSteamWishlistText(sourceText) {
+  const raw = trim(sourceText);
+  if (!raw) {
+    const error = new Error("Paste a Steam wishlist URL, copied wishlist page content, or Steam app lines first.");
+    error.code = "missing_wishlist_source";
+    error.status = 400;
+    throw error;
+  }
+
+  const appMap = new Map();
+  const titleSet = new Set();
+  const appUrlRegex = /https?:\/\/store\.steampowered\.com\/app\/(\d+)(?:\/([^/?#"'\\\s<]+))?/gi;
+  for (const match of raw.matchAll(appUrlRegex)) {
+    const appid = parsePositiveInteger(match[1]);
+    if (!appid) continue;
+    appMap.set(String(appid), {
+      appid,
+      title: titleCaseSteamSlug(match[2] || ""),
+      appUrl: `https://store.steampowered.com/app/${appid}/`,
+      parseConfidence: "high",
+      parseReason: "Steam app URL"
+    });
+  }
+
+  const dataAppIdRegex = /data-ds-appid=["']?(\d+)["']?/gi;
+  for (const match of raw.matchAll(dataAppIdRegex)) {
+    const appid = parsePositiveInteger(match[1]);
+    if (!appid || appMap.has(String(appid))) continue;
+    appMap.set(String(appid), {
+      appid,
+      title: "",
+      appUrl: `https://store.steampowered.com/app/${appid}/`,
+      parseConfidence: "medium",
+      parseReason: "Steam app id"
+    });
+  }
+
+  const lines = raw
+    .split(/\r?\n+/)
+    .map((line) => line.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  for (const line of lines) {
+    if (/wishlist/i.test(line) && /steam/i.test(line) && line.length < 80) continue;
+    if (/^https?:\/\/steamcommunity\.com\/(id|profiles)\/[^/\s]+\/wishlist\/?$/i.test(line)) continue;
+    if (/^https?:\/\/store\.steampowered\.com\/wishlist\/(id|profiles)\/[^/\s]+\/?$/i.test(line)) continue;
+    if (/store\.steampowered\.com\/app\/\d+/i.test(line)) continue;
+    if (/^\d+$/.test(line)) {
+      const appid = parsePositiveInteger(line);
+      if (appid && !appMap.has(String(appid))) {
+        appMap.set(String(appid), {
+          appid,
+          title: "",
+          appUrl: `https://store.steampowered.com/app/${appid}/`,
+          parseConfidence: "medium",
+          parseReason: "Steam app id"
+        });
+      }
+      continue;
+    }
+    if (line.length < 2 || line.length > 120) continue;
+    if (/^[\W_]+$/.test(line)) continue;
+    if (/^\$\d/.test(line) || /save up to/i.test(line)) continue;
+    const normalizedTitle = normalizeSteamWishlistTitle(line);
+    if (!normalizedTitle) continue;
+    titleSet.add(normalizedTitle);
+  }
+
+  const rows = normalizeSteamWishlistRows([
+    ...Array.from(appMap.values()),
+    ...Array.from(titleSet.values()).map((title) => ({
+      appid: null,
+      title,
+      appUrl: "",
+      parseConfidence: "low",
+      parseReason: "Pasted title"
+    }))
+  ]);
+
+  if (!rows.length) {
+    const error = new Error("Checkpoint could not parse any Steam wishlist entries from that input. Paste copied wishlist content, Steam app URLs, or one title per line.");
+    error.code = "wishlist_parse_failed";
+    error.status = 422;
+    throw error;
+  }
+
+  return {
+    results: rows,
+    summary: summarizeSteamWishlistRows(rows),
+    meta: {
+      resolved: true,
+      usedFallback: false,
+      reason: "steam_wishlist_text"
+    }
+  };
+}
+
+function buildSteamWishlistDataUrl(descriptor, page = 0) {
+  return `https://store.steampowered.com/wishlist/${descriptor.profileType}/${encodeURIComponent(descriptor.profileValue)}/wishlistdata/?p=${page}`;
+}
+
+function buildSteamWishlistPageUrl(descriptor, page = 0) {
+  const suffix = page > 0 ? `?p=${page}` : "";
+  return `https://store.steampowered.com/wishlist/${descriptor.profileType}/${encodeURIComponent(descriptor.profileValue)}/${suffix}`;
+}
+
+async function fetchSteamWishlistPage(descriptor, page = 0) {
+  const response = await fetch(buildSteamWishlistDataUrl(descriptor, page), {
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "User-Agent": "Checkpoint Steam Wishlist Import/1.0"
+    }
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Steam wishlist request failed with status ${response.status}`);
+    error.code = response.status === 404 ? "wishlist_not_found" : "wishlist_fetch_failed";
+    error.status = response.status;
+    throw error;
+  }
+
+  const rawBody = await response.text();
+  const contentType = normalize(response.headers.get("content-type"));
+
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(rawBody);
+    } catch (error) {
+      const parseError = new Error("Steam returned invalid wishlist JSON.");
+      parseError.code = "wishlist_invalid_json";
+      parseError.status = 502;
+      throw parseError;
+    }
+  }
+
+  return rawBody;
+}
+
+async function fetchSteamWishlistHtml(descriptor, page = 0) {
+  const response = await fetch(buildSteamWishlistPageUrl(descriptor, page), {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "User-Agent": "Checkpoint Steam Wishlist Import/1.0"
+    }
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Steam wishlist page request failed with status ${response.status}`);
+    error.code = response.status === 404 ? "wishlist_not_found" : "wishlist_page_fetch_failed";
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.text();
+}
+
+function getSteamWishlistItemsFromPayload(payload) {
+  const response = payload?.response ?? payload ?? {};
+
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.wishlist)) return response.wishlist;
+  if (Array.isArray(response?.apps)) return response.apps;
+  if (Array.isArray(response)) return response;
+
+  if (response?.items && typeof response.items === "object") {
+    return Object.entries(response.items).map(([appid, item]) => ({
+      appid,
+      ...item
+    }));
+  }
+
+  if (response && typeof response === "object") {
+    const directObjectRows = Object.entries(response)
+      .filter(([key, value]) => /^\d+$/.test(String(key)) && value && typeof value === "object")
+      .map(([appid, item]) => ({
+        appid,
+        ...item
+      }));
+    if (directObjectRows.length) {
+      return directObjectRows;
+    }
+  }
+
+  return [];
+}
+
+async function steamStoreAppDetails(appid) {
+  const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${encodeURIComponent(appid)}&filters=basic`, {
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "User-Agent": "Checkpoint Steam Wishlist Import/1.0"
+    }
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Steam app details request failed with status ${response.status}`);
+    error.code = "steam_appdetails_unavailable";
+    error.status = response.status;
+    throw error;
+  }
+
+  const payload = await response.json().catch(() => ({}));
+  const row = payload?.[String(appid)];
+  if (!row?.success || !row?.data) {
+    return null;
+  }
+  return row.data;
+}
+
+async function hydrateSteamWishlistAppDetails(rows) {
+  const normalizedRows = normalizeSteamWishlistRows(rows);
+  const enriched = [];
+
+  for (let index = 0; index < normalizedRows.length; index += 12) {
+    const chunk = normalizedRows.slice(index, index + 12);
+    const details = await Promise.all(chunk.map(async (row) => {
+      if (!row.appid) return row;
+      try {
+        const detail = await steamStoreAppDetails(row.appid);
+        const resolvedTitle = normalizeSteamWishlistTitle(detail?.name || row.title || `Steam App ${row.appid}`);
+        return {
+          ...row,
+          title: resolvedTitle,
+          appUrl: trim(detail?.steam_appid || detail?.name)
+            ? `https://store.steampowered.com/app/${row.appid}/`
+            : (row.appUrl || `https://store.steampowered.com/app/${row.appid}/`),
+          parseConfidence: detail?.name ? row.parseConfidence : "medium",
+          parseReason: detail?.name ? row.parseReason : "Steam wishlist API (title unavailable)"
+        };
+      } catch (error) {
+        return {
+          ...row,
+          title: normalizeSteamWishlistTitle(row.title || `Steam App ${row.appid}`),
+          appUrl: row.appUrl || `https://store.steampowered.com/app/${row.appid}/`,
+          parseConfidence: "medium",
+          parseReason: "Steam wishlist API (title unavailable)"
+        };
+      }
+    }));
+    enriched.push(...details);
+  }
+
+  return normalizeSteamWishlistRows(enriched);
+}
+
+async function fetchSteamWishlistApiRows(env, descriptor) {
+  const resolved = await resolveSteamProfile(env, descriptor.profileValue);
+  if (!resolved?.ok || !resolved.steamid) {
+    const error = new Error(resolved?.message || "Steam could not resolve that wishlist profile.");
+    error.code = resolved?.error || "wishlist_profile_not_found";
+    error.status = Number(resolved?.status) || 404;
+    throw error;
+  }
+
+  const payload = await steamApiJson(env, "/IWishlistService/GetWishlist/v1/", {
+    steamid: resolved.steamid
+  });
+  const items = getSteamWishlistItemsFromPayload(payload);
+  const parsedRows = items
+    .map((item) => ({
+      appid: parsePositiveInteger(item?.appid ?? item?.app_id ?? item?.steam_appid),
+      title: "",
+      appUrl: "",
+      parseConfidence: "high",
+      parseReason: "Steam wishlist API",
+      priority: parseNullableNumber(item?.priority),
+      dateAdded: trim(item?.date_added ?? item?.added_at ?? item?.time_added ?? "")
+    }))
+    .filter((row) => row.appid);
+
+  if (!parsedRows.length) {
+    const error = new Error("Steam returned no wishlist entries for that profile.");
+    error.code = "wishlist_empty_or_private";
+    error.status = 404;
+    throw error;
+  }
+
+  const hydratedRows = await hydrateSteamWishlistAppDetails(parsedRows);
+  return {
+    steamid: resolved.steamid,
+    rows: hydratedRows,
+    raw: payload
+  };
+}
+
+async function handleSteamWishlistDebugRequest(request, env) {
+  const url = new URL(request.url);
+  const source = trim(url.searchParams.get("source"));
+  const page = Math.max(0, parsePositiveInteger(url.searchParams.get("page")) ?? 0);
+  const descriptor = buildSteamWishlistSourceDescriptor(source);
+
+  if (descriptor.type !== "wishlist_url") {
+    return json({
+      error: "invalid_wishlist_source",
+      message: "Provide a Steam wishlist URL via ?source=...",
+      meta: {
+        sourceType: descriptor.type
+      }
+    }, { status: 400 });
+  }
+
+  try {
+    const apiResult = await fetchSteamWishlistApiRows(env, descriptor);
+
+    return json({
+      source,
+      page,
+      meta: {
+        resolved: true,
+        sourceType: descriptor.type,
+        profileType: descriptor.profileType,
+        profileValue: descriptor.profileValue,
+        rawType: "json",
+        parsedRowCount: apiResult.rows.length,
+        steamid: apiResult.steamid
+      },
+      parsedRows: apiResult.rows,
+      filteredRows: apiResult.rows,
+      raw: apiResult.raw
+    });
+  } catch (error) {
+    return json({
+      error: error?.code || "wishlist_debug_failed",
+      message: error instanceof Error ? error.message : "Steam wishlist debug fetch failed."
+    }, { status: Number(error?.status) || 500 });
+  }
+}
+
+function extractSteamWishlistRowsFromPage(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return [];
+  }
+
+  return Object.entries(payload)
+    .map(([appid, row]) => ({
+      appid: parsePositiveInteger(appid) ?? parsePositiveInteger(row?.appid),
+      title: normalizeSteamWishlistTitle(row?.name ?? row?.title),
+      appUrl: parsePositiveInteger(appid) ? `https://store.steampowered.com/app/${parsePositiveInteger(appid)}/` : "",
+      parseConfidence: "high",
+      parseReason: "Steam wishlist URL"
+    }))
+    .filter((row) => row.appid && row.title);
+}
+
+function extractSteamWishlistDataFromHtml(html) {
+  const markup = String(html ?? "");
+  if (!markup) return null;
+
+  const embeddedPatterns = [
+    /g_rgWishlistData\s*=\s*(\{[\s\S]*?\});/i,
+    /"rgWishlistData"\s*:\s*(\{[\s\S]*?\})\s*,/i
+  ];
+
+  for (const pattern of embeddedPatterns) {
+    const match = markup.match(pattern);
+    if (!match?.[1]) continue;
+    try {
+      return JSON.parse(match[1]);
+    } catch (error) {
+      // keep trying other shapes
+    }
+  }
+
+  return null;
+}
+
+function extractSteamWishlistRowsFromHtml(html) {
+  const embeddedPayload = extractSteamWishlistDataFromHtml(html);
+  if (embeddedPayload) {
+    const embeddedRows = extractSteamWishlistRowsFromPage(embeddedPayload);
+    if (embeddedRows.length) {
+      return embeddedRows;
+    }
+  }
+
+  try {
+    return parseSteamWishlistText(html).results;
+  } catch (error) {
+    return [];
+  }
+}
+
+function extractSteamWishlistVisibleAppIds(html) {
+  const markup = String(html ?? "");
+  if (!markup) return [];
+
+  const ids = new Set();
+  const visibleArrayMatch = markup.match(/rgVisibleApps\s*[:=]\s*\[([^\]]*)\]/i);
+  if (visibleArrayMatch?.[1]) {
+    visibleArrayMatch[1]
+      .split(",")
+      .map((value) => parsePositiveInteger(value))
+      .filter(Boolean)
+      .forEach((appid) => ids.add(appid));
+  }
+
+  const dataAppIdRegex = /data-ds-appid=["']?(\d+)["']?/gi;
+  for (const match of markup.matchAll(dataAppIdRegex)) {
+    const appid = parsePositiveInteger(match[1]);
+    if (appid) ids.add(appid);
+  }
+
+  const appUrlRegex = /https?:\/\/store\.steampowered\.com\/app\/(\d+)(?:\/[^"'\\\s<]*)?/gi;
+  for (const match of markup.matchAll(appUrlRegex)) {
+    const appid = parsePositiveInteger(match[1]);
+    if (appid) ids.add(appid);
+  }
+
+  return Array.from(ids.values());
+}
+
+async function fetchSteamWishlistRows(env, descriptor) {
+  const { steamid, rows } = await fetchSteamWishlistApiRows(env, descriptor);
+  const deduped = normalizeSteamWishlistRows(rows).filter((row, index, array) => (
+    array.findIndex((candidate) => candidate.appid === row.appid) === index
+  ));
+
+  return {
+    results: deduped,
+    summary: summarizeSteamWishlistRows(deduped),
+    meta: {
+      resolved: true,
+      usedFallback: false,
+      reason: "steam_wishlist_api",
+      steamid,
+      profileType: descriptor.profileType,
+      profileValue: descriptor.profileValue
+    }
+  };
+}
+
+async function handleSteamParseWishlistRequest(request, env) {
+  let payload;
+  try {
+    payload = await request.json();
+  } catch (error) {
+    return json({
+      error: "invalid_json",
+      message: "Provide JSON with a Steam wishlist source string."
+    }, { status: 400 });
+  }
+
+  const source = trim(payload?.source);
+  const descriptor = buildSteamWishlistSourceDescriptor(source);
+
+  if (descriptor.type === "empty") {
+    return json({
+      error: "missing_wishlist_source",
+      message: "Paste a Steam wishlist URL, copied wishlist page content, or Steam app lines first."
+    }, { status: 400 });
+  }
+
+  try {
+    const result = descriptor.type === "wishlist_url"
+      ? await fetchSteamWishlistRows(env, descriptor)
+      : parseSteamWishlistText(source);
+
+    return json({
+      ...result,
+      meta: {
+        ...result.meta,
+        sourceType: descriptor.type
+      }
+    });
+  } catch (error) {
+    return json({
+      error: error?.code || "wishlist_parse_failed",
+      message: error instanceof Error ? error.message : "Steam wishlist parsing failed."
+    }, { status: Number(error?.status) || 422 });
+  }
+}
+
 function steamWorkerErrorResponse(error) {
   const code = error?.code || "steam_api_unavailable";
   const status = Number(error?.status) || (code === "missing_steam_api_key" ? 500 : 502);
@@ -1057,6 +1657,27 @@ function slugifyTitle(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeSearchTitle(value) {
+  return String(value ?? "")
+    .replace(/[\u00AE\u2122\u00A9]/g, "")
+    .replace(/[“”]/g, "\"")
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildIgdbSearchVariants(value) {
+  const raw = String(value ?? "").trim();
+  const cleaned = normalizeSearchTitle(raw);
+  const dePunctuated = cleaned
+    .replace(/[:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return Array.from(new Set([raw, cleaned, dePunctuated].filter(Boolean)));
+}
+
 function getIgdbCompanies(game, flag) {
   return (game?.involved_companies ?? [])
     .filter((item) => item?.[flag] && item?.company?.name)
@@ -1130,6 +1751,8 @@ function normalizeIgdbMetadata(game) {
   const publishers = getIgdbCompanies(game, "publisher");
 
   return {
+    igdbId: Number.isFinite(Number(game?.id)) ? Number(game.id) : null,
+    title: trim(game?.name),
     developer: developers[0] ?? "",
     publisher: publishers[0] ?? "",
     releaseDate: toIsoDate(game?.first_release_date),
@@ -1264,12 +1887,16 @@ function normalizeIgdbGameDetails(game) {
   };
 }
 
-function normalizeIgdbSearchResult(game) {
+function normalizeIgdbSearchResult(game, gameTypesMap = new Map()) {
+  const gameTypeId = Number(game?.game_type);
+  const gameTypeLabel = gameTypesMap.get(gameTypeId) || "";
   return {
     id: `igdb-${game?.id ?? Math.random().toString(36).slice(2, 10)}`,
     igdbId: game?.id ?? null,
     title: game?.name ?? "",
     releaseDate: toIsoDate(game?.first_release_date),
+    gameType: Number.isFinite(gameTypeId) ? gameTypeId : null,
+    gameTypeLabel,
     platforms: (game?.platforms ?? []).map((platform) => platform?.name).filter(Boolean).slice(0, 4),
     coverArt: normalizeIgdbCoverUrl(game?.cover?.url),
     description: getIgdbDescription(game),
@@ -1282,12 +1909,12 @@ function normalizeIgdbSearchResult(game) {
   };
 }
 
-function normalizeIgdbSearchResults(games, limit = 12) {
+function normalizeIgdbSearchResults(games, limit = 12, gameTypesMap = new Map()) {
   if (!Array.isArray(games)) return [];
   const normalizedLimit = Math.max(1, Math.min(200, Number(limit) || 12));
   return games
     .filter((game) => game?.name)
-    .map(normalizeIgdbSearchResult)
+    .map((game) => normalizeIgdbSearchResult(game, gameTypesMap))
     .slice(0, normalizedLimit);
 }
 
@@ -1299,25 +1926,28 @@ function extractGameIdsFromSearchRows(rows) {
 }
 
 function buildIgdbGameFields() {
-  return "fields name,slug,summary,storyline,aggregated_rating,total_rating_count,rating_count,first_release_date,cover.url,screenshots.url,artworks.url,videos.video_id,websites.url,websites.category,similar_games,genres.id,genres.name,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;";
+  return "fields name,slug,game_type,summary,storyline,aggregated_rating,total_rating_count,rating_count,first_release_date,cover.url,screenshots.url,artworks.url,videos.video_id,websites.url,websites.category,similar_games,genres.id,genres.name,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;";
 }
 
-async function queryIgdbGamesBySearch(env, title, { strict = true } = {}) {
+async function queryIgdbGamesBySearch(env, title, { strict = true, limit = 10 } = {}) {
+  const mainGameTypeId = strict ? await resolveIgdbMainGameTypeId(env) : null;
+  const normalizedLimit = Math.max(1, Math.min(100, Number(limit) || 10));
   const body = `
     ${buildIgdbGameFields()}
     search "${escapeIgdbSearch(title)}";
-    ${strict ? "where category = 0;" : ""}
-    limit 10;
+    ${strict && Number.isFinite(mainGameTypeId) ? `where game_type = (${mainGameTypeId});` : ""}
+    limit ${normalizedLimit};
   `.trim();
 
   return igdbJson(env, "games", body);
 }
 
-async function queryIgdbSearchEndpoint(env, title) {
+async function queryIgdbSearchEndpoint(env, title, { limit = 10 } = {}) {
+  const normalizedLimit = Math.max(1, Math.min(100, Number(limit) || 10));
   const body = `
     fields game,name;
     search "${escapeIgdbSearch(title)}";
-    limit 10;
+    limit ${normalizedLimit};
   `.trim();
 
   return igdbJson(env, "search", body);
@@ -1337,13 +1967,55 @@ async function queryIgdbGamesByIds(env, ids, limit = 10) {
   return igdbJson(env, "games", body);
 }
 
+async function queryIgdbGameTypes(env) {
+  const now = Date.now();
+  if (igdbGameTypesCache && now - igdbGameTypesCacheAt < 1000 * 60 * 60) {
+    return igdbGameTypesCache;
+  }
+
+  const body = `
+    fields id,type;
+    limit 100;
+  `.trim();
+  const rows = await igdbJson(env, "game_types", body);
+  igdbGameTypesCache = Array.isArray(rows) ? rows : [];
+  igdbGameTypesCacheAt = now;
+  return igdbGameTypesCache;
+}
+
+function buildGameTypeMap(typeRows) {
+  const rows = Array.isArray(typeRows) ? typeRows : [];
+  return new Map(
+    rows
+      .map((row) => [Number(row?.id), String(row?.type ?? "").trim()])
+      .filter(([id, label]) => Number.isFinite(id) && id >= 0 && label)
+  );
+}
+
+function resolveGameTypeIdByAliases(gameTypesMap, aliases = []) {
+  const entries = Array.from(gameTypesMap.entries());
+  for (const alias of aliases) {
+    const normalizedAlias = normalize(alias);
+    const match = entries.find(([, label]) => normalize(label).includes(normalizedAlias));
+    if (match) return Number(match[0]);
+  }
+  return null;
+}
+
+async function resolveIgdbMainGameTypeId(env) {
+  const gameTypes = await queryIgdbGameTypes(env).catch(() => []);
+  const gameTypesMap = buildGameTypeMap(gameTypes);
+  return resolveGameTypeIdByAliases(gameTypesMap, ["main game", "main"]);
+}
+
 async function queryIgdbTopPlayedMonthly(env) {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const thirtyDaysAgo = nowSeconds - (30 * 24 * 60 * 60);
+  const mainGameTypeId = await resolveIgdbMainGameTypeId(env);
 
   const body = `
     ${buildIgdbGameFields()}
-    where category = 0
+    where ${Number.isFinite(mainGameTypeId) ? `game_type = (${mainGameTypeId})` : "game_type != null"}
       & first_release_date != null
       & first_release_date <= ${nowSeconds}
       & first_release_date >= ${thirtyDaysAgo}
@@ -1357,10 +2029,11 @@ async function queryIgdbTopPlayedMonthly(env) {
 
 async function queryIgdbTopPlayedFallback(env) {
   const nowSeconds = Math.floor(Date.now() / 1000);
+  const mainGameTypeId = await resolveIgdbMainGameTypeId(env);
 
   const body = `
     ${buildIgdbGameFields()}
-    where category = 0
+    where ${Number.isFinite(mainGameTypeId) ? `game_type = (${mainGameTypeId})` : "game_type != null"}
       & first_release_date != null
       & first_release_date <= ${nowSeconds}
       & total_rating_count != null;
@@ -1374,10 +2047,11 @@ async function queryIgdbTopPlayedFallback(env) {
 async function queryIgdbRecentPopularFallback(env) {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const tenYearsAgo = nowSeconds - (10 * 365 * 24 * 60 * 60);
+  const mainGameTypeId = await resolveIgdbMainGameTypeId(env);
 
   const body = `
     ${buildIgdbGameFields()}
-    where category = 0
+    where ${Number.isFinite(mainGameTypeId) ? `game_type = (${mainGameTypeId})` : "game_type != null"}
       & first_release_date != null
       & first_release_date >= ${tenYearsAgo}
       & first_release_date <= ${nowSeconds};
@@ -1558,24 +2232,34 @@ function buildTrendingPopularityRanking(metricRowsByName = {}, {
 }
 
 async function resolveIgdbGame(env, title) {
-  const candidates = [title, slugifyTitle(title)];
+  const variants = buildIgdbSearchVariants(title);
+  const candidates = Array.from(new Set([
+    ...variants,
+    ...variants.map((value) => slugifyTitle(value))
+  ].filter(Boolean)));
 
-  const strictGames = await queryIgdbGamesBySearch(env, title, { strict: true });
-  let match = pickBestIgdbGame(strictGames, candidates);
-  if (match) return match;
+  for (const variant of variants) {
+    const strictGames = await queryIgdbGamesBySearch(env, variant, { strict: true });
+    let match = pickBestIgdbGame(strictGames, candidates);
+    if (match) return match;
+  }
 
-  const looseGames = await queryIgdbGamesBySearch(env, title, { strict: false });
-  match = pickBestIgdbGame(looseGames, candidates);
-  if (match) return match;
+  for (const variant of variants) {
+    const looseGames = await queryIgdbGamesBySearch(env, variant, { strict: false });
+    let match = pickBestIgdbGame(looseGames, candidates);
+    if (match) return match;
+  }
 
-  const searchResults = await queryIgdbSearchEndpoint(env, title);
-  const gameIds = (Array.isArray(searchResults) ? searchResults : [])
-    .map((item) => item?.game)
-    .filter((value) => Number.isFinite(value));
+  for (const variant of variants) {
+    const searchResults = await queryIgdbSearchEndpoint(env, variant);
+    const gameIds = (Array.isArray(searchResults) ? searchResults : [])
+      .map((item) => item?.game)
+      .filter((value) => Number.isFinite(value));
 
-  const byIdGames = await queryIgdbGamesByIds(env, gameIds);
-  match = pickBestIgdbGame(byIdGames, candidates);
-  if (match) return match;
+    const byIdGames = await queryIgdbGamesByIds(env, gameIds);
+    const match = pickBestIgdbGame(byIdGames, candidates);
+    if (match) return match;
+  }
 
   return null;
 }
@@ -1583,18 +2267,33 @@ async function resolveIgdbGame(env, title) {
 async function handleMetadataRequest(request, env) {
   const url = new URL(request.url);
   const title = url.searchParams.get("title") ?? "";
+  const steamAppId = parsePositiveInteger(url.searchParams.get("steamAppId"));
+  let resolvedTitle = trim(title);
 
-  if (!title.trim()) {
+  if (steamAppId) {
+    try {
+      const steamDetails = await steamStoreAppDetails(steamAppId);
+      const steamTitle = trim(steamDetails?.name);
+      if (steamTitle) {
+        resolvedTitle = steamTitle;
+      }
+    } catch (error) {
+      // Best effort only; fall back to incoming title.
+    }
+  }
+
+  if (!resolvedTitle) {
     return json({
       error: "missing_query",
-      message: "Provide a title."
+      message: "Provide a title or a Steam AppID."
     }, { status: 400 });
   }
 
-  const match = await resolveIgdbGame(env, title);
+  const match = await resolveIgdbGame(env, resolvedTitle);
 
   if (!match) {
     return json({
+      title: resolvedTitle,
       developer: "",
       publisher: "",
       releaseDate: "",
@@ -1610,12 +2309,20 @@ async function handleMetadataRequest(request, env) {
     });
   }
 
-  return json(normalizeIgdbMetadata(match));
+  return json({
+    ...normalizeIgdbMetadata(match),
+    meta: {
+      ...normalizeIgdbMetadata(match).meta,
+      steamAppId: steamAppId ?? null,
+      resolvedTitle
+    }
+  });
 }
 
 async function handleIgdbSearchRequest(request, env) {
   const url = new URL(request.url);
   const query = url.searchParams.get("query") ?? "";
+  const requestedLimit = Math.max(1, Math.min(100, Number(url.searchParams.get("limit")) || 12));
 
   if (!query.trim()) {
     return json({
@@ -1628,31 +2335,72 @@ async function handleIgdbSearchRequest(request, env) {
     }, { status: 400 });
   }
 
-  const strictGames = await queryIgdbGamesBySearch(env, query, { strict: true });
-  const looseGames = strictGames.length
-    ? strictGames
-    : await queryIgdbGamesBySearch(env, query, { strict: false });
-  const searchRows = looseGames.length
-    ? []
-    : await queryIgdbSearchEndpoint(env, query);
-  const byIdGames = looseGames.length
-    ? []
-    : await queryIgdbGamesByIds(env, extractGameIdsFromSearchRows(searchRows));
-  const resolvedGames = looseGames.length
-    ? looseGames
-    : byIdGames;
+  const strictGames = await queryIgdbGamesBySearch(env, query, { strict: true, limit: requestedLimit });
+  const shouldBroadenWithLoose = strictGames.length < requestedLimit;
+  const looseGames = shouldBroadenWithLoose
+    ? await queryIgdbGamesBySearch(env, query, { strict: false, limit: requestedLimit })
+    : [];
+
+  const combinedSeedIds = new Set(
+    [...strictGames, ...looseGames]
+      .map((game) => Number(game?.id))
+      .filter((value) => Number.isFinite(value) && value > 0)
+  );
+  const shouldBroadenWithSearchEndpoint = combinedSeedIds.size < requestedLimit;
+  const searchRows = shouldBroadenWithSearchEndpoint
+    ? await queryIgdbSearchEndpoint(env, query, { limit: requestedLimit })
+    : [];
+  const searchResultIds = extractGameIdsFromSearchRows(searchRows)
+    .filter((id) => !combinedSeedIds.has(id))
+    .slice(0, requestedLimit);
+  const byIdGames = searchResultIds.length
+    ? await queryIgdbGamesByIds(env, searchResultIds, requestedLimit)
+    : [];
+  const preliminaryGames = [];
+  const seenPreliminaryIds = new Set();
+  for (const game of [...strictGames, ...looseGames, ...byIdGames]) {
+    const gameId = Number(game?.id);
+    if (!Number.isFinite(gameId) || gameId <= 0 || seenPreliminaryIds.has(gameId)) {
+      continue;
+    }
+    seenPreliminaryIds.add(gameId);
+    preliminaryGames.push(game);
+  }
+  const preliminaryIds = Array.isArray(preliminaryGames)
+    ? preliminaryGames
+      .map((game) => Number(game?.id))
+      .filter((value) => Number.isFinite(value) && value > 0)
+    : [];
+  const hydratedGames = preliminaryIds.length
+    ? await queryIgdbGamesByIds(env, preliminaryIds, preliminaryIds.length).catch(() => [])
+    : [];
+  const hydratedById = new Map(
+    Array.isArray(hydratedGames)
+      ? hydratedGames
+        .map((game) => [Number(game?.id), game])
+        .filter(([id]) => Number.isFinite(id) && id > 0)
+      : []
+  );
+  const resolvedGames = preliminaryIds.length && hydratedById.size
+    ? preliminaryIds.map((id) => hydratedById.get(id)).filter(Boolean)
+    : preliminaryGames;
+
+  const gameTypes = await queryIgdbGameTypes(env).catch(() => []);
+  const gameTypesMap = buildGameTypeMap(gameTypes);
 
   return json({
-    results: normalizeIgdbSearchResults(resolvedGames),
+    results: normalizeIgdbSearchResults(resolvedGames, requestedLimit, gameTypesMap),
     meta: {
       resolved: true,
       usedFallback: false,
       reason: "igdb_search",
       query,
+      requestedLimit,
       strictCount: strictGames.length,
       looseCount: looseGames.length,
       searchRowCount: Array.isArray(searchRows) ? searchRows.length : 0,
-      byIdCount: byIdGames.length
+      byIdCount: byIdGames.length,
+      hydratedCount: Array.isArray(hydratedGames) ? hydratedGames.length : 0
     }
   });
 }
@@ -1749,10 +2497,11 @@ async function handleIgdbRelatedRequest(request, env) {
       ? seedGame.genres.map((genre) => Number(genre?.id)).filter((value) => Number.isFinite(value) && value > 0)
       : [];
     const nowSeconds = Math.floor(Date.now() / 1000);
+    const mainGameTypeId = await resolveIgdbMainGameTypeId(env);
     if (genreIds.length) {
       const body = `
         ${buildIgdbGameFields()}
-        where category = 0
+        where ${Number.isFinite(mainGameTypeId) ? `game_type = (${mainGameTypeId})` : "game_type != null"}
           & id != ${gameId}
           & genres = (${genreIds.join(",")})
           & first_release_date != null
@@ -1765,7 +2514,9 @@ async function handleIgdbRelatedRequest(request, env) {
     }
   }
 
-  const normalized = normalizeIgdbSearchResults(relatedGames, limit).filter((row) => Number(row?.igdbId) !== gameId);
+  const gameTypes = await queryIgdbGameTypes(env).catch(() => []);
+  const gameTypesMap = buildGameTypeMap(gameTypes);
+  const normalized = normalizeIgdbSearchResults(relatedGames, limit, gameTypesMap).filter((row) => Number(row?.igdbId) !== gameId);
   return json({
     results: normalized.slice(0, limit),
     meta: {
@@ -1904,8 +2655,11 @@ async function handleIgdbTopPlayedRequest(request, env) {
     stepTrace.push("top_search_seed_fallback");
   }
 
+  const gameTypes = await queryIgdbGameTypes(env).catch(() => []);
+  const gameTypesMap = buildGameTypeMap(gameTypes);
+
   return json({
-    results: normalizeIgdbSearchResults(finalGames, limit),
+    results: normalizeIgdbSearchResults(finalGames, limit, gameTypesMap),
     meta: {
       resolved: true,
       usedFallback: false,
@@ -1939,9 +2693,13 @@ async function handleIgdbTopPlayedRequest(request, env) {
 }
 
 export {
+  buildSteamWishlistSourceDescriptor,
+  handleSteamWishlistDebugRequest,
+  handleSteamParseWishlistRequest,
   handleSteamOwnedGamesRequest,
   handleSteamResolveProfileRequest,
   normalizeSteamOwnedGame,
+  parseSteamWishlistText,
   parseSteamProfileInput,
   resolveSteamProfile,
   summarizeSteamOwnedGames
@@ -1971,6 +2729,16 @@ export default {
 
       if (request.method === "GET" && url.pathname === "/api/steam/owned-games") {
         const response = await handleSteamOwnedGamesRequest(request, env);
+        return withCors(response, origin, allowedOrigins);
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/steam/parse-wishlist") {
+        const response = await handleSteamParseWishlistRequest(request, env);
+        return withCors(response, origin, allowedOrigins);
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/steam/wishlist-debug") {
+        const response = await handleSteamWishlistDebugRequest(request, env);
         return withCors(response, origin, allowedOrigins);
       }
 

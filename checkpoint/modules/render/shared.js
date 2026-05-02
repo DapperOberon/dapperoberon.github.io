@@ -221,3 +221,14 @@ export function getWishlistIntentLabel(value) {
     research: "Research"
   }[value] ?? "Wait for Sale";
 }
+
+export function getMetadataSourceLabel(game) {
+  const steamImportSource = String(game?.steam?.importSource || "").trim().toLowerCase();
+  const hasSteamSource = steamImportSource.startsWith("steam");
+  const hasIgdbSource = Number.isFinite(Number(game?.igdbId)) && Number(game?.igdbId) > 0;
+
+  if (hasSteamSource && hasIgdbSource) return "Steam + IGDB";
+  if (hasSteamSource) return "Steam";
+  if (hasIgdbSource) return "IGDB";
+  return "Manual";
+}

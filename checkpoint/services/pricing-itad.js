@@ -48,6 +48,33 @@ function emptyPricing(reason, status = "unsupported") {
   };
 }
 
+function normalizeCandidateTitle(value) {
+  return String(value ?? "")
+    .replace(/[®™©]/g, "")
+    .replace(/[“”]/g, "\"")
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildTitleCandidates({ title, catalogGame }) {
+  const candidates = [];
+  const push = (value) => {
+    const normalized = normalizeCandidateTitle(value);
+    if (!normalized) return;
+    if (candidates.some((item) => item.toLowerCase() === normalized.toLowerCase())) return;
+    candidates.push(normalized);
+  };
+
+  push(title);
+  push(catalogGame?.title);
+  push(catalogGame?.metadata?.title);
+  push(catalogGame?.providerValues?.title);
+
+  return candidates;
+}
+
 export function createItadPricingProvider() {
   return {
     providerId: "itad",
@@ -56,9 +83,10 @@ export function createItadPricingProvider() {
       return Boolean(normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl));
     },
 
-    async resolvePrice({ title, storefront, selectedStoreIds = [] }) {
+    async resolvePrice({ title, storefront, catalogGame, selectedStoreIds = [] }) {
       const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
-      const normalizedTitle = String(title ?? "").trim();
+      const titleCandidates = buildTitleCandidates({ title, catalogGame });
+      const normalizedTitle = titleCandidates[0] ?? "";
 
       if (!workerUrl) {
         return emptyPricing("missing_worker_url", "unsupported");
@@ -73,9 +101,24 @@ export function createItadPricingProvider() {
             .map((id) => String(id ?? "").trim())
             .filter((id) => /^\d+$/.test(id))
           : [];
-        const payload = await requestJson(
-          `${workerUrl}/api/itad/pricing?title=${encodeURIComponent(normalizedTitle)}&storefront=${encodeURIComponent(String(storefront ?? ""))}&shops=${encodeURIComponent(normalizedShopIds.join(","))}`
-        );
+        let payload = null;
+        for (const candidateTitle of titleCandidates) {
+          const nextPayload = await requestJson(
+            `${workerUrl}/api/itad/pricing?title=${encodeURIComponent(candidateTitle)}&storefront=${encodeURIComponent(String(storefront ?? ""))}&shops=${encodeURIComponent(normalizedShopIds.join(","))}`
+          );
+          payload = nextPayload;
+          const status = String(nextPayload?.status ?? "");
+          if (status === "ok") {
+            break;
+          }
+          if (status !== "no_match" && status !== "error") {
+            break;
+          }
+        }
+
+        if (!payload) {
+          return emptyPricing("worker_request_failed", "error");
+        }
 
         return {
           provider: "itad",

@@ -172,54 +172,137 @@ Definition of done:
 
 ## Phase 5J: Best-Effort Steam Wishlist Import
 
-- [ ] Add Wishlist mode to Steam Import surface.
-- [ ] Add paste input for:
+- [x] Add Wishlist mode to Steam Import surface.
+- [x] Add paste input for:
   - Steam wishlist URL
   - copied page content
   - plain Steam app URLs/title list
-- [ ] Parse Steam AppIDs where available.
-- [ ] Parse titles where AppIDs are not available.
-- [ ] Show parse confidence and unresolved rows.
-- [ ] Reuse matching/conflict review:
+- [x] Parse Steam AppIDs where available.
+- [x] Parse titles where AppIDs are not available.
+- [x] Show parse confidence and unresolved rows.
+- [x] Reuse matching/conflict review:
   - already in Wishlist
   - already in Library
   - add to Wishlist
   - skip
   - needs review
-- [ ] Commit selected missing titles to Wishlist.
-- [ ] Add Steam wishlist import metadata:
+- [x] Commit selected missing titles to Wishlist.
+- [x] Add Steam wishlist import metadata:
   - `source: "steam-wishlist-import"`
   - `steam.wishlistImportedAt`
-- [ ] Label this mode best-effort because Steam wishlist APIs are not stable/official.
+- [x] Label this mode best-effort because Steam wishlist APIs are not stable/official.
 
 Definition of done:
 - User can paste Steam wishlist data and review resolved titles before adding them to Checkpoint Wishlist.
 
 ## Phase 5K: QA + Hardening
 
-- [ ] Add automated fixtures for:
+- [x] Expand automated fixtures for owned-library import:
   - played owned game
   - unplayed owned game
   - recently played owned game
   - exact AppID duplicate
   - title-only possible match
+  - Steam-decorated title that requires normalized IGDB matching
+  - title that resolves to sparse Steam metadata and must promote through IGDB
+- [x] Expand automated fixtures for Steam profile and worker failure states:
   - private/inaccessible profile
+  - invalid vanity/profile URL
   - missing API key
+  - Steam API returning partial/empty wishlist app details
+- [x] Expand automated fixtures for wishlist import:
+  - pasted wishlist URL backed by GetWishlist
   - pasted wishlist with app URLs
   - pasted wishlist with title-only rows
-- [ ] Add regression checks:
-  - no duplicate import on repeat import
+  - mixed Steam/IGDB/library duplicate cases
+  - rows with AppID fallback titles that later enrich successfully
+- [ ] Add regression checks for import safety:
+  - no duplicate import on repeat owned-library import
+  - no duplicate import on repeat wishlist import
+  - exact-match merge keeps a single catalog identity
   - no auto-finished status
   - no Checkpoint playtime overwrite
+  - no unintended status downgrade for existing Library entries
+- [ ] Add regression checks for metadata/enrichment safety:
   - Steam metadata survives export/import
   - enrichment preserves Steam fields
-- [ ] Add smoke script stage for Steam import logic using mock payloads.
-- [ ] Manual QA:
+  - refresh game data can promote Steam App placeholder titles
+  - refresh game data can hydrate hero/poster/screenshots/videos when IGDB match exists
+  - progress toast shows numeric progress and visible bar fill during bulk refresh
+- [x] Add UI regression checks:
+  - bulk refresh notice updates do not re-trigger card hover animations
+  - screenshot modal opens the correct gallery after switching games
+  - Wishlist detail maintenance panel width matches left-column panels
+  - Discover/Library/Wishlist maintenance actions match intended surface responsibilities
+- [x] Add smoke script stage for Steam import logic using mock payloads.
+- [x] Manual QA: owned-library import
   - small library
   - large library
-  - invalid profile
-  - duplicate import
-  - wishlist paste import
+  - repeat import against an already imported account
+  - import with recently played suggestions enabled
+  - import with recently played suggestions disabled
+- [x] Manual QA: wishlist import
+  - public Steam wishlist URL
+  - wishlist URL containing titles with partial Steam metadata
+  - duplicate wishlist import
+  - mixed existing Wishlist + existing Library conflicts
+- [x] Manual QA: maintenance and enrichment
+  - library-wide metadata refresh
+  - library-wide artwork refresh
+  - library-wide pricing refresh
+  - spot-check unresolved Steam-imported titles after refresh
+  - verify refreshed titles gain IGDB-backed media when available
+- [x] Manual QA: cross-surface cohesion
+  - Steam-imported Wishlist detail page
+  - Steam-imported Library detail page
+  - source labels and relevant links consistency
+  - route/back-forward behavior after import and enrichment
+- [x] Polish import/review messaging:
+  - clearer unresolved-row explanations in conflict review
+  - clearer add/merge/skip/review decision copy
+  - safer preview language that reinforces read-only behavior
+  - completion summaries that explain enrichment follow-up and partial failures
+
+## Phase 5K.6: Canonical IGDB Promotion For Resolved Steam Imports
+
+- [x] Add a shared promotion helper for `steam-*` catalog identities:
+  - detect successful IGDB resolution
+  - compute canonical target id as `igdb-<igdbId>`
+- [x] Only promote when all are true:
+  - current catalog id is `steam-*`
+  - `igdbId` is present and valid
+  - resolved title is not a `Steam App <appid>` placeholder
+  - metadata enrichment succeeded strongly enough to trust the match
+- [x] Preserve Steam provider metadata on promotion:
+  - `steam.appid`
+  - `steam.appUrl`
+  - Steam playtime/import timestamps
+  - Steam import source markers
+- [x] Repoint all referencing entries from `steam-*` to canonical `igdb-*`.
+- [x] Preserve all user-tracked entry fields during promotion:
+  - `entryId`
+  - status
+  - notes
+  - Checkpoint playtime
+  - completion percent
+  - wishlist settings
+- [x] Merge safely when the target `igdb-*` catalog game already exists:
+  - keep richer IGDB metadata/media
+  - attach Steam metadata if missing
+  - avoid duplicate catalog rows
+- [x] Remove old `steam-*` catalog record only when no entries reference it.
+- [x] Trigger promotion from:
+  - `Refresh Game Data`
+  - post-import enrichment
+  - library-wide metadata refresh
+- [x] Add regression coverage:
+  - Steam placeholder refresh promotes `gameId` to `igdb-*`
+  - Steam metadata survives promotion
+  - repeat promotion is idempotent
+  - existing `igdb-*` targets merge safely without duplicate catalog identities
+
+Definition of done:
+- Successfully enriched Steam imports converge to canonical IGDB identities while preserving Steam metadata and all user-tracked entry data.
 
 Definition of done:
 - Steam import is safe, testable, and non-destructive.
@@ -233,7 +316,9 @@ Definition of done:
 - [ ] Recently played games can be suggested as Playing without being forced.
 - [ ] No imported game is automatically marked Finished.
 - [x] Steam playtime is stored and displayed separately from Checkpoint progress.
-- [ ] Repeat imports do not create duplicates.
-- [ ] Pasted Steam wishlist data can be reviewed and imported to Wishlist best-effort.
+- [x] Repeat imports do not create duplicates.
+- [x] Pasted Steam wishlist data can be reviewed and imported to Wishlist best-effort.
 - [x] Imported games use existing IGDB-first media and ITAD enrichment.
-- [ ] Automated regression checks cover import safety and no-overwrite behavior.
+- [x] Bulk maintenance actions show trustworthy progress and do not visually thrash the UI.
+- [x] Steam-imported placeholder titles can be promoted into full IGDB-backed entries when resolvable.
+- [x] Automated regression checks cover import safety and no-overwrite behavior.

@@ -21,7 +21,7 @@ export function createMetadataResolverService() {
       return Boolean(normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl));
     },
 
-    async resolveGameMetadata({ title, storefront, catalogGame }) {
+    async resolveGameMetadata({ title, storefront, catalogGame, steamAppId }) {
       const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
 
       if (!workerUrl) {
@@ -29,13 +29,19 @@ export function createMetadataResolverService() {
       }
 
       try {
+        const metadataUrl = new URL(`${workerUrl}/api/igdb/metadata`);
+        metadataUrl.searchParams.set("title", title);
+        if (Number.isFinite(Number(steamAppId)) && Number(steamAppId) > 0) {
+          metadataUrl.searchParams.set("steamAppId", String(Math.trunc(Number(steamAppId))));
+        }
         const metadata = await requestJson(
-          `${workerUrl}/api/igdb/metadata?title=${encodeURIComponent(title)}&storefront=${encodeURIComponent(storefront)}`
+          metadataUrl.toString()
         );
 
         return {
-          igdbId: Number.isFinite(Number(metadata.igdbId ?? catalogGame?.igdbId))
-            ? Number(metadata.igdbId ?? catalogGame?.igdbId)
+          title: metadata.title || catalogGame?.title || title || "",
+          igdbId: Number.isFinite(Number(metadata.igdbId ?? metadata?.meta?.igdbId ?? catalogGame?.igdbId))
+            ? Number(metadata.igdbId ?? metadata?.meta?.igdbId ?? catalogGame?.igdbId)
             : null,
           developer: metadata.developer || catalogGame?.developer || "",
           publisher: metadata.publisher || catalogGame?.publisher || "",
@@ -64,18 +70,26 @@ export function createMetadataResolverService() {
       }
     },
 
-    async searchGames({ query }) {
+    async searchGames({ query, limit } = {}) {
       const workerUrl = normalizeWorkerUrl(getServiceConfig().steamGridWorkerUrl);
       const normalizedQuery = String(query ?? "").trim();
+      const normalizedLimit = Math.max(1, Math.min(100, Number(limit) || 12));
       if (!workerUrl || !normalizedQuery) {
         return [];
       }
 
       try {
         const payload = await requestJson(
-          `${workerUrl}/api/igdb/search?query=${encodeURIComponent(normalizedQuery)}`
+          `${workerUrl}/api/igdb/search?query=${encodeURIComponent(normalizedQuery)}&limit=${encodeURIComponent(String(normalizedLimit))}`
         );
-        return Array.isArray(payload?.results) ? payload.results : [];
+        return Array.isArray(payload?.results)
+          ? payload.results.map((item) => ({
+            ...item,
+            coverArt: String(item?.coverArt || "").trim(),
+            gameType: Number.isFinite(Number(item?.gameType)) ? Number(item.gameType) : null,
+            gameTypeLabel: String(item?.gameTypeLabel || item?.categoryLabel || "").trim()
+          }))
+          : [];
       } catch (error) {
         return [];
       }

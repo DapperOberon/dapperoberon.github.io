@@ -4,6 +4,7 @@ import {
   formatDate,
   formatRelative,
   getGameForEntry,
+  getMetadataSourceLabel,
   getReleaseState,
   getReleaseStateLabel,
   getReleaseStatusDetail,
@@ -20,7 +21,7 @@ import {
   renderPrimaryAction,
   renderSecondaryAction
 } from "./shared.js";
-import { renderDecisionDetailPage } from "./decision.js";
+import { renderDecisionDetailPage, renderDecisionMediaSections } from "./decision.js";
 
 function renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions, isNonRunEntry, backView = "dashboard", backLabel = "Back to Library") {
   return `
@@ -230,7 +231,8 @@ function renderWishlistDecisionHero(snapshot, activeEntry, game, coverArt, heroB
         </div>
         <aside class="discover-hero-rail flex flex-col sm:flex-row xl:flex-col gap-3 rounded-md bg-black/46 px-4 py-4">
           <button class="checkpoint-button checkpoint-button-primary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="update-entry-status" data-entry-id="${activeEntry.entryId}" data-status="playing">Move to Library</button>
-          <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="refresh-entry-pricing" data-entry-id="${activeEntry.entryId}">Refresh Price</button>
+          <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="refresh-entry-game-data" data-entry-id="${activeEntry.entryId}">Refresh Game Data</button>
+          <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="refresh-entry-pricing" data-entry-id="${activeEntry.entryId}">Refresh Pricing Data</button>
           ${renderSecondaryAction(backLabel, "set-view", "discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]", `data-view="${escapeHtml(backView)}"`)}
           <button class="checkpoint-button checkpoint-button-danger discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="open-delete-confirm" data-entry-id="${activeEntry.entryId}">Remove from Wishlist</button>
         </aside>
@@ -274,7 +276,7 @@ function renderWishlistDecisionSidebar(activeEntry, game, storefrontDefinitions)
         </div>
         <div class="flex items-center justify-between gap-4">
           <span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">Source</span>
-          <span class="font-headline font-bold text-on-surface text-right">IGDB</span>
+          <span class="font-headline font-bold text-on-surface text-right">${escapeHtml(getMetadataSourceLabel(game))}</span>
         </div>
         <div class="flex items-center justify-between gap-4">
           <span class="font-label text-[11px] tracking-[0.08em] text-zinc-500">IGDB ID</span>
@@ -371,13 +373,13 @@ function renderWishlistDiscoverMediaPanel(activeEntry, game, screenshots) {
   const videos = Array.isArray(game?.videos) ? game.videos : [];
 
   return `
-    <section id="detail-media" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4">
+    <section id="detail-media" class="space-y-6">
+      <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4" data-media-collection="screenshots" data-media-title="${escapeHtml(activeEntry.title)}">
         <h3 class="font-label text-sm tracking-[0.08em] text-primary">Screenshots</h3>
         ${screenshots.length
           ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               ${screenshots.slice(0, 4).map((shot, index) => `
-                <button class="aspect-video bg-zinc-900 overflow-hidden rounded-md text-left group checkpoint-panel" data-action="open-media-lightbox" data-media-context="details" data-media-index="${index}" aria-label="Open screenshot ${index + 1}">
+                <button class="aspect-video bg-zinc-900 overflow-hidden rounded-md text-left group checkpoint-panel" data-action="open-media-lightbox" data-media-context="details" data-media-index="${index}" data-media-src="${escapeHtml(shot)}" aria-label="Open screenshot ${index + 1}">
                   <img class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-500" src="${escapeHtml(shot)}" alt="${escapeHtml(activeEntry.title)} screenshot">
                 </button>
               `).join("")}
@@ -444,18 +446,51 @@ function renderWishlistDiscoverRelatedPanel(game) {
   `;
 }
 
-function renderDetailMediaPanel(activeEntry, screenshots) {
-  return `
-    <div id="detail-screenshots" class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-6">
-      <h3 class="font-label text-sm tracking-[0.08em] text-primary">Screenshots</h3>
-      ${screenshots.length
-        ? `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">${screenshots.map((shot, index) => `<button class="aspect-video bg-surface-container overflow-hidden rounded-md group checkpoint-panel text-left" data-action="open-media-lightbox" data-media-context="details" data-media-index="${index}" aria-label="Open screenshot ${index + 1}"><img class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" src="${escapeHtml(shot)}" alt="${escapeHtml(activeEntry.title)} screenshot"></button>`).join("")}</div>`
-        : `<div class="rounded-lg px-6 py-8 text-center bg-black/20"><p class="font-label text-[11px] tracking-[0.08em] text-primary mb-2">Media pending</p><p class="text-on-surface-variant">No screenshots are stored for this entry yet. Manual records can be enriched later without changing the run data.</p></div>`}
-    </div>
-  `;
+function renderDetailMediaPanel(activeEntry, screenshots, videos = []) {
+  return renderDecisionMediaSections({
+    idPrefix: "detail",
+    title: activeEntry.title,
+    screenshots,
+    videos,
+    mediaContext: "details"
+  });
 }
 
-function renderDetailMaintenancePanel(activeEntry) {
+function renderDetailMaintenancePanel(snapshot, activeEntry, game, { includeGameData = true, includePricing = true } = {}) {
+  const actions = [];
+
+  if (includeGameData) {
+    actions.push(
+      renderSecondaryAction(
+        "Refresh Game Data (This Entry)",
+        "refresh-entry-game-data",
+        "px-4 py-2 text-[11px] tracking-[0.08em]",
+        `data-entry-id="${activeEntry.entryId}"`
+      )
+    );
+  }
+
+  if (includePricing) {
+    actions.push(
+      renderSecondaryAction(
+        "Refresh Pricing Data (This Entry)",
+        "refresh-entry-pricing",
+        "px-4 py-2 text-[11px] tracking-[0.08em]",
+        `data-entry-id="${activeEntry.entryId}"`
+      )
+    );
+  }
+
+  const entryId = String(activeEntry?.entryId || "").trim();
+  const currentIgdbId = Number(game?.igdbId);
+  const matchOptions = Array.isArray(snapshot?.entryMatch?.options?.[entryId])
+    ? snapshot.entryMatch.options[entryId]
+    : [];
+  const isSearching = String(snapshot?.entryMatch?.loadingEntryId || "") === entryId;
+  const matchError = String(snapshot?.entryMatch?.errors?.[entryId] || "").trim();
+  const matchInputId = `entry-match-query-${escapeHtml(entryId)}`;
+  const defaultMatchQuery = escapeHtml(String(snapshot?.entryMatch?.queries?.[entryId] || game?.title || activeEntry?.title || "").trim());
+
   return `
     <div id="detail-maintenance" class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-5">
       <div class="flex flex-col gap-1">
@@ -463,10 +498,74 @@ function renderDetailMaintenancePanel(activeEntry) {
         <p class="text-xs text-zinc-500">Refresh provider data without changing run progress or notes.</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        ${renderSecondaryAction("Refresh Metadata (This Entry)", "refresh-entry-metadata", "px-4 py-2 text-[11px] tracking-[0.08em]", `data-entry-id="${activeEntry.entryId}"`)}
-        ${renderSecondaryAction("Refresh Artwork (This Entry)", "refresh-entry-artwork", "px-4 py-2 text-[11px] tracking-[0.08em]", `data-entry-id="${activeEntry.entryId}"`)}
-        ${renderSecondaryAction("Refresh Price (This Entry)", "refresh-entry-pricing", "px-4 py-2 text-[11px] tracking-[0.08em]", `data-entry-id="${activeEntry.entryId}"`)}
+        ${actions.join("")}
       </div>
+      ${entryId ? `
+        <div class="rounded-lg bg-black/20 px-4 py-4 space-y-4">
+          <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div class="space-y-1 min-w-0">
+              <p class="font-label text-[11px] tracking-[0.08em] text-primary">Correct IGDB Match</p>
+              <p class="text-xs text-zinc-500">If this entry resolved to the wrong game, search IGDB and choose a better canonical match.</p>
+              <p class="text-xs text-zinc-400">Current match:
+                <span class="text-zinc-200">${Number.isFinite(currentIgdbId) && currentIgdbId > 0 ? `IGDB ${escapeHtml(currentIgdbId)}` : "No IGDB match yet"}</span>
+              </p>
+            </div>
+            <div class="checkpoint-match-search-grid w-full max-w-3xl">
+              <label class="min-w-0 space-y-2">
+                <span class="font-label text-[10px] tracking-[0.08em] text-zinc-500">Search title</span>
+                <input
+                  id="${matchInputId}"
+                  class="w-full bg-black/30 border border-primary/10 rounded-lg px-4 py-3 font-label text-sm text-on-surface focus:ring-1 focus:ring-primary"
+                  type="text"
+                  value="${defaultMatchQuery}"
+                  placeholder="Search for the correct game title or Title, 2023"
+                >
+              </label>
+              <button
+                class="checkpoint-button checkpoint-button-secondary w-full px-4 py-3 text-[11px] tracking-[0.08em] lg:min-w-[14rem] ${isSearching ? "opacity-60 cursor-not-allowed" : ""}"
+                data-action="search-entry-metadata-match"
+                data-entry-id="${escapeHtml(entryId)}"
+                data-input-id="${matchInputId}"
+                ${isSearching ? "disabled" : ""}
+              >
+                ${isSearching ? "Searching..." : (matchOptions.length ? "Refresh Match Search" : "Find Better Match")}
+              </button>
+            </div>
+          </div>
+          ${matchError ? `<p class="text-xs text-amber-200">${escapeHtml(matchError)}</p>` : ""}
+          ${matchOptions.length ? `
+            <div class="checkpoint-match-results space-y-2 overflow-y-auto pr-1 custom-scrollbar">
+              ${matchOptions.map((option) => `
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] bg-black/20 px-3 py-3">
+                  <div class="min-w-0 flex items-center gap-3">
+                    <div class="h-16 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-900">
+                      ${option.coverArt
+                        ? `<img class="h-full w-full object-cover" src="${escapeHtml(option.coverArt)}" alt="${escapeHtml(option.title || `IGDB ${option.igdbId}`)} cover">`
+                        : `<div class="h-full w-full bg-zinc-900"></div>`}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="truncate text-sm text-zinc-200">${escapeHtml(option.title || `IGDB ${option.igdbId}`)}</p>
+                      <div class="mt-1 flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-zinc-500">${escapeHtml(option.releaseDate || "Release unknown")}</span>
+                        ${option.gameTypeLabel ? renderMetaChip(option.gameTypeLabel, "primary") : ""}
+                        ${Math.trunc(Number(option.igdbId)) === Math.trunc(Number(currentIgdbId)) ? renderMetaChip("Current match") : ""}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    class="checkpoint-button checkpoint-button-secondary rounded-md px-3 py-2 font-label text-[10px] font-bold tracking-[0.08em]"
+                    data-action="apply-entry-metadata-match"
+                    data-entry-id="${escapeHtml(entryId)}"
+                    data-match-igdb-id="${escapeHtml(option.igdbId)}"
+                  >
+                    Use Match
+                  </button>
+                </div>
+              `).join("")}
+            </div>
+          ` : ""}
+        </div>
+      ` : ""}
     </div>
   `;
 }
@@ -737,7 +836,7 @@ function renderDetailSectionRail(isNonRunEntry, isWishlistEntry) {
     { id: "detail-game-details", label: "Game Details" },
     { id: "detail-run-details", label: "Run Details" },
     { id: "detail-notes-section", label: "Notes" },
-    { id: "detail-screenshots", label: "Screenshots" },
+    { id: "detail-media", label: "Media" },
     { id: "detail-maintenance", label: "Maintenance" }
   ];
   if (isWishlistEntry) {
@@ -791,6 +890,7 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
   const coverArt = game?.capsuleArt ?? game?.heroArt ?? "";
   const heroBackdropArt = game?.heroArt ?? game?.capsuleArt ?? "";
   const screenshots = Array.isArray(game?.screenshots) ? game.screenshots.filter(hasUsableAsset) : [];
+  const videos = Array.isArray(game?.videos) ? game.videos : [];
   const description = !isPendingMetadata(game?.description) ? game.description : activeEntry.notes;
   const isWishlistEntry = activeEntry.status === "wishlist";
   const isWishlistSurface = isWishlistEntry && (snapshot.uiPreferences?.lastView === "wishlist");
@@ -818,13 +918,14 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
             pricing: game?.pricing ?? null,
             heroActionsHtml: `
               <button class="checkpoint-button checkpoint-button-primary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="update-entry-status" data-entry-id="${activeEntry.entryId}" data-status="playing">Move to Library</button>
-              <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="refresh-entry-pricing" data-entry-id="${activeEntry.entryId}">Refresh Price</button>
+              <button class="checkpoint-button checkpoint-button-secondary discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="refresh-entry-pricing" data-entry-id="${activeEntry.entryId}">Refresh Pricing Data</button>
               ${renderSecondaryAction(returnLabel, "set-view", "discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]", `data-view="${escapeHtml(returnView)}"`)}
               <button class="checkpoint-button checkpoint-button-danger discover-hero-cta px-5 py-3 text-xs tracking-[0.08em]" data-action="open-delete-confirm" data-entry-id="${activeEntry.entryId}">Remove from Wishlist</button>
             `,
             priceSupplementHtml: renderWishlistPriceWatchSupplement(activeEntry, game),
+            contentSupplementHtml: renderDetailMaintenancePanel(snapshot, activeEntry, game, { includeGameData: true, includePricing: true }),
             sideRailTitle: "Game Details",
-            sourceLabel: "IGDB"
+            sourceLabel: getMetadataSourceLabel(game)
           })}
         </div>
       </div>
@@ -855,8 +956,8 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
                   .filter(Boolean)
                 : [])
             ) : ""}
-            ${renderDetailMediaPanel(activeEntry, screenshots)}
-            ${renderDetailMaintenancePanel(activeEntry)}
+            ${renderDetailMediaPanel(activeEntry, screenshots, videos)}
+            ${renderDetailMaintenancePanel(snapshot, activeEntry, game, { includeGameData: true, includePricing: false })}
           </div>
         </div>
       </div>

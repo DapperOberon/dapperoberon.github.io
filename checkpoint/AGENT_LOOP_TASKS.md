@@ -19,10 +19,19 @@ Loop is green. Phase 4 is closed; Phase 5 planning is active.
 - [x] Commit selected owned-library candidates into Checkpoint without overwriting local progress or creating duplicates.
 - [x] Surface Steam playtime in Library details without taking over editable Checkpoint progress.
 - [x] Queue imported titles for IGDB-first enrichment and pricing/media convergence.
-- [ ] Next Phase 5 slice: build best-effort Steam wishlist import with parse/review flow.
+- [x] Build best-effort Steam wishlist import with parse/review flow.
+- [x] Phase 5K.1: Expand automated Steam import fixtures for owned-library, wishlist, worker-failure, and sparse-title cases.
+- [x] Phase 5K.2: Add regression coverage for repeat-import safety, no-overwrite behavior, and enrichment promotion of Steam App placeholder titles.
+- [x] Phase 5K.3: Add UI regression coverage for bulk-refresh progress, modal correctness, and cross-surface maintenance layout consistency.
+- [x] Phase 5K.4: Add smoke-stage coverage for Steam import mock payloads.
+- [x] Phase 5K.5: Run manual QA for owned-library import, wishlist import, maintenance refresh flows, and post-import cross-surface cohesion.
+- [x] Phase 5K.6: Promote successfully enriched `steam-...` entries to canonical IGDB identities without losing Steam metadata or user-tracked entry data.
+- [x] Phase 5K.7: Polish import/review messaging for unresolved titles and import summaries.
 
 ## Keep Tightening
 
-- [ ] Run final manual browser QA sweep (local + production).
-- [ ] Convert any repeated manual QA findings into automated checks.
+- [ ] Run final manual browser QA sweep (local + production) using `PHASE5_QA_CHECKLIST.md`.
+- [ ] Confirm Steam import navigation controls (`back`, `continue`, `prepare import`, `start another preview`) in the browser, not just render tests.
+- [ ] Spot-check post-promotion `steam-* -> igdb-*` identity behavior in production after latest worker deploy.
+- [ ] Convert repeated Steam import/manual QA findings into automated checks immediately after they are discovered.
 - [ ] Keep `PHASE3_QA_CHECKLIST.md` and deployment checklist in sync with actual state.

@@ -11,6 +11,10 @@ function createEntryId() {
   return `entry-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function createNoticeId() {
+  return `notice-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function normalizeTerm(value) {
   return String(value ?? "").trim().toLowerCase();
 }
@@ -21,6 +25,79 @@ function normalizeComparableTitle(value) {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function parseTitleYearSearchQuery(value) {
+  const raw = String(value ?? "").trim();
+  const match = raw.match(/^(.*?)(?:,\s*|\s+)(19\d{2}|20\d{2}|21\d{2})$/);
+  if (!match) {
+    return {
+      title: raw,
+      releaseYear: null
+    };
+  }
+
+  const title = String(match[1] ?? "").trim();
+  const releaseYear = Number.parseInt(String(match[2] ?? ""), 10);
+  return {
+    title: title || raw,
+    releaseYear: Number.isFinite(releaseYear) ? releaseYear : null
+  };
+}
+
+function getPreferredIgdbGameTypePriority(item) {
+  const label = normalizeTerm(item?.gameTypeLabel);
+  if (label === "main game") return 0;
+  if (label === "remake") return 1;
+  if (label === "remaster") return 2;
+  return 3;
+}
+
+function sortIgdbMatchesByPreferredGameType(results) {
+  const rows = Array.isArray(results) ? results : [];
+  return rows.slice().sort((a, b) => {
+    const typeDelta = getPreferredIgdbGameTypePriority(a) - getPreferredIgdbGameTypePriority(b);
+    if (typeDelta !== 0) return typeDelta;
+
+    const aDate = String(a?.releaseDate ?? "");
+    const bDate = String(b?.releaseDate ?? "");
+    if (aDate !== bDate) {
+      return aDate.localeCompare(bDate);
+    }
+
+    return String(a?.title || "").localeCompare(String(b?.title || ""));
+  });
+}
+
+function filterAndSortIgdbMatchesByReleaseYear(results, releaseYear) {
+  const rows = sortIgdbMatchesByPreferredGameType(results);
+  if (!Number.isFinite(Number(releaseYear)) || Number(releaseYear) <= 0) {
+    return rows;
+  }
+
+  const exactMatches = [];
+  const remaining = [];
+
+  rows.forEach((item) => {
+    const itemYear = Number.parseInt(String(item?.releaseDate ?? "").slice(0, 4), 10);
+    if (Number.isFinite(itemYear) && itemYear === Number(releaseYear)) {
+      exactMatches.push(item);
+      return;
+    }
+    remaining.push(item);
+  });
+
+  if (exactMatches.length) {
+    return [...exactMatches, ...remaining];
+  }
+
+  return rows.slice().sort((a, b) => {
+    const aYear = Number.parseInt(String(a?.releaseDate ?? "").slice(0, 4), 10);
+    const bYear = Number.parseInt(String(b?.releaseDate ?? "").slice(0, 4), 10);
+    const aDelta = Number.isFinite(aYear) ? Math.abs(aYear - Number(releaseYear)) : Number.POSITIVE_INFINITY;
+    const bDelta = Number.isFinite(bYear) ? Math.abs(bYear - Number(releaseYear)) : Number.POSITIVE_INFINITY;
+    return aDelta - bDelta;
+  });
 }
 
 function getSteamPreviewPriority(matchStatus) {
@@ -103,18 +180,32 @@ function createActionState() {
   };
 }
 
+function createJobState() {
+  return {
+    "steam-import": { running: false, cancelRequested: false },
+    "refresh-library-metadata": { running: false, cancelRequested: false },
+    "refresh-library-artwork": { running: false, cancelRequested: false },
+    "refresh-library-pricing": { running: false, cancelRequested: false }
+  };
+}
+
 function createDefaultSteamImportSession() {
   return {
     mode: "owned-library",
     step: "source",
     source: {
       steamProfile: "",
-      includeFreePlayed: true
+      includeFreePlayed: true,
+      wishlistSource: ""
     },
     loading: false,
     lastResolvedSteamId: "",
     rawResults: [],
     igdbSuggestions: {},
+    matchOptions: {},
+    matchQueries: {},
+    matchSearchLoadingId: "",
+    matchSearchErrors: {},
     actionOverrides: {},
     rules: {
       defaultDestination: "backlog",
@@ -134,6 +225,15 @@ function createDefaultSteamImportSession() {
     },
     errors: [],
     lastFetchedAt: ""
+  };
+}
+
+function createDefaultEntryMatchState() {
+  return {
+    options: {},
+    loadingEntryId: "",
+    errors: {},
+    queries: {}
   };
 }
 
@@ -266,6 +366,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   let lastAutoBackupCompletedAt = 0;
   let lastTrackedSyncDataSignature = "";
   let suppressAutoBackup = false;
+  let lastQueuedNoticeRef = null;
   const persistedState = normalizePersistedState(persistence.load({
     initialLibrary,
     initialCatalog: catalog
@@ -323,7 +424,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     isDetailEditMode: false,
     importMode: "replace",
     steamImport: createDefaultSteamImportSession(),
+    entryMatch: createDefaultEntryMatchState(),
     actionState: createActionState(),
+    jobs: createJobState(),
     itadStores: cachedItadStores,
     itadStoresLoading: false,
     itadStoresError: "",
@@ -331,6 +434,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     activityHistory: Array.isArray(persistedState.activityHistory) ? persistedState.activityHistory : [],
     syncConflict: null,
     notice: null,
+    notices: [],
     syncPreferences: persistedState.syncPreferences,
     deviceIdentity: persistedState.deviceIdentity,
     syncMeta: persistedState.syncMeta,
@@ -647,11 +751,99 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     return sorted;
   }
 
-  function emit() {
+  function syncQueuedNotices() {
+    if (!state.notice || state.notice === lastQueuedNoticeRef) return;
+
+    const nextNotice = {
+      id: String(state.notice.id || createNoticeId()),
+      ...state.notice
+    };
+    const currentNotices = Array.isArray(state.notices) ? state.notices.slice() : [];
+    const normalizedKey = String(nextNotice.key || "").trim();
+    const existingIndex = normalizedKey
+      ? currentNotices.findIndex((item) => String(item?.key || "").trim() === normalizedKey)
+      : currentNotices.findIndex((item) => String(item?.id || "").trim() === nextNotice.id);
+
+    if (existingIndex >= 0) {
+      currentNotices.splice(existingIndex, 1, nextNotice);
+    } else {
+      currentNotices.push(nextNotice);
+    }
+
+    state.notice = nextNotice;
+    state.notices = currentNotices.slice(-6);
+    lastQueuedNoticeRef = nextNotice;
+  }
+
+  function emit(meta = { type: "full" }) {
+    syncQueuedNotices();
     markLocalMutationIfNeeded();
     persistence.save(getPersistedState());
     scheduleAutoBackupIfNeeded();
-    listeners.forEach((listener) => listener(getSnapshot()));
+    listeners.forEach((listener) => listener(getSnapshot(), meta));
+  }
+
+  function emitNoticeOnly() {
+    emit({ type: "notice" });
+  }
+
+  function startJob(jobKey) {
+    const key = String(jobKey ?? "").trim();
+    if (!key) return;
+    state.jobs = {
+      ...(state.jobs || createJobState()),
+      [key]: {
+        running: true,
+        cancelRequested: false
+      }
+    };
+  }
+
+  function finishJob(jobKey) {
+    const key = String(jobKey ?? "").trim();
+    if (!key) return;
+    state.jobs = {
+      ...(state.jobs || createJobState()),
+      [key]: {
+        running: false,
+        cancelRequested: false
+      }
+    };
+  }
+
+  function isJobCancelRequested(jobKey) {
+    const key = String(jobKey ?? "").trim();
+    if (!key) return false;
+    return Boolean(state.jobs?.[key]?.cancelRequested);
+  }
+
+  function requestJobCancel(jobKey) {
+    const key = String(jobKey ?? "").trim();
+    if (!key || !state.jobs?.[key]?.running) return;
+    state.jobs = {
+      ...(state.jobs || createJobState()),
+      [key]: {
+        ...state.jobs[key],
+        cancelRequested: true
+      }
+    };
+    state.notice = {
+      key,
+      tone: "warning",
+      message: "Checkpoint will stop this job after the current item finishes safely."
+    };
+    emitNoticeOnly();
+  }
+
+  function clearNoticeByKey(noticeKey) {
+    const normalizedKey = String(noticeKey ?? "").trim();
+    if (!normalizedKey) return;
+
+    const currentNotices = Array.isArray(state.notices) ? state.notices : [];
+    state.notices = currentNotices.filter((item) => String(item?.key || "").trim() !== normalizedKey);
+    if (String(state.notice?.key || "").trim() === normalizedKey) {
+      state.notice = state.notices[state.notices.length - 1] ?? null;
+    }
   }
 
   function scheduleAutoBackupIfNeeded() {
@@ -854,14 +1046,20 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       steam_url: "Matched existing Steam store URL",
       title: "Normalized title match",
       igdb_title: "IGDB title suggestion",
+      igdb_manual: "Manual IGDB match",
       none: "No existing match"
     }[reason] ?? "No existing match";
+  }
+
+  function isSteamPlaceholderTitle(value) {
+    return /^steam app \d+$/i.test(String(value ?? "").trim());
   }
 
   function classifySteamImportCandidate(steamGame, options = {}) {
     const rules = options.rules ?? state.steamImport?.rules ?? createDefaultSteamImportSession().rules;
     const actionOverrides = options.actionOverrides ?? state.steamImport?.actionOverrides ?? {};
     const igdbSuggestions = options.igdbSuggestions ?? state.steamImport?.igdbSuggestions ?? {};
+    const mode = options.mode === "wishlist" ? "wishlist" : "owned-library";
     const appid = Number(steamGame?.appid);
     const exactMatch = findExactSteamImportMatch(steamGame);
     const possibleMatch = exactMatch ? null : findPossibleSteamImportMatch(steamGame);
@@ -877,24 +1075,39 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       : possibleMatch
         ? "possible"
         : "unmatched";
-    const defaultDestination = rules?.defaultDestination === "playing"
+    const defaultDestination = mode === "wishlist"
+      ? "wishlist"
+      : (rules?.defaultDestination === "playing"
       ? "playing"
-      : "backlog";
-    const proposedStatus = steamGame?.recentlyPlayed && rules?.suggestRecentlyPlayedAsPlaying
+      : "backlog");
+    const proposedStatus = mode === "wishlist"
+      ? "wishlist"
+      : (steamGame?.recentlyPlayed && rules?.suggestRecentlyPlayedAsPlaying
       ? "playing"
-      : defaultDestination;
-    const defaultAction = exactMatch
-      ? (rules?.duplicateBehavior === "skip" ? "skip" : "merge")
-      : possibleMatch
+      : defaultDestination);
+    const defaultAction = mode === "wishlist"
+      ? (exactMatch
+        ? (existingEntry?.status === "wishlist" ? "skip" : "merge")
+        : possibleMatch
+          ? "review"
+          : "add")
+      : (exactMatch
+        ? (rules?.duplicateBehavior === "skip" ? "skip" : "merge")
+        : possibleMatch
         ? "merge"
-        : "add";
+        : "add");
     const selectedAction = actionOverrides?.[suggestionKey] ?? defaultAction;
-    const matchReason = exactMatch?.reason ?? possibleMatch?.reason ?? (igdbSuggestion ? "igdb_title" : "none");
-    const matchConfidence = exactMatch?.confidence ?? possibleMatch?.confidence ?? (igdbSuggestion ? "medium" : "none");
+    const usedManualSuggestion = Boolean(igdbSuggestion?.manual);
+    const matchReason = exactMatch?.reason ?? possibleMatch?.reason ?? (igdbSuggestion ? (usedManualSuggestion ? "igdb_manual" : "igdb_title") : "none");
+    const matchConfidence = exactMatch?.confidence ?? possibleMatch?.confidence ?? (igdbSuggestion ? (usedManualSuggestion ? "high" : "medium") : "none");
+    const fallbackTitle = isSteamPlaceholderTitle(steamGame?.title) && igdbSuggestion?.title
+      ? String(igdbSuggestion.title).trim()
+      : "";
 
     return {
-      id: `steam-${appid || Math.random().toString(36).slice(2, 10)}`,
+      id: suggestionKey || `steam-${appid || Math.random().toString(36).slice(2, 10)}`,
       ...steamGame,
+      title: fallbackTitle || steamGame?.title,
       proposedStatus,
       matchStatus,
       matchReason,
@@ -906,7 +1119,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       existingSurfaceLabel: matchContext.label,
       action: selectedAction,
       defaultAction,
-      igdbSuggestion
+      igdbSuggestion,
+      parseConfidence: String(steamGame?.parseConfidence ?? ""),
+      parseReason: String(steamGame?.parseReason ?? "")
     };
   }
 
@@ -932,11 +1147,13 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     };
     const actionOverrides = options.actionOverrides ?? state.steamImport?.actionOverrides ?? {};
     const igdbSuggestions = options.igdbSuggestions ?? state.steamImport?.igdbSuggestions ?? {};
+    const mode = options.mode ?? state.steamImport?.mode ?? "owned-library";
     const candidates = sortSteamImportCandidates(
       (Array.isArray(rawResults) ? rawResults : []).map((steamGame) => classifySteamImportCandidate(steamGame, {
         rules,
         actionOverrides,
-        igdbSuggestions
+        igdbSuggestions,
+        mode
       }))
     );
     const summary = summarizeSteamImportCandidates(candidates, workerSummary ?? state.steamImport?.summary ?? {});
@@ -981,6 +1198,356 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     return suggestions;
   }
 
+  async function searchSteamImportCandidateMatches(candidateId, queryOverride = "") {
+    const normalizedId = String(candidateId ?? "").trim();
+    if (!normalizedId) return;
+
+    const candidate = (Array.isArray(state.steamImport?.candidates) ? state.steamImport.candidates : [])
+      .find((item) => String(item?.id || "").trim() === normalizedId);
+    if (!candidate) return;
+
+    const defaultQuery = String(candidate.title || "").trim();
+    const query = String(queryOverride || defaultQuery).trim();
+    if (!query || typeof integrations.metadataResolver?.searchGames !== "function") {
+      state.steamImport = {
+        ...state.steamImport,
+        matchQueries: {
+          ...(state.steamImport?.matchQueries ?? {}),
+          [normalizedId]: query
+        },
+        matchSearchErrors: {
+          ...(state.steamImport?.matchSearchErrors ?? {}),
+          [normalizedId]: "IGDB search is not available for this row yet."
+        }
+      };
+      emit();
+      return;
+    }
+
+    state.steamImport = {
+      ...state.steamImport,
+      matchSearchLoadingId: normalizedId,
+      matchQueries: {
+        ...(state.steamImport?.matchQueries ?? {}),
+        [normalizedId]: query
+      },
+      matchSearchErrors: {
+        ...(state.steamImport?.matchSearchErrors ?? {}),
+        [normalizedId]: ""
+      }
+    };
+    emit();
+
+    try {
+      const { title, releaseYear } = parseTitleYearSearchQuery(query);
+      const results = await integrations.metadataResolver.searchGames({ query: title, limit: 12 });
+      const rankedResults = filterAndSortIgdbMatchesByReleaseYear(results, releaseYear);
+      const matchOptions = Array.isArray(results)
+        ? rankedResults
+          .filter((item) => Number.isFinite(Number(item?.igdbId)) && Number(item.igdbId) > 0)
+          .slice(0, 12)
+          .map((item) => ({
+            igdbId: Math.trunc(Number(item.igdbId)),
+            title: String(item.title || "").trim(),
+            releaseDate: String(item.releaseDate || "").trim(),
+            coverArt: String(item.coverArt || "").trim(),
+            gameTypeLabel: String(item.gameTypeLabel || item.categoryLabel || "").trim()
+          }))
+        : [];
+
+      state.steamImport = {
+        ...state.steamImport,
+        matchSearchLoadingId: "",
+        matchOptions: {
+          ...(state.steamImport?.matchOptions ?? {}),
+          [normalizedId]: matchOptions
+        },
+        matchSearchErrors: {
+          ...(state.steamImport?.matchSearchErrors ?? {}),
+          [normalizedId]: matchOptions.length ? "" : "No IGDB matches were found for this title."
+        }
+      };
+      emit();
+    } catch (error) {
+      state.steamImport = {
+        ...state.steamImport,
+        matchSearchLoadingId: "",
+        matchSearchErrors: {
+          ...(state.steamImport?.matchSearchErrors ?? {}),
+          [normalizedId]: error instanceof Error ? error.message : "IGDB search failed for this row."
+        }
+      };
+      emit();
+    }
+  }
+
+  function applySteamImportCandidateMatch(candidateId, igdbId) {
+    const normalizedId = String(candidateId ?? "").trim();
+    const normalizedIgdbId = Math.trunc(Number(igdbId));
+    if (!normalizedId || !Number.isFinite(normalizedIgdbId) || normalizedIgdbId <= 0) return;
+
+    const option = (state.steamImport?.matchOptions?.[normalizedId] ?? [])
+      .find((item) => Math.trunc(Number(item?.igdbId)) === normalizedIgdbId);
+    if (!option) return;
+
+    const nextSuggestions = {
+      ...(state.steamImport?.igdbSuggestions ?? {}),
+      [normalizedId]: {
+        igdbId: normalizedIgdbId,
+        title: String(option.title || "").trim(),
+        releaseDate: String(option.releaseDate || "").trim(),
+        coverArt: String(option.coverArt || "").trim(),
+        gameTypeLabel: String(option.gameTypeLabel || option.categoryLabel || "").trim(),
+        manual: true
+      }
+    };
+    const rebuilt = rebuildSteamImportPreview(state.steamImport.rawResults, state.steamImport.summary, {
+      igdbSuggestions: nextSuggestions
+    });
+
+    state.steamImport = {
+      ...state.steamImport,
+      igdbSuggestions: nextSuggestions,
+      candidates: rebuilt.candidates,
+      summary: rebuilt.summary,
+      errors: [],
+      matchSearchErrors: {
+        ...(state.steamImport?.matchSearchErrors ?? {}),
+        [normalizedId]: ""
+      }
+    };
+    emit();
+  }
+
+  async function searchEntryMetadataMatches(entryId = state.activeEntryId, queryOverride = "") {
+    const normalizedEntryId = String(entryId ?? "").trim();
+    const entry = getEntry(normalizedEntryId);
+    const game = entry ? getCatalogGame(entry.gameId) : null;
+    const parsedQuery = parseTitleYearSearchQuery(queryOverride || game?.title || entry?.title || "");
+    const query = String(parsedQuery.title || "").trim();
+
+    if (!entry || !query || typeof integrations.metadataResolver?.searchGames !== "function") {
+      state.entryMatch = {
+        ...(state.entryMatch ?? createDefaultEntryMatchState()),
+        errors: {
+          ...(state.entryMatch?.errors ?? {}),
+          [normalizedEntryId]: "IGDB search is not available for this entry yet."
+        }
+      };
+      emit();
+      return;
+    }
+
+    state.entryMatch = {
+      ...(state.entryMatch ?? createDefaultEntryMatchState()),
+      loadingEntryId: normalizedEntryId,
+      queries: {
+        ...(state.entryMatch?.queries ?? {}),
+        [normalizedEntryId]: String(queryOverride || "").trim() || query
+      },
+      errors: {
+        ...(state.entryMatch?.errors ?? {}),
+        [normalizedEntryId]: ""
+      }
+    };
+    emit();
+
+    try {
+      const results = await integrations.metadataResolver.searchGames({ query, limit: 100 });
+      const rankedResults = filterAndSortIgdbMatchesByReleaseYear(results, parsedQuery.releaseYear);
+      const options = Array.isArray(results)
+        ? rankedResults
+          .filter((item) => Number.isFinite(Number(item?.igdbId)) && Number(item.igdbId) > 0)
+          .slice(0, 100)
+          .map((item) => ({
+            igdbId: Math.trunc(Number(item.igdbId)),
+            title: String(item.title || "").trim(),
+            releaseDate: String(item.releaseDate || "").trim(),
+            coverArt: String(item.coverArt || "").trim(),
+            gameTypeLabel: String(item.gameTypeLabel || item.categoryLabel || "").trim()
+          }))
+        : [];
+
+      state.entryMatch = {
+        ...(state.entryMatch ?? createDefaultEntryMatchState()),
+        loadingEntryId: "",
+        options: {
+          ...(state.entryMatch?.options ?? {}),
+          [normalizedEntryId]: options
+        },
+        errors: {
+          ...(state.entryMatch?.errors ?? {}),
+          [normalizedEntryId]: options.length ? "" : "No IGDB matches were found for this entry."
+        }
+      };
+      emit();
+    } catch (error) {
+      state.entryMatch = {
+        ...(state.entryMatch ?? createDefaultEntryMatchState()),
+        loadingEntryId: "",
+        errors: {
+          ...(state.entryMatch?.errors ?? {}),
+          [normalizedEntryId]: error instanceof Error ? error.message : "IGDB search failed for this entry."
+        }
+      };
+      emit();
+    }
+  }
+
+  async function applyEntryMetadataMatch(entryId = state.activeEntryId, igdbId) {
+    const normalizedEntryId = String(entryId ?? "").trim();
+    const normalizedIgdbId = Math.trunc(Number(igdbId));
+    const entry = getEntry(normalizedEntryId);
+    const originalGame = entry ? getCatalogGame(entry.gameId) : null;
+    if (!entry || !originalGame || !Number.isFinite(normalizedIgdbId) || normalizedIgdbId <= 0) return false;
+    if (typeof integrations.metadataResolver?.getGameByIgdbId !== "function") return false;
+
+    setActionState("metadata", {
+      tone: "info",
+      message: `Searching IGDB and rematching ${entry.title}...`
+    });
+    emit();
+
+    try {
+      const [details, related] = await Promise.all([
+        integrations.metadataResolver.getGameByIgdbId(normalizedIgdbId),
+        typeof integrations.metadataResolver.getRelatedGamesByIgdbId === "function"
+          ? integrations.metadataResolver.getRelatedGamesByIgdbId(normalizedIgdbId, 12)
+          : Promise.resolve([])
+      ]);
+
+      const metadata = {
+        ...(details && typeof details === "object" ? details : {}),
+        igdbId: normalizedIgdbId,
+        relatedTitles: Array.isArray(related) && related.length
+          ? related
+          : (details?.relatedTitles ?? [])
+      };
+
+      let nextGame = enrichmentActions.mergeMetadataIntoCatalogGame(originalGame, metadata, {
+        title: entry.title,
+        storefront: entry.storefront
+      });
+
+      const artwork = await enrichmentActions.resolveArtworkWithIgdbPrimary(entry, nextGame).catch(() => null);
+
+      if (artwork && typeof artwork === "object") {
+        nextGame = enrichmentActions.mergeArtworkIntoCatalogGame(nextGame, artwork);
+      }
+
+      const targetGameId = Number.isFinite(Number(nextGame?.igdbId)) && Number(nextGame.igdbId) > 0
+        ? `igdb-${Math.trunc(Number(nextGame.igdbId))}`
+        : String(nextGame?.id || originalGame.id).trim();
+      const existingTarget = state.catalog.find((item) => item?.id === targetGameId) ?? null;
+      const isSameCatalogGame = targetGameId === originalGame.id;
+
+      nextGame = normalizeCatalogGame({
+        ...(existingTarget ?? {}),
+        ...nextGame,
+        id: targetGameId,
+        igdbId: Math.trunc(Number(nextGame?.igdbId || normalizedIgdbId)),
+        title: String(nextGame?.title || existingTarget?.title || originalGame?.title || entry.title).trim(),
+        storefront: String(
+          existingTarget?.storefront
+          || nextGame?.storefront
+          || originalGame?.storefront
+          || entry.storefront
+          || "steam"
+        ).trim() || "steam",
+        steam: {
+          ...(existingTarget?.steam ?? {}),
+          ...(nextGame?.steam ?? {})
+        },
+        providerValues: {
+          ...(existingTarget?.providerValues ?? {}),
+          ...(nextGame?.providerValues ?? {}),
+          igdbId: Math.trunc(Number(nextGame?.igdbId || normalizedIgdbId))
+        },
+        links: {
+          ...(existingTarget?.links ?? {}),
+          ...(nextGame?.links ?? {})
+        },
+        pricing: {
+          ...(existingTarget?.pricing ?? {}),
+          ...(nextGame?.pricing ?? {})
+        },
+        lockedFields: Array.from(new Set([
+          ...((existingTarget?.lockedFields ?? []).filter(Boolean)),
+          ...((nextGame?.lockedFields ?? []).filter(Boolean))
+        ]))
+      }, isSameCatalogGame ? originalGame : (existingTarget ?? nextGame));
+
+      const nextLibrary = state.library.map((item) => (
+        item.entryId === entry.entryId
+          ? {
+              ...item,
+              gameId: targetGameId,
+              title: String(nextGame?.title || item.title).trim() || item.title
+            }
+          : item
+      ));
+
+      const nextCatalog = isSameCatalogGame
+        ? state.catalog.map((item) => (
+            item.id === targetGameId ? nextGame : item
+          ))
+        : [nextGame, ...state.catalog.filter((item) => item?.id !== targetGameId)];
+
+      state.library = nextLibrary;
+      state.catalog = pruneCatalogToLibrary(nextLibrary, nextCatalog);
+
+      state.entryMatch = {
+        ...(state.entryMatch ?? createDefaultEntryMatchState()),
+        options: {
+          ...(state.entryMatch?.options ?? {}),
+          [normalizedEntryId]: []
+        },
+        errors: {
+          ...(state.entryMatch?.errors ?? {}),
+          [normalizedEntryId]: ""
+        }
+      };
+
+      const matchedTitle = String(nextGame?.title || `IGDB ${normalizedIgdbId}`).trim();
+      setActionState("metadata", {
+        tone: "success",
+        message: `${entry.title} now matches ${matchedTitle}.`
+      });
+      state.notice = {
+        tone: "success",
+        message: `${entry.title} rematched to ${matchedTitle}.`
+      };
+      recordActivity({
+        category: "refresh",
+        action: "metadata",
+        scope: "entry",
+        title: entry.title,
+        message: `${entry.title} was rematched to ${matchedTitle}.`,
+        tone: "success"
+      });
+      emit();
+      return true;
+    } catch (error) {
+      state.entryMatch = {
+        ...(state.entryMatch ?? createDefaultEntryMatchState()),
+        errors: {
+          ...(state.entryMatch?.errors ?? {}),
+          [normalizedEntryId]: error instanceof Error ? error.message : "IGDB rematch failed for this entry."
+        }
+      };
+      setActionState("metadata", {
+        tone: "error",
+        message: `Checkpoint couldn't rematch ${entry.title}.`
+      });
+      state.notice = {
+        tone: "error",
+        message: `${entry.title} rematch failed.`
+      };
+      emit();
+      return false;
+    }
+  }
+
   function summarizeSteamImportCandidates(candidates, workerSummary = {}) {
     const rows = Array.isArray(candidates) ? candidates : [];
     return {
@@ -990,7 +1557,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       recent: Number(workerSummary?.recentlyPlayed ?? rows.filter((row) => row.playtime2WeeksMinutes > 0).length) || 0,
       existing: rows.filter((row) => row.matchStatus === "existing").length,
       possibleMatches: rows.filter((row) => row.matchStatus === "possible").length,
-      unmatched: rows.filter((row) => row.matchStatus === "unmatched").length
+      unmatched: rows.filter((row) => row.matchStatus === "unmatched").length,
+      withAppIds: Number(workerSummary?.withAppIds ?? rows.filter((row) => row.appid).length) || 0,
+      titleOnly: Number(workerSummary?.titleOnly ?? rows.filter((row) => !row.appid).length) || 0
     };
   }
 
@@ -1046,7 +1615,8 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         playtime2WeeksMinutes: Number(candidate?.playtime2WeeksMinutes ?? 0),
         lastImportedAt: now,
         lastRefreshedAt: now,
-        importSource: String(candidate?.importSource || "steam-owned-games").trim()
+        importSource: String(candidate?.importSource || "steam-owned-games").trim(),
+        wishlistImportedAt: candidate?.importSource === "steam-wishlist-import" ? now : ""
       },
       links: buildSteamCatalogLinks(candidate, {})
     });
@@ -1064,7 +1634,10 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         playtime2WeeksMinutes: Number(candidate?.playtime2WeeksMinutes ?? game?.steam?.playtime2WeeksMinutes ?? 0),
         lastImportedAt: now,
         lastRefreshedAt: now,
-        importSource: String(candidate?.importSource || game?.steam?.importSource || "steam-owned-games").trim()
+        importSource: String(candidate?.importSource || game?.steam?.importSource || "steam-owned-games").trim(),
+        wishlistImportedAt: candidate?.importSource === "steam-wishlist-import"
+          ? now
+          : String(game?.steam?.wishlistImportedAt || "")
       },
       links: buildSteamCatalogLinks(candidate, game?.links ?? {}),
       releaseDate: String(game?.releaseDate || candidate?.igdbSuggestion?.releaseDate || "").trim(),
@@ -1072,17 +1645,19 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     }, game);
   }
 
-  function buildImportedEntryFromSteamCandidate({ candidate, existingEntry = null, game }) {
+  function buildImportedEntryFromSteamCandidate({ candidate, existingEntry = null, game, mode = "owned-library" }) {
     const now = new Date().toISOString();
-    const nextStatus = existingEntry?.status && existingEntry.status !== "wishlist"
+    const nextStatus = mode === "wishlist"
+      ? "wishlist"
+      : (existingEntry?.status && existingEntry.status !== "wishlist"
       ? existingEntry.status
-      : (candidate?.proposedStatus === "playing" ? "playing" : "backlog");
+      : (candidate?.proposedStatus === "playing" ? "playing" : "backlog"));
     const nextRunLabel = existingEntry?.runLabel
       ? existingEntry.runLabel
-      : (nextStatus === "playing" ? "Steam Import" : "Backlog");
+      : (mode === "wishlist" ? "Wishlist Watch" : (nextStatus === "playing" ? "Steam Import" : "Backlog"));
     const nextNotes = existingEntry?.notes
       ? existingEntry.notes
-      : "Imported from Steam owned library.";
+      : (mode === "wishlist" ? "Imported from Steam wishlist." : "Imported from Steam owned library.");
 
     return normalizeLibraryEntry({
       entryId: existingEntry?.entryId ?? createEntryId(),
@@ -1097,7 +1672,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       completionPercent: existingEntry?.completionPercent ?? 0,
       personalRating: existingEntry?.personalRating ?? null,
       notes: nextNotes,
-      spotlight: existingEntry?.spotlight ?? "Steam import",
+      spotlight: existingEntry?.spotlight ?? (mode === "wishlist" ? "Steam wishlist" : "Steam import"),
+      importSource: existingEntry?.importSource || String(candidate?.importSource || ""),
+      importedAt: existingEntry?.importedAt || now,
       syncState: integrations.googleDrive.isConfigured() ? "pending" : "offline",
       wishlistPriority: existingEntry?.wishlistPriority ?? "medium",
       wishlistIntent: existingEntry?.wishlistIntent ?? "wait-sale",
@@ -1280,6 +1857,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
     return {
       ...state,
+      notices: Array.isArray(state.notices) ? state.notices : [],
       serviceConfig,
       visibleLibrary: getVisibleLibrary(),
       activeEntry: getEntryWithGame(),
@@ -1363,6 +1941,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       step: "source",
       rawResults: [],
       igdbSuggestions: {},
+      matchOptions: {},
+      matchSearchLoadingId: "",
+      matchSearchErrors: {},
       actionOverrides: {},
       candidates: [],
       summary: createDefaultSteamImportSession().summary,
@@ -1403,7 +1984,11 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       actionOverrides: nextOverrides,
       candidates: rebuilt.candidates,
       summary: rebuilt.summary,
-      errors: []
+      errors: [],
+      matchSearchErrors: {
+        ...(state.steamImport?.matchSearchErrors ?? {}),
+        [normalizedId]: ""
+      }
     };
     emit();
   }
@@ -1443,6 +2028,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
 
   async function commitSteamOwnedImport() {
     const session = state.steamImport ?? createDefaultSteamImportSession();
+    const mode = session.mode === "wishlist" ? "wishlist" : "owned-library";
     const candidates = Array.isArray(session.candidates) ? session.candidates : [];
     if (!candidates.length) {
       state.notice = {
@@ -1469,6 +2055,7 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       loading: true,
       errors: []
     };
+    startJob("steam-import");
     emit();
 
     try {
@@ -1480,7 +2067,16 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
       let mergedCount = 0;
       let skippedCount = 0;
 
+      const importableCandidates = candidates.filter((candidate) => candidate.action !== "skip");
+      const totalImportable = importableCandidates.length;
+      let processedCount = 0;
+      let canceled = false;
+
       for (const candidate of candidates) {
+        if (isJobCancelRequested("steam-import")) {
+          canceled = true;
+          break;
+        }
         if (candidate.action === "skip") {
           skippedCount += 1;
           continue;
@@ -1505,7 +2101,8 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         const nextEntry = buildImportedEntryFromSteamCandidate({
           candidate,
           existingEntry,
-          game: nextGame
+          game: nextGame,
+          mode
         });
         const existingEntryIndex = existingEntry
           ? nextLibrary.findIndex((entry) => entry.entryId === existingEntry.entryId)
@@ -1518,6 +2115,21 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
           addedCount += 1;
         }
         enrichedEntryIds.push(nextEntry.entryId);
+        processedCount += 1;
+
+        state.notice = {
+          key: "steam-import-progress",
+          tone: "info",
+          message: `Importing Steam ${mode === "wishlist" ? "wishlist" : "library"} entries... ${processedCount} of ${totalImportable} committed so far.`,
+          actionLabel: "Cancel",
+          actionJobKey: "steam-import",
+          progress: {
+            current: processedCount,
+            total: totalImportable,
+            label: "Steam Import"
+          }
+        };
+        emitNoticeOnly();
       }
 
       state.catalog = pruneCatalogToLibrary(
@@ -1528,7 +2140,40 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         .map((entry) => normalizeLibraryEntry(entry))
         .sort(sortByUpdatedAtDesc);
 
-      const enrichmentResult = await enrichmentActions.enrichImportedEntries(enrichedEntryIds);
+      const enrichmentResult = canceled
+        ? {
+            attempted: enrichedEntryIds.length,
+            metadataUpdated: 0,
+            artworkUpdated: 0,
+            pricingUpdated: 0,
+            pricingSkipped: 0,
+            failed: 0,
+            errors: [],
+            canceled: true
+          }
+        : await enrichmentActions.enrichImportedEntries(enrichedEntryIds, {
+        onProgress: ({ phase, current, total, title }) => {
+          const phaseLabel = phase === "pricing"
+            ? "Pricing Refresh"
+            : phase === "artwork"
+              ? "Artwork Refresh"
+              : "Metadata Refresh";
+          state.notice = {
+            key: "steam-import-progress",
+            tone: "info",
+            message: `${phaseLabel}: ${title || "Imported title"} is being processed as part of Steam ${mode === "wishlist" ? "wishlist" : "library"} import.`,
+            actionLabel: "Cancel",
+            actionJobKey: "steam-import",
+            progress: {
+              current,
+              total,
+              label: phaseLabel
+            }
+          };
+          emitNoticeOnly();
+        },
+        shouldStop: () => isJobCancelRequested("steam-import")
+      });
 
       const commitResult = {
         added: addedCount,
@@ -1536,8 +2181,11 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         skipped: skippedCount,
         total: candidates.length,
         enrichment: enrichmentResult,
-        completedAt: new Date().toISOString()
+        completedAt: new Date().toISOString(),
+        canceled: canceled || Boolean(enrichmentResult?.canceled)
       };
+
+      clearNoticeByKey("steam-import-progress");
 
       state.steamImport = {
         ...state.steamImport,
@@ -1547,22 +2195,26 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         errors: []
       };
       setActionState("metadata", {
-        tone: "success",
-        message: `Steam import complete: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped.${enrichmentResult.failed ? ` ${enrichmentResult.failed} enrichment issue${enrichmentResult.failed === 1 ? "" : "s"} need review.` : ""}`
+        tone: commitResult.canceled ? "warning" : "success",
+        message: `Steam ${mode === "wishlist" ? "wishlist" : "import"} ${commitResult.canceled ? "canceled safely" : "complete"}: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped.${enrichmentResult.failed ? ` ${enrichmentResult.failed} enrichment issue${enrichmentResult.failed === 1 ? "" : "s"} need review.` : ""}`
       });
       state.notice = {
-        tone: enrichmentResult.failed ? "warning" : "success",
-        message: `Steam import complete: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped.${enrichmentResult.metadataUpdated || enrichmentResult.artworkUpdated || enrichmentResult.pricingUpdated ? ` Enrichment updated ${enrichmentResult.metadataUpdated} metadata, ${enrichmentResult.artworkUpdated} artwork, and ${enrichmentResult.pricingUpdated} pricing record${enrichmentResult.pricingUpdated === 1 ? "" : "s"}.` : ""}${enrichmentResult.failed ? ` ${enrichmentResult.failed} title${enrichmentResult.failed === 1 ? "" : "s"} had partial enrichment failures.` : ""}`
+        key: "steam-import-complete",
+        tone: commitResult.canceled || enrichmentResult.failed ? "warning" : "success",
+        message: `Steam ${mode === "wishlist" ? "wishlist" : "import"} ${commitResult.canceled ? "canceled safely" : "complete"}: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped.${enrichmentResult.metadataUpdated || enrichmentResult.artworkUpdated || enrichmentResult.pricingUpdated ? ` Enrichment updated ${enrichmentResult.metadataUpdated} metadata, ${enrichmentResult.artworkUpdated} artwork, and ${enrichmentResult.pricingUpdated} pricing record${enrichmentResult.pricingUpdated === 1 ? "" : "s"}.` : ""}${enrichmentResult.failed ? ` ${enrichmentResult.failed} title${enrichmentResult.failed === 1 ? "" : "s"} had partial enrichment failures.` : ""}`
       };
       recordActivity({
         category: "import",
-        action: "steam-import",
-        scope: "library",
-        message: `Steam import complete: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped. Enrichment updated ${enrichmentResult.metadataUpdated} metadata, ${enrichmentResult.artworkUpdated} artwork, and ${enrichmentResult.pricingUpdated} pricing records${enrichmentResult.failed ? ` with ${enrichmentResult.failed} partial failures` : ""}.`,
-        tone: enrichmentResult.failed ? "warning" : "success"
+        action: mode === "wishlist" ? "steam-wishlist-import" : "steam-import",
+        scope: mode === "wishlist" ? "wishlist" : "library",
+        message: `Steam ${mode === "wishlist" ? "wishlist" : "import"} ${commitResult.canceled ? "canceled safely" : "complete"}: ${addedCount} added, ${mergedCount} merged, ${skippedCount} skipped. Enrichment updated ${enrichmentResult.metadataUpdated} metadata, ${enrichmentResult.artworkUpdated} artwork, and ${enrichmentResult.pricingUpdated} pricing records${enrichmentResult.failed ? ` with ${enrichmentResult.failed} partial failures` : ""}.`,
+        tone: commitResult.canceled || enrichmentResult.failed ? "warning" : "success"
       });
+      finishJob("steam-import");
       emit();
     } catch (error) {
+      finishJob("steam-import");
+      clearNoticeByKey("steam-import-progress");
       state.steamImport = {
         ...state.steamImport,
         loading: false,
@@ -1613,6 +2265,9 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         lastResolvedSteamId: resolved.steamid,
         rawResults: Array.isArray(ownedGames.results) ? ownedGames.results.slice() : [],
         igdbSuggestions,
+        matchOptions: {},
+        matchSearchLoadingId: "",
+        matchSearchErrors: {},
         actionOverrides: {},
         candidates: rebuilt.candidates,
         commitResult: null,
@@ -1627,10 +2282,74 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
         loading: false,
         rawResults: [],
         igdbSuggestions: {},
+        matchOptions: {},
+        matchSearchLoadingId: "",
+        matchSearchErrors: {},
         actionOverrides: {},
         candidates: [],
         summary: createDefaultSteamImportSession().summary,
         errors: [error instanceof Error ? error.message : "Steam library preview failed."]
+      };
+      emit();
+    }
+  }
+
+  async function fetchSteamWishlistPreview() {
+    const sourceText = String(state.steamImport?.source?.wishlistSource ?? "").trim();
+    if (!sourceText) {
+      state.steamImport = {
+        ...state.steamImport,
+        errors: ["Paste a Steam wishlist URL, copied wishlist content, or one Steam app/title per line first."]
+      };
+      emit();
+      return;
+    }
+
+    state.steamImport = {
+      ...state.steamImport,
+      loading: true,
+      errors: []
+    };
+    emit();
+
+    try {
+      const parsed = await integrations.steamImport.parseWishlistSource(sourceText);
+      const igdbSuggestions = await resolveSteamImportIgdbSuggestions(parsed.results);
+      const rebuilt = rebuildSteamImportPreview(parsed.results, parsed.summary, {
+        igdbSuggestions,
+        actionOverrides: {},
+        mode: "wishlist"
+      });
+      state.steamImport = {
+        ...state.steamImport,
+        loading: false,
+        step: "preview",
+        rawResults: Array.isArray(parsed.results) ? parsed.results.slice() : [],
+        igdbSuggestions,
+        matchOptions: {},
+        matchSearchLoadingId: "",
+        matchSearchErrors: {},
+        actionOverrides: {},
+        candidates: rebuilt.candidates,
+        commitResult: null,
+        summary: rebuilt.summary,
+        errors: [],
+        lastFetchedAt: new Date().toISOString()
+      };
+      emit();
+    } catch (error) {
+      state.steamImport = {
+        ...state.steamImport,
+        loading: false,
+        rawResults: [],
+        igdbSuggestions: {},
+        matchOptions: {},
+        matchSearchLoadingId: "",
+        matchSearchErrors: {},
+        actionOverrides: {},
+        candidates: [],
+        summary: createDefaultSteamImportSession().summary,
+        errors: [error instanceof Error ? error.message : "Steam wishlist preview failed."]
       };
       emit();
     }
@@ -1796,17 +2515,22 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
   const enrichmentActions = createEnrichmentActions({
     state,
     emit,
+    emitNoticeOnly,
     integrations,
     normalizeTerm,
     setActionState,
     getEntry,
     getCatalogGame,
-    recordActivity
+    recordActivity,
+    startJob,
+    finishJob,
+    isJobCancelRequested
   });
 
   const entryActions = createEntryActions({
     state,
     emit,
+    emitNoticeOnly,
     integrations,
     setActionState,
     statusDefinitions,
@@ -1828,7 +2552,10 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     applyArtworkOverridesToGame: enrichmentActions.applyArtworkOverridesToGame,
     recordActivity,
     writeItadStoresCache,
-    writeDiscoverMetadataCache
+    writeDiscoverMetadataCache,
+    startJob,
+    finishJob,
+    isJobCancelRequested
   });
 
   const backupActions = createBackupActions({
@@ -1907,7 +2634,12 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     updateSteamImportSource,
     updateSteamImportRules,
     setSteamImportCandidateAction,
+    searchSteamImportCandidateMatches,
+    applySteamImportCandidateMatch,
+    searchEntryMetadataMatches,
+    applyEntryMetadataMatch,
     fetchSteamOwnedLibraryPreview,
+    fetchSteamWishlistPreview,
     commitSteamOwnedImport,
     resetSteamImportSession,
     setSearchTerm,
@@ -1923,12 +2655,14 @@ export function createStore({ initialLibrary, catalog, persistence, integrations
     setImportMode: backupActions.setImportMode,
     exportLibraryBackup: backupActions.exportLibraryBackup,
     importLibraryBackup: backupActions.importLibraryBackup,
+    refreshGameDataForEntry: enrichmentActions.refreshGameDataForEntry,
     refreshMetadataForEntry: enrichmentActions.refreshMetadataForEntry,
     refreshArtworkForEntry: enrichmentActions.refreshArtworkForEntry,
     refreshLibraryMetadata: enrichmentActions.refreshLibraryMetadata,
     refreshLibraryArtwork: enrichmentActions.refreshLibraryArtwork,
     refreshPricingForEntry: entryActions.refreshPricingForEntry,
     refreshLibraryPricing: entryActions.refreshLibraryPricing,
+    requestJobCancel,
     savePriceWatch: entryActions.savePriceWatch,
     togglePriceWatch: entryActions.togglePriceWatch,
     loadItadStores: entryActions.loadItadStores,

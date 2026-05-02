@@ -65,6 +65,113 @@ function getVideoThumbnailUrl(video) {
   return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 }
 
+export function renderDecisionMediaSections({
+  idPrefix = "decision",
+  title = "Unknown title",
+  screenshots = [],
+  videos = [],
+  loading = false,
+  mediaContext = "discover"
+} = {}) {
+  const normalizedScreenshots = Array.isArray(screenshots)
+    ? screenshots.filter(hasUsableAsset).slice(0, 12)
+    : [];
+  const normalizedVideos = Array.isArray(videos)
+    ? videos.filter((video) => video && typeof video === "object" && (video.embedUrl || video.url))
+    : [];
+  const primaryScreenshot = normalizedScreenshots[0] || "";
+  const primaryVideo = normalizedVideos[0] || null;
+  const primaryVideoTitle = String(primaryVideo?.title || `${title} video`).trim() || "Video";
+
+  return `
+    <section id="${idPrefix}-media" class="space-y-6">
+      <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4" data-media-collection="screenshots" data-media-title="${escapeHtml(title)}">
+        <h3 class="font-label text-sm tracking-[0.08em] text-primary">Screenshots</h3>
+        ${loading
+          ? `<div class="space-y-3">${renderInlineSpinner("Loading screenshots...")}</div>`
+          : (normalizedScreenshots.length
+            ? `
+              <div class="flex items-start justify-between gap-4">
+                <p class="text-sm text-zinc-400">${normalizedScreenshots.length} screenshot${normalizedScreenshots.length === 1 ? "" : "s"}</p>
+                <div class="flex items-center gap-3">
+                  <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-screenshot-prev">Prev</button>
+                  <span class="font-label text-xs tracking-[0.08em] text-zinc-400 min-w-[3.75rem] text-center" data-discover-screenshot-counter>1 / ${normalizedScreenshots.length}</span>
+                  <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-screenshot-next">Next</button>
+                </div>
+              </div>
+              <div id="discover-screenshot-carousel" data-screenshot-index="0" class="space-y-4">
+                <button class="block w-full aspect-video bg-zinc-900 overflow-hidden rounded-md text-left group checkpoint-panel" data-action="open-media-lightbox" data-media-context="${escapeHtml(mediaContext)}" data-media-index="0" aria-label="Open screenshot 1">
+                  <img id="discover-screenshot-image" class="w-full h-full object-cover grayscale-[22%] hover:grayscale-0 transition-all duration-500" src="${escapeHtml(primaryScreenshot)}" alt="${escapeHtml(title)} screenshot 1">
+                </button>
+                <div class="flex flex-wrap gap-2">
+                  ${normalizedScreenshots.map((shot, index) => `
+                    <button
+                      class="discover-screenshot-thumb overflow-hidden rounded-md border-2 border-outline-variant/40 bg-zinc-900 ${index === 0 ? "is-active" : ""}"
+                      data-action="discover-screenshot-jump"
+                      data-screenshot-index="${index}"
+                      data-screenshot-url="${escapeHtml(shot)}"
+                      data-screenshot-alt="${escapeHtml(`${title} screenshot ${index + 1}`)}"
+                      data-media-src="${escapeHtml(shot)}"
+                      aria-label="View screenshot ${index + 1}"
+                      aria-pressed="${index === 0 ? "true" : "false"}"
+                    >
+                      <img class="w-full h-full object-cover grayscale-[50%] hover:grayscale-0 transition-all duration-500" src="${escapeHtml(shot)}" alt="">
+                    </button>
+                  `).join("")}
+                </div>
+              </div>
+            `
+            : `<p class="text-sm text-zinc-500">No screenshots available.</p>`)}
+      </div>
+      <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4">
+        <h3 class="font-label text-sm tracking-[0.08em] text-primary">Videos</h3>
+        ${loading
+          ? `<div class="space-y-3">${renderInlineSpinner("Loading videos...")}</div>`
+          : (normalizedVideos.length
+            ? `
+              <div class="flex items-start justify-between gap-4">
+                <p class="text-sm text-zinc-400">${normalizedVideos.length} video${normalizedVideos.length === 1 ? "" : "s"}</p>
+                <div class="flex items-center gap-3">
+                  <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-video-prev">Prev</button>
+                  <span class="font-label text-xs tracking-[0.08em] text-zinc-400 min-w-[3.75rem] text-center" data-discover-video-counter>1 / ${normalizedVideos.length}</span>
+                  <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-video-next">Next</button>
+                </div>
+              </div>
+              <div id="discover-video-carousel" data-video-index="0" class="space-y-4">
+                <div id="discover-video-frame" class="aspect-video rounded-md overflow-hidden bg-zinc-900">
+                  ${primaryVideo?.embedUrl
+                    ? `<iframe class="w-full h-full" src="${escapeHtml(primaryVideo.embedUrl)}" title="${escapeHtml(primaryVideoTitle)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`
+                    : `<a class="w-full h-full flex items-center justify-center text-sm text-zinc-300 underline" href="${escapeHtml(primaryVideo?.url || "")}" target="_blank" rel="noopener noreferrer">Open video</a>`}
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  ${normalizedVideos.map((video, index) => {
+                    const thumbUrl = getVideoThumbnailUrl(video);
+                    return `
+                      <button
+                        class="discover-screenshot-thumb overflow-hidden rounded-md border-2 border-outline-variant/40 bg-zinc-900 ${index === 0 ? "is-active" : ""}"
+                        data-action="discover-video-jump"
+                        data-video-index="${index}"
+                        data-video-embed-url="${escapeHtml(video.embedUrl || "")}"
+                        data-video-url="${escapeHtml(video.url || "")}"
+                        data-video-title="${escapeHtml(String(video.title || `${title} video ${index + 1}`))}"
+                        aria-label="Play video ${index + 1}"
+                        aria-pressed="${index === 0 ? "true" : "false"}"
+                      >
+                        ${hasUsableAsset(thumbUrl)
+                          ? `<img class="w-full h-full object-cover grayscale-[50%] hover:grayscale-0 transition-all duration-500" src="${escapeHtml(thumbUrl)}" alt="">`
+                          : `<span class="w-full h-full flex items-center justify-center text-[11px] font-label tracking-[0.08em] text-zinc-400">Video ${index + 1}</span>`}
+                      </button>
+                    `;
+                  }).join("")}
+                </div>
+              </div>
+            `
+            : `<p class="text-sm text-zinc-500">No videos available.</p>`)}
+      </div>
+    </section>
+  `;
+}
+
 export function renderDecisionDetailPage({
   idPrefix = "decision",
   title = "Unknown title",
@@ -88,6 +195,7 @@ export function renderDecisionDetailPage({
   pricingError = "",
   heroActionsHtml = "",
   priceSupplementHtml = "",
+  contentSupplementHtml = "",
   sideRailTitle = "Game Details",
   sourceLabel = "IGDB",
   mediaContext = "discover"
@@ -126,15 +234,6 @@ export function renderDecisionDetailPage({
       url: String(row?.url || "")
     }))
     .slice(0, 12);
-  const normalizedScreenshots = Array.isArray(screenshots)
-    ? screenshots.filter(hasUsableAsset).slice(0, 12)
-    : [];
-  const normalizedVideos = Array.isArray(videos)
-    ? videos.filter((video) => video && typeof video === "object" && (video.embedUrl || video.url))
-    : [];
-  const primaryScreenshot = normalizedScreenshots[0] || "";
-  const primaryVideo = normalizedVideos[0] || null;
-  const primaryVideoTitle = String(primaryVideo?.title || `${title} video`).trim() || "Video";
 
   const navItems = [
     { href: `#${idPrefix}-overview`, label: "Overview" },
@@ -292,90 +391,14 @@ export function renderDecisionDetailPage({
             <div class="md:col-span-2 lg:col-span-3"><p class="font-label text-[11px] tracking-[0.08em] text-zinc-500 mb-1">Platforms</p><p class="text-zinc-200">${Array.isArray(platforms) && platforms.length ? escapeHtml(platforms.join(", ")) : "Unknown"}</p></div>
           </div>
         </section>
-        <section id="${idPrefix}-media" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4">
-            <h3 class="font-label text-sm tracking-[0.08em] text-primary">Screenshots</h3>
-            ${loading
-              ? `<div class="space-y-3">${renderInlineSpinner("Loading screenshots...")}</div>`
-              : (normalizedScreenshots.length
-                ? `
-                  <div class="flex items-start justify-between gap-4">
-                    <p class="text-sm text-zinc-400">${normalizedScreenshots.length} screenshot${normalizedScreenshots.length === 1 ? "" : "s"}</p>
-                    <div class="flex items-center gap-3">
-                      <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-screenshot-prev">Prev</button>
-                      <span class="font-label text-xs tracking-[0.08em] text-zinc-400 min-w-[3.75rem] text-center" data-discover-screenshot-counter>1 / ${normalizedScreenshots.length}</span>
-                      <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-screenshot-next">Next</button>
-                    </div>
-                  </div>
-                  <div id="discover-screenshot-carousel" data-screenshot-index="0" class="space-y-4">
-                    <button class="block w-full aspect-video bg-zinc-900 overflow-hidden rounded-md text-left group checkpoint-panel" data-action="open-media-lightbox" data-media-context="${escapeHtml(mediaContext)}" data-media-index="0" aria-label="Open screenshot 1">
-                      <img id="discover-screenshot-image" class="w-full h-full object-cover grayscale-[22%] hover:grayscale-0 transition-all duration-500" src="${escapeHtml(primaryScreenshot)}" alt="${escapeHtml(title)} screenshot 1">
-                    </button>
-                    <div class="flex flex-wrap gap-2">
-                      ${normalizedScreenshots.map((shot, index) => `
-                        <button
-                          class="discover-screenshot-thumb overflow-hidden rounded-md border-2 border-outline-variant/40 bg-zinc-900 ${index === 0 ? "is-active" : ""}"
-                          data-action="discover-screenshot-jump"
-                          data-screenshot-index="${index}"
-                          data-screenshot-url="${escapeHtml(shot)}"
-                          data-screenshot-alt="${escapeHtml(`${title} screenshot ${index + 1}`)}"
-                          aria-label="View screenshot ${index + 1}"
-                          aria-pressed="${index === 0 ? "true" : "false"}"
-                        >
-                          <img class="w-full h-full object-cover grayscale-[50%] hover:grayscale-0 transition-all duration-500" src="${escapeHtml(shot)}" alt="">
-                        </button>
-                      `).join("")}
-                    </div>
-                  </div>
-                `
-                : `<p class="text-sm text-zinc-500">No screenshots available.</p>`)}
-          </div>
-          <div class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4">
-            <h3 class="font-label text-sm tracking-[0.08em] text-primary">Videos</h3>
-            ${loading
-              ? `<div class="space-y-3">${renderInlineSpinner("Loading videos...")}</div>`
-              : (normalizedVideos.length
-                ? `
-                  <div class="flex items-start justify-between gap-4">
-                    <p class="text-sm text-zinc-400">${normalizedVideos.length} video${normalizedVideos.length === 1 ? "" : "s"}</p>
-                    <div class="flex items-center gap-3">
-                      <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-video-prev">Prev</button>
-                      <span class="font-label text-xs tracking-[0.08em] text-zinc-400 min-w-[3.75rem] text-center" data-discover-video-counter>1 / ${normalizedVideos.length}</span>
-                      <button class="checkpoint-button checkpoint-button-secondary px-4 py-2 text-xs tracking-[0.08em]" data-action="discover-video-next">Next</button>
-                    </div>
-                  </div>
-                  <div id="discover-video-carousel" data-video-index="0" class="space-y-4">
-                    <div id="discover-video-frame" class="aspect-video rounded-md overflow-hidden bg-zinc-900">
-                      ${primaryVideo?.embedUrl
-                        ? `<iframe class="w-full h-full" src="${escapeHtml(primaryVideo.embedUrl)}" title="${escapeHtml(primaryVideoTitle)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`
-                        : `<a class="w-full h-full flex items-center justify-center text-sm text-zinc-300 underline" href="${escapeHtml(primaryVideo?.url || "")}" target="_blank" rel="noopener noreferrer">Open video</a>`}
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                      ${normalizedVideos.map((video, index) => {
-                        const thumbUrl = getVideoThumbnailUrl(video);
-                        return `
-                          <button
-                            class="discover-screenshot-thumb overflow-hidden rounded-md border-2 border-outline-variant/40 bg-zinc-900 ${index === 0 ? "is-active" : ""}"
-                            data-action="discover-video-jump"
-                            data-video-index="${index}"
-                            data-video-embed-url="${escapeHtml(video.embedUrl || "")}"
-                            data-video-url="${escapeHtml(video.url || "")}"
-                            data-video-title="${escapeHtml(String(video.title || `${title} video ${index + 1}`))}"
-                            aria-label="Play video ${index + 1}"
-                            aria-pressed="${index === 0 ? "true" : "false"}"
-                          >
-                            ${hasUsableAsset(thumbUrl)
-                              ? `<img class="w-full h-full object-cover grayscale-[50%] hover:grayscale-0 transition-all duration-500" src="${escapeHtml(thumbUrl)}" alt="">`
-                              : `<span class="w-full h-full flex items-center justify-center text-[11px] font-label tracking-[0.08em] text-zinc-400">Video ${index + 1}</span>`}
-                          </button>
-                        `;
-                      }).join("")}
-                    </div>
-                  </div>
-                `
-                : `<p class="text-sm text-zinc-500">No videos available.</p>`)}
-          </div>
-        </section>
+        ${renderDecisionMediaSections({
+          idPrefix,
+          title,
+          screenshots,
+          videos,
+          loading,
+          mediaContext
+        })}
         <section id="${idPrefix}-related" class="checkpoint-panel rounded-xl p-6 md:p-8 flex flex-col gap-4">
           <h3 class="font-label text-sm tracking-[0.08em] text-primary">Related Titles</h3>
           ${related.length
@@ -396,6 +419,7 @@ export function renderDecisionDetailPage({
               </div>`
             : `<p class="text-sm text-zinc-500">No related titles available yet.</p>`}
         </section>
+        ${contentSupplementHtml}
       </div>
       <aside class="checkpoint-panel discover-side-rail rounded-xl p-6 md:p-8 h-fit sticky top-36 flex flex-col gap-4">
         <h3 class="font-label text-sm tracking-[0.08em] text-primary">${escapeHtml(sideRailTitle)}</h3>

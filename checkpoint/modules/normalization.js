@@ -97,7 +97,8 @@ function normalizeSteamMetadata(value, fallback = {}) {
     playtime2WeeksMinutes: Number.isFinite(playtime2WeeksMinutes) && playtime2WeeksMinutes >= 0 ? Math.trunc(playtime2WeeksMinutes) : 0,
     lastImportedAt: trimOrFallback(source.lastImportedAt, trimOrFallback(fallbackSource.lastImportedAt, "")),
     lastRefreshedAt: trimOrFallback(source.lastRefreshedAt, trimOrFallback(fallbackSource.lastRefreshedAt, "")),
-    importSource: trimOrFallback(source.importSource, trimOrFallback(fallbackSource.importSource, ""))
+    importSource: trimOrFallback(source.importSource, trimOrFallback(fallbackSource.importSource, "")),
+    wishlistImportedAt: trimOrFallback(source.wishlistImportedAt, trimOrFallback(fallbackSource.wishlistImportedAt, ""))
   };
 }
 
