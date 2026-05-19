@@ -866,8 +866,8 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
     : (returnView === "discover" ? "Back to Discover" : "Back to Library");
   if (!activeEntry) {
     return `
-      <div data-surface="details" class="pt-[8.75rem] md:pt-24 pb-12">
-        <div class="max-w-[1100px] mx-auto px-6 lg:px-8">
+      <div data-surface="details" class="pt-[16rem] md:pt-24 pb-12">
+        <div class="max-w-[1100px] mx-auto px-5 sm:px-6 lg:px-8">
           <section data-surface-region="details-core" class="checkpoint-panel rounded-xl px-8 py-10 min-h-[20rem]">
             <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-8 items-center">
               <div class="mx-auto md:mx-0 w-full max-w-[220px] aspect-[3/4] overflow-hidden rounded-md bg-zinc-900 cover-shadow">
@@ -897,8 +897,8 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
 
   if (isWishlistSurface) {
     return `
-      <div data-surface="details" class="pt-[8.75rem] md:pt-24 pb-12">
-        <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-10">
+      <div data-surface="details" class="pt-[16rem] md:pt-24 pb-12">
+        <div class="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-8 space-y-10">
           ${renderDecisionDetailPage({
             idPrefix: "detail",
             title: game?.title || activeEntry.title,
@@ -933,8 +933,8 @@ export function renderDetailsView(snapshot, storefrontDefinitions, statusDefinit
   }
 
   return `
-    <div data-surface="details" class="pt-[8.75rem] md:pt-24 pb-12">
-      <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-10">
+    <div data-surface="details" class="pt-[16rem] md:pt-24 pb-12">
+      <div class="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-8 space-y-10">
         <section data-surface-region="details-hero">
           ${renderDetailHeroSection(snapshot, activeEntry, game, coverArt, heroBackdropArt, description, storefrontDefinitions, statusDefinitions, isNonRunEntry, returnView, returnLabel)}
         </section>

@@ -854,10 +854,10 @@ function renderSettingsSectionRail(items, activeSection, mode = "mobile") {
   }
 
   return `
-    <section data-surface-region="settings-local-nav" class="checkpoint-toolbar rounded-xl px-4 py-3 mb-8 xl:hidden">
-      <nav class="flex items-center gap-1 overflow-x-auto custom-scrollbar">
+    <section data-surface-region="settings-local-nav" class="checkpoint-toolbar rounded-xl px-3 py-3 mb-8 xl:hidden">
+      <nav class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:overflow-x-auto sm:custom-scrollbar">
         ${items.map((item) => `
-          <button class="px-3 py-2 whitespace-nowrap rounded-md font-label tracking-[0.08em] text-[11px] transition-colors ${item.id === activeSection ? "bg-primary/10 text-primary" : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.03]"}" data-action="set-settings-section" data-section="${item.id}">
+          <button class="px-3 py-2 min-h-10 rounded-md font-label tracking-[0.08em] text-[11px] transition-colors ${item.id === activeSection ? "bg-primary/10 text-primary" : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.03]"}" data-action="set-settings-section" data-section="${item.id}">
             ${item.label}
           </button>
         `).join("")}
@@ -970,12 +970,12 @@ export function renderSettingsView(snapshot, storefrontDefinitions = []) {
   const conflictSecondaryAction = conflictPrefersRemote ? "keep-local-during-conflict" : "restore-google-drive";
 
   return `
-    <main data-surface="settings" class="pt-[8.75rem] md:pt-24 pb-12">
-      <div class="max-w-[1400px] mx-auto px-6 lg:px-8">
-        <div class="mb-12 max-w-3xl">
+    <main data-surface="settings" class="pt-[16rem] md:pt-24 pb-12">
+      <div class="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-8">
+        <div class="mb-9 md:mb-12 max-w-3xl">
           <p class="font-label text-[11px] tracking-[0.08em] text-primary mb-3">Settings</p>
-          <h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Sync, backup, and library maintenance.</h1>
-          <p class="mt-3 text-on-surface-variant leading-relaxed">Manage Drive sync, backups, and refresh actions while keeping run tracking local-first.</p>
+          <h1 class="text-[2.45rem] leading-[1.08] sm:text-4xl font-headline font-extrabold tracking-tight text-on-surface">Sync, backup, and library maintenance.</h1>
+          <p class="mt-4 text-base sm:text-lg text-on-surface-variant leading-relaxed">Manage Drive sync, backups, and refresh actions while keeping run tracking local-first.</p>
         </div>
         <div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-8">
           <div class="space-y-10">
@@ -1097,27 +1097,31 @@ export function renderSettingsView(snapshot, storefrontDefinitions = []) {
         </section>
         ` : ""}
         ${activeSection === "settings-backup-restore" ? `
-        <section id="settings-backup-restore" data-surface-region="settings-backup-restore" class="space-y-8 mt-10">
+        <section id="settings-backup-restore" data-surface-region="settings-backup-restore" class="space-y-6 sm:space-y-8 mt-8 sm:mt-10">
           <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div class="xl:col-span-12 grid grid-cols-1 gap-8">
-              <div class="checkpoint-subpanel p-7 rounded-xl flex flex-col gap-5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="checkpoint-subpanel p-5 sm:p-7 rounded-xl flex flex-col gap-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-4">
                   <div>
                     <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary mb-2">Local Backup</h3>
                     <p class="text-on-surface-variant leading-relaxed text-sm">Download your full local Checkpoint state as JSON.</p>
                   </div>
-                  ${renderScopedPrimaryAction("Export JSON", "This Device", "export-json")}
+                  <div class="w-full sm:w-auto">
+                    ${renderCompactScopedPrimaryAction("Export JSON", "This Device", "export-json")}
+                  </div>
                 </div>
                 <p class="text-xs text-zinc-500">Includes library, catalog, sync preferences, and UI preferences.</p>
                 ${renderSettingsNotice(snapshot.actionState.backup)}
               </div>
-              <div class="checkpoint-subpanel p-7 rounded-xl flex flex-col gap-5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="checkpoint-subpanel p-5 sm:p-7 rounded-xl flex flex-col gap-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-4">
                   <div>
                     <h3 class="font-label tracking-[0.08em] text-sm font-bold text-primary mb-2">Restore Backup</h3>
                     <p class="text-on-surface-variant leading-relaxed text-sm">Import a Checkpoint JSON backup into local storage.</p>
                   </div>
-                  ${renderScopedPrimaryAction("Import JSON", "This Device", "trigger-import-json")}
+                  <div class="w-full sm:w-auto">
+                    ${renderCompactScopedPrimaryAction("Import JSON", "This Device", "trigger-import-json")}
+                  </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button class="flex items-center justify-between p-3 rounded-lg ${snapshot.importMode === "replace" ? "bg-surface-container-high shadow-[inset_0_0_0_2px_rgba(0,212,255,0.22)]" : "bg-surface-container-low/40 hover:bg-surface-container-high"} transition-colors group" data-action="set-import-mode" data-import-mode="replace"><span class="font-label text-xs tracking-[0.08em] ${snapshot.importMode === "replace" ? "text-on-surface" : "text-outline"}">Replace</span><div class="w-4 h-4 rounded-[0.2rem] border ${snapshot.importMode === "replace" ? "border-primary flex items-center justify-center" : "border-outline-variant"}">${snapshot.importMode === "replace" ? '<div class="w-2 h-2 rounded-[0.15rem] bg-primary shadow-[0_0_8px_#a8e8ff]"></div>' : ""}</div></button>

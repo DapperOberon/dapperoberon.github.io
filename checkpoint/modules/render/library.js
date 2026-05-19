@@ -247,26 +247,26 @@ function renderLibraryStateBar(snapshot, statusDefinitions) {
       : `Showing all ${totalEntries} tracked entries`;
 
   return `
-    <section class="checkpoint-toolbar rounded-xl px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div class="flex flex-col gap-1">
+    <section class="checkpoint-toolbar rounded-xl px-4 py-4 sm:px-5 flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-4">
+      <div class="flex flex-col gap-1 text-center md:text-left">
         <p class="font-headline text-base font-bold text-on-surface">${escapeHtml(getStatusLabel(snapshot.activeStatus))}</p>
         <p class="text-sm text-on-surface-variant leading-relaxed">${escapeHtml(stateSummary)}</p>
       </div>
-      <div class="flex items-center gap-3 self-start md:self-auto">
+      <div class="grid grid-cols-2 gap-3 w-full max-w-[28rem] mx-auto md:max-w-none md:mx-0 md:w-auto md:flex md:items-center md:self-auto">
         ${showFilterControl
           ? `
-            <label class="flex items-center gap-2">
+            <label class="flex flex-col items-center gap-1.5 md:flex-row md:items-center md:gap-2">
               <span class="text-xs text-zinc-500">Filter</span>
-              <select id="library-status-filter" class="checkpoint-control-select text-sm font-body px-3 py-2 rounded-md transition-all text-zinc-200">
+              <select id="library-status-filter" class="checkpoint-control-select text-sm font-body px-3 py-2 rounded-md transition-all text-zinc-200 w-full text-center md:text-left md:w-auto">
                 <option value="all" ${snapshot.activeStatus === "all" ? "selected" : ""}>All Games</option>
                 ${availableStatuses.map((status) => `<option value="${status.id}" ${snapshot.activeStatus === status.id ? "selected" : ""}>${escapeHtml(status.label)}</option>`).join("")}
               </select>
             </label>
           `
           : ""}
-        <label class="flex items-center gap-2">
+        <label class="flex flex-col items-center gap-1.5 md:flex-row md:items-center md:gap-2 ${showFilterControl ? "" : "col-span-2 md:col-span-1"}">
           <span class="text-xs text-zinc-500">Sort</span>
-          <select id="library-sort-state" class="checkpoint-control-select text-sm font-body px-3 py-2 rounded-md transition-all text-zinc-200">
+          <select id="library-sort-state" class="checkpoint-control-select text-sm font-body px-3 py-2 rounded-md transition-all text-zinc-200 w-full text-center md:text-left md:w-auto">
             <option value="updated_desc" ${snapshot.sortMode === "updated_desc" ? "selected" : ""}>Recent</option>
             <option value="title_asc" ${snapshot.sortMode === "title_asc" ? "selected" : ""}>Title</option>
             <option value="playtime_desc" ${snapshot.sortMode === "playtime_desc" ? "selected" : ""}>Playtime</option>
@@ -274,7 +274,7 @@ function renderLibraryStateBar(snapshot, statusDefinitions) {
           </select>
         </label>
         ${showResetView
-          ? renderSecondaryAction("Reset View", "clear-library-view", "px-4 py-2 text-[11px] tracking-[0.12em]")
+          ? renderSecondaryAction("Reset View", "clear-library-view", "col-span-2 md:col-span-1 px-4 py-2 text-[11px] tracking-[0.12em]")
           : ""}
       </div>
     </section>
@@ -316,10 +316,10 @@ function renderLibraryEmptyState(snapshot) {
 function renderLibraryFocusSection(snapshot, storefrontDefinitions, statusDefinitions, title, subtitle) {
   return `
     <section>
-      <div class="flex items-center justify-between mb-6 border-b border-outline-variant/20 pb-4">
-        <div class="flex items-center gap-4">
-        <h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">${escapeHtml(title)}</h2>
-          <span class="font-body text-sm text-zinc-500 mt-1">${escapeHtml(subtitle)}</span>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6 border-b border-outline-variant/20 pb-4">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+          <h2 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">${escapeHtml(title)}</h2>
+          <span class="font-body text-sm text-zinc-500 sm:mt-1">${escapeHtml(subtitle)}</span>
         </div>
         <span class="font-body text-sm text-zinc-500">${snapshot.visibleLibrary.length} visible</span>
       </div>
@@ -333,13 +333,13 @@ function renderLibraryFocusSection(snapshot, storefrontDefinitions, statusDefini
 function renderDashboardHero(snapshot) {
   return `
     <section class="grid grid-cols-1 xl:grid-cols-[1.5fr_320px] gap-6 lg:gap-8">
-      <div class="checkpoint-toolbar rounded-xl p-8">
+      <div class="checkpoint-toolbar rounded-xl p-6 sm:p-8">
         <div class="flex flex-col gap-3">
           <p class="font-label text-[11px] tracking-[0.08em] text-primary">Your Library</p>
-          <h1 class="text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Track what you are playing, what you finished, and what is queued next.</h1>
+          <h1 class="text-[2rem] leading-[1.12] sm:text-4xl lg:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Track what you are playing, what you finished, and what is queued next.</h1>
           <p class="max-w-3xl text-on-surface-variant leading-relaxed">A cleaner, cover-first view of your active runs.</p>
         </div>
-        <div class="metadata-rule mt-8 pt-5 flex flex-wrap gap-6 text-sm font-body text-zinc-500">
+        <div class="metadata-rule mt-7 pt-5 grid grid-cols-2 gap-x-5 gap-y-3 sm:flex sm:flex-wrap sm:gap-6 text-sm font-body text-zinc-500">
           <span>${snapshot.dashboardMetrics.playingCount} playing</span>
           <span>${snapshot.dashboardMetrics.finishedCount} finished</span>
           <span>${snapshot.dashboardMetrics.backlogCount} backlog</span>
@@ -498,8 +498,8 @@ export function renderSidebar(snapshot) {
   const showLibraryControls = true;
 
   return `
-    <header class="fixed top-0 inset-x-0 ${showLibraryControls ? "h-[7.5rem] md:h-16" : "h-16"} checkpoint-topbar z-50">
-      <div class="max-w-[1400px] mx-auto h-full px-6 lg:px-8 flex ${showLibraryControls ? "flex-col md:flex-row" : "flex-row"} items-start md:items-center justify-between gap-3 md:gap-6 py-3 md:py-0">
+    <header class="fixed top-0 inset-x-0 ${showLibraryControls ? "h-[14.75rem] md:h-16" : "h-16"} checkpoint-topbar z-50">
+      <div class="max-w-[1400px] mx-auto h-full px-5 sm:px-6 lg:px-8 flex ${showLibraryControls ? "flex-col md:flex-row" : "flex-row"} items-start md:items-center justify-between gap-4 md:gap-6 py-5 md:py-0">
         <div class="flex items-center gap-8 min-w-0 w-full md:w-auto">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-md bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shadow-lg shadow-cyan-500/10">
@@ -542,12 +542,44 @@ export function renderSidebar(snapshot) {
           </nav>
         </div>
         ${showLibraryControls ? `
-          <div class="flex items-center gap-3 w-full md:w-auto">
-            <label class="relative group checkpoint-search-shell flex-1 min-w-[12rem] rounded-md">
-              <input id="global-search" class="checkpoint-search-input px-4 py-2.5 pl-10 w-full sm:w-72 rounded-md" placeholder="Search titles, runs, studios..." type="text" value="${escapeHtml(snapshot.searchTerm)}">
+          <nav class="md:hidden w-full flex items-center justify-center gap-2 overflow-x-auto custom-scrollbar pb-1" aria-label="Primary sections">
+            ${items.map((item) => {
+              const isActive = item.id === "dashboard"
+                ? (
+                  snapshot.currentView === "dashboard"
+                  || (
+                    snapshot.currentView === "details"
+                    && (snapshot.uiPreferences?.lastView === "dashboard" || !snapshot.uiPreferences?.lastView)
+                  )
+                )
+                : item.id === "discover"
+                  ? (
+                    snapshot.currentView === "discover"
+                    || (
+                      snapshot.currentView === "details"
+                      && snapshot.uiPreferences?.lastView === "discover"
+                    )
+                  )
+                  : item.id === "wishlist"
+                    ? (
+                      snapshot.currentView === "wishlist"
+                      || (
+                        snapshot.currentView === "details"
+                        && snapshot.uiPreferences?.lastView === "wishlist"
+                      )
+                    )
+                    : snapshot.currentView === item.id;
+              return `<button class="shrink-0 px-4 py-2 rounded-md font-label tracking-[0.08em] text-[11px] transition-colors ${isActive ? "bg-primary/10 text-primary" : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.03]"}" data-action="set-view" data-view="${item.id}">${item.label}</button>`;
+            }).join("")}
+          </nav>
+        ` : ""}
+        ${showLibraryControls ? `
+          <div class="flex items-center justify-center gap-3 w-full md:w-auto">
+            <label class="relative group checkpoint-search-shell flex-1 min-w-0 rounded-md">
+              <input id="global-search" class="checkpoint-search-input px-4 py-2.5 pl-10 w-full md:w-72 rounded-md" placeholder="Search titles, runs, studios..." type="text" value="${escapeHtml(snapshot.searchTerm)}">
               <span class="material-symbols-outlined absolute left-3 top-2.5 text-zinc-500 text-sm">search</span>
             </label>
-            <button class="checkpoint-button checkpoint-button-primary h-10 px-5 flex items-center justify-center gap-2 rounded-md w-auto font-label tracking-[0.08em] text-[11px] whitespace-nowrap" data-action="open-add-modal">
+            <button class="checkpoint-button checkpoint-button-primary h-10 px-4 sm:px-5 flex items-center justify-center gap-2 rounded-md w-auto font-label tracking-[0.08em] text-[11px] whitespace-nowrap" data-action="open-add-modal">
               <span class="material-symbols-outlined text-sm">add</span>
               Add Game
             </button>
@@ -576,8 +608,8 @@ export function renderDashboardView(snapshot, storefrontDefinitions, statusDefin
 
   if (!snapshot.visibleLibrary.length && !isDiscoverView) {
     return `
-      <div data-surface="library" class="pt-[8.75rem] md:pt-24 pb-12">
-        <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-8">
+      <div data-surface="library" class="pt-[16rem] md:pt-24 pb-12">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <section data-surface-region="library-state-row">
             ${renderLibraryStateBar(snapshot, statusDefinitions)}
           </section>
@@ -600,8 +632,8 @@ export function renderDashboardView(snapshot, storefrontDefinitions, statusDefin
         : (hasSearch ? `Filtered through ${getStatusLabel(snapshot.activeStatus).toLowerCase()}` : "Focused library view"));
 
     return `
-      <div data-surface="library" class="pt-[8.75rem] md:pt-24 pb-12">
-        <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-8">
+      <div data-surface="library" class="pt-[16rem] md:pt-24 pb-12">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           ${showStateBar ? `<section data-surface-region="library-state-row">${renderLibraryStateBar(snapshot, statusDefinitions)}</section>` : ""}
           <section data-surface-region="library-content">
             ${renderLibraryFocusSection(snapshot, storefrontDefinitions, statusDefinitions, title, subtitle)}
@@ -612,8 +644,8 @@ export function renderDashboardView(snapshot, storefrontDefinitions, statusDefin
   }
 
   return `
-    <div data-surface="library" class="pt-[8.75rem] md:pt-24 pb-12">
-      <div class="max-w-[1400px] mx-auto px-6 lg:px-8 space-y-10">
+    <div data-surface="library" class="pt-[16rem] md:pt-24 pb-12">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         ${showStateBar ? `<section data-surface-region="library-state-row">${renderLibraryStateBar(snapshot, statusDefinitions)}</section>` : ""}
         <section data-surface-region="library-content" class="space-y-10">
           ${isWishlistView
