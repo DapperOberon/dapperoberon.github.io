@@ -336,10 +336,10 @@ export function renderDesktopSection(section, startIndex, { escapeHtml }) {
   return `
     <div class="relative" id="${escapeHtml(section.anchorId)}">
       <div class="absolute left-1/2 -translate-x-1/2 -top-12 w-3 h-3 rounded-full shadow-[0_0_15px_currentColor]" style="color:${escapeHtml(section.color)}; background:${escapeHtml(section.color)};"></div>
-      <h3 class="text-center font-headline font-bold text-3xl uppercase tracking-hud-wider mb-24 relative z-20 bg-background inline-flex items-center gap-4 left-1/2 -translate-x-1/2 px-8" style="color:${escapeHtml(section.color)};">
+      <h2 class="text-center font-headline font-bold text-3xl uppercase tracking-hud-wider mb-24 relative z-20 bg-background inline-flex items-center gap-4 left-1/2 -translate-x-1/2 px-8" style="color:${escapeHtml(section.color)};">
         ${eraAsset ? `<img class="era-logo era-logo--heading" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true" loading="lazy" decoding="async">` : ""}
         <span>${escapeHtml(section.era)}</span>
-      </h3>
+      </h2>
       <div class="space-y-24">
         ${section.entries.map((entry, index) => renderDesktopEntry(entry, startIndex + index, escapeHtml)).join("")}
       </div>
@@ -367,7 +367,7 @@ function renderMobileEntry(entry, escapeHtml) {
         <div class="p-5">
           <div class="flex justify-between items-start mb-2 gap-3">
             <div>
-              <h4 class="font-headline font-bold text-lg leading-tight mb-1">${escapeHtml(entry.title)}</h4>
+              <h3 class="font-headline font-bold text-lg leading-tight mb-1">${escapeHtml(entry.title)}</h3>
               <div class="flex items-center gap-2 opacity-60">
                 <span class="story-meta">${escapeHtml(storyMeta)}</span>
               </div>
@@ -397,7 +397,7 @@ export function renderMobileSection(section, { escapeHtml }) {
         <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(251,228,25,0.25)]" style="background:${escapeHtml(section.color)};">
           ${eraAsset ? `<img class="era-logo era-logo--mobile" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true" loading="lazy" decoding="async">` : ""}
         </div>
-        <h3 class="font-headline font-bold text-lg tracking-widest uppercase" style="color:${escapeHtml(section.color)};">${escapeHtml(section.era)}</h3>
+        <h2 class="font-headline font-bold text-lg tracking-widest uppercase" style="color:${escapeHtml(section.color)};">${escapeHtml(section.era)}</h2>
       </div>
       <div class="space-y-8 pl-8 relative">
         ${section.entries.map((entry) => renderMobileEntry(entry, escapeHtml)).join("")}

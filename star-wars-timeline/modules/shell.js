@@ -35,7 +35,7 @@ export function renderStandardTopBar({
           <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-white/40 text-sm">search</span>
           <input id="timeline-search-input-desktop" data-search-input="desktop" class="bg-surface-container-high/70 border-none border-b border-outline-variant/30 focus:border-secondary focus:ring-0 text-xs py-2.5 pl-10 pr-4 w-64 rounded-none transition-all" placeholder="Search the galaxy..." type="text" value="${searchValue}"/>
         </div>
-        <div id="music-pill" class="hidden xl:flex items-center gap-3 bg-white/5 px-3 py-2.5 min-w-[15rem]">
+        <div id="music-pill" class="hidden md:flex items-center gap-3 bg-white/5 px-2 lg:px-3 py-2.5 min-w-[11rem] lg:min-w-[15rem]">
           <div class="min-w-0">
             <span class="block text-label-lg font-headline uppercase tracking-hud text-secondary truncate" id="music-pill-title">Music Off</span>
           </div>

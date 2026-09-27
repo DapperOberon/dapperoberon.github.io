@@ -485,12 +485,35 @@ Surfaces to align: timeline, entry modal, filter panel, stats, preferences, guid
 
 Todos:
 
-- [ ] Same heading hierarchy and spacing rhythm on every page.
-- [ ] Same empty-state treatment everywhere.
-- [ ] Same focus ring on every interactive element.
-- [ ] Same hover and active transitions.
-- [ ] Same panel elevation and border language; reduce stacked glass and glow where they compete.
-- [ ] Desktop and mobile expose the same destinations and the same controls.
+Audited 2026-09-27 by rendering actual module output and measuring it, rather
+than reading class strings. Split into D4a (focus), D4b (structural), D4c
+(cosmetic), D4d (design judgment).
+
+### D4a — Focus ring ✅
+
+- [x] **Same focus ring on every interactive element.** Coverage was **26 of 156 rendered interactive elements (17%)**. `styles.css` styled `:focus-visible` for six component classes *by name*, so every episode checkbox, poster card, era chip, and all four footer links were invisible to keyboard users — a WCAG 2.4.7 failure across most of the app. Replaced with an element-based `:where(a[href], button, input, select, textarea, summary, [tabindex])` rule: **156/156, 100%**. New markup can no longer silently opt out.
+  - Visual treatment deliberately unchanged, so elements that were already correct look identical.
+  - Added a `forced-colors: active` fallback to `Highlight` for Windows High Contrast Mode.
+  - Tighter `outline-offset` on inputs, which sit in cramped containers.
+  - **`z-index: 1` is applied without `position: relative`.** The obvious version of this rule breaks two absolutely-positioned modal close buttons by overriding their `position` on focus. Caught before commit.
+
+### D4b — Structural correctness ✅
+
+- [x] **Same heading hierarchy.** The desktop timeline rendered **57 headings, all `<h3>`** — era titles and the entries inside them at the same level, giving screen-reader users a flat list of 57 peers. Eras are now `h2`, entries `h3`, on both desktop and mobile. Zero level skips; verified by rendering all 7 eras and walking the sequence.
+  - Mobile separately skipped `h2 → h4`; also fixed.
+  - Content pages were already correct (one `h1`, clean descent) — the roadmap's "5 `<h1>`" concern was one per page, which is right.
+- [x] **Desktop and mobile expose the same controls.** Audio controls had a **dead zone at 768–1279px**: the mobile player is `md:hidden` (0–767px) and the desktop pill was `hidden xl:flex` (1280px+). Every iPad landscape and small laptop had **no way to pause playing music**. The pill is now `md:flex` with a narrower layout below `lg`, making coverage continuous.
+- [x] **`aria-expanded` / `aria-controls` on the filter triggers** (roadmap E1, but cross-surface so handled here). Both triggers now report panel state. This required threading `isFilterPanelOpen` through `renderAppMainContent`, which did not previously receive it — without that the attribute would have rendered `undefined`.
+
+### D4c — Cosmetic alignment (pending)
+
+- [ ] Same empty-state treatment everywhere. **Mostly already true** — the roadmap implies these are missing, but both desktop and mobile have empty states with identical copy and a Clear Filters button. They differ only in framing (desktop `py-16 text-center`, mobile `p-6 rounded-xl` left-aligned).
+- [ ] Same hover and active transitions. 22 `transition-all` (animates every property), 13 `transition-colors`, 7 `transition-transform`; durations 3×`duration-700`, 1×`duration-200`, rest defaulted.
+
+### D4d — Design judgment (needs review on real screens)
+
+- [ ] Same panel elevation and border language; reduce stacked glass and glow where they compete. Five overlapping surface treatments in use: `utility-section` (42), `glass-panel` (8), `glass-surface` (5), `glass-surface-soft` (5), `content-page-shell` (5).
+- [ ] Same spacing rhythm on every page.
 
 ### D5. Consistency Guardrails
 

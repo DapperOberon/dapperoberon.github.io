@@ -70,6 +70,7 @@ export function createAppRenderer({
       flatEntries,
       stats,
       activeFilterCount,
+      isFilterPanelOpen: appState.isFilterPanelOpen,
       filteredEntries,
       filteredSections,
       normalizedSections,
