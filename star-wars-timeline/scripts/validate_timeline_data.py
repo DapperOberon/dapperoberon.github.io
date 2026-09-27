@@ -136,15 +136,20 @@ def main() -> int:
                 if poster_path and not poster_path.exists():
                     errors.append(f"{entry_label}.poster file does not exist: {poster}")
                 elif poster_path and poster_path.suffix.lower() in {".jpg", ".jpeg"}:
-                    # The app serves a WebP derivative with the JPG as fallback
-                    # (modules/images.js). A missing derivative silently costs
-                    # the size win, so treat it as an error.
-                    webp_path = poster_path.with_suffix(".webp")
-                    if not webp_path.exists():
-                        errors.append(
-                            f"{entry_label}.poster is missing its WebP derivative: "
-                            f"{webp_path.name} (run scripts/build_poster_derivatives.py)"
-                        )
+                    # The app serves WebP derivatives with the JPG as fallback
+                    # (modules/images.js): a standard variant for cards/modal,
+                    # and a wide "-lg" variant for the full-bleed hero. The hero
+                    # entry is dynamic, so every poster needs both. A missing
+                    # derivative silently degrades quality, so treat as an error.
+                    for derivative in (
+                        poster_path.with_suffix(".webp"),
+                        poster_path.with_name(f"{poster_path.stem}-lg.webp"),
+                    ):
+                        if not derivative.exists():
+                            errors.append(
+                                f"{entry_label}.poster is missing its WebP derivative: "
+                                f"{derivative.name} (run scripts/build_poster_derivatives.py)"
+                            )
 
             validate_url(watch_url, f"{entry_label}.watchUrl", errors)
             validate_url(info_url, f"{entry_label}.wookieepediaUrl", errors)

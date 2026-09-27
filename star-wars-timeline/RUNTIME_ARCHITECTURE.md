@@ -30,9 +30,12 @@ npm run build:posters # -> images/posters/*.webp + right-sized JPGs
   `tailwind.generated.css`. This replaced the old `cdn.tailwindcss.com`
   script, which was render-blocking and logged a production warning.
   Re-run `build:css` after adding new utility classes to any module.
-- **Posters** — `scripts/build_poster_derivatives.py` writes a WebP beside each
-  JPG and re-saves the JPG at the same 600px width.
-  `scripts/validate_timeline_data.py` fails if a `.webp` is missing.
+- **Posters** — `scripts/build_poster_derivatives.py` writes three variants per
+  poster: a 900px `.webp` (cards, modal), a 1600px `-lg.webp` (full-bleed hero),
+  and a 900px `.jpg` fallback. Sources are never upscaled.
+  `scripts/validate_timeline_data.py` fails if either derivative is missing.
+  Render through `renderPoster()` in `modules/images.js`; pass `hero: true` for
+  full-bleed placements so they get the wide variant.
 - **Audio** — `scripts/build_audio_derivatives.sh` re-encodes background music
   at 96 kbps. Only needed when adding new tracks.
 

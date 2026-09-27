@@ -77,7 +77,7 @@ export function renderAppMainContent({
   return `
     <section id="timeline-hero" class="relative min-h-[640px] md:h-[716px] w-full overflow-hidden bg-surface-container-lowest">
       <div class="absolute inset-0 z-0">
-        ${renderPoster({ src: heroEntry.posterUrl || heroEntry.poster, alt: heroEntry.title, className: "w-full h-full object-cover opacity-50 scale-105", eager: true, escape: escapeHtml })}
+        ${renderPoster({ src: heroEntry.posterUrl || heroEntry.poster, alt: heroEntry.title, className: "w-full h-full object-cover opacity-50 scale-105", eager: true, hero: true, sizes: "100vw", escape: escapeHtml })}
         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
       </div>
