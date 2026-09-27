@@ -1,4 +1,5 @@
 import { getContentPage, isContentPage, renderContentPage } from "./content-pages.js";
+import { renderPoster } from "./images.js";
 
 export function renderAppDesktopSidebarContent({
   currentPage,
@@ -35,7 +36,7 @@ export function renderAppDesktopSidebarContent({
       ${normalizedSections.map((section) => `
         <button class="era-nav-button flex items-center gap-4 px-8 py-4 text-white/40 hover:bg-white/5 hover:text-white transition-all group text-left" type="button" data-scroll-target="${escapeHtml(section.anchorId)}">
           ${getEraAssetPath(section.era)
-            ? `<img class="era-logo era-logo--sidebar" src="${escapeHtml(getEraAssetPath(section.era))}" alt="" aria-hidden="true">`
+            ? `<img class="era-logo era-logo--sidebar" src="${escapeHtml(getEraAssetPath(section.era))}" alt="" aria-hidden="true" loading="lazy" decoding="async">`
             : ""}
           <span class="font-medium text-sm font-body">${escapeHtml(section.era)}</span>
         </button>
@@ -76,7 +77,7 @@ export function renderAppMainContent({
   return `
     <section id="timeline-hero" class="relative min-h-[640px] md:h-[716px] w-full overflow-hidden bg-surface-container-lowest">
       <div class="absolute inset-0 z-0">
-        <img class="w-full h-full object-cover opacity-50 scale-105" src="${escapeHtml(heroEntry.posterUrl || heroEntry.poster)}" alt="${escapeHtml(heroEntry.title)}"/>
+        ${renderPoster({ src: heroEntry.posterUrl || heroEntry.poster, alt: heroEntry.title, className: "w-full h-full object-cover opacity-50 scale-105", eager: true, escape: escapeHtml })}
         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
       </div>

@@ -597,13 +597,6 @@ body::before {
   accent-color: #fbe419;
 }
 
-body[data-interface-theme="jedi-light"] {
-  background:
-    radial-gradient(circle at top, rgba(117, 209, 255, 0.12), transparent 24%),
-    radial-gradient(circle at 80% 20%, rgba(251, 228, 25, 0.08), transparent 18%),
-    #171d20;
-}
-
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

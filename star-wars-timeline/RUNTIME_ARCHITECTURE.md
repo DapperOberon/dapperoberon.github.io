@@ -12,7 +12,29 @@ The live app is served from:
 - [`index.html`](./index.html)
 - [`app.js`](./app.js)
 - [`styles.css`](./styles.css)
-- [`tailwind-config.js`](./tailwind-config.js)
+- [`tailwind.generated.css`](./tailwind.generated.css) — compiled, checked in
+
+## Build Steps
+
+The app still runs directly in the browser, but two assets are generated.
+Both outputs are committed, so a plain checkout serves correctly.
+
+```bash
+cd star-wars-timeline
+npm install          # first time only
+npm run build:css    # -> tailwind.generated.css
+npm run build:posters # -> images/posters/*.webp + right-sized JPGs
+```
+
+- **CSS** — `tailwind.config.cjs` + `tailwind.input.css` compile to
+  `tailwind.generated.css`. This replaced the old `cdn.tailwindcss.com`
+  script, which was render-blocking and logged a production warning.
+  Re-run `build:css` after adding new utility classes to any module.
+- **Posters** — `scripts/build_poster_derivatives.py` writes a WebP beside each
+  JPG and re-saves the JPG at the same 600px width.
+  `scripts/validate_timeline_data.py` fails if a `.webp` is missing.
+- **Audio** — `scripts/build_audio_derivatives.sh` re-encodes background music
+  at 96 kbps. Only needed when adding new tracks.
 
 Primary data files:
 

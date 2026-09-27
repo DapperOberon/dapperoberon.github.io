@@ -3,6 +3,7 @@
 checkpoint/cloudflare-worker/node_modules/
 checkpoint/cloudflare-worker/.wrangler/
 checkpoint/node_modules/
+star-wars-timeline/node_modules/
 checkpoint/cloudflare-worker/.dev.vars*
 checkpoint/cloudflare-worker/.env*
 checkpoint/checkpoint-backup-*.json

@@ -73,7 +73,6 @@ export function initializeAppInteractions(callbacks) {
     onStatsOpenEntry,
     onTogglePreference,
     onRangePreference,
-    onThemePreference,
     onResetProgress
   } = callbacks;
 
@@ -243,12 +242,6 @@ export function initializeAppInteractions(callbacks) {
   document.querySelectorAll("[data-pref-range]").forEach((input) => {
     input.addEventListener("input", () => {
       onRangePreference?.(input.getAttribute("data-pref-range"), Number(input.value));
-    });
-  });
-
-  document.querySelectorAll("[data-pref-theme]").forEach((button) => {
-    button.addEventListener("click", () => {
-      onThemePreference?.(button.getAttribute("data-pref-theme"));
     });
   });
 

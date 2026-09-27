@@ -55,5 +55,7 @@ check_route "${BASE_URL}/data/timeline-data.json"
 check_route "${BASE_URL}/data/music-data.json"
 check_route "${BASE_URL}/app.js"
 check_route "${BASE_URL}/styles.css"
+check_route "${BASE_URL}/tailwind.generated.css"
+check_route "${BASE_URL}/images/social-preview.jpg"
 
 echo "Smoke test OK"

@@ -1,5 +1,26 @@
-tailwind.config = {
+/**
+ * Tailwind build config for star-wars-timeline.
+ *
+ * This replaces the old CDN script + `tailwind-config.js` pair, which was
+ * render-blocking, FOUC-prone, and logged a production warning.
+ *
+ * Build: npm run build:css   (from star-wars-timeline/)
+ * Output: ./tailwind.generated.css, linked from index.html
+ *
+ * Token note: `brand-yellow` is deliberately the same value as
+ * `primary-fixed` (#fbe419). Markup currently also hardcodes #FFE81F in
+ * places; reconciling those two yellows is Workstream D2 in ROADMAP.md.
+ */
+module.exports = {
   darkMode: "class",
+  content: [
+    "./index.html",
+    "./app.js",
+    "./modules/**/*.js",
+    "./guide/**/*.html",
+    "./privacy/**/*.html",
+    "./terms/**/*.html"
+  ],
   theme: {
     extend: {
       colors: {
@@ -49,12 +70,13 @@ tailwind.config = {
         "on-secondary": "#003548",
         "surface-tint": "#ddc800",
         "surface-container-highest": "#353534",
-        "on-surface-variant": "#cdc7ab"
+        "on-surface-variant": "#cdc7ab",
+        "brand-yellow": "#fbe419"
       },
       fontFamily: {
-        "headline": ["Space Grotesk"],
-        "body": ["Manrope"],
-        "label": ["Inter"]
+        "headline": ["Space Grotesk", "sans-serif"],
+        "body": ["Manrope", "sans-serif"],
+        "label": ["Inter", "sans-serif"]
       },
       borderRadius: {
         "DEFAULT": "0.125rem",
@@ -63,5 +85,9 @@ tailwind.config = {
         "full": "9999px"
       }
     }
-  }
+  },
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/container-queries")
+  ]
 };

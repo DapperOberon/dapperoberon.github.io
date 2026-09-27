@@ -308,9 +308,6 @@ export function createInteractionWiring({
       onRangePreference: (key, value) => {
         appActions.setPreferenceValue(key, value);
       },
-      onThemePreference: (value) => {
-        appActions.setPreferenceValue("interfaceTheme", value);
-      },
       onResetProgress: () => {
         const confirmed = window.confirm("Reset all watched progress in Star Wars: Chronicles?");
         if (!confirmed) return;

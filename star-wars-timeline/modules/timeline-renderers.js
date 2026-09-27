@@ -1,4 +1,5 @@
 import { getEraAssetPath } from "./constants.js";
+import { renderPoster } from "./images.js";
 import {
   entryEpisodes,
   getEntryMetaDisplay,
@@ -76,7 +77,7 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
   const playSurface = episode.watchUrl
     ? `
         <a class="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest group/play" href="${escapeHtml(episode.watchUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Watch ${escapeHtml(episode.title)}">
-          <img class="w-full h-full object-cover opacity-60" src="${escapeHtml(poster)}" alt="${escapeHtml(episode.title)}">
+          ${renderPoster({ src: poster, alt: episode.title, className: "w-full h-full object-cover opacity-60", escape: escapeHtml })}
           <div class="absolute inset-0 flex items-center justify-center">
             <span class="material-symbols-outlined text-white text-2xl group-active:scale-125 group-hover/play:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">play_circle</span>
           </div>
@@ -150,13 +151,13 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
           </button>
           <header class="relative flex-shrink-0">
             <div class="absolute inset-0 z-0">
-              <img class="w-full h-full object-cover opacity-40" src="${escapeHtml(entry.posterUrl || entry.poster)}" alt="${escapeHtml(entry.title)}">
+              ${renderPoster({ src: entry.posterUrl || entry.poster, alt: entry.title, className: "w-full h-full object-cover opacity-40", escape: escapeHtml })}
               <div class="absolute inset-0 scrim-bottom"></div>
               <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/15 to-black/45"></div>
             </div>
             <div class="relative z-10 p-8 md:p-12 lg:px-14 flex flex-col md:flex-row gap-8 lg:gap-10 items-end min-h-[21rem]">
               <div class="w-40 md:w-56 aspect-[2/3] rounded-xl overflow-hidden shadow-2xl ring-2 ring-primary-fixed/20 flex-shrink-0">
-                <img class="w-full h-full object-cover" src="${escapeHtml(entry.posterUrl || entry.poster)}" alt="${escapeHtml(entry.title)} poster">
+                ${renderPoster({ src: entry.posterUrl || entry.poster, alt: `${entry.title} poster`, className: "w-full h-full object-cover", escape: escapeHtml })}
               </div>
               <div class="flex-grow space-y-5 max-w-4xl">
                 <div class="flex items-center gap-3 mb-1 flex-wrap">
@@ -213,7 +214,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
         <main class="relative pt-0 pb-10 min-h-screen bg-surface overflow-x-hidden">
           <section class="relative h-[486px] w-full overflow-hidden">
             <div class="absolute inset-0 z-0">
-              <img class="w-full h-full object-cover scale-105" src="${escapeHtml(entry.posterUrl || entry.poster)}" alt="${escapeHtml(entry.title)}">
+              ${renderPoster({ src: entry.posterUrl || entry.poster, alt: entry.title, className: "w-full h-full object-cover scale-105", escape: escapeHtml })}
               <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
               <div class="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent"></div>
             </div>
@@ -306,7 +307,7 @@ function renderDesktopEntry(entry, index, escapeHtml) {
       </div>
       <div class="hidden md:block w-[45%]">
         <div class="relative overflow-hidden group/card bg-surface-container-low aspect-video shadow-2xl">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 grayscale-[0.5] group-hover/card:grayscale-0" src="${escapeHtml(entry.posterUrl || entry.poster)}" alt="${escapeHtml(entry.title)}"/>
+          ${renderPoster({ src: entry.posterUrl || entry.poster, alt: entry.title, className: "w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 grayscale-[0.5] group-hover/card:grayscale-0", escape: escapeHtml })}
           <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"></div>
           <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-fixed/80 via-primary-fixed/20 to-transparent"></div>
           <div class="absolute top-4 left-4">
@@ -336,7 +337,7 @@ export function renderDesktopSection(section, startIndex, { escapeHtml }) {
     <div class="relative" id="${escapeHtml(section.anchorId)}">
       <div class="absolute left-1/2 -translate-x-1/2 -top-12 w-3 h-3 rounded-full shadow-[0_0_15px_currentColor]" style="color:${escapeHtml(section.color)}; background:${escapeHtml(section.color)};"></div>
       <h3 class="text-center font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-flex items-center gap-4 left-1/2 -translate-x-1/2 px-8" style="color:${escapeHtml(section.color)};">
-        ${eraAsset ? `<img class="era-logo era-logo--heading" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true">` : ""}
+        ${eraAsset ? `<img class="era-logo era-logo--heading" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true" loading="lazy" decoding="async">` : ""}
         <span>${escapeHtml(section.era)}</span>
       </h3>
       <div class="space-y-24">
@@ -356,7 +357,7 @@ function renderMobileEntry(entry, escapeHtml) {
       <div class="absolute -left-[37px] top-6 w-3 h-3 rounded-full ${checked ? "bg-secondary/55 shadow-[0_0_10px_rgba(117,209,255,0.25)]" : "bg-primary-container shadow-[0_0_10px_#fbe419]"}"></div>
       <div class="bg-surface-container-low rounded-[1.25rem] overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform duration-200">
         <div class="h-44 relative">
-          <img class="w-full h-full object-cover" src="${escapeHtml(entry.posterUrl || entry.poster)}" alt="${escapeHtml(entry.title)}"/>
+          ${renderPoster({ src: entry.posterUrl || entry.poster, alt: entry.title, className: "w-full h-full object-cover", escape: escapeHtml })}
           <div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
           <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-fixed/80 via-primary-fixed/20 to-transparent"></div>
           <div class="absolute top-3 right-3">
@@ -394,7 +395,7 @@ export function renderMobileSection(section, { escapeHtml }) {
     <section class="mb-16 relative" id="mobile-era-${section.sectionIndex}">
       <div class="flex items-center gap-4 mb-8 -ml-4">
         <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(251,228,25,0.25)]" style="background:${escapeHtml(section.color)};">
-          ${eraAsset ? `<img class="era-logo era-logo--mobile" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true">` : ""}
+          ${eraAsset ? `<img class="era-logo era-logo--mobile" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true" loading="lazy" decoding="async">` : ""}
         </div>
         <h3 class="font-headline font-bold text-lg tracking-widest uppercase" style="color:${escapeHtml(section.color)};">${escapeHtml(section.era)}</h3>
       </div>

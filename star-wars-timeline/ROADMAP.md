@@ -2,7 +2,21 @@
 
 Status: Active
 Date: 2026-09-26
-Last updated: 2026-09-27 — **Sprint 1 (Workstream A) complete**, except the open Jedi Light decision in A3.
+Last updated: 2026-09-27 — **Sprints 1 and 2 complete** (Workstreams A and B).
+Next: Sprint 3 — Workstream D, the design system and token layer.
+
+### Sprint 2 result
+
+Served tree **116 MB → 44 MB** (62% smaller). Measured, not estimated.
+
+| Bucket | Before | After |
+| --- | --- | --- |
+| Reference assets (unused at runtime) | 51 MB | **0 MB** (moved to `archive/`) |
+| `audio/music` | 47 MB | 36 MB, and **not fetched until the user opts in** |
+| `images/posters` | 18 MB | 6.4 MB (WebP + right-sized JPG fallbacks) |
+
+Typical first paint is now roughly **620 KB**: app shell, modules, timeline
+data, and one eager hero poster. Everything else is lazy or opt-in.
 
 ## Purpose
 
@@ -127,10 +141,9 @@ It is not a light theme in any meaningful sense.
 Todos:
 
 - [x] Visually audit Jedi Light across timeline, stats, preferences, guide, privacy, and terms. Audited by inspection: a single `background` declaration cannot alter any of those surfaces beyond the page backdrop, so all six render effectively identically.
-- [ ] **DECISION REQUIRED — Either complete Jedi Light to parity, or remove it until it is ready.** Left open deliberately; this is a product call, not a cleanup.
-  - *Recommended:* remove the toggle now (delete the CSS block, the two `data-pref-theme` buttons at `content-pages.js:367/494`, and the two status readouts at `433/531`; pin `interfaceTheme` to `sith-dark`), then build a real light theme in **Sprint 3** on top of the Workstream D token layer, where remapping ~48 semantic tokens is a tractable change rather than a hand-written override sprawl.
-  - *Rationale:* a sun icon that yields a dark screen is a broken promise to the user. Shipping one honest theme beats shipping two where one is fictional.
-  - *If keeping instead:* it must not ship as a co-equal option in the preferences UI until parity exists.
+- [x] **DECIDED 2026-09-27: removed.** Jedi Light no longer ships. Removed the `styles.css` override, both `data-pref-theme` button pairs, the two theme status readouts (the System panel now reports Scanlines instead), the `onThemePreference` handler, and its `app-interactions.js` wiring.
+  - Added `SUPPORTED_INTERFACE_THEMES` + `normalizeInterfaceTheme()` in `modules/preferences.js`. Returning users with a stored `jedi-light` are coerced to `sith-dark` on load, and `applyPreferencesToDocument` can never write a retired theme id to the DOM. Verified by test.
+  - **A real light theme is deferred to Workstream D (see D2 below), not abandoned.** Rebuilding it on the token layer is the tractable path: remap the ~48 semantic color tokens once, rather than hand-writing per-surface overrides. Until then the app ships one honest theme.
 
 ### A4. Reconcile Documentation
 
@@ -145,7 +158,7 @@ Todos:
 ### A5. Repo Hygiene
 
 - [x] Push the pending git-hygiene commit `d770b63`. **Already done** — `d770b63` is on `origin/main` and the working tree was clean. This item was stale when written.
-- [ ] Decide whether `qa-artifacts/` and `images/website-reference/` should stay in the served tree (~47 MB of publicly fetchable screenshots). **Deferred to Sprint 2 by decision**, so all page-weight changes land and are measured together with B1/B2.
+- [x] Decide whether `qa-artifacts/` and `images/website-reference/` should stay in the served tree. **Decided: moved out.** `qa-artifacts/` (23 MB), `images/website-reference/` (24 MB), and `images/design-reference/` (4.1 MB) now live under `archive/`. 51 MB — 44% of the served tree — removed with zero code changes, since nothing loaded them at runtime.
 
 ---
 
@@ -162,13 +175,23 @@ Affected render sites in `modules/timeline-renderers.js`: lines 79, 153, 159, 21
 
 Todos:
 
-- [ ] Convert posters to WebP with JPG fallback.
-- [ ] Add `loading="lazy"` and `decoding="async"` to all non-hero posters.
-- [ ] Add explicit `width` and `height` to stop layout shift.
-- [ ] Keep the hero poster eager so first paint stays strong.
-- [ ] Extend `scripts/validate_timeline_data.py` to check derivative files exist.
+- [x] Convert posters to WebP with JPG fallback. New `modules/images.js` `renderPoster()` emits a `<picture>` with a WebP `<source>` and JPG `<img>` fallback; all 9 poster render sites route through it.
+- [x] Add `loading="lazy"` and `decoding="async"` to all non-hero posters. Also applied to the 3 decorative era logos.
+- [x] Add explicit `width` and `height` to stop layout shift.
+- [x] Keep the hero poster eager so first paint stays strong (`eager: true` adds `fetchpriority="high"`).
+- [x] Extend `scripts/validate_timeline_data.py` to check derivative files exist — a missing `.webp` is now a hard error.
+- [x] Added `scripts/build_poster_derivatives.py` (+ `npm run build:posters`) so the set is reproducible.
 
 Target: 18 MB down to under 4 MB.
+**Result: 18 MB → 6.4 MB for both formats combined** (2.9 MB WebP + 3.5 MB JPG
+fallbacks). WebP alone is 2.7 MB, an 84% reduction; the JPG fallbacks were also
+re-saved at 600px, since shipping full-resolution fallbacks beside 600px WebP
+would waste the win for any browser taking the fallback path.
+`acolyte-poster.jpg` went from 2.6 MB to 52 KB.
+
+> `<picture>` carries `style="display:contents"` so it generates no layout box
+> and the `<img>` still sizes against its original container. Without this,
+> `w-full h-full` would resolve against the `<picture>` and break every poster.
 
 ### B2. Audio Loading
 
@@ -176,10 +199,14 @@ Target: 18 MB down to under 4 MB.
 
 Todos:
 
-- [ ] Never fetch audio until the user actually starts playback.
-- [ ] Re-encode at a lower bitrate; verify quality on the longest tracks.
-- [ ] Add `preload="none"` to the background player.
-- [ ] Reconsider default-on behavior now that playlists exist (Workstream C).
+- [x] Never fetch audio until the user actually starts playback.
+- [x] Re-encode at a lower bitrate; verify quality on the longest tracks. All 16 tracks re-encoded to 96 kbps joint stereo: **47 MB → 36 MB**, with total runtime preserved exactly at 41.9 min and 16/16 decoding cleanly. `track-13` went 10.5 MB → 5.4 MB. Reproducible via `scripts/build_audio_derivatives.sh`.
+- [x] Add `preload="none"` to the background player (was `'auto'`).
+- [x] Reconsider default-on behavior. **Now defaults OFF** for first-time visitors (`stored === null ? false`). Defaulting on meant a multi-megabyte fetch before any interaction, and browsers block autoplay regardless — so it cost bandwidth and delivered nothing.
+
+> 42 minutes of audio has a floor; the real win is that **none of it loads until
+> the user opts in.** Combined with default-off, typical first load now fetches
+> zero audio bytes.
 
 ### B3. Metadata And Crawlability
 
@@ -187,10 +214,11 @@ Todos:
 
 Todos:
 
-- [ ] Add `<meta name="description">`, Open Graph, and Twitter card tags.
-- [ ] Add a `<noscript>` block describing the app.
-- [ ] Add `<meta name="robots" content="noindex">` to the `guide/`, `privacy/`, and `terms/` redirect stubs.
-- [ ] Investigate per-entry OG images as a later enhancement.
+- [x] Add `<meta name="description">`, Open Graph, and Twitter card tags. Also added a descriptive `<title>` and `rel="canonical"`.
+- [x] Add a `<noscript>` block describing the app.
+- [x] Add `<meta name="robots" content="noindex">` to the `guide/`, `privacy/`, and `terms/` redirect stubs (used `noindex,follow` so link equity still flows).
+- [x] Generated `images/social-preview.jpg` (1200×630, 40 KB) so shared links render a real card instead of a blank box. Smoke-tested as a route.
+- [ ] Investigate per-entry OG images as a later enhancement. Still open — needs either build-time generation per entry or an image service; not worth blocking on.
 
 ### B4. Tailwind Delivery
 
@@ -200,10 +228,13 @@ Todos:
 
 Todos:
 
-- [ ] Add a minimal Tailwind build mirroring `checkpoint/package.json`.
-- [ ] Generate `tailwind.generated.css` and swap the CDN script out of `index.html`.
-- [ ] Document the build step in `RUNTIME_ARCHITECTURE.md`.
-- [ ] Coordinate with Workstream D so tokens land in the config, not in markup.
+- [x] Add a minimal Tailwind build mirroring `checkpoint/package.json`. Added `package.json` (`build:css`, `watch:css`, `build:posters`, `verify`), `tailwind.config.cjs`, and `tailwind.input.css`.
+- [x] Generate `tailwind.generated.css` (49 KB minified) and swap the CDN script out of `index.html`. Deleted the now-obsolete `tailwind-config.js` and pointed `check_js_syntax.py` at the new config.
+- [x] Document the build step in `RUNTIME_ARCHITECTURE.md`.
+- [x] Coordinate with Workstream D so tokens land in the config, not in markup. All 48 existing semantic tokens carried over verbatim; added a `brand-yellow` token (`#fbe419`) as the anchor for the D2 yellow reconciliation.
+
+> Removing the CDN also removes a render-blocking third-party script and the
+> production console warning it emitted.
 
 ---
 
