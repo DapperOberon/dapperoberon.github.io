@@ -1,4 +1,7 @@
+.venv/
+.vscode/
 checkpoint/cloudflare-worker/node_modules/
+checkpoint/cloudflare-worker/.wrangler/
 checkpoint/node_modules/
 checkpoint/cloudflare-worker/.dev.vars*
 checkpoint/cloudflare-worker/.env*
