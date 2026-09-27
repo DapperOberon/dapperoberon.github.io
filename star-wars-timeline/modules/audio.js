@@ -222,7 +222,9 @@ export function createAudioController({
     }
 
     const player = new Audio();
-    player.preload = 'auto';
+    // Never fetch audio until the user actually starts playback. Tracks are
+    // multi-megabyte; 'auto' would pull them down on page load.
+    player.preload = 'none';
     player.loop = false;
     player.muted = false;
     player.volume = musicVolume;
@@ -490,7 +492,9 @@ export function createAudioController({
     if (!toggle && !settingsToggle && !musicPillToggleBtn) return;
 
     const stored = localStorage.getItem('sw_music_enabled');
-    musicEnabled = stored === null ? true : stored === 'true';
+    // Default OFF for first-time visitors. Defaulting on meant a multi-megabyte
+    // audio fetch before any interaction, and browsers block autoplay anyway.
+    musicEnabled = stored === null ? false : stored === 'true';
     const storedVolume = Number(localStorage.getItem('sw_music_volume'));
     musicVolume = clampMusicVolume(storedVolume);
     setMusicVolume(musicVolume, { persist: false });

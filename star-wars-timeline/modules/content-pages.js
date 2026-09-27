@@ -1,4 +1,5 @@
 import { calculateStats } from "./stats.js";
+import { renderPoster } from "./images.js";
 import {
   getEraProgress,
   getMediaDistribution,
@@ -156,7 +157,7 @@ function renderStatsPage({
               ${nextObjective ? `
                 <section id="stats-next-objective" class="utility-section md:col-span-4 overflow-hidden group flex flex-col scroll-mt-28">
                   <div class="relative h-48 w-full overflow-hidden">
-                    <img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" src="${escapeHtml(nextObjective.posterUrl || nextObjective.poster)}" alt="${escapeHtml(nextObjective.title)}">
+                    ${renderPoster({ src: nextObjective.posterUrl || nextObjective.poster, alt: nextObjective.title, className: "w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700", escape: escapeHtml })}
                     <div class="absolute inset-0 bg-gradient-to-t from-[#1c1b1b] to-transparent"></div>
                     <div class="absolute top-4 left-4">
                       <span class="kicker-label">Next</span>
@@ -247,7 +248,7 @@ function renderStatsPage({
                 <section id="stats-next-objective" class="utility-section p-6 space-y-5 scroll-mt-28">
                   <h2 class="font-headline text-xl font-bold tracking-tight uppercase">Next</h2>
                   <div class="soft-panel relative rounded-2xl overflow-hidden aspect-video group cursor-pointer shadow-2xl">
-                    <img class="w-full h-full object-cover transition duration-700 group-hover:scale-110 grayscale-[0.2]" src="${escapeHtml(nextObjective.posterUrl || nextObjective.poster)}" alt="${escapeHtml(nextObjective.title)}">
+                    ${renderPoster({ src: nextObjective.posterUrl || nextObjective.poster, alt: nextObjective.title, className: "w-full h-full object-cover transition duration-700 group-hover:scale-110 grayscale-[0.2]", escape: escapeHtml })}
                     <div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end gap-2">
                       <div class="flex items-center gap-2">
@@ -363,10 +364,6 @@ function renderPreferencesPage({
                     <div class="flex justify-between"><label class="text-[11px] font-label uppercase tracking-widest">Glow Radius</label><span class="text-[11px] font-headline text-secondary">${prefs.glowRadius}%</span></div>
                     <input class="w-full pref-range" type="range" min="0" max="100" step="1" value="${prefs.glowRadius}" data-pref-range="glowRadius">
                   </div>
-                  <div class="grid grid-cols-2 gap-2 pt-2">
-                    <button class="control-pill py-3 text-[10px] font-headline tracking-[0.2em] uppercase ${prefs.interfaceTheme === "jedi-light" ? "is-active font-bold" : "text-on-surface hover:bg-tertiary/10 hover:text-tertiary"} transition-all" type="button" data-pref-theme="jedi-light">Jedi Light</button>
-                    <button class="control-pill py-3 text-[10px] font-headline tracking-[0.2em] uppercase ${prefs.interfaceTheme === "sith-dark" ? "is-active font-bold" : "text-on-surface"} transition-all" type="button" data-pref-theme="sith-dark">Sith Dark</button>
-                  </div>
                 </div>
               </section>
 
@@ -430,7 +427,6 @@ function renderPreferencesPage({
                       <span class="material-symbols-outlined text-secondary text-sm">sync</span>
                       <h2 class="font-headline font-bold tracking-widest uppercase text-sm">System</h2>
                     </div>
-                      <p class="text-xs text-on-surface-variant font-body">Theme: <span class="text-secondary">${prefs.interfaceTheme === "sith-dark" ? "Sith Dark" : "Jedi Light"}</span></p>
                     <p class="text-xs text-on-surface-variant font-body">Glow Radius: <span class="text-secondary">${prefs.glowRadius}%</span></p>
                   </div>
                 </div>
@@ -490,10 +486,6 @@ function renderPreferencesPage({
                     <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Glow Radius</label><span class="font-headline text-xs text-secondary">${prefs.glowRadius}%</span></div>
                     <input class="w-full pref-range" max="100" min="0" type="range" value="${prefs.glowRadius}" data-pref-range="glowRadius"/>
                   </div>
-                  <div class="pt-4 flex gap-4">
-                    <button class="control-pill flex-1 py-3 px-4 ${prefs.interfaceTheme === "jedi-light" ? "is-active text-secondary" : "text-secondary"} font-label uppercase text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" type="button" data-pref-theme="jedi-light"><span class="material-symbols-outlined text-sm">light_mode</span>Jedi Light</button>
-                    <button class="control-pill flex-1 py-3 px-4 ${prefs.interfaceTheme === "sith-dark" ? "is-active text-primary-fixed" : "text-on-surface"} font-label uppercase text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" type="button" data-pref-theme="sith-dark"><span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">dark_mode</span>Sith Dark</button>
-                  </div>
                 </div>
               </section>
 
@@ -528,7 +520,7 @@ function renderPreferencesPage({
                   <div class="absolute inset-0 bg-gradient-to-r from-secondary/20 to-transparent" style="width:${prefs.glowRadius}%"></div>
                   <div class="relative z-10 flex w-full justify-between items-end">
                     <div><p class="font-headline text-4xl font-bold text-secondary italic tracking-tighter">${prefs.glowRadius}%</p><p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Glow Radius</p></div>
-                    <div class="text-right"><p class="font-label text-[10px] text-on-surface-variant">Theme</p><p class="font-headline text-xs uppercase tracking-tight">${prefs.interfaceTheme === "sith-dark" ? "Sith Dark" : "Jedi Light"}</p></div>
+                    <div class="text-right"><p class="font-label text-[10px] text-on-surface-variant">Scanlines</p><p class="font-headline text-xs uppercase tracking-tight">${prefs.scanlineIntensity}%</p></div>
                   </div>
                 </div>
                 <button class="w-full py-5 rounded-lg bg-primary-fixed text-on-primary-fixed font-headline font-extrabold tracking-widest uppercase text-sm hover:opacity-90 active:scale-[0.98] transition-all" type="button" data-reset-progress="true">RESET PROGRESS</button>

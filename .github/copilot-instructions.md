@@ -3,7 +3,7 @@
 ## Project shape and boundaries
 - Static multi-app site served from GitHub Pages. Apps run directly in the browser from plain HTML/CSS/ES modules.
 - Root dashboard (`index.html`, `index.js`) links to subprojects and renders from in-file data (`PROJECTS`, `CATEGORIES`).
-- `star-wars-timeline/` is the flagship app, modularized under `star-wars-timeline/modules/`. No bundler; Tailwind currently via CDN.
+- `star-wars-timeline/` is the flagship app, modularized under `star-wars-timeline/modules/`. No bundler, but it now has a compiled Tailwind build (`npm run build:css` -> `tailwind.generated.css`). Re-run it after adding new utility classes.
 - `checkpoint/` is a game backlog tracker. **It is the exception: it has a real `package.json` and a compiled Tailwind build (`npm run build:css`).** It also has a Cloudflare Worker proxy under `checkpoint/cloudflare-worker/`.
 - `blurgen-translator/` is a standalone translator that loads `dictionary.json` via `fetch`.
 - Treat `archive/` and `images/design-reference/` as historical reference, not live code.
@@ -72,4 +72,6 @@
 - Keep vanilla JS style and existing naming conventions (`init*`, `attach*`, `update*`, `get*`).
 - Prefer small module functions and callback injection over adding cross-module global state.
 - Keep static asset paths relative (e.g., `./images/posters/...`, `./audio/music/...`) to match current hosting structure.
+- **Render posters through `renderPoster()` in `modules/images.js`**, never a bare `<img>`. It emits WebP + JPG fallback with lazy loading and intrinsic dimensions. New posters need `npm run build:posters`, or data validation fails.
+- Background audio is opt-in: `preload="none"` and music defaults off. Do not reintroduce eager audio loading.
 - Timeline markup currently uses many arbitrary Tailwind values and some raw hex colors. Tokenizing this is **Workstream D** in `ROADMAP.md`; prefer existing `tailwind-config.js` tokens in new markup rather than adding more arbitrary values.

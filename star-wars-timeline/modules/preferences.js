@@ -11,14 +11,28 @@ export function getDefaultPreferences(schemaVersion) {
     soundEffectsEnabled: false,
     scanlineIntensity: 30,
     glowRadius: 65,
+    // Only one theme ships today. The "jedi-light" option was removed in
+    // Sprint 2 because it was a single background declaration resolving to a
+    // dark color, presented in the UI as a light theme. A real light theme is
+    // planned on top of the Workstream D token layer -- see ROADMAP.md A3/D2.
     interfaceTheme: "sith-dark"
   };
+}
+
+export const SUPPORTED_INTERFACE_THEMES = ["sith-dark"];
+
+export function normalizeInterfaceTheme(theme) {
+  return SUPPORTED_INTERFACE_THEMES.includes(theme) ? theme : "sith-dark";
 }
 
 export function normalizeContinuityPreferences(preferences) {
   const normalized = {
     ...preferences
   };
+
+  // Coerce retired theme ids (e.g. a stored "jedi-light") back to the only
+  // theme that ships. Without this, returning users keep an unsupported value.
+  normalized.interfaceTheme = normalizeInterfaceTheme(normalized.interfaceTheme);
 
   if (normalized.canonOnly) {
     normalized.legendsIntegration = false;
@@ -85,5 +99,5 @@ export function applyPreferencesToDocument(
 
   root.style.setProperty("--scanline-opacity", scanlineOpacity.toFixed(2));
   root.style.setProperty("--glow-blur", `${glowBlur}px`);
-  body.dataset.interfaceTheme = preferences.interfaceTheme || "sith-dark";
+  body.dataset.interfaceTheme = normalizeInterfaceTheme(preferences.interfaceTheme);
 }
