@@ -312,7 +312,7 @@ function renderPreferencesPage({
                   ].map(([key, label, sub]) => `
                     <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="${key}">
                       <div class="space-y-0.5">
-                        <label class="text-sm font-headline text-on-surface">${label}</label>
+                        <span class="text-sm font-headline text-on-surface">${label}</span>
                         <p class="text-label-lg text-on-surface-variant font-body">${sub}</p>
                       </div>
                       <div class="toggle-shell w-10 h-5 ${prefs[key] ? "bg-primary-fixed/20" : "bg-surface-container-highest"} flex items-center px-1 ${prefs[key] ? "justify-end" : "justify-start"}">
@@ -373,25 +373,23 @@ function renderPreferencesPage({
                   <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Audio</h2>
                 </div>
                 <div class="space-y-6">
-                  <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="audioEnabled">
+                  <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="audioEnabled" aria-pressed="${prefs.audioEnabled ? "true" : "false"}">
                     <div class="space-y-0.5">
-                      <label class="text-sm font-headline text-on-surface">Background Music</label>
+                      <span class="text-sm font-headline text-on-surface">Background Music</span>
                       <p class="text-label-lg text-on-surface-variant font-body">Continuous playback across the archive.</p>
                     </div>
-                    <label class="settings-switch" aria-label="Toggle background music">
-                      <input id="settings-music-toggle" type="checkbox" ${prefs.audioEnabled ? "checked" : ""} />
+                    <span class="settings-switch" data-checked="${prefs.audioEnabled ? "true" : "false"}">
                       <span class="settings-switch-track"></span>
-                    </label>
+                    </span>
                   </button>
-                  <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="soundEffectsEnabled">
+                  <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="soundEffectsEnabled" aria-pressed="${prefs.soundEffectsEnabled ? "true" : "false"}">
                     <div class="space-y-0.5">
-                      <label class="text-sm font-headline text-on-surface">Sound Effects</label>
+                      <span class="text-sm font-headline text-on-surface">Sound Effects</span>
                       <p class="text-label-lg text-on-surface-variant font-body">Interface tones for clicks, toggles, and playback actions.</p>
                     </div>
-                    <label class="settings-switch" aria-label="Toggle sound effects">
-                      <input type="checkbox" ${prefs.soundEffectsEnabled ? "checked" : ""} />
+                    <span class="settings-switch" data-checked="${prefs.soundEffectsEnabled ? "true" : "false"}">
                       <span class="settings-switch-track"></span>
-                    </label>
+                    </span>
                   </button>
                   <div class="space-y-3">
                     <div class="flex justify-between">

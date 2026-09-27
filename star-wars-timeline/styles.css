@@ -574,30 +574,27 @@ body::before {
    `settings-switch` / `settings-switch-track` were used in markup but had no
    CSS definition anywhere, so the desktop Preferences audio toggles rendered
    as bare, unstyled checkboxes. Found by the stylesheet coverage sweep.
-   Styled to match `.toggle-shell`, the pattern used by the other toggles. */
+
+   This is purely presentational, driven by `data-checked` on the wrapper.
+   It deliberately contains no <input>: the whole row is already a <button>
+   with `data-pref-toggle`, and nesting a focusable control inside a button is
+   invalid HTML. Browsers recover by hoisting the input out of the button,
+   which is what made the clickable area land left of the switch. The other
+   seven preference toggles already use this presentational-div pattern. */
 .settings-switch {
   position: relative;
   display: inline-flex;
   flex-shrink: 0;
   width: 2.75rem;
   height: 1.5rem;
-  cursor: pointer;
-}
-
-.settings-switch input {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
+  pointer-events: none; /* the parent <button> owns the hit area */
 }
 
 .settings-switch-track {
   position: relative;
   flex: 1;
   border-radius: 9999px;
-  background: var(--surface-container-highest, #353534);
+  background: #353534;
   box-shadow: inset 0 0 0 1px rgba(205, 199, 171, 0.14);
   transition: background-color 180ms ease, box-shadow 180ms ease;
 }
@@ -615,19 +612,14 @@ body::before {
   transition: transform 180ms ease, background-color 180ms ease;
 }
 
-.settings-switch input:checked + .settings-switch-track {
+.settings-switch[data-checked="true"] .settings-switch-track {
   background: rgba(251, 228, 25, 0.2);
   box-shadow: inset 0 0 0 1px rgba(251, 228, 25, 0.45);
 }
 
-.settings-switch input:checked + .settings-switch-track::after {
+.settings-switch[data-checked="true"] .settings-switch-track::after {
   transform: translate(1.25rem, -50%);
   background: var(--brand-yellow);
-}
-
-.settings-switch input:focus-visible + .settings-switch-track {
-  outline: 2px solid rgba(117, 209, 255, 0.8);
-  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

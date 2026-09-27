@@ -95,4 +95,6 @@ const outPath=process.argv[2];
 if(!outPath){ console.error('usage: node render_all_surfaces.mjs <output.json>'); process.exit(1); }
 console.log('rendered '+html.length+' chars, '+classes.size+' distinct classes');
 const {writeFileSync}=await import('fs');
-writeFileSync(outPath, JSON.stringify({classes:[...classes].sort()}));
+const payload={classes:[...classes].sort()};
+if(process.argv.includes('--emit-html')) payload.html=html;
+writeFileSync(outPath, JSON.stringify(payload));
