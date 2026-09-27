@@ -1,6 +1,13 @@
-function isCurrentPage(currentPage, targetPage) {
-  return currentPage === targetPage;
-}
+import { footerLink, icon, mobileNavButton, navButton } from "./ui.js";
+
+// Primary destinations, shared by the desktop top bar and the mobile bottom
+// nav so the two cannot drift apart. `icon` is the Material Symbols ligature.
+const PRIMARY_NAV = [
+  { page: "timeline", label: "Timeline", icon: "view_timeline" },
+  { page: "guide", label: "Guide", icon: "menu_book" },
+  { page: "stats", label: "Stats", icon: "leaderboard" },
+  { page: "preferences", label: "Settings", icon: "tune" }
+];
 
 export function renderStandardTopBar({
   currentPage,
@@ -15,13 +22,13 @@ export function renderStandardTopBar({
         </button>
       </div>
       <div class="hidden md:flex items-center gap-8 font-headline uppercase tracking-widest text-sm">
-        <button class="nav-underline-button bg-transparent border-0 p-0 ${isCurrentPage(currentPage, "timeline") ? "is-active text-primary-fixed" : "text-white/60"} pb-1" type="button" data-nav-page="timeline" ${isCurrentPage(currentPage, "timeline") ? 'aria-current="page"' : ""}>Timeline</button>
-        <button class="nav-underline-button bg-transparent border-0 p-0 ${isCurrentPage(currentPage, "guide") ? "is-active text-primary-fixed" : "text-white/60"} pb-1" type="button" data-nav-page="guide" ${isCurrentPage(currentPage, "guide") ? 'aria-current="page"' : ""}>Guide</button>
-        <button class="nav-underline-button bg-transparent border-0 p-0 ${isCurrentPage(currentPage, "stats") ? "is-active text-primary-fixed" : "text-white/60"} pb-1" type="button" data-nav-page="stats" ${isCurrentPage(currentPage, "stats") ? 'aria-current="page"' : ""}>Stats</button>
-        <button class="nav-underline-button bg-transparent border-0 p-0 ${isCurrentPage(currentPage, "preferences") ? "is-active text-primary-fixed" : "text-white/60"} pb-1 inline-flex items-center gap-2" type="button" data-nav-page="preferences" ${isCurrentPage(currentPage, "preferences") ? 'aria-current="page"' : ""}>
-          <span class="material-symbols-outlined text-base">tune</span>
-          <span>Settings</span>
-        </button>
+        ${PRIMARY_NAV.map((item) => navButton({
+          page: item.page,
+          label: item.label,
+          currentPage,
+          // Only Settings carries an icon in the desktop bar.
+          iconName: item.page === "preferences" ? item.icon : ""
+        })).join("\n        ")}
       </div>
       <div class="flex items-center gap-3 md:gap-5">
         <div class="relative group hidden lg:block ${isTimelineSearchEnabled ? "" : "opacity-50 pointer-events-none"}">
@@ -77,22 +84,12 @@ export function renderMobileBottomNav({ show, currentPage } = {}) {
   return `
     <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[118] bg-background/95 backdrop-blur-xl">
       <div class="grid grid-cols-4 max-w-md mx-auto">
-        <button class="nav-underline-button bg-transparent border-0 flex flex-col items-center justify-center gap-1 py-3 ${isCurrentPage(currentPage, "timeline") ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="timeline" ${isCurrentPage(currentPage, "timeline") ? 'aria-current="page"' : ""}>
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${isCurrentPage(currentPage, "timeline") ? 1 : 0};">view_timeline</span>
-          <span class="font-label text-label uppercase tracking-hud-wider">Timeline</span>
-        </button>
-        <button class="nav-underline-button bg-transparent border-0 flex flex-col items-center justify-center gap-1 py-3 ${isCurrentPage(currentPage, "guide") ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="guide" ${isCurrentPage(currentPage, "guide") ? 'aria-current="page"' : ""}>
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${isCurrentPage(currentPage, "guide") ? 1 : 0};">menu_book</span>
-          <span class="font-label text-label uppercase tracking-hud-wider">Guide</span>
-        </button>
-        <button class="nav-underline-button bg-transparent border-0 flex flex-col items-center justify-center gap-1 py-3 ${isCurrentPage(currentPage, "stats") ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="stats" ${isCurrentPage(currentPage, "stats") ? 'aria-current="page"' : ""}>
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${isCurrentPage(currentPage, "stats") ? 1 : 0};">leaderboard</span>
-          <span class="font-label text-label uppercase tracking-hud-wider">Stats</span>
-        </button>
-        <button class="nav-underline-button bg-transparent border-0 flex flex-col items-center justify-center gap-1 py-3 ${isCurrentPage(currentPage, "preferences") ? "is-active text-primary-fixed" : "text-white/45"}" type="button" data-nav-page="preferences" ${isCurrentPage(currentPage, "preferences") ? 'aria-current="page"' : ""}>
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' ${isCurrentPage(currentPage, "preferences") ? 1 : 0};">tune</span>
-          <span class="font-label text-label uppercase tracking-hud-wider">Settings</span>
-        </button>
+        ${PRIMARY_NAV.map((item) => mobileNavButton({
+          page: item.page,
+          label: item.label,
+          currentPage,
+          iconName: item.icon
+        })).join("\n        ")}
       </div>
     </nav>
   `;
@@ -104,10 +101,10 @@ export function renderStandardFooter({ activeLink = "" } = {}) {
       <div class="max-w-[1320px] mx-auto flex flex-col items-center gap-8">
         <div class="glass-surface-soft px-6 py-4 text-primary-fixed font-bold font-headline tracking-tighter text-2xl drop-shadow-[0_0_10px_rgba(251,228,25,0.3)]">STAR WARS: CHRONICLES</div>
         <div class="footer-links flex flex-wrap justify-center gap-4">
-          <button class="bg-transparent border-0 p-0 font-label uppercase tracking-widest text-label ${activeLink === "privacy" ? "text-primary-fixed" : "text-white/40 hover:text-primary-fixed transition-colors"}" type="button" data-nav-page="privacy">Privacy</button>
-          <button class="bg-transparent border-0 p-0 font-label uppercase tracking-widest text-label ${activeLink === "terms" ? "text-primary-fixed" : "text-white/40 hover:text-primary-fixed transition-colors"}" type="button" data-nav-page="terms">Terms</button>
-          <a class="font-label uppercase tracking-widest text-label text-white/40 hover:text-primary-fixed transition-colors" href="https://github.com/DapperOberon/dapperoberon.github.io/issues" target="_blank" rel="noopener noreferrer">Support</a>
-          <button class="bg-transparent border-0 p-0 font-label uppercase tracking-widest text-label ${activeLink === "guide" ? "text-primary-fixed" : "text-white/40 hover:text-primary-fixed transition-colors"}" type="button" data-nav-page="guide">Guide</button>
+          ${footerLink({ page: "privacy", label: "Privacy", activeLink })}
+          ${footerLink({ page: "terms", label: "Terms", activeLink })}
+          ${footerLink({ label: "Support", href: "https://github.com/DapperOberon/dapperoberon.github.io/issues" })}
+          ${footerLink({ page: "guide", label: "Guide", activeLink })}
         </div>
         <div class="glass-surface-soft px-6 py-5 font-label uppercase tracking-hud-widest text-label-sm text-white/20 text-center max-w-lg leading-relaxed">
           © &amp; TM LUCASFILM LTD. ALL RIGHTS RESERVED.

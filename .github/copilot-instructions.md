@@ -81,3 +81,5 @@
   - letter spacing: `tracking-hud` (.15em) / `-hud-wide` (.18em) / `-hud-wider` (.2em) / `-hud-widest` (.3em)
   - contexts Tailwind cannot reach (SVG attributes, inline `style`, `shadow-[...]`): the `var(--brand-*)` variables in `styles.css`, kept in sync with the config
 - The canonical brand yellow is `#fbe419` (`primary-fixed` / `brand-yellow`). `#FFE81F` was a near-duplicate and is gone — do not reintroduce it.
+- **Use the presentational primitives in `modules/ui.js`** (`cx`, `stateClass`, `icon`, `button`, `navButton`, `mobileNavButton`, `footerLink`) instead of re-typing inline class strings or repeating active/inactive ternaries. Keep that module presentational: no state, no event wiring, no data access.
+- Primary destinations live in the `PRIMARY_NAV` list in `modules/shell.js`. Add a nav item there so desktop and mobile stay in sync, rather than editing either nav directly.

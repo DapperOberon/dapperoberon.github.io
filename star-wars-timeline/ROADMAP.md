@@ -451,10 +451,33 @@ Every nav button, pill, chip, and panel is currently written as a long inline cl
 
 Todos:
 
-- [ ] Build small render helpers for the recurring primitives: button, icon button, pill/chip, panel/card, section heading, icon.
-- [ ] Route `control-pill`, `nav-underline-button`, `glass-surface`, `glass-surface-soft`, and `era-nav-button` through those helpers.
-- [ ] Replace the duplicated active/inactive class ternaries in `modules/shell.js` with a single state helper. The desktop nav repeats the same ternary four times; the mobile nav repeats it again.
-- [ ] Keep helpers presentational only. No state, no event wiring.
+- [x] Build small render helpers for the recurring primitives. New `modules/ui.js`: `cx`, `stateClass`, `currentPageAttr`, `icon`, `stateIcon`, `button`, `navButton`, `mobileNavButton`, `footerLink`.
+- [x] Replace the duplicated active/inactive class ternaries in `modules/shell.js` with a single state helper. **The ternary appeared 11 times** — 4 in the desktop nav, 4 in the mobile nav, 3 in the footer — and is now expressed once in `stateClass()`.
+- [x] Keep helpers presentational only. No state, no event wiring, no data access; callers pass everything in and attach their own `data-*` hooks.
+- [x] Introduced a shared `PRIMARY_NAV` list so the desktop top bar and mobile bottom nav cannot drift apart. This directly serves D4's "desktop and mobile expose the same destinations".
+- [ ] Route `control-pill`, `glass-surface`, `glass-surface-soft`, and `era-nav-button` through helpers. **Deliberately deferred** — see note below.
+
+`shell.js` is 141 → 138 lines, but the meaningful change is that four nav
+variants collapsed into two data-driven loops.
+
+**Verification.** Rather than trust review, the pre- and post-refactor modules
+were imported side by side and their output compared across all 15 render
+states (7 top-bar pages, 4 mobile nav pages, 4 footer variants):
+**30/30 structurally identical** — same elements, same class sets, same
+attributes, same visible text.
+
+One intentional difference: `aria-hidden="true"` is now on the Settings icon,
+which sits beside a visible "Settings" label. Without it a screen reader
+announces "tune Settings". This matches how the mobile nav icons already
+behaved and is an accessibility fix, not a regression.
+
+> **Why the remaining classes were not routed through helpers.**
+> `control-pill` (4 uses), `glass-surface` (5), `glass-surface-soft` (5), and
+> `era-nav-button` (2) are already single CSS classes doing their own
+> abstraction — wrapping a one-class string in a function adds indirection
+> without removing duplication. The nav ternary was worth extracting because it
+> was 11 copies of multi-part conditional logic. These are not. Revisit during
+> D4 if the cross-surface pass shows they actually diverge.
 
 ### D4. Cross-Surface Consistency Pass
 

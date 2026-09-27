@@ -41,6 +41,37 @@ CHECKS = (
     (ARBITRARY_TRACKING_PATTERN, "arbitrary letter spacing", "use the tracking-hud* scale"),
 )
 
+# Comment markers. Documentation legitimately names the patterns it forbids
+# (e.g. explaining that `tracking-[...]` should not be used), so comment bodies
+# are excluded to avoid flagging the guidance itself.
+LINE_COMMENT = re.compile(r"^\s*(//|\*|/\*)")
+
+
+def strip_comment(line: str) -> str:
+    """Return the code portion of a line, with comment text removed.
+
+    Only handles the comment styles this codebase uses. Deliberately
+    conservative: when in doubt it keeps text, so violations are not missed.
+    """
+    if LINE_COMMENT.match(line):
+        return ""
+    # Trailing `//` comment, ignoring `//` inside a quoted string or a URL.
+    in_single = in_double = in_backtick = False
+    for index, char in enumerate(line):
+        if char == "'" and not (in_double or in_backtick):
+            in_single = not in_single
+        elif char == '"' and not (in_single or in_backtick):
+            in_double = not in_double
+        elif char == "`" and not (in_single or in_double):
+            in_backtick = not in_backtick
+        elif (
+            char == "/"
+            and not (in_single or in_double or in_backtick)
+            and line[index + 1 : index + 2] == "/"
+        ):
+            return line[:index]
+    return line
+
 
 def main() -> int:
     if not MODULE_DIR.is_dir():
@@ -52,7 +83,10 @@ def main() -> int:
 
     for path in sorted(MODULE_DIR.glob("*.js")):
         scanned += 1
-        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for lineno, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            line = strip_comment(raw_line)
+            if not line.strip():
+                continue
             for pattern, label, hint in CHECKS:
                 for match in pattern.findall(line):
                     violations.append(
