@@ -4,6 +4,17 @@
 
 :root {
   color-scheme: dark;
+
+  /* Brand tokens (Workstream D2).
+     These mirror the Tailwind config and exist for the contexts Tailwind
+     utilities cannot reach: SVG presentation attributes, inline `style`,
+     and arbitrary values like `shadow-[...]`. Keep them in sync with
+     `tailwind.config.cjs`. */
+  --brand-yellow: #fbe419;
+  --brand-blue: #75d1ff;
+  --brand-background: #131313;
+  --brand-surface-container-low: #1c1b1b;
+
   --scanline-opacity: 0.3;
   --glow-blur: 20px;
   --ghost-border: rgba(205, 199, 171, 0.12);

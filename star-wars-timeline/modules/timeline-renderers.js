@@ -34,7 +34,7 @@ function renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount, escap
         <a class="icon-button w-10 h-10 material-symbols-outlined ${isNext ? "text-primary-fixed" : "text-slate-400 hover:text-primary-fixed"} transition-colors" href="${escapeHtml(episode.watchUrl)}" target="_blank" rel="noopener noreferrer" data-episode-play="${index}" aria-label="Watch ${escapeHtml(episode.title)}">play_circle</a>
       `
     : `
-        <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Unavailable">
+        <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-label uppercase tracking-hud-wide" aria-label="Unavailable">
           <span class="material-symbols-outlined text-sm" aria-hidden="true">block</span>
           <span>Unavailable</span>
         </span>
@@ -53,13 +53,13 @@ function renderDesktopEpisodeItem(episode, index, nextIndex, watchedCount, escap
           <span class="material-symbols-outlined text-on-primary-fixed text-sm font-bold ${watched ? "opacity-100" : "opacity-0"}">check</span>
         </button>
         <div class="flex flex-col min-w-0">
-          <span class="text-[10px] font-label ${codeTone} uppercase tracking-[0.18em]">${isNext ? "Next Episode" : escapeHtml(episode.episodeCode || `Entry ${index + 1}`)}</span>
+          <span class="text-label font-label ${codeTone} uppercase tracking-hud-wide">${isNext ? "Next Episode" : escapeHtml(episode.episodeCode || `Entry ${index + 1}`)}</span>
           <span class="font-headline text-[1.05rem] text-white group-hover:text-primary-fixed transition-colors truncate">${escapeHtml(episode.title)}</span>
         </div>
       </div>
       <div class="flex items-center space-x-6 flex-shrink-0">
         <div class="text-right">
-          <span class="block text-[10px] font-label text-slate-500 uppercase tracking-[0.2em]">Timestamp</span>
+          <span class="block text-label font-label text-slate-500 uppercase tracking-hud-wider">Timestamp</span>
           <span class="text-sm font-headline text-slate-300">${escapeHtml(episode.time || "")}</span>
         </div>
         ${playAction}
@@ -85,7 +85,7 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
       `
     : `
         <div class="flex-shrink-0">
-          <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-[10px] uppercase tracking-[0.18em]" aria-label="Unavailable">
+          <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container-high text-slate-500 font-label text-label uppercase tracking-hud-wide" aria-label="Unavailable">
             <span class="material-symbols-outlined text-sm" aria-hidden="true">block</span>
             <span>Unavailable</span>
           </span>
@@ -96,9 +96,9 @@ function renderMobileEpisodeItem(episode, index, nextIndex, watchedCount, poster
       ${playSurface}
       <div class="flex-grow min-w-0">
         <div class="flex items-center gap-2 mb-0.5">
-          <span class="text-[10px] font-label font-bold ${isNext ? "text-primary-fixed" : "text-secondary"} tracking-tight uppercase">${escapeHtml(episode.episodeCode || `Entry ${index + 1}`)}</span>
+          <span class="text-label font-label font-bold ${isNext ? "text-primary-fixed" : "text-secondary"} tracking-tight uppercase">${escapeHtml(episode.episodeCode || `Entry ${index + 1}`)}</span>
           <span class="w-1 h-1 bg-outline-variant rounded-full"></span>
-          <span class="text-[10px] font-label text-on-surface-variant font-medium tracking-widest">${escapeHtml(episode.time || "")}</span>
+          <span class="text-label font-label text-on-surface-variant font-medium tracking-widest">${escapeHtml(episode.time || "")}</span>
         </div>
         <h4 class="text-sm font-headline font-bold text-white truncate">${escapeHtml(episode.title)}</h4>
       </div>
@@ -127,7 +127,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
   const mobileStoryMeta = entry.metaDisplay || getEntryMetaDisplay(entry, metaLine);
   const infoAction = entry.infoUrl
     ? `
-      <a class="ghost-button px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] inline-flex items-center gap-2" href="${escapeHtml(entry.infoUrl)}" target="_blank" rel="noopener noreferrer" data-entry-info="${escapeHtml(entry.id)}">
+      <a class="ghost-button px-5 py-3 text-label font-label font-bold uppercase tracking-hud-wider inline-flex items-center gap-2" href="${escapeHtml(entry.infoUrl)}" target="_blank" rel="noopener noreferrer" data-entry-info="${escapeHtml(entry.id)}">
         <span class="material-symbols-outlined text-sm">info</span>
         Info
       </a>
@@ -135,7 +135,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
     : "";
   const mobileInfoAction = entry.infoUrl
     ? `
-      <a class="ghost-button px-4 py-4 text-[10px] font-label font-bold uppercase tracking-[0.2em] inline-flex items-center justify-center" href="${escapeHtml(entry.infoUrl)}" target="_blank" rel="noopener noreferrer" data-entry-info="${escapeHtml(entry.id)}" aria-label="Open ${escapeHtml(entry.title)} on Wookieepedia">
+      <a class="ghost-button px-4 py-4 text-label font-label font-bold uppercase tracking-hud-wider inline-flex items-center justify-center" href="${escapeHtml(entry.infoUrl)}" target="_blank" rel="noopener noreferrer" data-entry-info="${escapeHtml(entry.id)}" aria-label="Open ${escapeHtml(entry.title)} on Wookieepedia">
         <span class="material-symbols-outlined text-sm">info</span>
       </a>
     `
@@ -170,7 +170,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
                   <button class="cta-primary px-7" type="button" data-modal-primary>
                     ${getModalPrimaryLabel(entry)}
                   </button>
-                  <button class="ghost-button px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em]" type="button" data-share-entry="${escapeHtml(entry.id)}">
+                  <button class="ghost-button px-5 py-3 text-label font-label font-bold uppercase tracking-hud-wider" type="button" data-share-entry="${escapeHtml(entry.id)}">
                     <span class="material-symbols-outlined text-sm">share</span>
                     Share
                   </button>
@@ -185,23 +185,23 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
           </header>
           <main class="flex-grow overflow-y-auto px-8 md:px-12 lg:px-14 pb-12">
             <div class="flex items-center justify-between sticky top-0 z-20 py-6 bg-[linear-gradient(to_bottom,rgba(22,22,22,0.96),rgba(22,22,22,0.84),transparent)] backdrop-blur-sm">
-              <h3 class="font-headline text-lg uppercase tracking-[0.18em] text-[#75d1ff]">Episodes</h3>
+              <h3 class="font-headline text-lg uppercase tracking-hud-wide text-secondary">Episodes</h3>
               <div class="flex items-center space-x-4">
                 <div class="h-1 w-24 bg-surface-container-highest rounded-full overflow-hidden">
-                  <div class="h-full" style="width:${episodes.length ? Math.round((watchedCount / episodes.length) * 100) : 0}%; background:#fbe419; box-shadow:0 0 8px rgba(251,228,25,0.5);"></div>
+                  <div class="h-full" style="width:${episodes.length ? Math.round((watchedCount / episodes.length) * 100) : 0}%; background:var(--brand-yellow); box-shadow:0 0 8px rgba(251,228,25,0.5);"></div>
                 </div>
-                <span class="text-[10px] font-label text-white uppercase tracking-[0.2em]">${escapeHtml(watchedSummary)}</span>
+                <span class="text-label font-label text-white uppercase tracking-hud-wider">${escapeHtml(watchedSummary)}</span>
               </div>
             </div>
             <div class="space-y-2.5">
               ${episodes.map((episode, index) => renderDesktopEpisodeItem(episode, index, nextIndex, watchedStates, escapeHtml)).join("")}
             </div>
             <div class="pt-8 flex items-center justify-between gap-4">
-              <button class="ghost-button inline-flex items-center justify-center gap-2 px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.previous ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.previous ? `data-modal-nav="previous"` : "disabled"}>
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-5 py-3 text-label font-label font-bold uppercase tracking-hud-wider ${modalNav.previous ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.previous ? `data-modal-nav="previous"` : "disabled"}>
                 <span class="material-symbols-outlined text-sm">west</span>
                 ${modalNav.previous ? `Previous: ${escapeHtml(modalNav.previous.title)}` : "Start of Timeline"}
               </button>
-              <button class="ghost-button inline-flex items-center justify-center gap-2 px-5 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.next ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.next ? `data-modal-nav="next"` : "disabled"}>
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-5 py-3 text-label font-label font-bold uppercase tracking-hud-wider ${modalNav.next ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.next ? `data-modal-nav="next"` : "disabled"}>
                 ${modalNav.next ? `Next: ${escapeHtml(modalNav.next.title)}` : "End of Timeline"}
                 <span class="material-symbols-outlined text-sm">east</span>
               </button>
@@ -223,7 +223,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
             </button>
             <div class="absolute bottom-0 left-0 w-full p-6 z-10 space-y-4">
               <div class="space-y-1">
-                <span class="font-label text-xs uppercase tracking-[0.22em] text-[#FFE81F] font-bold">${escapeHtml(entry.era)}</span>
+                <span class="font-label text-xs uppercase tracking-hud-wider text-primary-fixed font-bold">${escapeHtml(entry.era)}</span>
                 <h2 class="font-headline text-4xl font-black text-white leading-none tracking-tight max-w-[18rem]">${escapeHtml(entry.title)}</h2>
               </div>
               <div class="flex items-center gap-3 text-xs font-label text-on-surface-variant tracking-wider flex-wrap">
@@ -241,7 +241,7 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
                     ${getModalPrimaryLabel(entry).toUpperCase()}
                   </button>
-                  <button class="ghost-button px-4 py-4 text-[10px] font-label font-bold uppercase tracking-[0.2em]" type="button" data-share-entry="${escapeHtml(entry.id)}" aria-label="Share ${escapeHtml(entry.title)}">
+                  <button class="ghost-button px-4 py-4 text-label font-label font-bold uppercase tracking-hud-wider" type="button" data-share-entry="${escapeHtml(entry.id)}" aria-label="Share ${escapeHtml(entry.title)}">
                     <span class="material-symbols-outlined text-sm">share</span>
                   </button>
                   ${mobileInfoAction}
@@ -258,11 +258,11 @@ export function renderModal(entry, { escapeHtml, getModalEntryNavigation }) {
               ${episodes.map((episode, index) => renderMobileEpisodeItem(episode, index, nextIndex, watchedStates, entry.posterUrl || entry.poster, escapeHtml)).join("")}
             </div>
             <div class="grid grid-cols-2 gap-3 pb-6">
-              <button class="ghost-button inline-flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.previous ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.previous ? `data-modal-nav="previous"` : "disabled"}>
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-4 py-3 text-label font-label font-bold uppercase tracking-hud-wider ${modalNav.previous ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.previous ? `data-modal-nav="previous"` : "disabled"}>
                 <span class="material-symbols-outlined text-sm">west</span>
                 Prev
               </button>
-              <button class="ghost-button inline-flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-label font-bold uppercase tracking-[0.2em] ${modalNav.next ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.next ? `data-modal-nav="next"` : "disabled"}>
+              <button class="ghost-button inline-flex items-center justify-center gap-2 px-4 py-3 text-label font-label font-bold uppercase tracking-hud-wider ${modalNav.next ? "" : "opacity-35 pointer-events-none"}" type="button" ${modalNav.next ? `data-modal-nav="next"` : "disabled"}>
                 Next
                 <span class="material-symbols-outlined text-sm">east</span>
               </button>
@@ -317,12 +317,12 @@ function renderDesktopEntry(entry, index, escapeHtml) {
           ${playUrl && !isSeriesEntry(entry) ? `
             <a class="ghost-button inline-flex items-center gap-2 px-4 py-2 rounded-full" href="${escapeHtml(playUrl)}" target="_blank" rel="noopener noreferrer" data-entry-play="${escapeHtml(entry.id)}" aria-label="Watch ${escapeHtml(entry.title)}">
               <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-              <span class="text-[10px] font-label uppercase tracking-widest">Play</span>
+              <span class="text-label font-label uppercase tracking-widest">Play</span>
             </a>
           ` : ""}
           <button class="desktop-media-button flex items-center gap-2 ${watchButton} backdrop-blur-md px-4 py-2 rounded-full transition-all" type="button" ${isSeriesEntry(entry) ? `data-open-modal="${escapeHtml(entry.id)}"` : `data-toggle-entry="${escapeHtml(entry.id)}"`}>
             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">${watchIcon}</span>
-            <span class="text-[10px] font-label uppercase tracking-widest ${watchedCount > 0 ? "font-bold" : ""}">${watchLabel}</span>
+            <span class="text-label font-label uppercase tracking-widest ${watchedCount > 0 ? "font-bold" : ""}">${watchLabel}</span>
           </button>
           </div>
         </div>
@@ -336,7 +336,7 @@ export function renderDesktopSection(section, startIndex, { escapeHtml }) {
   return `
     <div class="relative" id="${escapeHtml(section.anchorId)}">
       <div class="absolute left-1/2 -translate-x-1/2 -top-12 w-3 h-3 rounded-full shadow-[0_0_15px_currentColor]" style="color:${escapeHtml(section.color)}; background:${escapeHtml(section.color)};"></div>
-      <h3 class="text-center font-headline font-bold text-3xl uppercase tracking-[0.2em] mb-24 relative z-20 bg-background inline-flex items-center gap-4 left-1/2 -translate-x-1/2 px-8" style="color:${escapeHtml(section.color)};">
+      <h3 class="text-center font-headline font-bold text-3xl uppercase tracking-hud-wider mb-24 relative z-20 bg-background inline-flex items-center gap-4 left-1/2 -translate-x-1/2 px-8" style="color:${escapeHtml(section.color)};">
         ${eraAsset ? `<img class="era-logo era-logo--heading" src="${escapeHtml(eraAsset)}" alt="" aria-hidden="true" loading="lazy" decoding="async">` : ""}
         <span>${escapeHtml(section.era)}</span>
       </h3>
@@ -354,14 +354,14 @@ function renderMobileEntry(entry, escapeHtml) {
   const storyMeta = entry.metaDisplay || getEntryMetaDisplay(entry, entry.displayYear || entry.year);
   return `
     <article class="relative cursor-pointer" data-era="${escapeHtml(entry.era)}" data-entry-id="${escapeHtml(entry.id)}" tabindex="0">
-      <div class="absolute -left-[37px] top-6 w-3 h-3 rounded-full ${checked ? "bg-secondary/55 shadow-[0_0_10px_rgba(117,209,255,0.25)]" : "bg-primary-container shadow-[0_0_10px_#fbe419]"}"></div>
+      <div class="absolute -left-[37px] top-6 w-3 h-3 rounded-full ${checked ? "bg-secondary/55 shadow-[0_0_10px_rgba(117,209,255,0.25)]" : "bg-primary-container shadow-[0_0_10px_var(--brand-yellow)]"}"></div>
       <div class="bg-surface-container-low rounded-[1.25rem] overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform duration-200">
         <div class="h-44 relative">
           ${renderPoster({ src: entry.posterUrl || entry.poster, alt: entry.title, className: "w-full h-full object-cover", escape: escapeHtml })}
           <div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
           <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-fixed/80 via-primary-fixed/20 to-transparent"></div>
           <div class="absolute top-3 right-3">
-            <div class="story-meta bg-black/55 backdrop-blur-md px-2.5 py-1 rounded-full text-[#75d1ff]">${escapeHtml(entry.mediaLabel || "Media")}</div>
+            <div class="story-meta bg-black/55 backdrop-blur-md px-2.5 py-1 rounded-full text-secondary">${escapeHtml(entry.mediaLabel || "Media")}</div>
           </div>
         </div>
         <div class="p-5">

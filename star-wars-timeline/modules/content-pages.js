@@ -82,16 +82,16 @@ function renderStatsPage({
                 <div class="relative w-56 h-56 flex items-center justify-center">
                   <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" fill="none" r="45" stroke="rgba(255,255,255,0.05)" stroke-width="8"></circle>
-                    <circle cx="50" cy="50" fill="none" r="45" stroke="#75d1ff" stroke-dasharray="282.7" stroke-dashoffset="${(282.7 * (100 - stats.overallProgress)) / 100}" stroke-linecap="round" stroke-width="8"></circle>
+                    <circle cx="50" cy="50" fill="none" r="45" stroke="var(--brand-blue)" stroke-dasharray="282.7" stroke-dashoffset="${(282.7 * (100 - stats.overallProgress)) / 100}" stroke-linecap="round" stroke-width="8"></circle>
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center">
                     <span class="font-headline text-5xl font-bold text-white tracking-tighter">${stats.overallProgress}%</span>
-                    <span class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Complete</span>
+                    <span class="font-label text-label text-on-surface-variant uppercase tracking-widest">Complete</span>
                   </div>
                 </div>
                 <div class="space-y-1">
                   <p class="font-headline text-2xl text-secondary">${stats.watchedEpisodes} / ${stats.totalEpisodes}</p>
-                  <p class="font-label text-[11px] text-zinc-500 uppercase tracking-widest">Logged</p>
+                  <p class="font-label text-label-lg text-zinc-500 uppercase tracking-widest">Logged</p>
                 </div>
               </section>
 
@@ -102,7 +102,7 @@ function renderStatsPage({
                 <div class="space-y-6">
                   ${eraProgress.map((item) => `
                     <div class="space-y-2">
-                      <div class="flex justify-between items-center text-[11px] font-label tracking-widest uppercase">
+                      <div class="flex justify-between items-center text-label-lg font-label tracking-widest uppercase">
                         <span class="text-white">${escapeHtml(item.era)}</span>
                         <span class="text-zinc-400">${item.progress}%</span>
                       </div>
@@ -126,14 +126,14 @@ function renderStatsPage({
                       <div class="w-12 bg-surface-container-highest/80 h-32 relative group overflow-hidden rounded-t-[1rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                         <div class="absolute bottom-0 w-full ${barClass}" style="height:${Math.max(18, Math.min(100, entries.length ? Math.round((value / entries.length) * 100) : 0))}%;"></div>
                       </div>
-                      <span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">${label}</span>
+                      <span class="font-label text-label uppercase tracking-widest text-on-surface-variant">${label}</span>
                     </div>
                   `).join("")}
                 </div>
                 <div class="pt-6 grid grid-cols-3 gap-4 text-center">
-                  <div><p class="font-headline text-lg font-bold text-white">${media.movies}</p><p class="font-label text-[9px] text-zinc-500 uppercase">Movies</p></div>
-                  <div><p class="font-headline text-lg font-bold text-white">${media.animated}</p><p class="font-label text-[9px] text-zinc-500 uppercase">Animated</p></div>
-                  <div><p class="font-headline text-lg font-bold text-white">${media.liveAction}</p><p class="font-label text-[9px] text-zinc-500 uppercase">Live Action</p></div>
+                  <div><p class="font-headline text-lg font-bold text-white">${media.movies}</p><p class="font-label text-label-sm text-zinc-500 uppercase">Movies</p></div>
+                  <div><p class="font-headline text-lg font-bold text-white">${media.animated}</p><p class="font-label text-label-sm text-zinc-500 uppercase">Animated</p></div>
+                  <div><p class="font-headline text-lg font-bold text-white">${media.liveAction}</p><p class="font-label text-label-sm text-zinc-500 uppercase">Live Action</p></div>
                 </div>
               </section>
 
@@ -142,13 +142,13 @@ function renderStatsPage({
                   <h2 class="font-headline font-bold tracking-widest text-sm uppercase mb-8">Completed</h2>
                   <div class="space-y-1">
                     <p class="font-headline text-6xl font-bold text-white">${stats.completedShows}</p>
-                    <p class="font-label text-sm text-secondary uppercase tracking-[0.2em]">Completed</p>
+                    <p class="font-label text-sm text-secondary uppercase tracking-hud-wider">Completed</p>
                   </div>
                 </div>
                 <div class="mt-8">
                   <div class="flex items-center space-x-2 text-zinc-500">
                     <span class="material-symbols-outlined text-xs">info</span>
-                    <span class="text-[10px] font-label uppercase">${stats.totalShows} entries</span>
+                    <span class="text-label font-label uppercase">${stats.totalShows} entries</span>
                   </div>
                 </div>
                 <div class="absolute bottom-0 right-0 w-24 h-24 opacity-10 bg-gradient-to-tl from-secondary to-transparent rounded-tl-full"></div>
@@ -158,7 +158,7 @@ function renderStatsPage({
                 <section id="stats-next-objective" class="utility-section md:col-span-4 overflow-hidden group flex flex-col scroll-mt-28">
                   <div class="relative h-48 w-full overflow-hidden">
                     ${renderPoster({ src: nextObjective.posterUrl || nextObjective.poster, alt: nextObjective.title, className: "w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700", escape: escapeHtml })}
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1c1b1b] to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-[var(--brand-surface-container-low)] to-transparent"></div>
                     <div class="absolute top-4 left-4">
                       <span class="kicker-label">Next</span>
                     </div>
@@ -167,10 +167,10 @@ function renderStatsPage({
                     <div>
                       <h2 class="font-label text-xs text-secondary uppercase tracking-widest mb-1">${escapeHtml(nextObjective.era)}</h2>
                       <h3 class="font-headline text-2xl font-bold text-white uppercase leading-none mb-3">${escapeHtml(nextObjective.title)}</h3>
-                      <p class="font-label text-[10px] text-primary-fixed uppercase tracking-[0.18em] mb-2">${escapeHtml(nextObjective.metaDisplay || nextObjective.metaText || nextObjective.storyMeta || "")}</p>
+                      <p class="font-label text-label text-primary-fixed uppercase tracking-hud-wide mb-2">${escapeHtml(nextObjective.metaDisplay || nextObjective.metaText || nextObjective.storyMeta || "")}</p>
                       <p class="font-body text-sm text-on-surface-variant line-clamp-2 italic">${escapeHtml(nextObjective.synopsis || "Continue through the chronology.")}</p>
                     </div>
-                    <button class="mt-6 w-full py-3 bg-primary-fixed text-on-primary-fixed font-label text-xs font-bold uppercase tracking-[0.2em] rounded-full hover:bg-primary-fixed-dim transition-colors flex items-center justify-center space-x-2" type="button" data-stats-open-entry="${escapeHtml(nextObjective.id)}">
+                    <button class="mt-6 w-full py-3 bg-primary-fixed text-on-primary-fixed font-label text-xs font-bold uppercase tracking-hud-wider rounded-full hover:bg-primary-fixed-dim transition-colors flex items-center justify-center space-x-2" type="button" data-stats-open-entry="${escapeHtml(nextObjective.id)}">
                       <span>Open</span>
                       <span class="material-symbols-outlined text-sm">play_arrow</span>
                     </button>
@@ -184,10 +184,10 @@ function renderStatsPage({
                 <h2 class="font-headline font-bold tracking-widest text-sm uppercase">Completion</h2>
                 <div class="relative w-56 h-56 flex items-center justify-center">
                   <div class="absolute inset-0 rounded-full bg-secondary/8 blur-3xl"></div>
-                  <div class="w-full h-full rounded-full circular-progress relative flex items-center justify-center" style="background:conic-gradient(#75d1ff ${stats.overallProgress}%, transparent 0);">
+                  <div class="w-full h-full rounded-full circular-progress relative flex items-center justify-center" style="background:conic-gradient(var(--brand-blue) ${stats.overallProgress}%, transparent 0);">
                     <div class="w-[92%] h-[92%] rounded-full bg-surface-container-lowest flex flex-col items-center justify-center">
                       <span class="font-headline text-5xl font-bold text-secondary tracking-tight">${stats.overallProgress}%</span>
-                      <span class="font-label text-[10px] uppercase tracking-[0.2em] text-secondary/60 mt-1">Complete</span>
+                      <span class="font-label text-label uppercase tracking-hud-wider text-secondary/60 mt-1">Complete</span>
                     </div>
                   </div>
                 </div>
@@ -202,7 +202,7 @@ function renderStatsPage({
                   ${eraProgress.map((item) => `
                     <div class="space-y-2">
                       <div class="flex justify-between items-end">
-                        <span class="font-label text-[10px] uppercase tracking-wider text-on-surface/80">${escapeHtml(item.era)}</span>
+                        <span class="font-label text-label uppercase tracking-wider text-on-surface/80">${escapeHtml(item.era)}</span>
                         <span class="font-headline text-sm font-bold" style="color:${escapeHtml(item.color)};">${item.progress}%</span>
                       </div>
                       <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
@@ -226,7 +226,7 @@ function renderStatsPage({
                         <div class="w-full ${fillClass} rounded-t-lg" style="height:${Math.max(18, Math.min(100, entries.length ? Math.round((value / entries.length) * 100) : 0))}%;"></div>
                       </div>
                       <span class="font-headline text-xl font-black text-on-surface">${value}</span>
-                      <span class="font-label text-[9px] uppercase tracking-widest text-secondary mt-1">${label}</span>
+                      <span class="font-label text-label-sm uppercase tracking-widest text-secondary mt-1">${label}</span>
                     </div>
                   `).join("")}
                 </div>
@@ -252,10 +252,10 @@ function renderStatsPage({
                     <div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end gap-2">
                       <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 bg-error text-on-error font-label text-[8px] uppercase font-black rounded-sm">${escapeHtml(nextObjective.era)}</span>
+                        <span class="px-2 py-0.5 bg-error text-on-error font-label text-label-xs uppercase font-black rounded-sm">${escapeHtml(nextObjective.era)}</span>
                       </div>
                       <h3 class="font-headline text-2xl font-black tracking-tight text-white drop-shadow-md">${escapeHtml(nextObjective.title)}</h3>
-                      <p class="font-label text-[10px] text-primary-fixed uppercase tracking-[0.18em]">${escapeHtml(nextObjective.metaDisplay || nextObjective.metaText || nextObjective.storyMeta || "")}</p>
+                      <p class="font-label text-label text-primary-fixed uppercase tracking-hud-wide">${escapeHtml(nextObjective.metaDisplay || nextObjective.metaText || nextObjective.storyMeta || "")}</p>
                       <button class="mt-4 cta-primary w-full text-sm" type="button" data-stats-open-entry="${escapeHtml(nextObjective.id)}">
                         OPEN
                         <span class="material-symbols-outlined text-lg">play_arrow</span>
@@ -313,10 +313,10 @@ function renderPreferencesPage({
                     <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="${key}">
                       <div class="space-y-0.5">
                         <label class="text-sm font-headline text-on-surface">${label}</label>
-                        <p class="text-[11px] text-on-surface-variant font-body">${sub}</p>
+                        <p class="text-label-lg text-on-surface-variant font-body">${sub}</p>
                       </div>
                       <div class="toggle-shell w-10 h-5 ${prefs[key] ? "bg-primary-fixed/20" : "bg-surface-container-highest"} flex items-center px-1 justify-${prefs[key] ? "end" : "start"}">
-                        <div class="w-3 h-3 ${prefs[key] ? "bg-primary-fixed shadow-[0_0_8px_#fbe419]" : "bg-outline"} rounded-full"></div>
+                        <div class="w-3 h-3 ${prefs[key] ? "bg-primary-fixed shadow-[0_0_8px_var(--brand-yellow)]" : "bg-outline"} rounded-full"></div>
                       </div>
                     </button>
                   `).join("")}
@@ -339,7 +339,7 @@ function renderPreferencesPage({
                       </div>
                       <div class="flex flex-col">
                         <span class="text-sm font-headline">${label}</span>
-                        <span class="text-[10px] text-on-surface-variant uppercase tracking-tighter">${sub}</span>
+                        <span class="text-label text-on-surface-variant uppercase tracking-tighter">${sub}</span>
                       </div>
                     </button>
                   `).join("")}
@@ -357,11 +357,11 @@ function renderPreferencesPage({
                 </div>
                 <div class="space-y-6">
                   <div class="space-y-3">
-                    <div class="flex justify-between"><label class="text-[11px] font-label uppercase tracking-widest">Scanline Intensity</label><span class="text-[11px] font-headline text-secondary">${prefs.scanlineIntensity}%</span></div>
+                    <div class="flex justify-between"><label class="text-label-lg font-label uppercase tracking-widest">Scanline Intensity</label><span class="text-label-lg font-headline text-secondary">${prefs.scanlineIntensity}%</span></div>
                     <input class="w-full pref-range" type="range" min="0" max="100" step="1" value="${prefs.scanlineIntensity}" data-pref-range="scanlineIntensity">
                   </div>
                   <div class="space-y-3">
-                    <div class="flex justify-between"><label class="text-[11px] font-label uppercase tracking-widest">Glow Radius</label><span class="text-[11px] font-headline text-secondary">${prefs.glowRadius}%</span></div>
+                    <div class="flex justify-between"><label class="text-label-lg font-label uppercase tracking-widest">Glow Radius</label><span class="text-label-lg font-headline text-secondary">${prefs.glowRadius}%</span></div>
                     <input class="w-full pref-range" type="range" min="0" max="100" step="1" value="${prefs.glowRadius}" data-pref-range="glowRadius">
                   </div>
                 </div>
@@ -376,7 +376,7 @@ function renderPreferencesPage({
                   <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="audioEnabled">
                     <div class="space-y-0.5">
                       <label class="text-sm font-headline text-on-surface">Background Music</label>
-                      <p class="text-[11px] text-on-surface-variant font-body">Continuous playback across the archive.</p>
+                      <p class="text-label-lg text-on-surface-variant font-body">Continuous playback across the archive.</p>
                     </div>
                     <label class="settings-switch" aria-label="Toggle background music">
                       <input id="settings-music-toggle" type="checkbox" ${prefs.audioEnabled ? "checked" : ""} />
@@ -386,7 +386,7 @@ function renderPreferencesPage({
                   <button class="flex justify-between items-center group cursor-pointer text-left w-full" type="button" data-pref-toggle="soundEffectsEnabled">
                     <div class="space-y-0.5">
                       <label class="text-sm font-headline text-on-surface">Sound Effects</label>
-                      <p class="text-[11px] text-on-surface-variant font-body">Interface tones for clicks, toggles, and playback actions.</p>
+                      <p class="text-label-lg text-on-surface-variant font-body">Interface tones for clicks, toggles, and playback actions.</p>
                     </div>
                     <label class="settings-switch" aria-label="Toggle sound effects">
                       <input type="checkbox" ${prefs.soundEffectsEnabled ? "checked" : ""} />
@@ -395,17 +395,17 @@ function renderPreferencesPage({
                   </button>
                   <div class="space-y-3">
                     <div class="flex justify-between">
-                      <label class="text-[11px] font-label uppercase tracking-widest">Volume</label>
-                      <span class="text-[11px] font-headline text-secondary" id="settings-volume-icon">🔊</span>
+                      <label class="text-label-lg font-label uppercase tracking-widest">Volume</label>
+                      <span class="text-label-lg font-headline text-secondary" id="settings-volume-icon">🔊</span>
                     </div>
                     <input id="settings-music-volume" class="w-full pref-range" type="range" min="0" max="100" step="1" value="18" aria-label="Music volume">
                   </div>
                   <div class="soft-panel flex items-center justify-between px-4 py-3 rounded-xl">
                     <div>
-                      <span class="block text-[10px] font-label uppercase tracking-[0.2em] text-white/40">Now Playing</span>
+                      <span class="block text-label font-label uppercase tracking-hud-wider text-white/40">Now Playing</span>
                       <span class="block text-sm font-headline text-white/90" id="preferences-current-track">Music Off</span>
                     </div>
-                    <button id="preferences-next-track" class="ghost-button px-4 py-2 font-label text-[10px] uppercase tracking-[0.2em]" type="button">Next Track</button>
+                    <button id="preferences-next-track" class="ghost-button px-4 py-2 font-label text-label uppercase tracking-hud-wider" type="button">Next Track</button>
                   </div>
                 </div>
               </section>
@@ -419,7 +419,7 @@ function renderPreferencesPage({
                     </svg>
                     <div class="flex flex-col items-center">
                       <span class="text-xl font-headline font-bold text-secondary">${prefs.glowRadius}%</span>
-                      <span class="text-[8px] font-label uppercase tracking-widest text-outline">Glow</span>
+                      <span class="text-label-xs font-label uppercase tracking-widest text-outline">Glow</span>
                     </div>
                   </div>
                   <div class="space-y-1">
@@ -431,8 +431,8 @@ function renderPreferencesPage({
                   </div>
                 </div>
                 <div class="flex gap-4">
-                  <button class="ghost-button px-8 py-4 text-on-surface font-headline font-bold tracking-[0.2em] uppercase" type="button" data-reset-progress="true">RESET PROGRESS</button>
-                  <button class="px-12 py-4 bg-primary-fixed text-on-primary-fixed font-headline font-bold tracking-[0.3em] uppercase group" type="button" data-nav-page="timeline">
+                  <button class="ghost-button px-8 py-4 text-on-surface font-headline font-bold tracking-hud-wider uppercase" type="button" data-reset-progress="true">RESET PROGRESS</button>
+                  <button class="px-12 py-4 bg-primary-fixed text-on-primary-fixed font-headline font-bold tracking-hud-widest uppercase group" type="button" data-nav-page="timeline">
                     <div class="flex items-center gap-3"><span>CONFIRM</span><span class="material-symbols-outlined">check</span></div>
                   </button>
                 </div>
@@ -449,7 +449,7 @@ function renderPreferencesPage({
                     ["chronologicalSortLock", "Order", "Chronology Lock"]
                   ].map(([key, overline, label]) => `
                     <button class="utility-mobile-row text-left" type="button" data-pref-toggle="${key}">
-                      <div><p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant mb-1">${overline}</p><p class="font-headline font-medium">${label}</p></div>
+                      <div><p class="font-label uppercase text-label tracking-widest text-on-surface-variant mb-1">${overline}</p><p class="font-headline font-medium">${label}</p></div>
                       <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs[key] ? "translate-x-6 bg-primary-fixed glow-yellow" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
                     </button>
                   `).join("")}
@@ -465,12 +465,12 @@ function renderPreferencesPage({
                   ].map(([key, icon, label]) => `
                     <button class="control-pill soft-panel p-4 rounded-lg ${prefs[key] ? "is-active text-primary-fixed opacity-100" : "opacity-60 text-on-surface"} flex flex-col items-center justify-center text-center gap-2" type="button" data-pref-toggle="${key}">
                       <span class="material-symbols-outlined ${prefs[key] ? "" : "text-on-surface-variant"}" style="font-variation-settings: 'FILL' ${prefs[key] ? 1 : 0};">${icon}</span>
-                      <p class="font-label uppercase text-[10px] tracking-widest font-bold">${label}</p>
+                      <p class="font-label uppercase text-label tracking-widest font-bold">${label}</p>
                     </button>
                   `).join("")}
                 </div>
                 <button class="utility-mobile-row text-left" type="button" data-pref-toggle="includeAnimatedShorts">
-                  <div><p class="font-headline font-medium">Include Animated Shorts</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Shorts and side stories</p></div>
+                  <div><p class="font-headline font-medium">Include Animated Shorts</p><p class="font-label text-label text-on-surface-variant mt-1">Shorts and side stories</p></div>
                   <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs.includeAnimatedShorts ? "translate-x-6 bg-primary-fixed" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
                 </button>
               </section>
@@ -479,11 +479,11 @@ function renderPreferencesPage({
                 <h2 class="font-headline text-xl font-bold tracking-tight uppercase">Appearance</h2>
                 <div class="space-y-5">
                   <div class="space-y-3">
-                    <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Scanline Intensity</label><span class="font-headline text-xs text-secondary">${prefs.scanlineIntensity}%</span></div>
+                    <div class="flex justify-between items-center"><label class="font-label uppercase text-label tracking-widest text-on-surface-variant">Scanline Intensity</label><span class="font-headline text-xs text-secondary">${prefs.scanlineIntensity}%</span></div>
                     <input class="w-full pref-range" max="100" min="0" type="range" value="${prefs.scanlineIntensity}" data-pref-range="scanlineIntensity"/>
                   </div>
                   <div class="space-y-3">
-                    <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Glow Radius</label><span class="font-headline text-xs text-secondary">${prefs.glowRadius}%</span></div>
+                    <div class="flex justify-between items-center"><label class="font-label uppercase text-label tracking-widest text-on-surface-variant">Glow Radius</label><span class="font-headline text-xs text-secondary">${prefs.glowRadius}%</span></div>
                     <input class="w-full pref-range" max="100" min="0" type="range" value="${prefs.glowRadius}" data-pref-range="glowRadius"/>
                   </div>
                 </div>
@@ -493,23 +493,23 @@ function renderPreferencesPage({
                 <h2 class="font-headline text-xl font-bold tracking-tight uppercase">Audio</h2>
                 <div class="space-y-5">
                   <button class="utility-mobile-row text-left" type="button" data-mobile-audio-toggle="true">
-                    <div><p class="font-headline font-medium">Background Music</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Continuous playback across the archive</p></div>
+                    <div><p class="font-headline font-medium">Background Music</p><p class="font-label text-label text-on-surface-variant mt-1">Continuous playback across the archive</p></div>
                     <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs.audioEnabled ? "translate-x-6 bg-primary-fixed" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
                   </button>
                   <button class="utility-mobile-row text-left" type="button" data-pref-toggle="soundEffectsEnabled">
-                    <div><p class="font-headline font-medium">Sound Effects</p><p class="font-label text-[10px] text-on-surface-variant mt-1">Interface tones for archive actions</p></div>
+                    <div><p class="font-headline font-medium">Sound Effects</p><p class="font-label text-label text-on-surface-variant mt-1">Interface tones for archive actions</p></div>
                     <span class="toggle-shell relative inline-flex h-6 w-11 items-center bg-surface-container-highest"><span class="${prefs.soundEffectsEnabled ? "translate-x-6 bg-primary-fixed" : "translate-x-1 bg-on-surface-variant"} inline-block h-4 w-4 transform rounded-full transition"></span></span>
                   </button>
                   <div class="utility-mobile-subsection space-y-3">
-                    <div class="flex justify-between items-center"><label class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Volume</label><span class="font-headline text-xs text-secondary" data-mobile-volume-icon="true">🔊</span></div>
+                    <div class="flex justify-between items-center"><label class="font-label uppercase text-label tracking-widest text-on-surface-variant">Volume</label><span class="font-headline text-xs text-secondary" data-mobile-volume-icon="true">🔊</span></div>
                     <input class="w-full pref-range" max="100" min="0" type="range" value="18" aria-label="Music volume" data-mobile-music-volume="true" />
                   </div>
                   <div class="utility-mobile-subsection flex items-center justify-between gap-4">
                     <div>
-                      <p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Now Playing</p>
+                      <p class="font-label uppercase text-label tracking-widest text-on-surface-variant">Now Playing</p>
                       <p class="font-headline text-sm mt-1" data-mobile-current-track="true">Music Off</p>
                     </div>
-                    <button class="cta-primary px-4 py-3 text-[10px]" type="button" data-mobile-next-track="true">Next</button>
+                    <button class="cta-primary px-4 py-3 text-label" type="button" data-mobile-next-track="true">Next</button>
                   </div>
                 </div>
               </section>
@@ -519,8 +519,8 @@ function renderPreferencesPage({
                 <div class="relative h-24 bg-surface-container-low rounded-lg overflow-hidden flex items-center px-6">
                   <div class="absolute inset-0 bg-gradient-to-r from-secondary/20 to-transparent" style="width:${prefs.glowRadius}%"></div>
                   <div class="relative z-10 flex w-full justify-between items-end">
-                    <div><p class="font-headline text-4xl font-bold text-secondary italic tracking-tighter">${prefs.glowRadius}%</p><p class="font-label uppercase text-[10px] tracking-widest text-on-surface-variant">Glow Radius</p></div>
-                    <div class="text-right"><p class="font-label text-[10px] text-on-surface-variant">Scanlines</p><p class="font-headline text-xs uppercase tracking-tight">${prefs.scanlineIntensity}%</p></div>
+                    <div><p class="font-headline text-4xl font-bold text-secondary italic tracking-tighter">${prefs.glowRadius}%</p><p class="font-label uppercase text-label tracking-widest text-on-surface-variant">Glow Radius</p></div>
+                    <div class="text-right"><p class="font-label text-label text-on-surface-variant">Scanlines</p><p class="font-headline text-xs uppercase tracking-tight">${prefs.scanlineIntensity}%</p></div>
                   </div>
                 </div>
                 <button class="w-full py-5 rounded-lg bg-primary-fixed text-on-primary-fixed font-headline font-extrabold tracking-widest uppercase text-sm hover:opacity-90 active:scale-[0.98] transition-all" type="button" data-reset-progress="true">RESET PROGRESS</button>

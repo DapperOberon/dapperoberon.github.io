@@ -75,4 +75,9 @@
 - **Render posters through `renderPoster()` in `modules/images.js`**, never a bare `<img>`. It emits WebP + JPG fallback with lazy loading and intrinsic dimensions. New posters need `npm run build:posters`, or data validation fails.
 - Pass `hero: true` for full-bleed placements so they get the 1600px variant; the default 900px variant is for cards and the modal. Sizing an image below its rendered size is a visible quality regression — check the container's actual CSS width before picking.
 - Background audio is opt-in: `preload="none"` and music defaults off. Do not reintroduce eager audio loading.
-- Timeline markup currently uses many arbitrary Tailwind values and some raw hex colors. Tokenizing this is **Workstream D** in `ROADMAP.md`; prefer existing `tailwind-config.js` tokens in new markup rather than adding more arbitrary values.
+- **Never write raw hex colors, `text-[Npx]`, or `tracking-[...]` in `modules/*.js`.** `scripts/check_design_tokens.py` fails the build on all three. Use:
+  - colors: Tailwind tokens (`text-primary-fixed`, `text-secondary`, `bg-background`) from `tailwind.config.cjs`
+  - micro type: `text-label-xs` (8px) / `text-label-sm` (9px) / `text-label` (10px) / `text-label-lg` (11px)
+  - letter spacing: `tracking-hud` (.15em) / `-hud-wide` (.18em) / `-hud-wider` (.2em) / `-hud-widest` (.3em)
+  - contexts Tailwind cannot reach (SVG attributes, inline `style`, `shadow-[...]`): the `var(--brand-*)` variables in `styles.css`, kept in sync with the config
+- The canonical brand yellow is `#fbe419` (`primary-fixed` / `brand-yellow`). `#FFE81F` was a near-duplicate and is gone — do not reintroduce it.

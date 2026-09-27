@@ -13,8 +13,8 @@ export function renderAppDesktopSidebarContent({
 
     return `
       <div class="px-8 mt-24 mb-10">
-        <h2 class="text-[#FFE81F] font-bold font-headline tracking-tighter text-xl">${escapeHtml(page.title)}</h2>
-        <p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">${escapeHtml(page.subtitle)}</p>
+        <h2 class="text-primary-fixed font-bold font-headline tracking-tighter text-xl">${escapeHtml(page.title)}</h2>
+        <p class="text-white/40 text-label uppercase tracking-hud-wider font-label mt-1">${escapeHtml(page.subtitle)}</p>
       </div>
       <nav class="flex flex-col gap-1">
         ${page.sidebarLinks.map((item) => `
@@ -29,8 +29,8 @@ export function renderAppDesktopSidebarContent({
 
   return `
     <div class="px-8 mt-24 mb-10">
-      <h2 class="text-[#FFE81F] font-bold font-headline tracking-tighter text-xl">GALACTIC ERAS</h2>
-      <p class="text-white/40 text-[10px] uppercase tracking-[0.2em] font-label mt-1">Eras</p>
+      <h2 class="text-primary-fixed font-bold font-headline tracking-tighter text-xl">GALACTIC ERAS</h2>
+      <p class="text-white/40 text-label uppercase tracking-hud-wider font-label mt-1">Eras</p>
     </div>
     <nav class="flex flex-col gap-1">
       ${normalizedSections.map((section) => `
@@ -91,7 +91,7 @@ export function renderAppMainContent({
               <div class="space-y-1">
                 <p class="hud-label text-secondary">${nextUpLabel}</p>
                 <p class="font-headline text-xl text-white uppercase leading-tight">${escapeHtml(heroEntry.title)}</p>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-white/45">${escapeHtml(heroMeta)}</p>
+                <p class="text-label-lg uppercase tracking-hud-wide text-white/45">${escapeHtml(heroMeta)}</p>
               </div>
             </div>
           </div>
@@ -99,18 +99,18 @@ export function renderAppMainContent({
             <p class="hud-label text-primary-fixed">Chronological Archive</p>
             <h2 class="mt-3 font-headline text-4xl font-bold leading-tight">Follow the saga in the order it actually happened.</h2>
             <div class="mt-4 hero-next-up glass-surface-soft rounded-[1.25rem] p-4">
-              <p class="font-label text-[10px] uppercase tracking-[0.2em] text-secondary">${nextUpLabel}</p>
+              <p class="font-label text-label uppercase tracking-hud-wider text-secondary">${nextUpLabel}</p>
               <p class="mt-2 font-headline text-lg text-white uppercase leading-tight">${escapeHtml(heroEntry.title)}</p>
-              <p class="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/45">${escapeHtml(heroMeta)}</p>
+              <p class="mt-1 text-label uppercase tracking-hud-wide text-white/45">${escapeHtml(heroMeta)}</p>
             </div>
             <div class="mt-4 flex gap-4">
               <div class="bg-surface-container-high px-4 py-2 rounded-xl flex items-center gap-2">
                 <span class="text-primary-container text-lg font-bold">${flatEntries.length}</span>
-                <span class="font-label text-[10px] opacity-60 uppercase">Entries</span>
+                <span class="font-label text-label opacity-60 uppercase">Entries</span>
               </div>
               <div class="bg-surface-container-high px-4 py-2 rounded-xl flex items-center gap-2">
                 <span class="text-secondary text-lg font-bold">${stats.overallProgress}%</span>
-                <span class="font-label text-[10px] opacity-60 uppercase">Complete</span>
+                <span class="font-label text-label opacity-60 uppercase">Complete</span>
               </div>
             </div>
             <div class="mt-5 relative">
@@ -118,10 +118,10 @@ export function renderAppMainContent({
               <input id="timeline-search-input-mobile" data-search-input="mobile" class="w-full rounded-full bg-black/35 px-10 py-3.5 text-sm text-white placeholder:text-white/35 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary/40" placeholder="Search titles, years, and episodes..." type="text" value="${escapeHtml(searchInputValue || "")}">
             </div>
             <div class="mt-5 flex gap-3">
-              <button class="px-4 py-3 bg-primary-fixed text-on-primary-fixed font-bold uppercase text-[10px] tracking-[0.18em] rounded-full" type="button" data-open-modal="${escapeHtml(heroEntry.id)}">
+              <button class="px-4 py-3 bg-primary-fixed text-on-primary-fixed font-bold uppercase text-label tracking-hud-wide rounded-full" type="button" data-open-modal="${escapeHtml(heroEntry.id)}">
                 ${heroCtaLabel}
               </button>
-              <button class="ghost-button px-4 py-3 font-bold uppercase text-[10px] tracking-[0.18em]" type="button" data-nav-page="guide">
+              <button class="ghost-button px-4 py-3 font-bold uppercase text-label tracking-hud-wide" type="button" data-nav-page="guide">
                 Guide
               </button>
             </div>
@@ -156,7 +156,7 @@ export function renderAppMainContent({
           <div class="py-16 text-center bg-surface-container-low space-y-4">
             <p class="font-headline text-2xl uppercase tracking-widest text-white">No Matching Entries</p>
             <p class="mt-3 text-sm text-on-surface-variant">Clear or broaden the active filters.</p>
-            <button class="ghost-button px-4 py-3 text-[10px] font-headline uppercase tracking-[0.18em]" type="button" data-clear-filters="true">Clear Filters</button>
+            <button class="ghost-button px-4 py-3 text-label font-headline uppercase tracking-hud-wide" type="button" data-clear-filters="true">Clear Filters</button>
           </div>
         ` : `
           <div class="desktop-timeline space-y-32 relative py-10">
@@ -173,20 +173,20 @@ export function renderAppMainContent({
 
     <section id="mobile-eras" class="md:hidden pt-8 pb-52 px-4 max-w-lg mx-auto relative min-h-screen">
       <div class="mb-4 flex items-center gap-2 overflow-x-auto hide-scrollbar">
-        <button class="control-pill shrink-0 px-4 py-2 ${activeFilterCount > 0 ? "is-active text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-open-filters="true">
+        <button class="control-pill shrink-0 px-4 py-2 ${activeFilterCount > 0 ? "is-active text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-label font-label uppercase tracking-hud-wide" type="button" data-open-filters="true">
           ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filters"}
         </button>
         ${normalizedSections.map((section, index) => `
-          <button class="mobile-era-chip control-pill shrink-0 px-3 py-2 bg-surface-container-high text-white/65 text-[10px] font-label uppercase tracking-[0.18em]" type="button" data-scroll-target="mobile-era-${index}">${escapeHtml(section.era)}</button>
+          <button class="mobile-era-chip control-pill shrink-0 px-3 py-2 bg-surface-container-high text-white/65 text-label font-label uppercase tracking-hud-wide" type="button" data-scroll-target="mobile-era-${index}">${escapeHtml(section.era)}</button>
         `).join("")}
       </div>
       <div class="relative ml-4">
-        <div class="absolute left-0 top-0 bottom-0 w-[2px] timeline-line opacity-30 shadow-[0_0_15px_#fbe419]"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-[2px] timeline-line opacity-30 shadow-[0_0_15px_var(--brand-yellow)]"></div>
         ${filteredEntries.length === 0
           ? `<div class="ml-4 mr-2 p-6 rounded-xl bg-surface-container-low space-y-4">
               <p class="font-headline text-xl uppercase tracking-widest text-white">No Matching Entries</p>
               <p class="text-sm text-on-surface-variant">Clear or broaden the active filters.</p>
-              <button class="ghost-button px-4 py-3 text-[10px] font-headline uppercase tracking-[0.18em]" type="button" data-clear-filters="true">Clear Filters</button>
+              <button class="ghost-button px-4 py-3 text-label font-headline uppercase tracking-hud-wide" type="button" data-clear-filters="true">Clear Filters</button>
             </div>`
           : filteredSections.map((section) => renderMobileSection(section)).join("")}
       </div>

@@ -7,9 +7,19 @@
  * Build: npm run build:css   (from star-wars-timeline/)
  * Output: ./tailwind.generated.css, linked from index.html
  *
- * Token note: `brand-yellow` is deliberately the same value as
- * `primary-fixed` (#fbe419). Markup currently also hardcodes #FFE81F in
- * places; reconciling those two yellows is Workstream D2 in ROADMAP.md.
+ * Token note (Workstream D2, resolved 2026-09-27):
+ * The app previously used two near-identical yellows interchangeably --
+ * #FFE81F (the Lucasfilm logo yellow, 8 raw uses) and #fbe419 (the
+ * `primary-fixed` token, 4 raw uses plus 128 token uses). They differ by
+ * ~2% per channel, which is imperceptible side by side but meant there was
+ * no single answer to "what is the brand color?".
+ *
+ * Resolved in favor of #fbe419: it is already the value behind
+ * `primary-fixed`, `primary-container`, and `surface-tint`, it dominates
+ * `styles.css`, and standardizing on it means the 8 raw #FFE81F uses
+ * collapse into the existing token rather than introducing a 49th color.
+ * `brand-yellow` is an alias for it, for markup that means "the brand mark"
+ * rather than "the primary fill".
  */
 module.exports = {
   darkMode: "class",
@@ -77,6 +87,25 @@ module.exports = {
         "headline": ["Space Grotesk", "sans-serif"],
         "body": ["Manrope", "sans-serif"],
         "label": ["Inter", "sans-serif"]
+      },
+      // Micro type scale. These sizes were previously written as arbitrary
+      // values (text-[10px] x83, text-[11px] x13, text-[9px] x7, text-[8px] x2)
+      // -- a de facto scale that lived nowhere. Named so it can be reasoned
+      // about and adjusted in one place.
+      fontSize: {
+        "label-xs": ["0.5rem", { lineHeight: "0.75rem" }],    // 8px
+        "label-sm": ["0.5625rem", { lineHeight: "0.75rem" }], // 9px
+        "label": ["0.625rem", { lineHeight: "0.875rem" }],    // 10px - dominant
+        "label-lg": ["0.6875rem", { lineHeight: "1rem" }]     // 11px
+      },
+      // Letter-spacing scale. Replaces 9 distinct arbitrary `tracking-[...]`
+      // values with 4 named steps. Tailwind's built-in `widest` is 0.1em,
+      // far tighter than this design language uses, hence custom steps.
+      letterSpacing: {
+        "hud": "0.15em",
+        "hud-wide": "0.18em",
+        "hud-wider": "0.2em",
+        "hud-widest": "0.3em"
       },
       borderRadius: {
         "DEFAULT": "0.125rem",
