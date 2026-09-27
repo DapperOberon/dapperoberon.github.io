@@ -265,6 +265,33 @@ Todos:
 - [x] Document the build step in `RUNTIME_ARCHITECTURE.md`.
 - [x] Coordinate with Workstream D so tokens land in the config, not in markup. All 48 existing semantic tokens carried over verbatim; added a `brand-yellow` token (`#fbe419`) as the anchor for the D2 yellow reconciliation.
 
+> **Regression found in review 2026-09-27 — fixed.** Swapping the CDN for a
+> compiled stylesheet exposed a latent bug the CDN had been hiding. Tailwind's
+> scanner extracts *complete literal strings* and never evaluates JavaScript,
+> so a class assembled by interpolation is never compiled:
+>
+> ```js
+> // BAD  -- md:flex-row-reverse is never generated
+> class="md:${reverse ? "flex-row-reverse" : "flex-row"}"
+> // GOOD -- both variants are literal
+> class="${reverse ? "md:flex-row-reverse" : "md:flex-row"}"
+> ```
+>
+> This fails *silently*: the HTML looks correct and the class is simply absent
+> from the stylesheet. Two real instances existed:
+>
+> 1. `timeline-renderers.js:293` — dropped `md:flex-row-reverse`, so alternating
+>    timeline entries lost their layout direction and appeared centred instead
+>    of left/right aligned. **User-reported.**
+> 2. `content-pages.js:318` — dropped `justify-end`/`justify-start`, so every
+>    preferences toggle knob sat left regardless of state. Not reported; found
+>    by the new guardrail.
+>
+> `scripts/check_dynamic_classes.py` now fails the build on interpolated class
+> prefixes and is wired into `verify_all.sh`. It ignores inline `style="..."`
+> interpolation, which is legitimate. Verified by reintroducing the regression
+> and confirming the failure.
+
 > Removing the CDN also removes a render-blocking third-party script and the
 > production console warning it emitted.
 

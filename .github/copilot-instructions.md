@@ -83,3 +83,5 @@
 - The canonical brand yellow is `#fbe419` (`primary-fixed` / `brand-yellow`). `#FFE81F` was a near-duplicate and is gone — do not reintroduce it.
 - **Use the presentational primitives in `modules/ui.js`** (`cx`, `stateClass`, `icon`, `button`, `navButton`, `mobileNavButton`, `footerLink`) instead of re-typing inline class strings or repeating active/inactive ternaries. Keep that module presentational: no state, no event wiring, no data access.
 - Primary destinations live in the `PRIMARY_NAV` list in `modules/shell.js`. Add a nav item there so desktop and mobile stay in sync, rather than editing either nav directly.
+- **Never build a Tailwind class by interpolation.** Tailwind extracts complete literal strings and does not evaluate JS, so `class="md:${x ? "flex-row-reverse" : "flex-row"}"` silently produces no CSS. Put the full class in each branch: `class="${x ? "md:flex-row-reverse" : "md:flex-row"}"`. `scripts/check_dynamic_classes.py` enforces this. Inline `style="width:${n}%"` is fine — that is CSS, not a class.
+- After changing markup, run `npm run build:css`. The compiled stylesheet only contains classes present in source at build time.

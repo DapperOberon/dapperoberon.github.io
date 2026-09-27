@@ -290,7 +290,7 @@ function renderDesktopEntry(entry, index, escapeHtml) {
   const storyMeta = entry.storyMeta || getEntryStoryMeta(entry);
 
   return `
-    <article class="relative flex flex-col md:${reverse ? "flex-row-reverse" : "flex-row"} items-center justify-between group gap-8 md:gap-0 cursor-pointer" data-era="${escapeHtml(entry.era)}" data-entry-id="${escapeHtml(entry.id)}" tabindex="0"${entry.anchorId ? ` id="${escapeHtml(entry.anchorId)}"` : ""}>
+    <article class="relative flex flex-col ${reverse ? "md:flex-row-reverse" : "md:flex-row"} items-center justify-between group gap-8 md:gap-0 cursor-pointer" data-era="${escapeHtml(entry.era)}" data-entry-id="${escapeHtml(entry.id)}" tabindex="0"${entry.anchorId ? ` id="${escapeHtml(entry.anchorId)}"` : ""}>
       <div class="absolute left-0 md:left-1/2 -translate-x-1/2 w-10 h-10 bg-background border-2 ${nodeBorder} rounded-full z-10 flex items-center justify-center ${entry.watched > 0 ? "" : "shadow-[0_0_15px_rgba(251,228,25,0.4)]"}">
         <div class="w-2 h-2 ${nodeCore} rounded-full ${entry.watched > 0 ? "" : "animate-pulse"}"></div>
       </div>
