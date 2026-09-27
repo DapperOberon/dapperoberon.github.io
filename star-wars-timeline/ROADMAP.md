@@ -1,0 +1,467 @@
+# Star Wars Timeline Roadmap
+
+Status: Active
+Date: 2026-09-26
+
+## Purpose
+
+This document is the single execution plan for `star-wars-timeline/`. It consolidates the findings of the 2026-09-26 full audit and adds two new product workstreams:
+
+- per-title music playlists
+- a complete UI consistency pass
+
+It supersedes the planning portions of `PROJECT_REFACTOR_PLAN.md` and `UID_MIGRATION_PLAN.md` (both effectively complete) and absorbs the outstanding items from `POLISH_PLAN.md`.
+
+Rule for this document: a box is only ticked when the change is implemented **and** `bash star-wars-timeline/scripts/verify_all.sh` passes.
+
+## Current State Snapshot
+
+Measured on 2026-09-26.
+
+Verification: `bash star-wars-timeline/scripts/verify_all.sh` exits `0`.
+
+- 25 JavaScript files pass `node --check`
+- 7 eras, 50 entries, 563 episodes
+- 16 music tracks
+- 9 HTTP routes respond
+
+Data integrity is clean:
+
+- 0 duplicate entry ids
+- 50/50 ids are exactly 3-character base36
+- 0 missing poster files, 0 orphaned posters
+- 0 `episodes` vs `episodeDetails` mismatches
+- 0 entries shipping non-zero `watched`
+
+Known weight:
+
+- `audio/music` — 47 MB across 16 MP3s
+- `images/posters` — 18 MB across 34 JPGs
+- `qa-artifacts` + `images/website-reference` + `images/design-reference` — ~51 MB not used at runtime
+
+Architecture is healthy: `app.js` is a 260-line composition layer over 24 modules. The refactor described in `PROJECT_REFACTOR_PLAN.md` is complete.
+
+## Workstream Overview
+
+| ID | Workstream | Priority | Risk | Depends on |
+| --- | --- | --- | --- | --- |
+| A | Truth and cleanup | Highest | Low | — |
+| B | Performance and reach | Highest | Low | A |
+| C | Per-title music playlists | High | Medium | A |
+| D | UI consistency and design system | High | Medium | A |
+| E | Product polish and accessibility | Medium | Low | D |
+| F | Structural and render model | Medium | High | D, E |
+
+---
+
+## A. Truth And Cleanup
+
+Priority: Highest
+Goal: Remove dead code and stale documentation so every later decision is made against accurate information.
+
+### A1. Resolve `content-page.js`
+
+`content-page.js` is orphaned. Nothing loads it: `guide/`, `privacy/`, and `terms/` are now meta-refresh redirect stubs pointing at `../?page=X`, and the real content lives in `modules/content-pages.js`.
+
+It is also broken. It calls:
+
+- `renderContentTopBar({ basePath, activePage })` — but `modules/shell.js` defines `renderContentTopBar()` with no parameters
+- `renderStandardFooter({ basePath, activeLink })` — but `basePath` is never read in `shell.js`
+
+Two verification checks currently guard this dead file and report false confidence:
+
+- `scripts/check_js_syntax.py` line 17
+- `scripts/smoke_test.sh` line 57
+
+Todos:
+
+- [ ] Decide: delete `content-page.js`, or restore it as a real no-JS fallback for content pages.
+- [ ] If deleting, remove it from `scripts/check_js_syntax.py` and `scripts/smoke_test.sh`.
+- [ ] If keeping, fix the `renderContentTopBar` and `renderStandardFooter` call signatures and give the stub pages a real reason to load it.
+- [ ] Remove `renderContentTopBar` from `modules/shell.js` if it ends up with no callers.
+
+Definition of done:
+
+- No runtime file is referenced by verification scripts unless a user can actually reach it.
+
+### A2. Remove Dead Persistence Exports
+
+`modules/persistence.js` exports four functions with zero callers:
+
+- `loadThemePreference`
+- `saveThemePreference`
+- `loadCollapsedEras`
+- `saveCollapsedEras`
+
+It also defines `DEFAULT_THEME_ID = 'modern-starwars'`, a theme id that exists nowhere else in the app. The live theme system is `preferences.interfaceTheme` (`sith-dark` / `jedi-light`) stored in `sw_redesign_preferences`.
+
+Todos:
+
+- [ ] Delete the four unused exports and the `sw_theme` / `modern-starwars` constants.
+- [ ] Confirm `sw_collapsed_eras` is genuinely unused before dropping the helpers.
+- [ ] Delete `modules/data.js` if its compatibility re-exports have no remaining callers.
+
+Definition of done:
+
+- Exactly one theme system exists in the codebase.
+
+### A3. Verify The Second Theme Is Real
+
+`styles.css` contains exactly one theme override block: `body[data-interface-theme="jedi-light"]` at line 600. The preferences UI presents Jedi Light and Sith Dark as an equal pair in three separate places in `modules/content-pages.js`.
+
+Todos:
+
+- [ ] Visually audit Jedi Light across timeline, stats, preferences, guide, privacy, and terms.
+- [ ] Either complete Jedi Light to parity, or remove it until it is ready.
+
+### A4. Reconcile Documentation
+
+- [ ] `RUNTIME_ARCHITECTURE.md`: remove `sw_theme` and `sw_collapsed_eras` from live storage keys; remove `content-page.js` from the active runtime surface if deleted.
+- [ ] `PROJECT_REFACTOR_PLAN.md`: mark Complete; it still claims `app.js` is 2,088 lines when it is 260.
+- [ ] `UID_MIGRATION_PLAN.md`: mark Complete and answer the four open decisions from the shipped data (3-char base36, manifest-driven, `watched` zeroed).
+- [ ] `POLISH_PLAN.md`: fold remaining items into Workstream E here, then mark it superseded.
+- [ ] `.github/copilot-instructions.md`: it still references `timeline.js`, a root-level `timeline-data.json`, and `modules/modal.js`. All are wrong.
+
+### A5. Repo Hygiene
+
+- [ ] Push the pending git-hygiene commit `d770b63`.
+- [ ] Decide whether `qa-artifacts/` and `images/website-reference/` should stay in the served tree (~47 MB of publicly fetchable screenshots).
+
+---
+
+## B. Performance And Reach
+
+Priority: Highest
+Goal: Cut page weight and make shared links look like a real product.
+
+### B1. Poster Pipeline
+
+34 JPGs totaling 18 MB, averaging ~530 KB. The worst single file is `acolyte-poster.jpg` at 2.6 MB. There is no WebP, no `srcset`, and `loading=` appears zero times in the module tree, so every poster loads eagerly.
+
+Affected render sites in `modules/timeline-renderers.js`: lines 79, 153, 159, 216, 309.
+
+Todos:
+
+- [ ] Convert posters to WebP with JPG fallback.
+- [ ] Add `loading="lazy"` and `decoding="async"` to all non-hero posters.
+- [ ] Add explicit `width` and `height` to stop layout shift.
+- [ ] Keep the hero poster eager so first paint stays strong.
+- [ ] Extend `scripts/validate_timeline_data.py` to check derivative files exist.
+
+Target: 18 MB down to under 4 MB.
+
+### B2. Audio Loading
+
+47 MB of MP3s. `track-13-main-title-and-escape.mp3` alone is 10.5 MB. `modules/audio.js` defaults `musicEnabled` to `true` when no preference is stored (line 493).
+
+Todos:
+
+- [ ] Never fetch audio until the user actually starts playback.
+- [ ] Re-encode at a lower bitrate; verify quality on the longest tracks.
+- [ ] Add `preload="none"` to the background player.
+- [ ] Reconsider default-on behavior now that playlists exist (Workstream C).
+
+### B3. Metadata And Crawlability
+
+`index.html` has zero matches for `og:`, `twitter:`, `name="description"`, and `noscript`. Every shared entry link renders an identical blank preview.
+
+Todos:
+
+- [ ] Add `<meta name="description">`, Open Graph, and Twitter card tags.
+- [ ] Add a `<noscript>` block describing the app.
+- [ ] Add `<meta name="robots" content="noindex">` to the `guide/`, `privacy/`, and `terms/` redirect stubs.
+- [ ] Investigate per-entry OG images as a later enhancement.
+
+### B4. Tailwind Delivery
+
+`index.html` loads `https://cdn.tailwindcss.com?plugins=forms,container-queries` plus a separate `tailwind-config.js` request. Render-blocking, FOUC-prone, and logs a production warning.
+
+`checkpoint/` already solved this with a compiled `tailwind.generated.css` and a `build:css` script. Copy that pattern.
+
+Todos:
+
+- [ ] Add a minimal Tailwind build mirroring `checkpoint/package.json`.
+- [ ] Generate `tailwind.generated.css` and swap the CDN script out of `index.html`.
+- [ ] Document the build step in `RUNTIME_ARCHITECTURE.md`.
+- [ ] Coordinate with Workstream D so tokens land in the config, not in markup.
+
+---
+
+## C. Per-Title Music Playlists
+
+Priority: High
+Goal: Let users choose a soundtrack scoped to a specific film or series, so the music matches whatever they are currently exploring.
+
+### C1. Product Intent
+
+Today `data/music-data.json` is a flat array of 16 tracks with only `src` and `title`. The player shuffles through all of them regardless of what the user is looking at. Several tracks are already title-specific in everything but metadata — `Rebels Theme`, `The Mandalorian`, `Andor Main Title`, `Rogue One`, `Ahsoka vs. Maul`, `Corellia Chase` — but the app has no idea which entry they belong to.
+
+Target behavior:
+
+- Each track declares which timeline entries it belongs to.
+- Users can pick a playlist: **All Music** (today's behavior), or any specific film/series that has tracks.
+- Opening an entry modal offers that entry's soundtrack if one exists.
+- The selection persists across reloads.
+- If a playlist has no tracks, it is never offered as an empty choice.
+
+Non-goals for this workstream:
+
+- No new audio files are required. Ship with the 16 tracks already present.
+- No streaming or external music service integration.
+
+### C2. Data Model
+
+Extend each track in `data/music-data.json` with optional association fields. `modules/audio.js` `normalizeMusicTracks()` already ignores unknown keys and already supports a richer `sources` array, so this is additive and backward compatible.
+
+Proposed shape:
+
+```json
+{
+  "src": "./audio/music/track-09-the-mandalorian.mp3",
+  "title": "The Mandalorian",
+  "entryIds": ["013"],
+  "collection": "The Mandalorian",
+  "era": "The New Republic"
+}
+```
+
+Field definitions:
+
+- `entryIds` — array of timeline entry ids this track scores. Empty or absent means general-purpose.
+- `collection` — human-readable playlist label. Falls back to the entry title when absent.
+- `era` — optional era association, enabling era-level playlists later.
+
+Rules:
+
+- `entryIds` must reference real ids in `data/timeline-data.json`.
+- A track may belong to multiple entries.
+- Tracks with no association still appear in **All Music**.
+
+Mapping notes, verified against the live data on 2026-09-26:
+
+- The example above is valid: id `013` is `The Mandalorian` in the New Republic era.
+- `The Mandalorian` exists as **two** entries (`013` and `015`) because of chronology splitting, so its tracks need `entryIds: ["013", "015"]`. This is exactly why `entryIds` is an array.
+- `Andor` is `00r`; `Star Wars Rebels` is `00t`.
+- `Rogue One` has **no timeline entry**, so `track-06-rogue-one.mp3` must rely on `collection` alone. Do not invent an entry for it.
+- This interacts with Workstream E3: once duplicate-title disambiguation is settled, re-check every `entryIds` mapping.
+
+Todos:
+
+- [ ] Add `entryIds` / `collection` / `era` to the 16 existing tracks. Several map obviously; leave genuinely general tracks unassociated.
+- [ ] Extend `scripts/validate_music_data.py` to verify every `entryIds` value resolves to a real entry id and to report orphaned references as hard failures.
+- [ ] Keep the existing duplicate-title and duplicate-source checks intact.
+- [ ] Document the new schema in `RUNTIME_ARCHITECTURE.md` under Music Data.
+
+Definition of done:
+
+- `python3 star-wars-timeline/scripts/validate_music_data.py` fails loudly on a bad `entryIds` reference.
+
+### C3. Audio Controller Changes
+
+`modules/audio.js` currently holds `backgroundMusicTracks` as a single flat array and indexes it with `backgroundMusicIndex`. Playlist support means separating the full track library from the active queue.
+
+Todos:
+
+- [ ] Keep the full normalized library in one place; derive the active queue from it.
+- [ ] Add `getAvailablePlaylists()` returning `{ id, label, trackCount }`, always including `all`.
+- [ ] Add `setActivePlaylist(playlistId)` that rebuilds the queue, resets the index, and emits state.
+- [ ] Add `getActivePlaylist()` and include the active playlist in the `emitStateChange()` payload so subscribers update.
+- [ ] Persist the choice under a new `sw_music_playlist` key; fall back to `all` when the stored id no longer exists.
+- [ ] Guard every empty-queue path: `nextTrack()`, `startBackgroundMusic()`, and the pill controls must no-op safely.
+- [ ] Preserve existing behavior exactly when the playlist is `all`.
+
+### C4. UI Surfaces
+
+The music pill lives in `modules/shell.js` (`#music-pill`, currently `hidden xl:flex`) with a title, play/pause, and next button. Mobile has `renderMobileAudioPlayer`.
+
+Todos:
+
+- [ ] Add a playlist selector to the desktop music pill.
+- [ ] Add the same control to the mobile audio player so parity holds.
+- [ ] Add a soundtrack affordance in the entry modal when that entry has tracks.
+- [ ] Show the active playlist name in Preferences alongside the existing music controls.
+- [ ] Display track position, for example `Track 2 of 5`.
+- [ ] Follow the Workstream D component tokens rather than inventing new pill styling.
+
+### C5. Verification
+
+- [ ] Extend `scripts/validate_music_data.py` as described in C2.
+- [ ] Add a smoke assertion that `data/music-data.json` still serves and parses.
+- [ ] Manual QA: switch playlists while playing, while paused, and with audio disabled.
+- [ ] Manual QA: confirm a reload restores the chosen playlist.
+- [ ] Manual QA: confirm an entry with no tracks shows no soundtrack affordance.
+
+Definition of done:
+
+- A user can pick a film or series and hear only that soundtrack.
+- The default experience is unchanged for anyone who never opens the selector.
+
+---
+
+## D. UI Consistency And Design System
+
+Priority: High
+Goal: Make every surface use the same tokens and the same components, so the app looks deliberately designed rather than assembled.
+
+### D1. The Problem, Measured
+
+The app has a real design system in `tailwind-config.js` — 48 semantic color tokens, 3 font families, 4 border radii. The markup frequently bypasses it.
+
+Counted across `modules/*.js` on 2026-09-26:
+
+| Signal | Count | Issue |
+| --- | --- | --- |
+| Arbitrary Tailwind values `[...]` | 283 | bypassing the token scale |
+| `text-[10px]` | 87 | a de facto font size that is not a token |
+| `text-[11px]` / `text-[9px]` / `text-[8px]` | 13 / 7 / 2 | four competing micro sizes |
+| Hardcoded `#FFE81F` | 8 | Star Wars yellow, not in the config |
+| Hardcoded `#fbe419` | 4 | this *is* `primary-fixed`, written raw |
+| Hardcoded `#75d1ff` | 4 | this *is* `secondary`, written raw |
+| Hardcoded `#131313` | 3 | this *is* `background`, written raw |
+| `tracking-` variants | 12 distinct | `[0.2em]` ×30, `[0.18em]` ×14, `[0.3em]` ×6, `[0.15em]` ×5, plus 8 more |
+
+The headline problem: `#FFE81F` (the brand yellow used in the top bar and sidebar headings) and `#fbe419` (`primary-fixed`) are **two slightly different yellows used interchangeably**. One is a token, one is not, and neither is declared as the brand color.
+
+Additionally, four custom component classes exist but are applied inconsistently: `control-pill` (8 uses), `nav-underline-button` (8), `glass-surface` (5), `glass-surface-soft` (5), `era-nav-button` (2).
+
+### D2. Establish The Token Layer
+
+Todos:
+
+- [ ] Decide the canonical brand yellow: `#FFE81F` or `#fbe419`. Pick one.
+- [ ] Add it to `tailwind-config.js` as a named token, for example `brand-yellow`.
+- [ ] Replace all 8 raw `#FFE81F`, 4 `#fbe419`, 4 `#75d1ff`, and 3 `#131313` occurrences with token classes.
+- [ ] Add the micro type scale as real tokens so `text-[10px]` ×87 becomes something like `text-label-sm`.
+- [ ] Collapse the 12 `tracking-` variants down to 3 or 4 named tokens.
+- [ ] Add a lint or grep check that fails when a raw hex appears in `modules/*.js`.
+
+Definition of done:
+
+- No raw hex colors in module markup.
+- Micro typography comes from a named scale.
+
+### D3. Componentize Repeated Markup
+
+Every nav button, pill, chip, and panel is currently written as a long inline class string, duplicated at each call site. `material-symbols-outlined` appears 53 times.
+
+Todos:
+
+- [ ] Build small render helpers for the recurring primitives: button, icon button, pill/chip, panel/card, section heading, icon.
+- [ ] Route `control-pill`, `nav-underline-button`, `glass-surface`, `glass-surface-soft`, and `era-nav-button` through those helpers.
+- [ ] Replace the duplicated active/inactive class ternaries in `modules/shell.js` with a single state helper. The desktop nav repeats the same ternary four times; the mobile nav repeats it again.
+- [ ] Keep helpers presentational only. No state, no event wiring.
+
+### D4. Cross-Surface Consistency Pass
+
+Surfaces to align: timeline, entry modal, filter panel, stats, preferences, guide, privacy, terms.
+
+Todos:
+
+- [ ] Same heading hierarchy and spacing rhythm on every page.
+- [ ] Same empty-state treatment everywhere.
+- [ ] Same focus ring on every interactive element.
+- [ ] Same hover and active transitions.
+- [ ] Same panel elevation and border language; reduce stacked glass and glow where they compete.
+- [ ] Desktop and mobile expose the same destinations and the same controls.
+
+### D5. Consistency Guardrails
+
+- [ ] Write a short `DESIGN_SYSTEM.md` capturing tokens, components, and usage rules.
+- [ ] Add the raw-hex grep check to `scripts/verify_all.sh`.
+- [ ] Re-measure the arbitrary-value count and record it; the number should fall substantially from 283.
+
+---
+
+## E. Product Polish And Accessibility
+
+Priority: Medium
+Goal: Absorb the remaining `POLISH_PLAN.md` work now that the design system exists.
+
+### E1. Accessibility
+
+Current baseline is decent: 21 `aria-label`, 8 `aria-current`, 2 `aria-modal`, and `prefers-reduced-motion` honored in CSS and two JS paths. Poster `alt` text is present and escaped; decorative era logos correctly use `alt="" aria-hidden="true"`.
+
+Gaps:
+
+- [ ] `aria-expanded` appears **0 times**. Add it to the filter panel, era collapse toggles, and mobile nav.
+- [ ] Only 2 `role=` attributes exist app-wide. Audit landmark and widget roles.
+- [ ] Primary nav is all `<button data-nav-page>`. Convert to real `<a href>` so middle-click, Ctrl+click, and crawlers work.
+- [ ] Label the desktop search input; it has a placeholder only.
+- [ ] Verify focus returns correctly after closing the modal and filter panel.
+
+### E2. Navigation And Hero
+
+- [ ] Add mobile search. It is currently `hidden lg:block`, so small screens have no search at all.
+- [ ] Make the hero CTA resolve to the user's true next unwatched item.
+- [ ] Ensure the brand mark navigates home.
+- [ ] Audit footer links so they support rather than replace primary navigation.
+
+### E3. Content Data Gaps
+
+- [ ] **36 of 50 entries have no `watchUrl`** (72%). Run `scripts/import_disney_title.py` to close the gap.
+- [ ] Fix the `Tales of the Empire - 20 BBY` contradiction: 5 entries titled `20 BBY` all carry `year: "between 5 and 9 ABY"`, spread across 3 eras.
+- [ ] Standardize duplicate-title disambiguation. Some titles embed the year (`The Clone Wars - 22-19 BBY`), others do not, producing `The Clone Wars` ×4 and `Star Wars Resistance` ×3 in the UI.
+- [ ] Normalize era colors. `Reign of the Empire` is `#fff` and `Rise of the First Order` is `#ff0000` — raw defaults next to designed palette values.
+- [ ] Review the single-entry `The High Republic` and `Non-Timeline` eras for layout quality.
+- [ ] `seasons` is present on only 32 of 50 entries.
+
+---
+
+## F. Structural And Render Model
+
+Priority: Medium
+Risk: High. Do this last.
+
+`modules/app-renderer.js` rebuilds the entire shell on every state change via `app.innerHTML = renderShellLayout(...)`, then re-binds everything. `modules/app-interactions.js` alone contains 34 `addEventListener` calls. Toggling one episode checkbox destroys and rebuilds the whole DOM.
+
+This is the root cause of the focus and scroll scaffolding: `filterPanelScrollTop`, `restorePendingFocus`, `restoreOverlayFocus`, `restoreFocusOrigin`, and `pendingOverlayFocusSelector` all exist to compensate for it.
+
+Todos:
+
+- [ ] Introduce delegated event handling at a stable root.
+- [ ] Separate full-page renders from targeted state updates.
+- [ ] Retire the focus and scroll restoration hacks once they are unnecessary.
+- [ ] Split `modules/content-pages.js` (1,160 lines, now the largest runtime module, holding guide + preferences + privacy + terms).
+- [ ] Untangle the forward-declaration pattern in `app.js`, where `let appActions = null` and `let wireInteractions = () => {}` are referenced through lazy thunks before assignment.
+- [ ] Keep behavior identical; this is a refactor, not a redesign.
+
+---
+
+## Execution Order
+
+### Sprint 1 — Truth
+Workstream A in full. Low risk, unblocks everything else.
+
+### Sprint 2 — Weight And Reach
+B1, B2, B3. The largest user-visible wins.
+
+### Sprint 3 — Design System
+D1, D2, D3. Must land before C4 so playlist UI is built on real components.
+
+### Sprint 4 — Playlists
+C1 through C5, plus B4 (Tailwind build) alongside D.
+
+### Sprint 5 — Polish
+D4, D5, E1, E2, E3.
+
+### Sprint 6 — Structure
+F, once the surface is stable.
+
+## Verification Gate
+
+Every sprint ends with:
+
+```bash
+bash star-wars-timeline/scripts/verify_all.sh
+```
+
+Plus manual confirmation that timeline, stats, preferences, guide, privacy, and terms all load, search works on desktop and mobile, filter/modal/nav flows are keyboard-usable, focus returns after closing overlays, and the music playlist selection survives a reload.
+
+## Success Criteria
+
+- No dead code or stale docs remain.
+- Page weight drops from ~66 MB toward ~10 MB.
+- Shared links render a real preview.
+- Users can pick a soundtrack per film or series.
+- Every surface draws from one token set and one component set.
+- The app is fully usable by keyboard and on mobile.
