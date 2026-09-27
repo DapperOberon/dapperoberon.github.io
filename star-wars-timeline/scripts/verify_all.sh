@@ -13,6 +13,9 @@ python3 "${ROOT}/scripts/check_design_tokens.py"
 echo "Checking for interpolated Tailwind classes..."
 python3 "${ROOT}/scripts/check_dynamic_classes.py"
 
+echo "Checking CSS coverage of rendered markup..."
+python3 "${ROOT}/scripts/check_css_coverage.py"
+
 echo "Validating timeline data..."
 python3 "${ROOT}/scripts/validate_timeline_data.py"
 

@@ -70,7 +70,7 @@ function renderStatsPage({
               <div class="relative max-w-3xl">
                 <p class="kicker-label">Archive Metrics</p>
                 <h1 class="mt-4 font-headline text-4xl md:text-6xl tracking-tight text-white leading-none">Stats</h1>
-                <p class="mt-5 text-white/72 font-body leading-relaxed max-w-2xl">
+                <p class="mt-5 text-white/70 font-body leading-relaxed max-w-2xl">
                   A live view of completion, era progress, format mix, and the next unwatched objective in the chronology.
                 </p>
               </div>
@@ -292,7 +292,7 @@ function renderPreferencesPage({
               <div class="relative max-w-3xl">
                 <p class="kicker-label">Archive Controls</p>
                 <h1 class="mt-4 font-headline text-4xl md:text-6xl tracking-tight text-white leading-none">Settings</h1>
-                <p class="mt-5 text-white/72 font-body leading-relaxed max-w-2xl">
+                <p class="mt-5 text-white/70 font-body leading-relaxed max-w-2xl">
                   Tune chronology display, content rules, appearance, and audio behavior across the archive.
                 </p>
               </div>
@@ -561,7 +561,7 @@ const contentPages = {
               <div class="relative max-w-3xl">
                 <p class="kicker-label">Archive Guide</p>
                 <h1 class="mt-4 font-headline text-4xl md:text-6xl tracking-tight text-white leading-none">How Star Wars: Chronicles Works</h1>
-                <p class="mt-5 text-white/72 font-body leading-relaxed max-w-2xl">
+                <p class="mt-5 text-white/70 font-body leading-relaxed max-w-2xl">
                   The guide for browsing the archive, understanding chronology, tracking progress,
                   and using watch and reference tools across the site.
                 </p>
@@ -826,7 +826,7 @@ const contentPages = {
               <div class="relative max-w-3xl">
                 <p class="kicker-label">Policy Archive</p>
                 <h1 class="mt-4 font-headline text-4xl md:text-6xl tracking-tight text-white leading-none">Privacy</h1>
-                <p class="mt-5 text-white/72 font-body leading-relaxed max-w-2xl">
+                <p class="mt-5 text-white/70 font-body leading-relaxed max-w-2xl">
                   How Star Wars: Chronicles handles local data, preferences, audio settings,
                   and external destinations.
                 </p>
@@ -1000,7 +1000,7 @@ const contentPages = {
               <div class="relative max-w-3xl">
                 <p class="kicker-label">Usage Terms</p>
                 <h1 class="mt-4 font-headline text-4xl md:text-6xl tracking-tight text-white leading-none">Terms</h1>
-                <p class="mt-5 text-white/72 font-body leading-relaxed max-w-2xl">
+                <p class="mt-5 text-white/70 font-body leading-relaxed max-w-2xl">
                   The basic usage expectations, disclaimers, and external-link terms for Star Wars: Chronicles.
                 </p>
               </div>

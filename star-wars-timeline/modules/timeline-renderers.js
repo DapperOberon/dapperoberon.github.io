@@ -311,7 +311,7 @@ function renderDesktopEntry(entry, index, escapeHtml) {
           <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"></div>
           <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-fixed/80 via-primary-fixed/20 to-transparent"></div>
           <div class="absolute top-4 left-4">
-            <span class="story-meta bg-black/35 backdrop-blur-md px-3 py-1.5 rounded-full text-white/68">${escapeHtml(entry.metaText || `${entry.episodes} Episodes`)}</span>
+            <span class="story-meta bg-black/35 backdrop-blur-md px-3 py-1.5 rounded-full text-white/70">${escapeHtml(entry.metaText || `${entry.episodes} Episodes`)}</span>
           </div>
           <div class="absolute bottom-4 ${reverse ? "left-4" : "right-4"} flex items-center gap-3">
           ${playUrl && !isSeriesEntry(entry) ? `

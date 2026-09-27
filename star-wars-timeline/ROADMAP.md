@@ -292,6 +292,29 @@ Todos:
 > interpolation, which is legitimate. Verified by reintroducing the regression
 > and confirming the failure.
 
+**Follow-up sweep 2026-09-27.** Since one silent miss existed, the whole
+surface was audited rather than assumed clean. `scripts/render_all_surfaces.mjs`
+renders every surface across many states — watched / partially watched /
+unwatched, filters on / off, all six pages, every nav state, both filter panel
+variants — producing **2.2 MB of markup and 445 distinct classes**. Each was
+checked against the compiled stylesheet plus `styles.css`.
+
+**Three more silent failures found, all invisible to the naked eye:**
+
+| Class | Impact |
+| --- | --- |
+| `settings-switch`, `settings-switch-track` | **Defined nowhere.** Desktop Preferences audio toggles rendered as bare, unstyled checkboxes. |
+| `text-white/72` ×5, `text-white/68` ×1 | `/68` and `/72` are not Tailwind opacity steps, so no rule was generated and the text fell back to full white. Snapped to `/70` (the dominant existing value; ≤4% shift). |
+| `custom-scrollbar` | Referenced but never defined; the intended class is `hide-scrollbar`. Removed, since the global `::-webkit-scrollbar` rules already cover that region. |
+
+`scripts/check_css_coverage.py` now runs in `verify_all.sh` and fails when any
+rendered class resolves to nothing. Verified by injecting both an off-scale
+value and an undefined class, confirming the failure, then restoring.
+
+> Note the checker must allow compound selectors: `.mobile-era-chip` is only
+> ever defined as `.mobile-era-chip.is-active`, which an early version of the
+> check reported as a false positive.
+
 > Removing the CDN also removes a render-blocking third-party script and the
 > production console warning it emitted.
 

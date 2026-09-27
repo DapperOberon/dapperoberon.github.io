@@ -103,7 +103,7 @@ export function renderFilterPanel({
             <span class="material-symbols-outlined">close</span>
           </button>
         </header>
-        <main class="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-10" data-filter-scroll-region="mobile">
+        <main class="flex-1 overflow-y-auto px-6 py-4 space-y-10" data-filter-scroll-region="mobile">
           <section class="space-y-4">
             <h2 class="font-label text-label font-bold tracking-hud text-secondary uppercase opacity-60">Eras</h2>
             <div class="grid gap-3">
