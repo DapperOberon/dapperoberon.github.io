@@ -51,6 +51,9 @@ export function renderAppMainContent({
   flatEntries,
   stats,
   activeFilterCount,
+  // Drives aria-expanded on the filter triggers, so assistive tech knows the
+  // panel's state. Defaults to false: the panel is closed unless told otherwise.
+  isFilterPanelOpen = false,
   filteredEntries,
   filteredSections,
   normalizedSections,
@@ -146,7 +149,7 @@ export function renderAppMainContent({
             <h2 class="text-3xl font-headline font-bold text-white uppercase tracking-tighter">The Galactic Timeline</h2>
           </div>
           <div class="flex gap-3">
-            <button class="control-pill bg-surface-container-highest px-4 py-2 text-xs font-label ${activeFilterCount > 0 ? "text-primary-fixed" : "text-white/60"} hover:text-white transition-all flex items-center gap-2" type="button" data-open-filters="true">
+            <button class="control-pill bg-surface-container-highest px-4 py-2 text-xs font-label ${activeFilterCount > 0 ? "text-primary-fixed" : "text-white/60"} hover:text-white transition-all flex items-center gap-2" type="button" data-open-filters="true" aria-expanded="${isFilterPanelOpen ? "true" : "false"}" aria-controls="filter-panel">
               <span class="material-symbols-outlined text-sm">filter_alt</span>
               ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filter"}
             </button>
@@ -173,7 +176,7 @@ export function renderAppMainContent({
 
     <section id="mobile-eras" class="md:hidden pt-8 pb-52 px-4 max-w-lg mx-auto relative min-h-screen">
       <div class="mb-4 flex items-center gap-2 overflow-x-auto hide-scrollbar">
-        <button class="control-pill shrink-0 px-4 py-2 ${activeFilterCount > 0 ? "is-active text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-label font-label uppercase tracking-hud-wide" type="button" data-open-filters="true">
+        <button class="control-pill shrink-0 px-4 py-2 ${activeFilterCount > 0 ? "is-active text-on-primary-fixed" : "bg-surface-container-high text-white/80"} text-label font-label uppercase tracking-hud-wide" type="button" data-open-filters="true" aria-expanded="${isFilterPanelOpen ? "true" : "false"}" aria-controls="filter-panel">
           ${activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filters"}
         </button>
         ${normalizedSections.map((section, index) => `
