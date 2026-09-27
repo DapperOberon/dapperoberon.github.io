@@ -411,12 +411,34 @@ Additionally, four custom component classes exist but are applied inconsistently
 
 Todos:
 
-- [ ] Decide the canonical brand yellow: `#FFE81F` or `#fbe419`. Pick one.
-- [ ] Add it to `tailwind-config.js` as a named token, for example `brand-yellow`.
-- [ ] Replace all 8 raw `#FFE81F`, 4 `#fbe419`, 4 `#75d1ff`, and 3 `#131313` occurrences with token classes.
-- [ ] Add the micro type scale as real tokens so `text-[10px]` ×87 becomes something like `text-label-sm`.
-- [ ] Collapse the 12 `tracking-` variants down to 3 or 4 named tokens.
-- [ ] Add a lint or grep check that fails when a raw hex appears in `modules/*.js`.
+- [x] **Decide the canonical brand yellow. Chose `#fbe419`.** It is already the value behind `primary-fixed`, `primary-container`, and `surface-tint`; it dominates `styles.css` (9 uses vs 1); and `primary-fixed` already had 128 token uses against 8 raw `#FFE81F`. Standardizing on it collapses the raw uses into an existing token rather than introducing a 49th color. The two differ by ~2% per channel — imperceptible, but they meant there was no single answer to "what is the brand color?"
+- [x] Add it as a named token. Done in `tailwind.config.cjs` (note: the roadmap said `tailwind-config.js`, which B4 replaced). `brand-yellow` is an alias of `primary-fixed` for markup that means "the brand mark" rather than "the primary fill".
+- [x] Replace all raw hex occurrences with token classes. **`modules/` now contains zero raw hex colors**, enforced by a new check.
+- [x] Add the micro type scale as real tokens. `text-[10px]`×83 → `text-label`, plus `text-label-lg` (11px), `text-label-sm` (9px), `text-label-xs` (8px). A stray `text-[14px]` became `text-sm` (exactly 14px).
+- [x] Collapse the `tracking-` variants. 9 distinct arbitrary values → 4 named steps (`tracking-hud`, `-hud-wide`, `-hud-wider`, `-hud-widest`), plus two that mapped onto Tailwind built-ins.
+- [x] Add a check that fails when a raw hex appears in `modules/*.js`. `scripts/check_design_tokens.py` guards raw hex, arbitrary `text-[Npx]`, and arbitrary `tracking-[...]`; wired into `verify_all.sh`. Verified negatively by reintroducing a violation and confirming the failure.
+
+**Result: 501 arbitrary values → 95 (81% reduction).** 177 token substitutions
+across 22 modules.
+
+> The roadmap counted 283 arbitrary values; the real number was **501**. The
+> original measurement appears to have undercounted.
+
+Some colors could not become utility classes because they sit in contexts
+Tailwind cannot reach — SVG `stroke` attributes, inline `style`, and
+`shadow-[...]` arbitrary values. Those now use `var(--brand-*)` CSS variables
+declared in `styles.css:8`, which must be kept in sync with the Tailwind config.
+
+Of the 18 substitution rules, **13 are pixel-identical**. Five shift slightly
+and were accepted deliberately:
+
+| Change | Shift | Where |
+| --- | --- | --- |
+| `#FFE81F` → `#fbe419` | ~2%/channel | brand yellow, the point of the exercise |
+| `tracking-[0.12em]` → `0.15em` | +0.03em | 2 sites |
+| `tracking-[0.22em]` → `0.2em` | −0.02em | 1 site |
+| `tracking-[0.4em]` → `0.3em` | −0.1em | footer copyright, 9px at 20% opacity |
+| `tracking-[0.03em]` → `0.025em` | −0.005em | 1 site |
 
 Definition of done:
 

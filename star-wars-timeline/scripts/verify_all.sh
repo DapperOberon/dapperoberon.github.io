@@ -7,6 +7,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo "Running JavaScript syntax checks..."
 python3 "${ROOT}/scripts/check_js_syntax.py"
 
+echo "Checking design tokens..."
+python3 "${ROOT}/scripts/check_design_tokens.py"
+
 echo "Validating timeline data..."
 python3 "${ROOT}/scripts/validate_timeline_data.py"
 
