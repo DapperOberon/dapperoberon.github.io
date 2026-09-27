@@ -1,7 +1,16 @@
 # Project Refactor Plan
 
-Status: Active Planning  
-Date: 2026-03-26
+Status: **Complete — retained for history**  
+Date: 2026-03-26  
+Closed: 2026-09-27
+
+> **This plan is finished and is no longer the source of truth.**
+> The refactor it describes has shipped: `app.js` is now a ~260-line composition
+> layer over the `modules/` tree, not the 2,088-line file described below.
+> Any line-count or structure claim in this document is historical.
+>
+> Active planning lives in [`ROADMAP.md`](./ROADMAP.md).
+> Current structure is documented in [`RUNTIME_ARCHITECTURE.md`](./RUNTIME_ARCHITECTURE.md).
 
 ## Purpose
 

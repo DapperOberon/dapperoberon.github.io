@@ -1,6 +1,12 @@
-# Cleanup Checklist
+# Cleanup Checklist (Post-Promotion)
 
-Status: Merge Prep
+Status: **Archived — retained for history**  
+Archived: 2026-09-27
+
+> **Historical.** This merge-prep checklist is closed.
+> It still lists `content-page.js`; that file was deleted in Sprint 1.
+>
+> Active planning: [`ROADMAP.md`](../../ROADMAP.md).
 
 ## Completed
 

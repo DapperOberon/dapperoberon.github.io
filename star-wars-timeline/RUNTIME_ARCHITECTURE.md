@@ -1,7 +1,7 @@
 # Runtime Architecture
 
 Status: Active  
-Date: 2026-03-26
+Date: 2026-09-27
 
 This document explains how the live `star-wars-timeline/` app is structured today, which files are active, where the data comes from, how local state is stored, and how to do a quick verification pass before shipping changes.
 
@@ -9,32 +9,31 @@ This document explains how the live `star-wars-timeline/` app is structured toda
 
 The live app is served from:
 
-- [`index.html`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/index.html)
-- [`app.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/app.js)
-- [`styles.css`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/styles.css)
-- [`content-page.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/content-page.js)
-- [`tailwind-config.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/tailwind-config.js)
+- [`index.html`](./index.html)
+- [`app.js`](./app.js)
+- [`styles.css`](./styles.css)
+- [`tailwind-config.js`](./tailwind-config.js)
 
 Primary data files:
 
-- [`data/timeline-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/timeline-data.json)
-- [`data/music-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/music-data.json)
+- [`data/timeline-data.json`](./data/timeline-data.json)
+- [`data/music-data.json`](./data/music-data.json)
 
 Static assets used at runtime:
 
-- [`images/posters/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/images/posters)
-- [`images/eras/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/images/eras)
-- [`audio/music/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/audio/music)
+- [`images/posters/`](./images/posters)
+- [`images/eras/`](./images/eras)
+- [`audio/music/`](./audio/music)
 
 ## What Is Archived
 
 These folders are reference or legacy material and should not be treated as the live app:
 
-- [`archive/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/archive)
-- [`redesign/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/redesign)
-- [`images/design-reference/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/images/design-reference)
-- [`images/website-reference/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/images/website-reference)
-- [`qa-artifacts/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/qa-artifacts)
+- [`archive/`](./archive)
+- [`redesign/`](./redesign)
+- [`images/design-reference/`](./images/design-reference)
+- [`images/website-reference/`](./images/website-reference)
+- [`qa-artifacts/`](./qa-artifacts)
 
 Rule of thumb:
 
@@ -43,17 +42,17 @@ Rule of thumb:
 
 ## Boot Flow
 
-The app boots through [`app.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/app.js), which now acts as a composition layer.
+The app boots through [`app.js`](./app.js), which now acts as a composition layer.
 
 High-level boot sequence:
 
 1. Create the shared `appState`
 2. Build the domain, renderer, actions, runtime helpers, and interaction wiring
-3. Fetch [`data/timeline-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/timeline-data.json)
-4. Normalize the timeline payload through [`modules/timeline-data.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/timeline-data.js)
+3. Fetch [`data/timeline-data.json`](./data/timeline-data.json)
+4. Normalize the timeline payload through [`modules/timeline-data.js`](./modules/timeline-data.js)
 5. Load watched progress from `localStorage`
 6. Load and apply user preferences
-7. Load music metadata from [`data/music-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/music-data.json)
+7. Load music metadata from [`data/music-data.json`](./data/music-data.json)
 8. Apply any deep-linked entry state from the URL
 9. Render the app and attach interactions
 
@@ -61,107 +60,101 @@ High-level boot sequence:
 
 ### App Composition
 
-- [`app.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/app.js)
+- [`app.js`](./app.js)
   - wires the app together
   - owns bootstrap-time configuration
 
-- [`modules/app-domain.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-domain.js)
+- [`modules/app-domain.js`](./modules/app-domain.js)
   - domain-facing helpers over app state
   - filtered entry navigation
   - share URL and deep-link orchestration
 
-- [`modules/app-renderer.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-renderer.js)
+- [`modules/app-renderer.js`](./modules/app-renderer.js)
   - full app render orchestration
   - escapes HTML and composes shell + content + overlays
 
-- [`modules/app-wiring.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-wiring.js)
+- [`modules/app-wiring.js`](./modules/app-wiring.js)
   - connects view actions, progress actions, and UI interactions after each render
 
 ### Data Layer
 
-- [`modules/timeline-data.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/timeline-data.js)
+- [`modules/timeline-data.js`](./modules/timeline-data.js)
   - normalizes timeline entries into the runtime contract
   - centralizes media classification, continuity flags, search text, metadata text, and watch links
   - rebuilds the flat entry index used throughout the app
 
-- [`modules/data.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/data.js)
-  - compatibility helper layer
-  - re-exports normalized data helpers
-
-- [`modules/constants.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/constants.js)
+- [`modules/constants.js`](./modules/constants.js)
   - era assets
   - media label logic
   - story arc options and matchers
 
 ### Filtering, Routing, and Persistence
 
-- [`modules/filters.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/filters.js)
+- [`modules/filters.js`](./modules/filters.js)
   - filter defaults
   - active filter counting
   - entry matching logic
 
-- [`modules/routing.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/routing.js)
+- [`modules/routing.js`](./modules/routing.js)
   - deep-link read/write helpers for entry URLs
 
-- [`modules/persistence.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/persistence.js)
+- [`modules/persistence.js`](./modules/persistence.js)
   - watched progress storage and migration
-  - collapsed-era storage
-  - theme preference storage
 
-- [`modules/preferences.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/preferences.js)
+- [`modules/preferences.js`](./modules/preferences.js)
   - default preference values
   - preference loading and schema migration
   - document-level theme variable application
 
 ### Rendering and Interaction
 
-- [`modules/timeline-renderers.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/timeline-renderers.js)
+- [`modules/timeline-renderers.js`](./modules/timeline-renderers.js)
   - desktop timeline entry rendering
   - mobile timeline entry rendering
   - modal and episode rendering
 
-- [`modules/utility-renderers.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/utility-renderers.js)
+- [`modules/utility-renderers.js`](./modules/utility-renderers.js)
   - filters overlay
   - stats page
   - preferences page
 
-- [`modules/app-layout.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-layout.js)
+- [`modules/app-layout.js`](./modules/app-layout.js)
   - top-level page layout composition
   - desktop sidebar content and main page sections
 
-- [`modules/shell.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/shell.js)
+- [`modules/shell.js`](./modules/shell.js)
   - top bar
   - desktop sidebar container
   - mobile audio player and bottom nav
   - footer shell
 
-- [`modules/app-interactions.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-interactions.js)
+- [`modules/app-interactions.js`](./modules/app-interactions.js)
   - DOM event binding for shell and page interactions
 
-- [`modules/app-runtime.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-runtime.js)
+- [`modules/app-runtime.js`](./modules/app-runtime.js)
   - view actions
   - focus restoration
   - overlay behavior
   - audio UI runtime helpers
 
-- [`modules/app-state.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-state.js)
+- [`modules/app-state.js`](./modules/app-state.js)
   - boot process
   - progress toggling
   - global keyboard handling
 
-- [`modules/app-actions.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-actions.js)
+- [`modules/app-actions.js`](./modules/app-actions.js)
   - user-triggered app actions such as sharing and preference updates
 
-- [`modules/app-ui-helpers.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-ui-helpers.js)
+- [`modules/app-ui-helpers.js`](./modules/app-ui-helpers.js)
   - scroll helpers
   - focusable-element lookup
   - active-section tracking
   - page-state helpers
 
-- [`modules/stats.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/stats.js)
+- [`modules/stats.js`](./modules/stats.js)
   - derived progress and sparkline stats
 
-- [`modules/audio.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/audio.js)
+- [`modules/audio.js`](./modules/audio.js)
   - music playlist loading
   - playback state
   - UI sound effects
@@ -172,7 +165,7 @@ High-level boot sequence:
 
 Source file:
 
-- [`data/timeline-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/timeline-data.json)
+- [`data/timeline-data.json`](./data/timeline-data.json)
 
 Each section currently contains:
 
@@ -197,7 +190,7 @@ Each entry currently contains a raw source shape like:
 - optional `seasons`
 - optional `episodeDetails`
 
-Before rendering, [`modules/timeline-data.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/timeline-data.js) normalizes each entry into a richer runtime shape with fields such as:
+Before rendering, [`modules/timeline-data.js`](./modules/timeline-data.js) normalizes each entry into a richer runtime shape with fields such as:
 
 - `posterUrl`
 - `primaryWatchUrl`
@@ -215,9 +208,9 @@ That normalized contract is what active renderers and filters should prefer.
 
 Source file:
 
-- [`data/music-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/music-data.json)
+- [`data/music-data.json`](./data/music-data.json)
 
-This is loaded by [`modules/audio.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/audio.js) and currently contains a `tracks` array with `src` and `title`.
+This is loaded by [`modules/audio.js`](./modules/audio.js) and currently contains a `tracks` array with `src` and `title`.
 
 ## Local Storage
 
@@ -227,7 +220,7 @@ The app stores several user-facing pieces of state in `localStorage`.
 
 Handled by:
 
-- [`modules/persistence.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/persistence.js)
+- [`modules/persistence.js`](./modules/persistence.js)
 
 Current storage behavior:
 
@@ -239,21 +232,16 @@ Current storage behavior:
 
 Handled by:
 
-- [`modules/preferences.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/preferences.js)
+- [`modules/preferences.js`](./modules/preferences.js)
 
 Current preference storage:
 
 - main preference blob key: `sw_redesign_preferences`
-- schema version currently set in [`app.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/app.js) as `2`
+- schema version currently set in [`app.js`](./app.js) as `2`
 
-Theme storage also exists in:
+Theme is part of that preference blob as `interfaceTheme` (`sith-dark` by default) and is applied to the page by `applyPreferencesToDocument` as `body[data-interface-theme]`.
 
-- [`modules/persistence.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/persistence.js)
-
-Related keys:
-
-- `sw_theme`
-- `sw_collapsed_eras`
+There is exactly one theme system. The legacy `sw_theme` and `sw_collapsed_eras` keys were removed in Sprint 1 along with their unused helpers.
 
 ## URL And Navigation Behavior
 
@@ -265,45 +253,45 @@ Deep linking is entry-based.
 
 This behavior is coordinated across:
 
-- [`modules/routing.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/routing.js)
-- [`modules/app-domain.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-domain.js)
-- [`modules/app-runtime.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/app-runtime.js)
+- [`modules/routing.js`](./modules/routing.js)
+- [`modules/app-domain.js`](./modules/app-domain.js)
+- [`modules/app-runtime.js`](./modules/app-runtime.js)
 
 ## Active Scripts
 
 Active scripts live in:
 
-- [`scripts/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts)
+- [`scripts/`](./scripts)
 
 Current active scripts:
 
-- [`import_disney_title.py`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/import_disney_title.py)
-  - imports Disney+ play URLs into [`data/timeline-data.json`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/data/timeline-data.json)
+- [`import_disney_title.py`](./scripts/import_disney_title.py)
+  - imports Disney+ play URLs into [`data/timeline-data.json`](./data/timeline-data.json)
   - supports film and series updates
   - expects a logged-in Firefox profile for Disney+
 
-- [`import_chronological_data.py`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/import_chronological_data.py)
+- [`import_chronological_data.py`](./scripts/import_chronological_data.py)
   - imports timeline structure from the markdown chronology source
   - preserves poster, synopsis, and id metadata where possible
 
 - verification scripts
-  - [`check_js_syntax.py`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/check_js_syntax.py)
-  - [`validate_timeline_data.py`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/validate_timeline_data.py)
-  - [`validate_music_data.py`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/validate_music_data.py)
-  - [`smoke_test.sh`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/smoke_test.sh)
-  - [`verify_all.sh`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/scripts/verify_all.sh)
+  - [`check_js_syntax.py`](./scripts/check_js_syntax.py)
+  - [`validate_timeline_data.py`](./scripts/validate_timeline_data.py)
+  - [`validate_music_data.py`](./scripts/validate_music_data.py)
+  - [`smoke_test.sh`](./scripts/smoke_test.sh)
+  - [`verify_all.sh`](./scripts/verify_all.sh)
 
 Superseded one-off extractors have been moved to:
 
-- [`archive/scripts/`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/archive/scripts)
+- [`archive/scripts/`](./archive/scripts)
 
 ## Recommended Change Workflow
 
 When changing app logic:
 
 1. Edit the active runtime files in the root app or `modules/`
-2. If data shape is involved, prefer updating [`modules/timeline-data.js`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/modules/timeline-data.js) instead of spreading new assumptions into renderers
-3. Run the verification pass in [`VERIFICATION.md`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/VERIFICATION.md)
+2. If data shape is involved, prefer updating [`modules/timeline-data.js`](./modules/timeline-data.js) instead of spreading new assumptions into renderers
+3. Run the verification pass in [`VERIFICATION.md`](./VERIFICATION.md)
 
 When changing timeline or music data:
 
@@ -328,4 +316,4 @@ bash star-wars-timeline/scripts/verify_all.sh
 
 See full notes in:
 
-- [`VERIFICATION.md`](/mnt/Misc%20SSD/Github%20Respositories/dapperoberon.github.io/star-wars-timeline/VERIFICATION.md)
+- [`VERIFICATION.md`](./VERIFICATION.md)

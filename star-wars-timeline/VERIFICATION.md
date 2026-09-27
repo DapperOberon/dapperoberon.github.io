@@ -2,6 +2,12 @@
 
 This project now has a lightweight verification pass built from small local scripts instead of a larger test framework.
 
+## Prerequisites
+
+- `python3` — runs the syntax and data validators
+- `node` — `check_js_syntax.py` shells out to `node --check`; without it the pass fails at the first step
+- `curl` — used by the smoke test
+
 ## Commands
 
 Run the full verification pass:
