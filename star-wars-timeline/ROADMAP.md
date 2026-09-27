@@ -13,10 +13,17 @@ Served tree **116 MB → 44 MB** (62% smaller). Measured, not estimated.
 | --- | --- | --- |
 | Reference assets (unused at runtime) | 51 MB | **0 MB** (moved to `archive/`) |
 | `audio/music` | 47 MB | 36 MB, and **not fetched until the user opts in** |
-| `images/posters` | 18 MB | 6.4 MB (WebP + right-sized JPG fallbacks) |
+| `images/posters` | 18 MB | 20.5 MB across 3 role-sized variants |
 
-Typical first paint is now roughly **620 KB**: app shell, modules, timeline
-data, and one eager hero poster. Everything else is lazy or opt-in.
+Posters now occupy slightly *more* disk than before, because each one ships a
+900px WebP, a 1600px hero WebP, and a 900px JPG fallback. That is deliberate:
+**what matters is bytes sent to a visitor, not bytes on disk.** Any given page
+view downloads one hero variant plus the standard variants that scroll into
+view — never all three sets.
+
+Typical first paint is roughly **620 KB**: app shell, modules, timeline data,
+and one eager hero poster. Remaining posters are lazy (~143 KB each, on scroll)
+and audio is opt-in at 0 KB.
 
 ## Purpose
 
@@ -183,11 +190,36 @@ Todos:
 - [x] Added `scripts/build_poster_derivatives.py` (+ `npm run build:posters`) so the set is reproducible.
 
 Target: 18 MB down to under 4 MB.
-**Result: 18 MB → 6.4 MB for both formats combined** (2.9 MB WebP + 3.5 MB JPG
-fallbacks). WebP alone is 2.7 MB, an 84% reduction; the JPG fallbacks were also
-re-saved at 600px, since shipping full-resolution fallbacks beside 600px WebP
-would waste the win for any browser taking the fallback path.
-`acolyte-poster.jpg` went from 2.6 MB to 52 KB.
+
+**Corrected 2026-09-27 — the first pass shipped posters too small.**
+
+The initial build used one global 600px width, taken from an unverified claim
+that posters "render at most ~500px wide." Checking the actual markup showed
+that was wrong for the most prominent image on the page: the hero
+(`app-layout.js`) is a **full-bleed backdrop**, not a thumbnail, so 600px was
+being upscaled **3.2× at 1920px** and 4.8× on a Retina laptop. Visibly soft.
+
+Posters are now sized by role, regenerated from the originals in git:
+
+| Variant | Width | Used by | Total |
+| --- | --- | --- | --- |
+| `*-lg.webp` | 1600px @ q70 | hero backdrop (`hero: true`) | 8.1 MB |
+| `*.webp` | 900px @ q82 | cards, modal | 5.4 MB |
+| `*.jpg` | 900px @ q82 | fallback for non-WebP browsers | 7.0 MB |
+
+Notes:
+
+- The hero variant uses quality 70 because it renders at `opacity-50` beneath
+  two gradient overlays, which hides compression detail — ~25% off the largest
+  asset on the page for no visible cost.
+- **Never upscale.** 19 of 34 sources are narrower than 1600px and are kept at
+  native width.
+- The hero entry is **dynamic** (`getNextObjective` returns the next unwatched
+  title), so every poster needs a `-lg` variant, not just one.
+- **First paint is unchanged at ~620 KB.** The hero was always one eager image;
+  it is simply the correctly-sized one now. Disk grew, bytes-to-user did not.
+- `validate_timeline_data.py` now requires *both* derivatives, verified by
+  deliberately removing one and confirming the failure.
 
 > `<picture>` carries `style="display:contents"` so it generates no layout box
 > and the `<img>` still sizes against its original container. Without this,

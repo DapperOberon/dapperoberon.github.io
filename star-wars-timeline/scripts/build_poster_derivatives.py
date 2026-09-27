@@ -24,10 +24,40 @@ except ImportError:  # pragma: no cover
 ROOT = Path(__file__).resolve().parents[1]
 POSTER_DIR = ROOT / "images" / "posters"
 
-# Posters never render wider than ~500 CSS px in any current layout, so a
-# 600px derivative covers 1x and most 2x cases without shipping 2000px art.
-TARGET_WIDTH = 600
+# Posters are sized by the role they play, not by one global number.
+#
+# The hero backdrop (`modules/app-layout.js`) is a full-bleed background across
+# a min-h-[640px] section, so it needs real width. Crucially, the hero entry is
+# *dynamic* -- `getNextObjective()` picks whichever entry is next unwatched --
+# so every poster needs a large variant, not just one.
+#
+# Card and modal posters are much smaller: the widest is the desktop card at
+# w-[45%] of a max-w-[1320px] container (~594 CSS px), so 900px covers it at
+# DPR 1.5 and covers mobile at DPR 2.
+#
+# Never upscale: 19 of the current 34 sources are narrower than HERO_WIDTH.
+HERO_WIDTH = 1600
+STANDARD_WIDTH = 900
+HERO_SUFFIX = "-lg"
+
+# Standard posters are viewed directly, so they keep a high quality setting.
+# The hero variant is rendered at opacity-50 beneath two gradient overlays
+# (`modules/app-layout.js`), which hides compression detail, so it tolerates a
+# lower setting -- worth roughly 25% off the largest single asset on the page.
 QUALITY = 82
+HERO_QUALITY = 70
+
+
+def fit_width(image: "Image.Image", target: int) -> "Image.Image":
+    """Downscale to `target` width, preserving aspect ratio.
+
+    Never upscales: an image narrower than `target` is returned unchanged,
+    since enlarging it adds bytes without adding detail.
+    """
+    if image.width <= target:
+        return image
+    height = round(image.height * target / image.width)
+    return image.resize((target, height), Image.LANCZOS)
 
 
 def main() -> int:
@@ -42,29 +72,41 @@ def main() -> int:
 
     total_jpg = 0
     total_webp = 0
+    total_hero = 0
+    upscale_skipped = 0
 
     for jpg in sources:
-        image = Image.open(jpg).convert("RGB")
-        if image.width > TARGET_WIDTH:
-            height = round(image.height * TARGET_WIDTH / image.width)
-            image = image.resize((TARGET_WIDTH, height), Image.LANCZOS)
+        original = Image.open(jpg).convert("RGB")
 
-        # WebP derivative (preferred source).
+        # --- Hero variant (full-bleed backdrop) ---
+        hero = fit_width(original, HERO_WIDTH)
+        if hero.width < HERO_WIDTH:
+            upscale_skipped += 1
+        hero_webp = jpg.with_name(f"{jpg.stem}{HERO_SUFFIX}.webp")
+        hero.save(hero_webp, "WEBP", quality=HERO_QUALITY, method=6)
+        total_hero += hero_webp.stat().st_size
+
+        # --- Standard variant (cards, modal) ---
+        standard = fit_width(original, STANDARD_WIDTH)
         webp = jpg.with_suffix(".webp")
-        image.save(webp, "WEBP", quality=QUALITY, method=6)
+        standard.save(webp, "WEBP", quality=QUALITY, method=6)
 
-        # Re-save the JPG fallback at the same dimensions. Shipping a
-        # full-resolution fallback next to a 600px WebP wastes most of the win
-        # for any browser that takes the fallback path.
-        image.save(jpg, "JPEG", quality=QUALITY, optimize=True, progressive=True)
+        # Keep the JPG fallback at the same dimensions as the standard WebP.
+        # It is only reached by browsers without WebP support.
+        standard.save(jpg, "JPEG", quality=QUALITY, optimize=True, progressive=True)
 
         total_jpg += jpg.stat().st_size
         total_webp += webp.stat().st_size
 
+    combined = total_jpg + total_webp + total_hero
     print(f"Poster derivatives OK: {len(sources)} posters")
-    print(f"  jpg fallbacks: {total_jpg / 1048576:.1f} MB")
-    print(f"  webp sources:  {total_webp / 1048576:.1f} MB")
-    print(f"  combined:      {(total_jpg + total_webp) / 1048576:.1f} MB")
+    print(f"  hero webp ({HERO_WIDTH}px): {total_hero / 1048576:.1f} MB")
+    print(f"  webp ({STANDARD_WIDTH}px):      {total_webp / 1048576:.1f} MB")
+    print(f"  jpg fallbacks:       {total_jpg / 1048576:.1f} MB")
+    print(f"  combined:            {combined / 1048576:.1f} MB")
+    if upscale_skipped:
+        print(f"  note: {upscale_skipped} sources narrower than {HERO_WIDTH}px "
+              f"(kept at native width, never upscaled)")
     return 0
 
 

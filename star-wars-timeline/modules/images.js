@@ -12,14 +12,24 @@
  * Keep this module presentational: no state, no event wiring.
  */
 
-// Derivatives are generated at a fixed 600px width. Poster art is
-// consistently 2:3, so this is the right default aspect box.
-export const POSTER_WIDTH = 600;
-export const POSTER_HEIGHT = 900;
+// Derivative widths, mirroring `scripts/build_poster_derivatives.py`.
+// Poster art is consistently 2:3, so these double as the intrinsic aspect box.
+export const POSTER_WIDTH = 900;
+export const POSTER_HEIGHT = 1350;
+
+// The hero backdrop is full-bleed, so it gets a wider variant. The hero entry
+// is dynamic (`getNextObjective`), so every poster has one.
+export const HERO_POSTER_WIDTH = 1600;
+export const HERO_POSTER_HEIGHT = 2400;
 
 export function getPosterWebpPath(src) {
   if (typeof src !== "string" || !src) return "";
   return src.replace(/\.jpe?g($|\?)/i, ".webp$1");
+}
+
+export function getHeroPosterWebpPath(src) {
+  if (typeof src !== "string" || !src) return "";
+  return src.replace(/\.jpe?g($|\?)/i, "-lg.webp$1");
 }
 
 /**
@@ -30,6 +40,8 @@ export function getPosterWebpPath(src) {
  * @param {string} options.alt        Alt text. Pass "" for decorative art.
  * @param {string} [options.className] Classes applied to the <img>.
  * @param {boolean} [options.eager]   True for above-the-fold art (hero).
+ * @param {boolean} [options.hero]    True to use the wide full-bleed variant.
+ * @param {string} [options.sizes]    Layout hint for source selection.
  * @param {string} [options.escape]   Escaping function.
  */
 export function renderPoster({
@@ -37,21 +49,28 @@ export function renderPoster({
   alt = "",
   className = "",
   eager = false,
+  hero = false,
   sizes = "",
   escape = (value) => value
 } = {}) {
   if (!src) return "";
 
-  const webp = getPosterWebpPath(src);
   const decorative = alt === "";
   const loadingAttrs = eager
     ? 'loading="eager" decoding="async" fetchpriority="high"'
     : 'loading="lazy" decoding="async"';
+
+  // The hero renders full-bleed, so it needs the wide variant; a 900px source
+  // would be upscaled ~2x on a 1920px display. Standard posters never exceed
+  // ~594 CSS px, so the 900px variant is already generous there.
+  const webp = hero ? getHeroPosterWebpPath(src) : getPosterWebpPath(src);
+  const intrinsicWidth = hero ? HERO_POSTER_WIDTH : POSTER_WIDTH;
+  const intrinsicHeight = hero ? HERO_POSTER_HEIGHT : POSTER_HEIGHT;
 
   // `display:contents` on the <picture> keeps it from generating a layout box,
   // so the <img> still sizes against the original container. Without it,
   // percentage sizing like `w-full h-full` would resolve against the <picture>.
   return `<picture style="display:contents">${
     webp ? `<source srcset="${escape(webp)}"${sizes ? ` sizes="${escape(sizes)}"` : ""} type="image/webp">` : ""
-  }<img class="${escape(className)}" src="${escape(src)}" alt="${escape(alt)}"${decorative ? ' aria-hidden="true"' : ""} width="${POSTER_WIDTH}" height="${POSTER_HEIGHT}" ${loadingAttrs}></picture>`;
+  }<img class="${escape(className)}" src="${escape(src)}" alt="${escape(alt)}"${decorative ? ' aria-hidden="true"' : ""} width="${intrinsicWidth}" height="${intrinsicHeight}" ${loadingAttrs}></picture>`;
 }

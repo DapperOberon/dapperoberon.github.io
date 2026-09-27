@@ -73,5 +73,6 @@
 - Prefer small module functions and callback injection over adding cross-module global state.
 - Keep static asset paths relative (e.g., `./images/posters/...`, `./audio/music/...`) to match current hosting structure.
 - **Render posters through `renderPoster()` in `modules/images.js`**, never a bare `<img>`. It emits WebP + JPG fallback with lazy loading and intrinsic dimensions. New posters need `npm run build:posters`, or data validation fails.
+- Pass `hero: true` for full-bleed placements so they get the 1600px variant; the default 900px variant is for cards and the modal. Sizing an image below its rendered size is a visible quality regression — check the container's actual CSS width before picking.
 - Background audio is opt-in: `preload="none"` and music defaults off. Do not reintroduce eager audio loading.
 - Timeline markup currently uses many arbitrary Tailwind values and some raw hex colors. Tokenizing this is **Workstream D** in `ROADMAP.md`; prefer existing `tailwind-config.js` tokens in new markup rather than adding more arbitrary values.
