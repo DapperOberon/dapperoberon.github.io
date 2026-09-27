@@ -442,7 +442,11 @@ export function createAudioController({
   function initSoundToggle() {
     const mainToggle = document.getElementById('sound-toggle');
     const settingsToggle = document.getElementById('settings-sound-toggle');
-    if (!mainToggle && !settingsToggle) return;
+    // Do NOT bail when these elements are absent. The Preferences rows are
+    // <button data-pref-toggle> and route through app-actions.togglePreference,
+    // so neither id is rendered -- an early return here would skip restoring
+    // `soundEnabled` from localStorage entirely. The listeners below are
+    // already individually guarded.
     const stored = localStorage.getItem('sw_sound_enabled');
     soundEnabled = stored === 'true';
     setSoundEnabled(soundEnabled, { withFeedback: false, persist: false });

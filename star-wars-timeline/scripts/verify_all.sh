@@ -16,6 +16,9 @@ python3 "${ROOT}/scripts/check_dynamic_classes.py"
 echo "Checking CSS coverage of rendered markup..."
 python3 "${ROOT}/scripts/check_css_coverage.py"
 
+echo "Checking for nested interactive elements..."
+python3 "${ROOT}/scripts/check_nested_interactive.py"
+
 echo "Validating timeline data..."
 python3 "${ROOT}/scripts/validate_timeline_data.py"
 
