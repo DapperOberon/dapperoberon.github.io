@@ -1,7 +1,15 @@
-# Implementation Status
+# Implementation Status (Post-Promotion)
 
-Status: Root Entry Promoted, Release Baseline Active  
-Date: 2026-03-26
+Status: **Archived — retained for history**  
+Date: 2026-03-26  
+Archived: 2026-09-27
+
+> **Historical.** The redesign promotion this tracked is complete.
+> This document still lists `content-page.js` as an entry point; that file was
+> deleted in Sprint 1 as unreachable dead code.
+>
+> Active planning: [`ROADMAP.md`](../../ROADMAP.md).
+> Current structure: [`RUNTIME_ARCHITECTURE.md`](../../RUNTIME_ARCHITECTURE.md).
 
 ## Purpose
 

@@ -42,10 +42,6 @@ export function renderStandardTopBar({
   `;
 }
 
-export function renderContentTopBar() {
-  return "";
-}
-
 export function renderDesktopSidebar(content) {
   return `
     <aside id="desktop-eras" class="hidden lg:flex h-full w-72 fixed left-0 top-0 z-[60] bg-[#131313] flex-col py-8 bg-gradient-to-r from-white/5 to-transparent">

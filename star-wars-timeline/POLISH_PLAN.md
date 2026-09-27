@@ -1,7 +1,13 @@
 # Product Polish Plan
 
-Status: Ready For Execution  
-Date: 2026-03-26
+Status: **Superseded — retained for history**  
+Date: 2026-03-26  
+Superseded: 2026-09-27
+
+> **Do not execute from this document.**
+> Its outstanding items were folded into Workstream E (Product Polish And
+> Accessibility) of [`ROADMAP.md`](./ROADMAP.md), which is the single
+> execution plan for `star-wars-timeline/`.
 
 ## Purpose
 

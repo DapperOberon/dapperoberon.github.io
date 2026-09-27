@@ -2,6 +2,7 @@
 
 Status: Active
 Date: 2026-09-26
+Last updated: 2026-09-27 — **Sprint 1 (Workstream A) complete**, except the open Jedi Light decision in A3.
 
 ## Purpose
 
@@ -20,10 +21,13 @@ Measured on 2026-09-26.
 
 Verification: `bash star-wars-timeline/scripts/verify_all.sh` exits `0`.
 
-- 25 JavaScript files pass `node --check`
+- ~~25~~ **23** JavaScript files pass `node --check` (Sprint 1 removed 2 dead files)
 - 7 eras, 50 entries, 563 episodes
 - 16 music tracks
-- 9 HTTP routes respond
+- ~~9~~ **8** HTTP routes respond (Sprint 1 dropped the dead `content-page.js` route)
+
+> The gate requires `node`, `python3`, and `curl`. `check_js_syntax.py` shells
+> out to `node --check`; without Node the entire pass fails at step 1.
 
 Data integrity is clean:
 
@@ -75,14 +79,14 @@ Two verification checks currently guard this dead file and report false confiden
 
 Todos:
 
-- [ ] Decide: delete `content-page.js`, or restore it as a real no-JS fallback for content pages.
-- [ ] If deleting, remove it from `scripts/check_js_syntax.py` and `scripts/smoke_test.sh`.
-- [ ] If keeping, fix the `renderContentTopBar` and `renderStandardFooter` call signatures and give the stub pages a real reason to load it.
-- [ ] Remove `renderContentTopBar` from `modules/shell.js` if it ends up with no callers.
+- [x] Decide: delete `content-page.js`, or restore it as a real no-JS fallback for content pages. **Decided: deleted.** It was unreachable, depended on a `<template id="page-content">` that no longer exists, and called two `shell.js` functions with unsupported arguments. Restoring it would have meant rebuilding template plumbing to serve pages that already work via `?page=X`.
+- [x] If deleting, remove it from `scripts/check_js_syntax.py` and `scripts/smoke_test.sh`.
+- [x] ~~If keeping, fix the call signatures~~ — not applicable; deleted.
+- [x] Remove `renderContentTopBar` from `modules/shell.js` if it ends up with no callers. It was a no-op stub returning `""`; removed.
 
 Definition of done:
 
-- No runtime file is referenced by verification scripts unless a user can actually reach it.
+- No runtime file is referenced by verification scripts unless a user can actually reach it. ✅ Smoke routes 9 → 8; JS syntax targets 25 → 23.
 
 ### A2. Remove Dead Persistence Exports
 
@@ -97,35 +101,51 @@ It also defines `DEFAULT_THEME_ID = 'modern-starwars'`, a theme id that exists n
 
 Todos:
 
-- [ ] Delete the four unused exports and the `sw_theme` / `modern-starwars` constants.
-- [ ] Confirm `sw_collapsed_eras` is genuinely unused before dropping the helpers.
-- [ ] Delete `modules/data.js` if its compatibility re-exports have no remaining callers.
+- [x] Delete the four unused exports and the `sw_theme` / `modern-starwars` constants. Also removed `getDefaultThemeId` (five exports total). `persistence.js` 213 → 162 lines.
+- [x] Confirm `sw_collapsed_eras` is genuinely unused before dropping the helpers. Confirmed — the key appeared only inside its own getter/setter.
+- [x] Delete `modules/data.js` if its compatibility re-exports have no remaining callers. Confirmed zero importers; its unique helpers `hexToRgb` and `getMediaTypeInfo` were also uncalled. Whole file deleted.
+- [x] Retained `getLegacyWatchedStorageKey` — it looks externally unused but is load-bearing inside the watched-key migration chain. **Do not remove.**
 
 Definition of done:
 
-- Exactly one theme system exists in the codebase.
+- Exactly one theme system exists in the codebase. ✅ Only `preferences.interfaceTheme` remains.
 
 ### A3. Verify The Second Theme Is Real
 
 `styles.css` contains exactly one theme override block: `body[data-interface-theme="jedi-light"]` at line 600. The preferences UI presents Jedi Light and Sith Dark as an equal pair in three separate places in `modules/content-pages.js`.
 
+**Measured 2026-09-27 — worse than described above.** The single `jedi-light`
+block at `styles.css:600` contains **exactly one declaration**: a `background`
+shorthand resolving to `#171d20`. That is a *dark* color. There are zero
+`sith-dark`-specific blocks, so Sith Dark is simply the unthemed baseline.
+
+Net effect: selecting "Jedi Light" — presented with a `light_mode` sun icon in
+`content-pages.js:494` — produces a marginally different **dark** background and
+changes nothing else. No text, surface, border, or token color is remapped.
+It is not a light theme in any meaningful sense.
+
 Todos:
 
-- [ ] Visually audit Jedi Light across timeline, stats, preferences, guide, privacy, and terms.
-- [ ] Either complete Jedi Light to parity, or remove it until it is ready.
+- [x] Visually audit Jedi Light across timeline, stats, preferences, guide, privacy, and terms. Audited by inspection: a single `background` declaration cannot alter any of those surfaces beyond the page backdrop, so all six render effectively identically.
+- [ ] **DECISION REQUIRED — Either complete Jedi Light to parity, or remove it until it is ready.** Left open deliberately; this is a product call, not a cleanup.
+  - *Recommended:* remove the toggle now (delete the CSS block, the two `data-pref-theme` buttons at `content-pages.js:367/494`, and the two status readouts at `433/531`; pin `interfaceTheme` to `sith-dark`), then build a real light theme in **Sprint 3** on top of the Workstream D token layer, where remapping ~48 semantic tokens is a tractable change rather than a hand-written override sprawl.
+  - *Rationale:* a sun icon that yields a dark screen is a broken promise to the user. Shipping one honest theme beats shipping two where one is fictional.
+  - *If keeping instead:* it must not ship as a co-equal option in the preferences UI until parity exists.
 
 ### A4. Reconcile Documentation
 
-- [ ] `RUNTIME_ARCHITECTURE.md`: remove `sw_theme` and `sw_collapsed_eras` from live storage keys; remove `content-page.js` from the active runtime surface if deleted.
-- [ ] `PROJECT_REFACTOR_PLAN.md`: mark Complete; it still claims `app.js` is 2,088 lines when it is 260.
-- [ ] `UID_MIGRATION_PLAN.md`: mark Complete and answer the four open decisions from the shipped data (3-char base36, manifest-driven, `watched` zeroed).
-- [ ] `POLISH_PLAN.md`: fold remaining items into Workstream E here, then mark it superseded.
-- [ ] `.github/copilot-instructions.md`: it still references `timeline.js`, a root-level `timeline-data.json`, and `modules/modal.js`. All are wrong.
+- [x] `RUNTIME_ARCHITECTURE.md`: removed `sw_theme` / `sw_collapsed_eras` and `content-page.js`; also dropped the `modules/data.js` entry and the stale "collapsed-era / theme storage" bullets under `persistence.js`. **Additionally fixed 65 broken links** that pointed at absolute `/mnt/Misc SSD/Github Respositories/...` paths from a different machine — all are now repo-relative.
+- [x] `PROJECT_REFACTOR_PLAN.md`: marked Complete with a banner noting the 2,088-line claim is historical (`app.js` is ~260).
+- [x] `UID_MIGRATION_PLAN.md`: marked Complete; the four open decisions are answered from shipped data in a new Outcome section. Verified: 50/50 ids exactly 3-char lowercase base36, manifest-driven via `uid-manifest.json` (`format: base36-3`), and **`watched` is absent from live JSON entirely** — stronger than the "zeroed" outcome assumed here.
+- [x] `POLISH_PLAN.md`: marked Superseded, pointing at Workstream E.
+- [x] `.github/copilot-instructions.md`: rewritten. Corrected entry point (`app.js`), data paths (`data/*.json`), module map, render model, import workflow (`scripts/`), theme system, asset paths, and added the `verify_all.sh` gate plus the `checkpoint/` build exception.
+- [x] `VERIFICATION.md`: added a Prerequisites section — `check_js_syntax.py` shells out to `node`, which was not obvious and silently broke the whole pass when Node was absent.
+- [x] Consolidated duplicate planning docs: `redesign/` held newer condensed copies of two files also present in `archive/redesign/`. Both versions preserved; the newer pair moved to `archive/redesign/*_POST_PROMOTION.md` and the `redesign/` directory removed.
 
 ### A5. Repo Hygiene
 
-- [ ] Push the pending git-hygiene commit `d770b63`.
-- [ ] Decide whether `qa-artifacts/` and `images/website-reference/` should stay in the served tree (~47 MB of publicly fetchable screenshots).
+- [x] Push the pending git-hygiene commit `d770b63`. **Already done** — `d770b63` is on `origin/main` and the working tree was clean. This item was stale when written.
+- [ ] Decide whether `qa-artifacts/` and `images/website-reference/` should stay in the served tree (~47 MB of publicly fetchable screenshots). **Deferred to Sprint 2 by decision**, so all page-weight changes land and are measured together with B1/B2.
 
 ---
 

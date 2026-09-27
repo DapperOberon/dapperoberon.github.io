@@ -14,7 +14,6 @@ ROOT = Path(__file__).resolve().parents[1]
 def iter_targets() -> list[Path]:
     targets = [
         ROOT / "app.js",
-        ROOT / "content-page.js",
         ROOT / "tailwind-config.js",
     ]
     targets.extend(sorted((ROOT / "modules").glob("*.js")))

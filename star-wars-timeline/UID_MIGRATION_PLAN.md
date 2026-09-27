@@ -1,8 +1,35 @@
 # UID Migration Plan
 
-Status: In Progress  
-Branch: `uid-migration-plan`  
-Date: 2026-03-26
+Status: **Complete — retained for history**  
+Date: 2026-03-26  
+Closed: 2026-09-27
+
+> **This migration has shipped and is no longer the source of truth.**
+> All 50 entries carry stable short UIDs, and `scripts/validate_timeline_data.py`
+> enforces the format. The `uid-migration-plan` branch is long merged.
+>
+> Active planning lives in [`ROADMAP.md`](./ROADMAP.md).
+
+## Outcome (verified 2026-09-27)
+
+The four Open Decisions below were resolved as follows, confirmed by reading
+the shipped [`data/timeline-data.json`](./data/timeline-data.json) and
+[`data/uid-manifest.json`](./data/uid-manifest.json):
+
+1. **Length — 3 characters**, not 6/7/8. All 50 ids are exactly 3 chars.
+2. **Base36 lowercase.** No uppercase appears in any id; manifest `format` is
+   `base36-3`.
+3. **Manifest-driven, not one-off.** The mapping is persisted in
+   `data/uid-manifest.json` (keyed by era/title/type/year fingerprint with the
+   original `sourceId` retained) and maintained by `scripts/uid_manifest.py`,
+   `scripts/migrate_entry_uids.py`, and `scripts/sync_uid_manifest.py`.
+4. **`watched` dropped from live JSON**, which is stronger than forcing `0`.
+   Zero entries ship a non-zero `watched`, and the key is absent rather than
+   present-and-zeroed. Progress is per-user in `localStorage` only.
+
+Legacy title-based and fingerprint-based `watched_*` storage keys are still
+migrated forward by [`modules/persistence.js`](./modules/persistence.js).
+**Do not remove that migration path.**
 
 This document outlines a safe migration from the current title-derived slug ids to shorter stable alphanumeric ids.
 
