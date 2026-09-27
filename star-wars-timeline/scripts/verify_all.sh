@@ -10,6 +10,9 @@ python3 "${ROOT}/scripts/check_js_syntax.py"
 echo "Checking design tokens..."
 python3 "${ROOT}/scripts/check_design_tokens.py"
 
+echo "Checking for interpolated Tailwind classes..."
+python3 "${ROOT}/scripts/check_dynamic_classes.py"
+
 echo "Validating timeline data..."
 python3 "${ROOT}/scripts/validate_timeline_data.py"
 

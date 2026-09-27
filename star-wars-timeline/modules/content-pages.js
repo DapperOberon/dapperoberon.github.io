@@ -315,7 +315,7 @@ function renderPreferencesPage({
                         <label class="text-sm font-headline text-on-surface">${label}</label>
                         <p class="text-label-lg text-on-surface-variant font-body">${sub}</p>
                       </div>
-                      <div class="toggle-shell w-10 h-5 ${prefs[key] ? "bg-primary-fixed/20" : "bg-surface-container-highest"} flex items-center px-1 justify-${prefs[key] ? "end" : "start"}">
+                      <div class="toggle-shell w-10 h-5 ${prefs[key] ? "bg-primary-fixed/20" : "bg-surface-container-highest"} flex items-center px-1 ${prefs[key] ? "justify-end" : "justify-start"}">
                         <div class="w-3 h-3 ${prefs[key] ? "bg-primary-fixed shadow-[0_0_8px_var(--brand-yellow)]" : "bg-outline"} rounded-full"></div>
                       </div>
                     </button>
