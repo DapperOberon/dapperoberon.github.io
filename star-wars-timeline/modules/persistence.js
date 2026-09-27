@@ -4,9 +4,6 @@ export function getLegacyWatchedStorageKey(entry) {
   return 'watched_' + entry.title.replace(/\s+/g, '_');
 }
 
-const THEME_STORAGE_KEY = 'sw_theme';
-const DEFAULT_THEME_ID = 'modern-starwars';
-
 function getLegacyFingerprintStorageId(entry) {
   const fingerprint = getEntryLegacyFingerprintParts(entry)
     .join('|')
@@ -83,24 +80,6 @@ function removeWatchedStorageKeys(keys) {
       // Ignore localStorage remove failures
     }
   });
-}
-
-export function loadCollapsedEras() {
-  try {
-    const raw = localStorage.getItem('sw_collapsed_eras');
-    const parsed = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(parsed) ? parsed : []);
-  } catch (e) {
-    return new Set();
-  }
-}
-
-export function saveCollapsedEras(set) {
-  try {
-    localStorage.setItem('sw_collapsed_eras', JSON.stringify(Array.from(set)));
-  } catch (e) {
-    // Ignore localStorage write failures
-  }
 }
 
 export function saveWatchedState(entry) {
@@ -180,34 +159,4 @@ export function resetAllProgress(timelineData, updateEntryUI) {
       updateEntryUI(sectionIdx, entryIdx);
     });
   });
-}
-
-export function getDefaultThemeId() {
-  return DEFAULT_THEME_ID;
-}
-
-export function loadThemePreference(validThemeIds = []) {
-  try {
-    const raw = localStorage.getItem(THEME_STORAGE_KEY);
-    if (!raw) {
-      return DEFAULT_THEME_ID;
-    }
-
-    const normalized = String(raw).trim().toLowerCase();
-    if (Array.isArray(validThemeIds) && validThemeIds.length > 0 && !validThemeIds.includes(normalized)) {
-      return DEFAULT_THEME_ID;
-    }
-
-    return normalized || DEFAULT_THEME_ID;
-  } catch (e) {
-    return DEFAULT_THEME_ID;
-  }
-}
-
-export function saveThemePreference(themeId) {
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, String(themeId || DEFAULT_THEME_ID));
-  } catch (e) {
-    // Ignore localStorage write failures
-  }
 }
