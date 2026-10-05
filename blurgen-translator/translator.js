@@ -5,20 +5,41 @@ let englishToBlurgen = {};
 let blurgenToEnglish = {};
 
 // Fetch and load the dictionary from the JSON file
-fetch('dictionary.json')
-    .then(response => response.json())
-    .then(data => {
-        dictionary = data;
+const fetchDict = async () => {
+    try {
+        const response = await fetch('dictionary.json');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
 
         // Create the hash maps after the dictionary is loaded
-        for (let category in dictionary) {
-            for (let item of dictionary[category]) {
-                englishToBlurgen[item.english] = item.blurgen;
-                blurgenToEnglish[item.blurgen] = item.english;
+        for (let category in data) {
+            if (data[category]) {
+                for (let item of data[category]) {
+                    englishToBlurgen[item.english] = item.blurgen;
+                    blurgenToEnglish[item.blurgen] = item.english;
+                }
             }
         }
-    })
-    .catch(error => console.error('Error loading dictionary:', error));
+
+        // Hide loading indicators on all output areas
+        const outputAreas = document.querySelectorAll('.output');
+        outputAreas.forEach(area => area.classList.remove('loading'));
+    } catch (err) {
+        console.error('Error loading dictionary:', err);
+        
+        // Fallback: show an error message instead of broken functionality
+        const englishOutput = document.getElementById('englishToBlurgenOutput');
+        if (englishOutput) englishOutput.innerHTML = '⚠️ Translator is offline. Please refresh the page or check your connection.';
+        
+        const blurgenOutput = document.getElementById('blurgenToEnglishOutput');
+        if (blurgenOutput) blurgenOutput.textContent = 'Please wait for dictionary to load...';
+    }
+};
+
+// Attempt to load the dictionary, or use a degraded mode
+fetchDict();
 
 // The rest of your translation functions remain unchanged
 function translate(input, isEnglishToBlurgen) {
