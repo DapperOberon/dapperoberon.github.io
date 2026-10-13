@@ -10,3 +10,4 @@ checkpoint/checkpoint-backup-*.json
 checkpoint/observability/*
 !checkpoint/observability/.gitkeep
 *.log
+*.json5
