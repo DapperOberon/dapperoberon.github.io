@@ -8,7 +8,7 @@ const PROJECTS = [
     link: './blurgen-translator',
     linkText: 'Launch Translator',
     tags: ['Linguistics', 'Algorithm', 'Frontend'],
-    image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&q=85&w=1200',
     category: 'Tool'
   },
   {
@@ -18,7 +18,7 @@ const PROJECTS = [
     link: './checkpoint',
     linkText: 'Explore Games',
     tags: ['Log', 'Game', 'Interactive', 'Track'],
-    image: 'https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=85&w=1200',
     category: 'Tool'
   },
   {
@@ -28,7 +28,7 @@ const PROJECTS = [
     link: './star-wars-timeline',
     linkText: 'Explore Timeline',
     tags: ['Timeline', 'Star Wars', 'Interactive'],
-    image: 'https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1462332420958-a05d1e002413?auto=format&fit=crop&q=85&w=1200',
     category: 'Tool'
   }
 ];
