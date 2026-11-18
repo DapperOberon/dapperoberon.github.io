@@ -21,6 +21,9 @@
   --ghost-stroke: inset 0 0 0 1px rgba(205, 199, 171, 0.08);
   --surface-radius-lg: 1rem;
   --surface-radius-xl: 1.25rem;
+  --page-space: clamp(2.5rem, 5vw, 5rem);
+  --panel-shadow: 0 24px 56px rgba(0, 0, 0, 0.28);
+  --overlay-shadow: 0 32px 80px rgba(0, 0, 0, 0.58);
 }
 
 body {
@@ -137,11 +140,13 @@ body::before {
 }
 
 .glass-panel {
-  background: rgba(42, 42, 42, 0.6);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035), transparent 22%),
+    rgba(29, 29, 29, 0.86);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow:
-    0 0 var(--glow-blur) rgba(117, 209, 255, 0.08),
+    0 0 var(--glow-blur) rgba(117, 209, 255, 0.05),
     var(--ghost-stroke);
   border-radius: var(--surface-radius-xl);
   border: none;
@@ -149,8 +154,8 @@ body::before {
 
 .content-page-shell {
   box-shadow:
-    0 0 var(--glow-blur) rgba(117, 209, 255, 0.08),
-    0 24px 56px rgba(0, 0, 0, 0.34),
+    0 0 var(--glow-blur) rgba(117, 209, 255, 0.05),
+    var(--panel-shadow),
     var(--ghost-stroke);
 }
 
@@ -166,22 +171,22 @@ body::before {
 .utility-section {
   position: relative;
   background:
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent 34%),
-    rgba(31, 31, 31, 0.88);
-  border-radius: 1rem;
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.024), transparent 34%),
+    rgba(31, 31, 31, 0.72);
+  border-radius: var(--surface-radius-lg);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.025),
-    0 20px 48px rgba(0, 0, 0, 0.16);
+    var(--ghost-stroke);
 }
 
 .utility-section::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 3px;
+  width: 2px;
   border-radius: 999px;
   background: linear-gradient(to bottom, rgba(251, 228, 25, 0.7), rgba(117, 209, 255, 0.45), transparent 82%);
-  opacity: 0.65;
+  opacity: 0.42;
   pointer-events: none;
 }
 
@@ -189,17 +194,18 @@ body::before {
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent 14%),
     linear-gradient(to bottom, rgba(117, 209, 255, 0.04), transparent 32%),
-    rgba(22, 22, 22, 0.96);
+    rgba(19, 19, 19, 0.98);
+  box-shadow: -24px 0 64px rgba(0, 0, 0, 0.42), var(--ghost-stroke);
 }
 
 .filter-block {
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.025), transparent 42%),
-    rgba(33, 33, 33, 0.82);
-  border-radius: 1rem;
+    rgba(31, 31, 31, 0.72);
+  border-radius: var(--surface-radius-lg);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.025),
-    0 18px 34px rgba(0, 0, 0, 0.12);
+    var(--ghost-stroke);
 }
 
 .filter-option {
@@ -221,7 +227,7 @@ body::before {
   background: rgba(255, 255, 255, 0.06);
   box-shadow:
     inset 0 0 0 1px rgba(251, 228, 25, 0.24),
-    0 8px 24px rgba(0, 0, 0, 0.18);
+    0 6px 18px rgba(0, 0, 0, 0.14);
 }
 
 .filter-segment {
@@ -296,7 +302,7 @@ body::before {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.025),
     inset 0 0 0 1px rgba(205, 199, 171, 0.08),
-    0 16px 36px rgba(0, 0, 0, 0.18);
+    0 14px 30px rgba(0, 0, 0, 0.16);
 }
 
 .kicker-label {
@@ -486,7 +492,7 @@ body::before {
 .glass-surface-soft {
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.025), transparent 36%),
-    rgba(32, 31, 31, 0.58);
+    rgba(32, 31, 31, 0.62);
   border-radius: var(--surface-radius-lg);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.025),
@@ -513,10 +519,71 @@ body::before {
 .soft-panel {
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.025), transparent 36%),
-    rgba(32, 31, 31, 0.58);
+    rgba(32, 31, 31, 0.52);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.025),
     inset 0 0 0 1px rgba(205, 199, 171, 0.08);
+}
+
+/* Workstream D4c/D4d: one spacing rhythm and one calm surface ladder.
+   Content pages use the elevated outer shell, quiet working sections inside
+   it, and only reserve dramatic shadow depth for modal/drawer overlays. */
+.content-page-shell > header {
+  padding: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 4vw, 3.5rem);
+  border-bottom: 1px solid rgba(205, 199, 171, 0.075);
+}
+
+.content-page-shell > section {
+  padding-left: clamp(1rem, 3vw, 2.5rem);
+  padding-right: clamp(1rem, 3vw, 2.5rem);
+}
+
+.content-page-shell > section:not(:first-of-type) {
+  padding-top: 0;
+}
+
+#stats-page > div,
+#preferences-page > div,
+#timeline-desktop {
+  padding-top: var(--page-space);
+  padding-bottom: var(--page-space);
+}
+
+#timeline-desktop > div > .flex {
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(205, 199, 171, 0.09);
+}
+
+#timeline-desktop .desktop-timeline {
+  padding-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+#entry-modal .glass-panel {
+  box-shadow: var(--overlay-shadow), var(--ghost-stroke);
+}
+
+#entry-modal main {
+  border-top: 1px solid rgba(205, 199, 171, 0.075);
+}
+
+#filter-panel .filter-sheet {
+  box-shadow: -24px 0 64px rgba(0, 0, 0, 0.48), var(--ghost-stroke);
+}
+
+@media (max-width: 767px) {
+  .content-page-shell > header {
+    padding: 2rem 1.5rem;
+  }
+
+  .content-page-shell > section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  #mobile-eras {
+    padding-top: 2rem;
+  }
 }
 
 .utility-mobile-section {
